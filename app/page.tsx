@@ -54,16 +54,21 @@ export default function Home() {
   const [step, setStep] = useState(0);
   const [slot, setSlot] = useState(3);
   const [search, setSearch] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountTab, setAccountTab] = useState<"profile" | "consent" | "security">("profile");
+  const [consents, setConsents] = useState({ care: true, privacy: true, reminders: true, marketing: false });
   const t = copy[lang]; const ar = lang === "ar";
   const filtered = useMemo(() => doctors.filter(d => `${d.name} ${d.nameAr} ${d.specialty} ${d.specialtyAr}`.toLowerCase().includes(search.toLowerCase())), [search]);
   const startBooking = (d: Doctor) => { setDoctor(d); setStep(1); document.body.classList.add("modal-open"); };
   const close = () => { setDoctor(null); setStep(0); document.body.classList.remove("modal-open"); };
+  const openAccount = () => { setAccountOpen(true); document.body.classList.add("modal-open"); };
+  const closeAccount = () => { setAccountOpen(false); document.body.classList.remove("modal-open"); };
 
   return <main dir={ar ? "rtl" : "ltr"} className={ar ? "arabic" : ""}>
     <header>
       <a className="brand" href="#" aria-label="Reyati home"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
       <nav>{t.nav.map((n, i) => <a className={i === 0 ? "active" : ""} key={n} href={`#${i}`}>{n}</a>)}</nav>
-      <div className="header-actions"><button className="lang" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><button className="bell" aria-label="Notifications">●</button><span className="avatar">MA</span><span className="profile">{t.profile}<small>⌄</small></span></div>
+      <div className="header-actions"><button className="lang" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><button className="bell" aria-label="Notifications">●</button><button className="account-trigger" onClick={openAccount} aria-label={ar ? "فتح الحساب" : "Open account"}><span className="avatar">MA</span><span className="profile">{t.profile}<small>⌄</small></span></button></div>
     </header>
 
     <section className="hero">
@@ -87,6 +92,24 @@ export default function Home() {
     </section>
 
     <footer><img src="/brand/reyati-logo.svg" alt="Reyati"/><p>{ar ? "رعاية متصلة بذكاء" : "Care, intelligently connected."}</p><small>Prototype with synthetic data · Not for medical use</small></footer>
+
+    {accountOpen && <div className="account-layer" role="dialog" aria-modal="true" aria-labelledby="account-title" onMouseDown={e => e.target === e.currentTarget && closeAccount()}><aside className="account-panel">
+      <div className="account-head"><div><p>{ar ? "حساب تجريبي" : "Prototype account"}</p><h2 id="account-title">{ar ? "مريم أحمد" : "Mariam Ahmed"}</h2><span><b>✓</b> {ar ? "تم التحقق من رقم الهاتف" : "Mobile number verified"}</span></div><button onClick={closeAccount} aria-label={ar ? "إغلاق" : "Close"}>×</button></div>
+      <div className="account-progress"><div><span>{ar ? "اكتمال الملف الشخصي" : "Profile completion"}</span><b>80%</b></div><i><span/></i><p>{ar ? "أضيفي جهة اتصال للطوارئ لإكمال ملفك." : "Add an emergency contact to complete your profile."}</p></div>
+      <div className="account-tabs" role="tablist">
+        <button role="tab" aria-selected={accountTab === "profile"} onClick={() => setAccountTab("profile")}>{ar ? "الملف" : "Profile"}</button>
+        <button role="tab" aria-selected={accountTab === "consent"} onClick={() => setAccountTab("consent")}>{ar ? "الموافقات" : "Consent"}</button>
+        <button role="tab" aria-selected={accountTab === "security"} onClick={() => setAccountTab("security")}>{ar ? "الأمان" : "Security"}</button>
+      </div>
+      {accountTab === "profile" && <section className="account-body" role="tabpanel"><h3>{ar ? "معلوماتك" : "Your information"}</h3><div className="identity-card"><span className="avatar large">MA</span><div><b>{ar ? "مريم أحمد" : "Mariam Ahmed"}</b><small>{ar ? "الحساب الحالي" : "Active patient profile"}</small></div><button>{ar ? "تعديل" : "Edit"}</button></div><dl className="profile-details"><div><dt>{ar ? "تاريخ الميلاد" : "Date of birth"}</dt><dd>14 March 1992</dd></div><div><dt>{ar ? "رقم الهاتف" : "Mobile"}</dt><dd>+974 •••• 4821 <em>✓</em></dd></div><div><dt>{ar ? "البريد الإلكتروني" : "Email"}</dt><dd>mariam@example.com</dd></div><div><dt>{ar ? "اللغة" : "Preferred language"}</dt><dd>{ar ? "العربية" : "English"}</dd></div></dl><button className="outline-action">＋ {ar ? "إضافة جهة اتصال للطوارئ" : "Add emergency contact"}</button><p className="account-note">{ar ? "هذه بيانات تجريبية فقط ولا تمثل هوية حقيقية." : "Synthetic data only. This does not represent a real identity."}</p></section>}
+      {accountTab === "consent" && <section className="account-body" role="tabpanel"><h3>{ar ? "خيارات الموافقة" : "Consent choices"}</h3><p className="body-intro">{ar ? "يمكنك مراجعة خياراتك أو تغييرها. نسجل كل تغيير بوضوح." : "Review or change your choices at any time. Every change is recorded clearly."}</p>{[
+        ["care", ar ? "مشاركة البيانات للرعاية" : "Care data sharing", ar ? "السماح لمقدم الرعاية المختار برؤية المعلومات المرتبطة بالموعد." : "Allow the selected provider to view information relevant to your appointment."],
+        ["privacy", ar ? "سياسة الخصوصية" : "Privacy policy", ar ? "تم قبول الإصدار ٢.٠ في ١ أغسطس ٢٠٢٦." : "Version 2.0 accepted on 1 August 2026."],
+        ["reminders", ar ? "تذكيرات الرعاية" : "Care reminders", ar ? "إشعارات المواعيد والمتابعة المهمة." : "Important appointment and follow-up notifications."],
+        ["marketing", ar ? "أخبار وعروض رعايتي" : "Reyati news and offers", ar ? "محتوى اختياري غير مرتبط برعايتك." : "Optional content unrelated to your care."]
+      ].map(([key,title,desc]) => <div className="consent-row" key={key}><div><b>{title}</b><p>{desc}</p></div><button className={consents[key as keyof typeof consents] ? "toggle on" : "toggle"} aria-pressed={consents[key as keyof typeof consents]} aria-label={`${title}: ${consents[key as keyof typeof consents] ? "on" : "off"}`} onClick={() => setConsents(current => ({...current,[key]:!current[key as keyof typeof current]}))}><span/></button></div>)}<button className="outline-action">{ar ? "عرض سجل الموافقات" : "View consent history"} →</button></section>}
+      {accountTab === "security" && <section className="account-body" role="tabpanel"><h3>{ar ? "الأجهزة والجلسات" : "Devices & sessions"}</h3><div className="security-status"><span>✓</span><div><b>{ar ? "حسابك محمي" : "Your account is protected"}</b><p>{ar ? "التحقق بخطوتين مفعّل للإجراءات الحساسة." : "Step-up verification is enabled for sensitive actions."}</p></div></div><div className="session-card"><span className="device-icon">▯</span><div><b>iPhone 15 Pro</b><small>{ar ? "هذا الجهاز · الدوحة · نشط الآن" : "This device · Doha · Active now"}</small></div><em>{ar ? "موثوق" : "Trusted"}</em></div><div className="session-card"><span className="device-icon">▭</span><div><b>Safari on Mac</b><small>{ar ? "الدوحة · آخر نشاط أمس" : "Doha · Last active yesterday"}</small></div><button>{ar ? "تسجيل الخروج" : "Sign out"}</button></div><button className="outline-action">{ar ? "عرض جميع الأجهزة" : "View all devices"} →</button><p className="account-note">{ar ? "هذا نموذج تفاعلي. لا تتم إدارة جلسات حقيقية." : "Interactive prototype only. No real sessions are being managed."}</p></section>}
+    </aside></div>}
 
     {doctor && <div className="modal-layer" role="dialog" aria-modal="true" aria-labelledby="booking-title"><div className="modal">
       <button className="modal-close" onClick={close} aria-label="Close">×</button>
