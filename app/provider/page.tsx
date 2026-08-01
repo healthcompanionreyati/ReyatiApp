@@ -43,7 +43,7 @@ export default function ProviderConsole() {
         <button className={view === "today" ? "active" : ""} onClick={() => setView("today")}><span>◫</span>{t.today}<em>2</em></button>
         <button className={view === "calendar" ? "active" : ""} onClick={() => setView("calendar")}><span>□</span>{t.calendar}</button>
         <a className="provider-nav-link" href="/provider/patients"><span>♙</span>{t.patients}</a>
-        <button><span>◇</span>{t.services}</button>
+        <a className="provider-nav-link" href="/provider/services"><span>◇</span>{t.services}</a>
         <button className={view === "organization" ? "active" : ""} onClick={() => setView("organization")}><span>⌂</span>{t.org}<em className="warning-dot">!</em></button>
         <button><span>↗</span>{t.insights}</button>
       </nav>
