@@ -3,6 +3,7 @@ import "./globals.css";
 import "./appointments.css";
 import "./admin.css";
 import "./partner.css";
+import "./auth.css";
 
 export const metadata: Metadata = {
   title: "Reyati — Find trusted care in Qatar",
