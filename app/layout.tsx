@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./appointments.css";
 import "./admin.css";
+import "./admin-verification.css";
 import "./partner.css";
 import "./partner-program.css";
 import "./auth.css";
