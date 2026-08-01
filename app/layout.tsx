@@ -9,6 +9,8 @@ import "./providers.css";
 import "./family.css";
 import "./payments.css";
 import "./support.css";
+import "./journeys.css";
+import MobileDock from "./components/MobileDock";
 
 export const metadata: Metadata = {
   title: "Reyati — Find trusted care in Qatar",
@@ -28,5 +30,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body>{children}<MobileDock/></body></html>;
 }

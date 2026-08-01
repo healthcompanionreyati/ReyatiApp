@@ -91,7 +91,7 @@ export default function Home() {
       <section className="next-appt"><div className="date-block"><b>02</b><span>AUG</span></div><div><p>{t.appt}</p><h3>{ar ? doctors[0].nameAr : doctors[0].name}</h3><span>{t.date} · 4:30 PM · {t.inperson}</span></div><div className="appt-location"><span>⌖</span><div><b>{ar ? doctors[0].hospitalAr : doctors[0].hospital}</b><small>Al Waab Street, Doha</small></div></div><button>{t.view}</button></section>
     </section>
 
-    <footer><img src="/brand/reyati-logo.svg" alt="Reyati"/><p>{ar ? "رعاية متصلة بذكاء" : "Care, intelligently connected."}</p><small>Prototype with synthetic data · Not for medical use</small></footer>
+    <footer><img src="/brand/reyati-logo.svg" alt="Reyati"/><p>{ar ? "رعاية متصلة بذكاء" : "Care, intelligently connected."}</p><a href="/journeys">{ar?"استكشف جميع مسارات النموذج":"Explore all prototype journeys"} →</a><small>Prototype with synthetic data · Not for medical use</small></footer>
 
     {accountOpen && <div className="account-layer" role="dialog" aria-modal="true" aria-labelledby="account-title" onMouseDown={e => e.target === e.currentTarget && closeAccount()}><aside className="account-panel">
       <div className="account-head"><div><p>{ar ? "حساب تجريبي" : "Prototype account"}</p><h2 id="account-title">{ar ? "مريم أحمد" : "Mariam Ahmed"}</h2><span><b>✓</b> {ar ? "تم التحقق من رقم الهاتف" : "Mobile number verified"}</span></div><button onClick={closeAccount} aria-label={ar ? "إغلاق" : "Close"}>×</button></div>
