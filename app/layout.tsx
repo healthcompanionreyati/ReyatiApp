@@ -4,6 +4,7 @@ import "./appointments.css";
 import "./admin.css";
 import "./admin-verification.css";
 import "./admin-finance.css";
+import "./admin-cases.css";
 import "./partner.css";
 import "./partner-program.css";
 import "./auth.css";
