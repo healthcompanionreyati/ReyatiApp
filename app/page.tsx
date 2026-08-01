@@ -68,7 +68,7 @@ export default function Home() {
     <header>
       <a className="brand" href="#" aria-label="Reyati home"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
       <nav>{t.nav.map((n, i) => <a className={i === 0 ? "active" : ""} key={n} href={i === 1 ? "/appointments" : i === 2 ? "/wallet" : `#${i}`}>{n}</a>)}<a href="/provider">{ar ? "بوابة مقدمي الرعاية" : "Provider console"}</a></nav>
-      <div className="header-actions"><button className="lang" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><button className="bell" aria-label="Notifications">●</button><button className="account-trigger" onClick={openAccount} aria-label={ar ? "فتح الحساب" : "Open account"}><span className="avatar">MA</span><span className="profile">{t.profile}<small>⌄</small></span></button></div>
+      <div className="header-actions"><button className="lang" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a className="bell" href="/notifications" aria-label="Notifications">●</a><button className="account-trigger" onClick={openAccount} aria-label={ar ? "فتح الحساب" : "Open account"}><span className="avatar">MA</span><span className="profile">{t.profile}<small>⌄</small></span></button></div>
     </header>
 
     <section className="hero">
