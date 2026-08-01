@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Reyati · رعايتي",
     description: "Clearer care. A simpler journey.",
-    images: [{ url: "/og.png", width: 1734, height: 907 }],
+    images: [{ url: "/og.png", width: 1080, height: 1080 }],
   },
   twitter: {
     card: "summary_large_image",

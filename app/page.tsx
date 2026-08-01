@@ -61,17 +61,17 @@ export default function Home() {
 
   return <main dir={ar ? "rtl" : "ltr"} className={ar ? "arabic" : ""}>
     <header>
-      <a className="brand" href="#" aria-label="Reyati home"><span className="brand-mark">ر</span><span>Reyati<small>رعايتي</small></span></a>
+      <a className="brand" href="#" aria-label="Reyati home"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
       <nav>{t.nav.map((n, i) => <a className={i === 0 ? "active" : ""} key={n} href={`#${i}`}>{n}</a>)}</nav>
       <div className="header-actions"><button className="lang" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><button className="bell" aria-label="Notifications">●</button><span className="avatar">MA</span><span className="profile">{t.profile}<small>⌄</small></span></div>
     </header>
 
     <section className="hero">
-      <div className="hero-inner"><p className="eyebrow">REYATI · رعايتي</p><h1>{t.hello}</h1><p className="lead">{t.subtitle}</p>
+      <div className="hero-inner"><p className="eyebrow">{ar ? "رعاية متصلة بذكاء" : "Care, intelligently connected."}</p><h1>{t.hello}</h1><p className="lead">{t.subtitle}</p>
         <div className="search-box"><span className="search-icon">⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search}/><span className="divider"/><button className="location">⌖ {t.location}⌄</button><button className="search-button">{t.button}</button></div>
         <p className="emergency"><span>＋</span>{t.emergency}</p>
       </div>
-      <div className="hero-art" aria-hidden="true"><div className="sun"/><div className="arch arch-one"/><div className="arch arch-two"/><div className="cross">＋</div><div className="spark">✦</div></div>
+      <div className="hero-art" aria-hidden="true"><img src="/brand/care-conversation.png" alt=""/><span className="weave-path weave-cyan"/><span className="weave-path weave-white"/></div>
     </section>
 
     <section className="content">
@@ -86,7 +86,7 @@ export default function Home() {
       <section className="next-appt"><div className="date-block"><b>02</b><span>AUG</span></div><div><p>{t.appt}</p><h3>{ar ? doctors[0].nameAr : doctors[0].name}</h3><span>{t.date} · 4:30 PM · {t.inperson}</span></div><div className="appt-location"><span>⌖</span><div><b>{ar ? doctors[0].hospitalAr : doctors[0].hospital}</b><small>Al Waab Street, Doha</small></div></div><button>{t.view}</button></section>
     </section>
 
-    <footer><span>Reyati · رعايتي</span><p>{ar ? "رعاية أوضح. رحلة أسهل." : "Clearer care. A simpler journey."}</p><small>Prototype with synthetic data · Not for medical use</small></footer>
+    <footer><img src="/brand/reyati-logo.svg" alt="Reyati"/><p>{ar ? "رعاية متصلة بذكاء" : "Care, intelligently connected."}</p><small>Prototype with synthetic data · Not for medical use</small></footer>
 
     {doctor && <div className="modal-layer" role="dialog" aria-modal="true" aria-labelledby="booking-title"><div className="modal">
       <button className="modal-close" onClick={close} aria-label="Close">×</button>
