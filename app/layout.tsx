@@ -13,6 +13,7 @@ import "./journeys.css";
 import "./provider-patients.css";
 import "./provider-services.css";
 import "./provider-insights.css";
+import "./provider-settings.css";
 import MobileDock from "./components/MobileDock";
 
 export const metadata: Metadata = {

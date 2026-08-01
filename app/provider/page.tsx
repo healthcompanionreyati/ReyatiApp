@@ -46,6 +46,7 @@ export default function ProviderConsole() {
         <a className="provider-nav-link" href="/provider/services"><span>◇</span>{t.services}</a>
         <button className={view === "organization" ? "active" : ""} onClick={() => setView("organization")}><span>⌂</span>{t.org}<em className="warning-dot">!</em></button>
         <a className="provider-nav-link" href="/provider/insights"><span>↗</span>{t.insights}</a>
+        <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>{lang === "ar" ? "الإعدادات" : "Settings"}</a>
       </nav>
       <div className="sidebar-bottom"><a href="/">← {ar ? "العودة لتطبيق المريض" : "Patient experience"}</a><a href="/admin">◇ {ar ? "عمليات المنصة" : "Platform operations"}</a><p>{ar ? "نموذج ببيانات تجريبية" : "Synthetic-data prototype"}</p></div>
     </aside>

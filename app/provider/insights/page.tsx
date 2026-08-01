@@ -36,7 +36,7 @@ export default function ProviderInsights(){
     <aside className="insights-sidebar">
       <a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar?"بوابة مقدم الرعاية":"Provider console"}</span></a>
       <div className="insights-facility"><span>AN</span><div><b>{ar?"مركز النور الطبي":"Al Noor Medical Center"}</b><small>{ar?"فرع الوعب":"Al Waab location"}</small></div></div>
-      <nav><a href="/provider"><span>◫</span>{ar?"اليوم":"Today"}</a><a href="/provider"><span>□</span>{ar?"التقويم":"Calendar"}</a><a href="/provider/patients"><span>♙</span>{ar?"المرضى":"Patients"}</a><a href="/provider/services"><span>◇</span>{ar?"الخدمات":"Services"}</a><a className="active" href="/provider/insights"><span>↗</span>{ar?"التقارير":"Insights"}</a></nav>
+      <nav><a href="/provider"><span>◫</span>{ar?"اليوم":"Today"}</a><a href="/provider"><span>□</span>{ar?"التقويم":"Calendar"}</a><a href="/provider/patients"><span>♙</span>{ar?"المرضى":"Patients"}</a><a href="/provider/services"><span>◇</span>{ar?"الخدمات":"Services"}</a><a className="active" href="/provider/insights"><span>↗</span>{ar?"التقارير":"Insights"}</a><a href="/provider/settings"><span>⚙</span>{ar?"الإعدادات":"Settings"}</a></nav>
       <div className="insights-side-bottom"><a href="/journeys">◇ {ar?"جميع المسارات":"All journeys"}</a><a href="/provider">← {ar?"لوحة مقدم الرعاية":"Provider dashboard"}</a><p>{ar?"بيانات اصطناعية · إجماليات محمية":"Synthetic data · Protected aggregates"}</p></div>
     </aside>
     <section className="insights-main">
