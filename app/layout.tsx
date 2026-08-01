@@ -10,6 +10,7 @@ import "./family.css";
 import "./payments.css";
 import "./support.css";
 import "./journeys.css";
+import "./provider-patients.css";
 import MobileDock from "./components/MobileDock";
 
 export const metadata: Metadata = {
