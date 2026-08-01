@@ -29,7 +29,7 @@ export default function PartnerPortal() {
     <aside className="partner-sidebar">
       <a className="partner-brand" href="/"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "مزايا الشركاء" : "Partner benefits"}</span></a>
       <div className="partner-org"><span>AC</span><div><b>Atlas Consulting</b><small>{ar ? "مساحة عمل صاحب العمل" : "Employer workspace"}</small></div><i>⌄</i></div>
-      <nav>{nav.map(([id,en,arabic,icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}><span>{icon}</span>{ar ? arabic : en}{id === "members" && <em>248</em>}</button>)}</nav>
+      <nav>{nav.map(([id,en,arabic,icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}><span>{icon}</span>{ar ? arabic : en}{id === "members" && <em>248</em>}</button>)}<a className="partner-program-link" href="/partner/program"><span>⚙</span>{ar ? "إعداد البرنامج" : "Programme setup"}</a></nav>
       <div className="partner-side-note"><span>♙</span><p><b>{ar ? "الخصوصية مضمونة" : "Privacy protected"}</b>{ar ? "لا يمكن لصاحب العمل الاطلاع على الزيارات أو التشخيصات أو السجلات الطبية الفردية." : "Employers cannot view individual visits, diagnoses, or medical records."}</p></div>
       <div className="partner-links"><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/admin">← {ar ? "عمليات المنصة" : "Platform operations"}</a><a href="/">← {ar ? "تجربة المريض" : "Patient experience"}</a></div>
     </aside>

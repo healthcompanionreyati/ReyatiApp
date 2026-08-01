@@ -3,6 +3,7 @@ import "./globals.css";
 import "./appointments.css";
 import "./admin.css";
 import "./partner.css";
+import "./partner-program.css";
 import "./auth.css";
 import "./notifications.css";
 import "./providers.css";
