@@ -73,7 +73,7 @@ export default function Home() {
 
     <section className="hero">
       <div className="hero-inner"><p className="eyebrow">{ar ? "رعاية متصلة بذكاء" : "Care, intelligently connected."}</p><h1>{t.hello}</h1><p className="lead">{t.subtitle}</p>
-        <div className="search-box"><span className="search-icon">⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search}/><span className="divider"/><button className="location">⌖ {t.location}⌄</button><button className="search-button">{t.button}</button></div>
+        <div className="search-box"><span className="search-icon">⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search}/><span className="divider"/><button className="location">⌖ {t.location}⌄</button><button className="search-button" onClick={()=>window.location.href="/providers"}>{t.button}</button></div>
         <p className="emergency"><span>＋</span>{t.emergency}</p>
       </div>
       <div className="hero-art" aria-hidden="true"><img src="/brand/care-conversation.png" alt=""/><span className="weave-path weave-cyan"/><span className="weave-path weave-white"/></div>
@@ -82,7 +82,7 @@ export default function Home() {
     <section className="content">
       <div className="section-heading"><div><h2>{t.categories}</h2><p>{t.categoriesSub}</p></div></div>
       <div className="categories">{["♡", "♧", "✦", "◇", "☼", "＋"].map((icon, i) => <button key={i} onClick={() => i < 5 && setSearch(t.cat[i])}><span>{icon}</span>{t.cat[i]}</button>)}</div>
-      <div className="section-heading providers-heading"><div><h2>{t.recommended}</h2><p>{ar ? "مواعيد حقيقية من مقدمين موثّقين" : "Real availability from verified providers"}</p></div><button>{t.see} →</button></div>
+      <div className="section-heading providers-heading"><div><h2>{t.recommended}</h2><p>{ar ? "مواعيد حقيقية من مقدمين موثّقين" : "Real availability from verified providers"}</p></div><button onClick={()=>window.location.href="/providers"}>{t.see} →</button></div>
       <div className="doctor-grid">{filtered.map(d => <article className="doctor-card" key={d.id}>
         <div className="doctor-main"><div className={`doctor-avatar ${d.color}`}>{d.initials}<span>✓</span></div><div><p className="verified">✓ {t.verified}</p><h3>{ar ? d.nameAr : d.name}</h3><p className="specialty">{ar ? d.specialtyAr : d.specialty}</p><p className="hospital">⌖ {ar ? d.hospitalAr : d.hospital}</p><p className="rating"><b>★ {d.rating}</b> <span>({d.reviews} {t.reviews})</span></p></div></div>
         <div className="availability"><div><small>{t.next}</small><b>{ar ? d.nextAr : d.next}</b></div><div className="price"><b>{d.fee} {t.qar}</b><small>{ar ? "شامل الرسوم" : "incl. fees"}</small></div></div>
