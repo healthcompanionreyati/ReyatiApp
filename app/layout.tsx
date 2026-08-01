@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Reyati — Find trusted care in Qatar",
+  description: "Discover verified healthcare providers, compare real availability, and book care with confidence.",
+  metadataBase: new URL("https://reyati-care.sites.openai.com"),
+  openGraph: {
+    title: "Reyati · رعايتي",
+    description: "Clearer care. A simpler journey.",
+    images: [{ url: "/og.png", width: 1734, height: 907 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Reyati · رعايتي",
+    description: "Clearer care. A simpler journey.",
+    images: ["/og.png"],
+  },
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body>{children}</body></html>;
+}
