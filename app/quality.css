@@ -1,0 +1,80 @@
+/* Product-wide legibility and interaction baseline. Route styles remain responsible for hierarchy. */
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body :where(p, small, span, label, button, input, select, textarea, a, b, strong, em, i, code, time, dt, dd, td, th) {
+  font-size: max(11px, 1em) !important;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--sand, #d4af67) !important;
+  outline-offset: 3px !important;
+}
+
+:where(button, input, select, textarea) {
+  border-radius: max(8px, 0.5em);
+}
+
+:where(button, a) {
+  touch-action: manipulation;
+}
+
+:where(button:disabled, input:disabled, select:disabled, textarea:disabled) {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+@media (max-width: 720px) {
+  body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+
+  :where(button, input, select, textarea) {
+    min-height: 40px;
+  }
+
+  .mobile-dock {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 50;
+    height: calc(66px + env(safe-area-inset-bottom));
+    padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid #d8e7ed;
+    box-shadow: 0 -10px 30px rgba(8, 42, 67, 0.08);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-dock a {
+    min-width: 0;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--muted, #557184);
+    text-decoration: none;
+    border-radius: 12px;
+  }
+
+  .mobile-dock a span { font-size: 19px !important; line-height: 1; }
+  .mobile-dock a b { font-size: 10px !important; line-height: 1.2; white-space: nowrap; }
+  .mobile-dock a.active { color: var(--teal, #006a8e); background: #e9f6fa; }
+}
+
+@media (min-width: 721px) {
+  .mobile-dock { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
