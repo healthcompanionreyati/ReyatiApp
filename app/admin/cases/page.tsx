@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Case={id:string,title:string,party:string,category:string,priority:"Critical"|"High"|"Normal",status:string,owner:string,sla:string,channel:string};
 const cases:Case[]=[
@@ -14,6 +14,7 @@ const cases:Case[]=[
 
 export default function CasesWorkspace(){
   const [lang,setLang]=useState<"en"|"ar">("en");const [filter,setFilter]=useState("All");const [query,setQuery]=useState("");const [selected,setSelected]=useState<Case|null>(cases[0]);const [note,setNote]=useState("");const [notice,setNotice]=useState("");const [resolved,setResolved]=useState(false);const ar=lang==="ar";
+  useEffect(()=>{document.querySelector<HTMLTextAreaElement>(".case-collab textarea")?.setAttribute("aria-label",ar?"ملاحظة داخلية":"Internal note");document.querySelector<HTMLSelectElement>(".case-collab select")?.setAttribute("aria-label",ar?"مالك الحالة":"Case owner");document.querySelector<HTMLAnchorElement>('.cases-top a[href="/notifications"]')?.setAttribute("aria-label",ar?"الإشعارات":"Notifications")},[ar,selected]);
   const rows=useMemo(()=>cases.filter(c=>(filter==="All"||c.priority===filter||c.status===filter)&&`${c.id} ${c.title} ${c.party}`.toLowerCase().includes(query.toLowerCase())),[filter,query]);const flash=(m:string)=>{setNotice(m);window.setTimeout(()=>setNotice(""),2500)};
   return <main className={`cases-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
     <aside className="cases-sidebar"><a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar?"عمليات المنصة":"Platform operations"}</span></a><div className="cases-role"><span>CS</span><div><b>{ar?"أخصائي الحالات":"Case specialist"}</b><small>{ar?"نطاق الدعم · مصادقة متعددة":"Support scope · MFA"}</small></div></div><nav><a href="/admin"><span>◫</span>{ar?"نظرة عامة":"Overview"}</a><a href="/admin/verification"><span>✓</span>{ar?"التحقق":"Verification"}</a><a href="/admin/finance"><span>Q</span>{ar?"المالية":"Finance"}</a><a className="active" href="/admin/cases"><span>◇</span>{ar?"الحالات":"Cases"}<i>9</i></a><a href="/admin"><span>◉</span>{ar?"الإشراف":"Moderation"}</a><a href="/admin"><span>▤</span>{ar?"التدقيق":"Audit"}</a></nav><div className="cases-side-note"><span>♙</span><p><b>{ar?"الكشف لسبب محدد":"Purpose-bound access"}</b>{ar?"تظل البيانات الشخصية مخفية حتى يطلبها وكيل مخول لحالة محددة.":"Personal data stays masked until an authorized agent requests it for a specific case."}</p></div><div className="cases-links"><a href="/journeys">◇ {ar?"جميع المسارات":"All journeys"}</a><a href="/admin">← {ar?"لوحة العمليات":"Operations dashboard"}</a></div></aside>
