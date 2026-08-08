@@ -90,3 +90,21 @@ test("keeps starter preview infrastructure out of the product", async () => {
     [],
   );
 });
+
+test("ships the authenticated persistence foundation", async () => {
+  const [hosting, schema, migration, identityRoute] = await Promise.all([
+    readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0000_pale_pretty_boy.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/me/route.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(JSON.parse(hosting).d1, "DB");
+  for (const table of ["users", "organizations", "organization_members", "patient_profiles", "provider_profiles", "facilities", "appointments", "consents", "document_records", "audit_events"]) {
+    assert.match(migration, new RegExp("CREATE TABLE `" + table + "`"));
+  }
+  assert.match(schema, /idx_appointments_provider_start/);
+  assert.match(schema, /idx_consents_subject_status/);
+  assert.match(identityRoute, /getOrCreateCurrentUser/);
+  assert.match(identityRoute, /Cache-Control.*no-store/);
+});
