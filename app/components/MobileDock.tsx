@@ -2,12 +2,61 @@
 
 import { useEffect, useState } from "react";
 
-const patientRoutes=["/","/providers","/appointments","/wallet","/family","/payments","/support","/notifications"];
+type DockItem = { href: string; icon: string; label: string; exact?: boolean };
 
-export default function MobileDock(){
-  const [path,setPath]=useState("");
-  useEffect(()=>setPath(window.location.pathname),[]);
-  if(!patientRoutes.includes(path))return null;
-  const items=[{href:"/",icon:"⌂",label:"Home"},{href:"/providers",icon:"⌕",label:"Find care"},{href:"/appointments",icon:"◎",label:"Visits"},{href:"/wallet",icon:"▤",label:"Wallet"},{href:"/journeys",icon:"◇",label:"More"}];
-  return <nav className="mobile-dock" aria-label="Mobile navigation">{items.map(item=><a className={path===item.href?"active":""} href={item.href} key={item.href} aria-current={path===item.href?"page":undefined}><span aria-hidden="true">{item.icon}</span><b>{item.label}</b></a>)}</nav>;
+const patientRoutes = ["/", "/providers", "/appointments", "/wallet", "/family", "/payments", "/support", "/notifications"];
+
+const patientItems: DockItem[] = [
+  { href: "/", icon: "⌂", label: "Home", exact: true },
+  { href: "/providers", icon: "⌕", label: "Find care" },
+  { href: "/appointments", icon: "◉", label: "Visits" },
+  { href: "/wallet", icon: "▤", label: "Wallet" },
+  { href: "/journeys", icon: "◇", label: "More" },
+];
+
+const providerItems: DockItem[] = [
+  { href: "/provider", icon: "⌂", label: "Today", exact: true },
+  { href: "/provider/patients", icon: "♙", label: "Patients" },
+  { href: "/provider/services", icon: "◇", label: "Services" },
+  { href: "/provider/insights", icon: "↗", label: "Insights" },
+  { href: "/provider/settings", icon: "⚙", label: "Settings" },
+];
+
+const adminItems: DockItem[] = [
+  { href: "/admin", icon: "⌂", label: "Overview", exact: true },
+  { href: "/admin/verification", icon: "✓", label: "Verify" },
+  { href: "/admin/finance", icon: "◫", label: "Finance" },
+  { href: "/admin/cases", icon: "!", label: "Cases" },
+  { href: "/admin/audit", icon: "⌘", label: "Audit" },
+];
+
+const partnerItems: DockItem[] = [
+  { href: "/partner", icon: "⌂", label: "Overview", exact: true },
+  { href: "/partner/program", icon: "◇", label: "Program" },
+  { href: "/payments", icon: "◫", label: "Payments" },
+  { href: "/support", icon: "?", label: "Support" },
+  { href: "/journeys", icon: "↗", label: "Switch" },
+];
+
+function active(path: string, item: DockItem) {
+  return item.exact ? path === item.href : path === item.href || path.startsWith(`${item.href}/`);
+}
+
+export default function MobileDock() {
+  const [path, setPath] = useState("");
+  useEffect(() => setPath(window.location.pathname), []);
+
+  let items: DockItem[] | null = null;
+  let label = "Patient navigation";
+  if (patientRoutes.includes(path) || path === "/journeys") items = patientItems;
+  if (path.startsWith("/provider")) { items = providerItems; label = "Provider navigation"; }
+  if (path.startsWith("/admin")) { items = adminItems; label = "Administration navigation"; }
+  if (path.startsWith("/partner")) { items = partnerItems; label = "Partner navigation"; }
+  if (!items || path === "/auth") return null;
+
+  return <nav className="mobile-dock" aria-label={label}>
+    {items.map(item => <a className={active(path, item) ? "active" : ""} href={item.href} key={item.href} aria-current={active(path, item) ? "page" : undefined}>
+      <span aria-hidden="true">{item.icon}</span><b>{item.label}</b>
+    </a>)}
+  </nav>;
 }
