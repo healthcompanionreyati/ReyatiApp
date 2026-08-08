@@ -1,0 +1,12 @@
+{
+  "name": "Reyati",
+  "short_name": "Reyati",
+  "description": "Find trusted care in Qatar and manage your care journey.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4fafb",
+  "theme_color": "#082a43",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

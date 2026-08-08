@@ -32,6 +32,11 @@ test("renders the branded Reyati patient experience", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>Reyati — Find trusted care in Qatar<\/title>/i);
+  assert.match(html, /manifest\.webmanifest/i);
+  assert.match(html, /Skip to main content/i);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(response.headers.get("x-frame-options"), "DENY");
+  assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
   assert.match(html, /Good morning, Mariam/);
   assert.match(html, /Care, intelligently connected\./);
   assert.match(html, /src="\/brand\/reyati-logo\.svg"/);
@@ -69,10 +74,11 @@ test("keeps starter preview infrastructure out of the product", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(layout, /title:\s*"Reyati — Find trusted care in Qatar"/);
+  assert.match(layout, /default:\s*"Reyati — Find trusted care in Qatar"/);
   assert.match(layout, /import "\.\/quality\.css"/);
   assert.match(layout, /import "\.\/ui-polish\.css"/);
   assert.match(layout, /import "\.\/ui-completion\.css"/);
+  assert.match(layout, /import "\.\/system-states\.css"/);
   assert.match(layout, /<AccessibilitySync\/>/);
   assert.match(page, /aria-label=\{t\.search\}/);
   assert.doesNotMatch(layout, /codex-preview|_sites-preview/);

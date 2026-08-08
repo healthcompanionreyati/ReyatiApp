@@ -23,16 +23,29 @@ import "./provider-settings.css";
 import "./quality.css";
 import "./ui-polish.css";
 import "./ui-completion.css";
+import "./system-states.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 
 export const metadata: Metadata = {
-  title: "Reyati — Find trusted care in Qatar",
+  title: {
+    default: "Reyati — Find trusted care in Qatar",
+    template: "%s · Reyati",
+  },
   description: "Discover verified healthcare providers, compare real availability, and book care with confidence.",
-  metadataBase: new URL("https://reyati-care.sites.openai.com"),
+  applicationName: "Reyati",
+  metadataBase: new URL("https://reyati-care-prototype.amaanmalik12.chatgpt.site"),
+  alternates: { canonical: "/" },
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/favicon.svg" },
+  robots: { index: false, follow: false },
   openGraph: {
     title: "Reyati · رعايتي",
     description: "Clearer care. A simpler journey.",
+    url: "/",
+    siteName: "Reyati",
+    locale: "en_QA",
+    type: "website",
     images: [{ url: "/og.png", width: 1080, height: 1080 }],
   },
   twitter: {
@@ -44,5 +57,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" dir="ltr"><body>{children}<AccessibilitySync/><MobileDock/></body></html>;
+  return <html lang="en" dir="ltr"><body><a className="skip-link" href="#main-content">Skip to main content</a>{children}<AccessibilitySync/><MobileDock/></body></html>;
 }

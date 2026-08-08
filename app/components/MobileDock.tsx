@@ -44,7 +44,10 @@ function active(path: string, item: DockItem) {
 
 export default function MobileDock() {
   const [path, setPath] = useState("");
-  useEffect(() => setPath(window.location.pathname), []);
+  useEffect(() => {
+    const updatePath = () => setPath(window.location.pathname);
+    queueMicrotask(updatePath);
+  }, []);
 
   let items: DockItem[] | null = null;
   let label = "Patient navigation";
