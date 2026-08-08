@@ -4,8 +4,21 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-body :where(p, small, span, label, button, input, select, textarea, a, b, strong, em, i, code, time, dt, dd, td, th) {
-  font-size: max(11px, 1em) !important;
+body small { font-size: 10px !important; }
+body :where(button, input, select, textarea, label) { font-size: 11px !important; }
+
+:where(.provider-shell, .wallet-shell, .payments-shell, .family-shell, .support-shell, .appointments-shell,
+  .providers-shell, .partner-shell, .program-shell, .admin-shell, .verify-shell, .finance-shell, .cases-shell,
+  .moderation-shell, .audit-shell, .services-shell, .insights-shell, .settings-shell, .patient-provider-shell,
+  .auth-shell, .journey-shell, .notifications-shell) :where(p, small, a, em, i, code, time, dt, dd) {
+  font-size: 10px !important;
+}
+
+:where(.provider-shell, .wallet-shell, .payments-shell, .family-shell, .support-shell, .appointments-shell,
+  .providers-shell, .partner-shell, .program-shell, .admin-shell, .verify-shell, .finance-shell, .cases-shell,
+  .moderation-shell, .audit-shell, .services-shell, .insights-shell, .settings-shell, .patient-provider-shell,
+  .auth-shell, .journey-shell, .notifications-shell) :where(button, input, select, textarea, label) {
+  font-size: 11px !important;
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
@@ -27,7 +40,7 @@ body :where(p, small, span, label, button, input, select, textarea, a, b, strong
 }
 
 @media (max-width: 720px) {
-  body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  body:has(.mobile-dock) { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 
   :where(button, input, select, textarea) {
     min-height: 40px;

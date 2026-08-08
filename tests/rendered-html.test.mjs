@@ -72,6 +72,7 @@ test("keeps starter preview infrastructure out of the product", async () => {
   assert.match(layout, /title:\s*"Reyati — Find trusted care in Qatar"/);
   assert.match(layout, /import "\.\/quality\.css"/);
   assert.match(layout, /import "\.\/ui-polish\.css"/);
+  assert.match(layout, /import "\.\/ui-completion\.css"/);
   assert.match(layout, /<AccessibilitySync\/>/);
   assert.match(page, /aria-label=\{t\.search\}/);
   assert.doesNotMatch(layout, /codex-preview|_sites-preview/);

@@ -1,0 +1,181 @@
+/* Final UI completion: responsive containment, dense-data legibility, and consistent hierarchy. */
+html, body { max-width: 100%; overflow-x: clip; }
+body { min-width: 320px; }
+
+:where(main, [class$="-main"], [class$="-workspace"], [class$="-layout"], [class$="-panel"]) { min-width: 0; }
+:where(p, small) { overflow-wrap: break-word; }
+:where(.service-table, .settlement-table, .case-table, .event-table, .verify-table, .team-table,
+  .permission-table, .performance-table, .roster-table, .transaction-table) > * > * { min-width: 0; }
+
+/* Preserve compact density without returning to unreadably small dashboard type. */
+:where(.service-table, .settlement-table, .case-table, .event-table, .verify-table, .team-table,
+  .permission-table, .performance-table, .roster-table, .transaction-table) {
+  font-variant-numeric: tabular-nums;
+}
+
+:where(.service-table, .settlement-table, .case-table, .event-table, .verify-table, .team-table,
+  .permission-table, .performance-table, .roster-table, .transaction-table,
+  .patient-directory, .appointment-list, .mismatch-table, .refund-table, .access-table) :where(span, b, strong, em, i, code, time, small) {
+  font-size: 11px !important;
+}
+
+:where(.review-panel, .settlement-detail, .case-detail, .moderation-detail, .event-detail,
+  .rule-preview, .governance-card, .appointment-drawer) :where(p, span, b, strong, em, i, code, time, small, dt, dd) {
+  font-size: 11px !important;
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar) :where(a, b, small, p) {
+  font-size: 11px !important;
+}
+
+:where(.provider-topbar, .services-top, .insights-top, .settings-top, .patient-provider-top,
+  .program-top, .verify-top, .finance-top, .cases-top, .moderation-top, .audit-top) :where(b, small, a, button) {
+  font-size: 10px !important;
+}
+
+:where(.provider-welcome, .settings-heading, .program-heading, .finance-heading, .audit-heading, .verify-heading,
+  .cases-heading, .moderation-heading, .patient-workspace-heading, .services-heading, .insights-heading) > div > span {
+  font-size: 12px !important;
+  line-height: 1.5;
+}
+
+:where(.metric-grid, .payment-metrics, .program-metrics, .cases-metrics, .moderation-metrics,
+  .verify-metrics, .finance-metrics, .audit-metrics, .patient-metrics, .insight-metrics, .team-summary) article b {
+  font-size: 16px !important;
+}
+
+:where(.metric-grid, .payment-metrics, .program-metrics, .cases-metrics, .moderation-metrics,
+  .verify-metrics, .finance-metrics, .audit-metrics, .patient-metrics, .insight-metrics, .team-summary) article p {
+  font-size: 11px !important;
+}
+
+:where(.service-head, .settlement-table > header, .case-table > header, .event-table > header,
+  .verify-table > header, .team-head, .transaction-head, .permission-table > div:first-child) :where(span, b, strong) {
+  font-size: 10px !important;
+}
+
+.service-head, .service-table > button {
+  grid-template-columns: minmax(210px, 1.5fr) 82px 70px 78px 62px 92px 10px;
+}
+.service-table > button > i { min-width: 0; width: max-content; max-width: 100%; justify-self: start; white-space: nowrap; }
+
+.case-table > header, .case-table > button {
+  grid-template-columns: minmax(180px, 1.45fr) 90px 68px 90px 48px 96px 8px;
+}
+.case-table > button > em { white-space: nowrap; }
+
+.settlement-table > header, .settlement-table > button {
+  grid-template-columns: minmax(155px, 1.4fr) 74px 78px 72px 82px 90px 8px;
+}
+.settlement-table > button > i { white-space: nowrap; width: max-content; max-width: 100%; }
+.variance-alert { grid-template-columns: 22px minmax(0, 1fr) auto; }
+.variance-alert button { padding-inline: 6px; white-space: nowrap; }
+
+.event-table > header, .event-table > button {
+  grid-template-columns: 62px 92px minmax(145px, 1.3fr) 90px 72px 68px 8px;
+}
+.event-table > button > :where(i, em) { white-space: nowrap; }
+
+.verify-layout { grid-template-columns: minmax(570px, 1.55fr) minmax(380px, 0.85fr); gap: 14px; }
+.evidence-checks article { grid-template-columns: 25px minmax(0, 1fr) 58px 58px; }
+.evidence-checks article > :where(i, button) { white-space: nowrap; min-width: 0; }
+.evidence-checks article > button { padding-inline: 4px; }
+
+.source-row { grid-template-columns: 105px minmax(0, 1fr) 40px; }
+.source-row > b { text-align: end; white-space: nowrap; }
+.verify-table > button > i { white-space: nowrap; }
+
+/* Tabs are scrollable controls, never page-width overflow. */
+:where(.payments-tabs, .settings-tabs, .program-tabs, .finance-tabs, .audit-tabs, .insights-tabs,
+  .services-tabs, .journey-filters, .wallet-tabs, .appointments-tabs) {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline proximity;
+}
+:where(.payments-tabs, .settings-tabs, .program-tabs, .finance-tabs, .audit-tabs, .insights-tabs,
+  .services-tabs, .journey-filters, .wallet-tabs, .appointments-tabs)::-webkit-scrollbar { display: none; }
+:where(.payments-tabs, .settings-tabs, .program-tabs, .finance-tabs, .audit-tabs, .insights-tabs,
+  .services-tabs, .journey-filters, .wallet-tabs, .appointments-tabs) > :where(button, a) {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* Horizontal data regions remain intentionally swipeable without browser-level scrollbars. */
+:where(.permission-card, .calendar-card, .roster-card, .settlement-panel, .event-panel) {
+  max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #b8d2dc transparent;
+}
+
+/* Status chips should fit their complete labels. */
+:where(.status, [class$="-status"], .published, .restricted, .scheduled, .recorded, .allowed,
+  .active-access, .priority-pill) {
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* Decorative verified marks can sit outside avatars without being reported as clipped content. */
+:where(.doctor-avatar, .provider-photo) { overflow: visible; }
+
+@media (max-width: 1100px) {
+  .verify-layout { grid-template-columns: 1fr; }
+  .review-panel { position: static; }
+}
+
+@media (max-width: 760px) {
+  :where(.payments-tabs, .settings-tabs, .program-tabs, .finance-tabs, .audit-tabs, .insights-tabs,
+    .services-tabs, .journey-filters, .wallet-tabs, .appointments-tabs) {
+    gap: 18px;
+    margin-inline: -2px;
+    padding-inline: 2px;
+  }
+
+  .payments-tabs { gap: 20px; }
+  .payments-tabs button { white-space: nowrap; }
+  .payments-workspace { max-width: 100%; overflow: hidden; }
+
+  :where(.settings-heading, .program-heading, .finance-heading, .audit-heading, .verify-heading,
+    .cases-heading, .moderation-heading, .patient-workspace-heading, .services-heading) {
+    flex-wrap: wrap;
+  }
+
+  :where(.settings-heading, .program-heading, .finance-heading, .audit-heading, .verify-heading,
+    .cases-heading, .moderation-heading, .patient-workspace-heading, .services-heading) > button {
+    max-width: 46%;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .permission-card { overflow-x: auto; }
+  .permission-table { min-width: 620px; }
+  .permission-card::-webkit-scrollbar { height: 0; }
+
+  .service-head, .case-table > header, .settlement-table > header, .event-table > header { display: none; }
+  .service-table > button { grid-template-columns: minmax(150px, 1fr) 76px 10px; }
+  .service-table > button > span, .service-table > button > strong { display: none; }
+  .case-table > button { grid-template-columns: minmax(160px, 1fr) 64px 72px 8px; }
+  .settlement-table > button { grid-template-columns: minmax(150px, 1fr) 78px 72px 8px; }
+  .event-table > button { grid-template-columns: 52px 82px minmax(0, 1fr) 8px; }
+
+  :where(.verify-tools, .finance-tools, .case-tools, .moderation-tools, .event-tools) > div {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .auth-story :where(span, i) { max-width: 100%; }
+  .mobile-dock { max-width: 100vw; }
+}
+
+@media (max-width: 420px) {
+  :where(.payments-hero, .wallet-hero) h1 { font-size: 34px; }
+  :where(.settings-heading, .program-heading, .finance-heading, .audit-heading, .verify-heading,
+    .cases-heading, .moderation-heading, .patient-workspace-heading, .services-heading) h1 { font-size: 23px; }
+  .verify-top > div:first-child b { display: none; }
+  .verify-top > div:first-child span { max-width: 190px; white-space: nowrap; }
+}

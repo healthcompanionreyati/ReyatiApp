@@ -22,6 +22,7 @@ import "./provider-insights.css";
 import "./provider-settings.css";
 import "./quality.css";
 import "./ui-polish.css";
+import "./ui-completion.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 
