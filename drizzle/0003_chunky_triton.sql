@@ -1,0 +1,2 @@
+ALTER TABLE `appointments` ADD `service_location_id` text REFERENCES provider_service_locations(id);--> statement-breakpoint
+CREATE INDEX `idx_appointments_service_start` ON `appointments` (`service_location_id`,`scheduled_start`);

@@ -108,6 +108,7 @@ export const appointments = sqliteTable("appointments", {
   id: text("id").primaryKey(),
   patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }),
   providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  serviceLocationId: text("service_location_id").references(() => providerServiceLocations.id, { onDelete: "restrict" }),
   facilityId: text("facility_id").references(() => facilities.id, { onDelete: "restrict" }),
   scheduledStart: integer("scheduled_start", { mode: "timestamp_ms" }).notNull(),
   scheduledEnd: integer("scheduled_end", { mode: "timestamp_ms" }).notNull(),
@@ -119,6 +120,7 @@ export const appointments = sqliteTable("appointments", {
 }, (table) => [
   index("idx_appointments_patient_start").on(table.patientId, table.scheduledStart),
   index("idx_appointments_provider_start").on(table.providerId, table.scheduledStart),
+  index("idx_appointments_service_start").on(table.serviceLocationId, table.scheduledStart),
   uniqueIndex("idx_appointments_patient_idempotency").on(table.patientId, table.idempotencyKey),
   index("idx_appointments_facility_start").on(table.facilityId, table.scheduledStart),
 ]);

@@ -158,6 +158,7 @@ export default function ProviderDiscovery() {
         },
         body: JSON.stringify({
           providerId: selected.id,
+          serviceLocationId: slot.serviceLocationId,
           facilityId: slot.facilityId,
           scheduledStart: slot.scheduledStart,
           scheduledEnd: slot.scheduledEnd,

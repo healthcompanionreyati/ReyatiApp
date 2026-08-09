@@ -1,4 +1,4 @@
-import { and, eq, gt, lt, notInArray } from "drizzle-orm";
+import { and, eq, gt, isNotNull, lt, notInArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   appointments,
@@ -8,6 +8,8 @@ import {
   organizations,
   patientProfiles,
   providerProfiles,
+  providerAvailabilityWindows,
+  providerServiceLocations,
   users,
 } from "@/db/schema";
 
@@ -31,6 +33,7 @@ export class AppointmentConflictError extends Error {
 
 type BookingInput = {
   providerId: string;
+  serviceLocationId: string;
   facilityId: string | null;
   scheduledStart: Date;
   scheduledEnd: Date;
@@ -50,6 +53,7 @@ export function validateBookingInput(body: unknown): BookingInput {
   }
   const value = body as Record<string, unknown>;
   const providerId = requiredString(value.providerId, "providerId");
+  const serviceLocationId = requiredString(value.serviceLocationId, "serviceLocationId");
   const mode = value.mode;
   if (mode !== "in_person" && mode !== "video") {
     throw new AppointmentValidationError("mode must be in_person or video");
@@ -75,7 +79,7 @@ export function validateBookingInput(body: unknown): BookingInput {
   if (duration < SLOT_MS || duration > 180 * 60 * 1000 || duration % SLOT_MS !== 0) {
     throw new AppointmentValidationError("Appointment duration must be 15 to 180 minutes in 15-minute increments");
   }
-  return { providerId, facilityId, scheduledStart, scheduledEnd, mode };
+  return { providerId, serviceLocationId, facilityId, scheduledStart, scheduledEnd, mode };
 }
 
 export function validateIdempotencyKey(value: string | null) {
@@ -117,6 +121,7 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
     .innerJoin(users, eq(users.id, providerProfiles.userId)).where(and(
     eq(providerProfiles.id, input.providerId),
     eq(providerProfiles.verificationStatus, "verified"),
+    isNotNull(providerProfiles.publishedAt),
     eq(users.status, "active"),
   )).limit(1);
   if (!provider[0]) throw new AppointmentValidationError("The selected provider is not available for booking");
@@ -141,6 +146,36 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
     }
   }
 
+  const service = await db.select().from(providerServiceLocations).where(and(
+    eq(providerServiceLocations.id, input.serviceLocationId),
+    eq(providerServiceLocations.providerId, input.providerId),
+    eq(providerServiceLocations.status, "active"),
+    eq(providerServiceLocations.acceptingNewPatients, true),
+  )).limit(1);
+  if (!service[0] || service[0].mode !== input.mode || service[0].facilityId !== input.facilityId) {
+    throw new AppointmentValidationError("The selected service is not available for booking");
+  }
+  const durationMinutes = (input.scheduledEnd.valueOf() - input.scheduledStart.valueOf()) / 60000;
+  if (service[0].slotDurationMinutes !== durationMinutes) {
+    throw new AppointmentValidationError("The requested duration does not match the published service");
+  }
+  const qatarStart = new Date(input.scheduledStart.valueOf() + 3 * 60 * 60 * 1000);
+  const qatarEnd = new Date(input.scheduledEnd.valueOf() + 3 * 60 * 60 * 1000);
+  if (qatarStart.getUTCDate() !== qatarEnd.getUTCDate()) {
+    throw new AppointmentValidationError("Appointments must remain within one Doha calendar day");
+  }
+  const startMinute = qatarStart.getUTCHours() * 60 + qatarStart.getUTCMinutes();
+  const endMinute = qatarEnd.getUTCHours() * 60 + qatarEnd.getUTCMinutes();
+  const publishedWindow = await db.select({ id: providerAvailabilityWindows.id }).from(providerAvailabilityWindows).where(and(
+    eq(providerAvailabilityWindows.serviceLocationId, input.serviceLocationId),
+    eq(providerAvailabilityWindows.weekday, qatarStart.getUTCDay()),
+    eq(providerAvailabilityWindows.status, "active"),
+    eq(providerAvailabilityWindows.timezone, "Asia/Qatar"),
+    lt(providerAvailabilityWindows.startMinute, startMinute + 1),
+    gt(providerAvailabilityWindows.endMinute, endMinute - 1),
+  )).limit(1);
+  if (!publishedWindow[0]) throw new AppointmentConflictError("The requested time is outside published availability");
+
   const providerConflict = await db.select({ id: appointments.id }).from(appointments).where(and(
     eq(appointments.providerId, input.providerId),
     lt(appointments.scheduledStart, input.scheduledEnd),
@@ -160,6 +195,7 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
     id: crypto.randomUUID(),
     patientId: patient.id,
     providerId: input.providerId,
+    serviceLocationId: input.serviceLocationId,
     facilityId: input.facilityId,
     scheduledStart: input.scheduledStart,
     scheduledEnd: input.scheduledEnd,
@@ -194,7 +230,7 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
         resourceType: "appointment",
         resourceId: appointment.id,
         outcome: "success",
-        metadataJson: JSON.stringify({ mode: input.mode }),
+        metadataJson: JSON.stringify({ mode: input.mode, serviceLocationId: input.serviceLocationId }),
         createdAt: now,
       }),
     ]);

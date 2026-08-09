@@ -60,11 +60,37 @@ test("renders representative provider and operations routes", async () => {
   ]);
 
   assert.match(providerHtml, /Services &amp; availability/);
-  assert.match(providerHtml, /New publishing is temporarily restricted/);
+  assert.match(providerHtml, /Loading provider setup/);
   assert.match(providerHtml, /Provider console/);
   assert.match(casesHtml, /Cases &amp; escalations/);
   assert.match(casesHtml, /Sensitive access is controlled/);
   assert.match(casesHtml, /Personal data masked/);
+});
+
+test("ships the authorized provider onboarding and publishing workflow", async () => {
+  const [management, setupRoute, catalogRoute, providerPage, bookingMigration] = await Promise.all([
+    readFile(new URL("../lib/provider-management.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/setup/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/catalog-management/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/services/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0003_chunky_triton.sql", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(management, /requireOrganizationRole/);
+  assert.match(management, /provider\.application_submitted/);
+  assert.match(management, /provider\.availability_replaced/);
+  assert.match(management, /provider\.service_published/);
+  assert.match(management, /verificationStatus !== "verified"/);
+  assert.match(management, /Availability windows cannot overlap/);
+  assert.match(setupRoute, /getOrCreateCurrentUser/);
+  assert.match(setupRoute, /AuthorizationDeniedError/);
+  assert.match(catalogRoute, /save_availability/);
+  assert.match(catalogRoute, /publish_service/);
+  assert.match(providerPage, /Organization access is required/);
+  assert.match(providerPage, /Professional verification is under review/);
+  assert.match(bookingMigration, /ADD `service_location_id`/);
+  assert.match(bookingMigration, /idx_appointments_service_start/);
+  assert.doesNotMatch(providerPage, /Synthetic data|Prototype service published/);
 });
 
 test("keeps starter preview infrastructure out of the product", async () => {
@@ -129,6 +155,8 @@ test("ships concurrency-safe, authorized appointment APIs", async () => {
   assert.match(bookingService, /Idempotency-Key/);
   assert.match(bookingService, /appointment\.booked/);
   assert.match(bookingService, /db\.insert\(appointmentSlotLocks\)/);
+  assert.match(bookingService, /providerAvailabilityWindows/);
+  assert.match(bookingService, /serviceLocationId/);
   assert.match(patientRoute, /getOrCreateCurrentUser/);
   assert.match(patientRoute, /status: result\.replayed \? 200 : 201/);
   assert.match(providerRoute, /requireOrganizationRole/);

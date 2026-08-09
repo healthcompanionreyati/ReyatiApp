@@ -23,6 +23,7 @@ export async function GET() {
     const rows = await db.select({
       id: appointments.id,
       providerId: appointments.providerId,
+      serviceLocationId: appointments.serviceLocationId,
       providerName: users.displayName,
       specialty: providerProfiles.specialty,
       facilityId: appointments.facilityId,
@@ -62,6 +63,7 @@ export async function POST(request: Request) {
     const publicAppointment = {
       id: result.appointment.id,
       providerId: result.appointment.providerId,
+      serviceLocationId: result.appointment.serviceLocationId,
       facilityId: result.appointment.facilityId,
       scheduledStart: result.appointment.scheduledStart,
       scheduledEnd: result.appointment.scheduledEnd,

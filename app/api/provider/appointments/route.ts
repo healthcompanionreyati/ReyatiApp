@@ -36,6 +36,7 @@ export async function GET(request: Request) {
       id: appointments.id,
       patientName: users.displayName,
       providerId: appointments.providerId,
+      serviceLocationId: appointments.serviceLocationId,
       scheduledStart: appointments.scheduledStart,
       scheduledEnd: appointments.scheduledEnd,
       mode: appointments.mode,
