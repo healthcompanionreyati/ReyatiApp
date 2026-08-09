@@ -1,28 +1,246 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-type Provider={id:number,name:string,nameAr:string,initials:string,specialty:string,specialtyAr:string,facility:string,facilityAr:string,area:string,fee:number,rating:number,reviews:number,gender:"Female"|"Male",languages:string[],next:string,slots:string[],color:string,years:number,about:string,aboutAr:string};
-const providers:Provider[]=[
-  {id:1,name:"Dr. Laila Al-Kuwari",nameAr:"د. ليلى الكواري",initials:"LK",specialty:"Family Medicine",specialtyAr:"طب الأسرة",facility:"Al Noor Medical Center",facilityAr:"مركز النور الطبي",area:"Al Waab",fee:250,rating:4.9,reviews:128,gender:"Female",languages:["Arabic","English"],next:"Today, 4:30 PM",slots:["4:30 PM","5:15 PM","6:00 PM"],color:"coral",years:12,about:"Family physician focused on preventive care, women’s health, and long-term relationships with families.",aboutAr:"طبيبة أسرة تركز على الرعاية الوقائية وصحة المرأة وبناء علاقات طويلة الأمد مع العائلات."},
-  {id:2,name:"Dr. Omar Rahman",nameAr:"د. عمر رحمن",initials:"OR",specialty:"Internal Medicine",specialtyAr:"الطب الباطني",facility:"West Bay Clinic",facilityAr:"عيادة الخليج الغربي",area:"West Bay",fee:300,rating:4.8,reviews:94,gender:"Male",languages:["Arabic","English","Urdu"],next:"Tomorrow, 9:00 AM",slots:["9:00 AM","10:30 AM","1:00 PM"],color:"blue",years:15,about:"Consultant in adult medicine with a special interest in diabetes, blood pressure, and coordinated chronic care.",aboutAr:"استشاري في طب البالغين مع اهتمام خاص بالسكري وضغط الدم وتنسيق الرعاية المزمنة."},
-  {id:3,name:"Dr. Sara El-Masri",nameAr:"د. سارة المصري",initials:"SE",specialty:"Dermatology",specialtyAr:"الأمراض الجلدية",facility:"Pearl Health Clinic",facilityAr:"عيادة اللؤلؤة الصحية",area:"The Pearl",fee:350,rating:4.9,reviews:211,gender:"Female",languages:["Arabic","English","French"],next:"Wed, 11:30 AM",slots:["11:30 AM","1:45 PM","3:00 PM"],color:"mint",years:10,about:"Medical dermatologist providing evidence-based care for skin, hair, and nail conditions across all ages.",aboutAr:"طبيبة جلدية تقدم رعاية مبنية على الأدلة لحالات الجلد والشعر والأظافر لجميع الأعمار."},
-  {id:4,name:"Dr. Faisal Noor",nameAr:"د. فيصل نور",initials:"FN",specialty:"Cardiology",specialtyAr:"أمراض القلب",facility:"Lusail Medical Centre",facilityAr:"مركز لوسيل الطبي",area:"Lusail",fee:500,rating:4.7,reviews:76,gender:"Male",languages:["Arabic","English"],next:"Thu, 2:00 PM",slots:["2:00 PM","3:30 PM","5:00 PM"],color:"gold",years:18,about:"Consultant cardiologist supporting prevention, diagnosis, and ongoing management with shared decisions.",aboutAr:"استشاري قلب يدعم الوقاية والتشخيص والإدارة المستمرة من خلال القرارات المشتركة."},
-  {id:5,name:"Dr. Hana Al-Sulaiti",nameAr:"د. هناء السليطي",initials:"HS",specialty:"Pediatrics",specialtyAr:"طب الأطفال",facility:"Al Rayyan Family Clinic",facilityAr:"عيادة الريان العائلية",area:"Al Rayyan",fee:280,rating:4.9,reviews:163,gender:"Female",languages:["Arabic","English"],next:"Today, 7:00 PM",slots:["7:00 PM","7:30 PM","8:15 PM"],color:"violet",years:11,about:"Pediatrician offering family-centred care from newborn checks through adolescent health.",aboutAr:"طبيبة أطفال تقدم رعاية تركز على الأسرة من فحوصات حديثي الولادة حتى صحة المراهقين."},
-];
+type Service = {
+  id: string;
+  facilityId: string | null;
+  facilityName: string | null;
+  area: string | null;
+  mode: string;
+  feeQar: number;
+  slotDurationMinutes: number;
+};
 
-export default function ProviderDiscovery(){
-  const [lang,setLang]=useState<"en"|"ar">("en");const [query,setQuery]=useState("");const [specialty,setSpecialty]=useState("All");const [gender,setGender]=useState("Any");const [available,setAvailable]=useState(false);const [sort,setSort]=useState("Recommended");const [selected,setSelected]=useState<Provider|null>(null);const [compare,setCompare]=useState<number[]>([]);const [slot,setSlot]=useState("");const [confirmed,setConfirmed]=useState(false);const ar=lang==="ar";
-  const filtered=useMemo(()=>providers.filter(p=>(specialty==="All"||p.specialty===specialty)&&(gender==="Any"||p.gender===gender)&&(`${p.name} ${p.nameAr} ${p.specialty} ${p.specialtyAr} ${p.facility} ${p.area}`.toLowerCase().includes(query.toLowerCase()))).sort((a,b)=>sort==="Price"?a.fee-b.fee:sort==="Rating"?b.rating-a.rating:a.id-b.id),[query,specialty,gender,sort]);
-  const toggleCompare=(id:number)=>setCompare(v=>v.includes(id)?v.filter(x=>x!==id):v.length<2?[...v,id]:v);
-  const open=(p:Provider)=>{setSelected(p);setSlot("");setConfirmed(false)};
-  return <main className={`providers-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
-    <header className="providers-header"><a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a className="active" href="/providers">{ar?"ابحث عن رعاية":"Find care"}</a><a href="/appointments">{ar?"المواعيد":"Appointments"}</a><a href="/wallet">{ar?"المحفظة الصحية":"Health wallet"}</a></nav><div><button onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button><a href="/notifications">●</a><span>MA</span></div></header>
-    <section className="provider-search-hero"><div><p>{ar?"بحث موثوق وشفاف":"TRUSTED, TRANSPARENT DISCOVERY"}</p><h1>{ar?"اعثر على الرعاية المناسبة لك":"Find care that fits you"}</h1><span>{ar?"قارن مقدمي الرعاية الموثّقين والأسعار والتوفر الفعلي بثقة.":"Compare verified providers, transparent prices, and real availability with confidence."}</span><label><i>⌕</i><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={ar?"الطبيب أو التخصص أو المنشأة":"Doctor, specialty, or facility"}/><b>⌖ {ar?"الدوحة":"Doha"}</b><button>{ar?"بحث":"Search"}</button></label></div></section>
-    <section className="providers-workspace"><div className="filter-row"><select value={specialty} onChange={e=>setSpecialty(e.target.value)} aria-label="Specialty"><option value="All">{ar?"كل التخصصات":"All specialties"}</option>{[...new Set(providers.map(p=>p.specialty))].map(s=><option key={s}>{s}</option>)}</select><select value={gender} onChange={e=>setGender(e.target.value)} aria-label="Gender"><option value="Any">{ar?"أي جنس":"Any gender"}</option><option value="Female">{ar?"طبيبة":"Female"}</option><option value="Male">{ar?"طبيب":"Male"}</option></select><button className={available?"selected":""} onClick={()=>setAvailable(!available)}>◷ {ar?"متاح قريباً":"Available soon"}</button><button>⌖ {ar?"المنطقة":"Area"}</button><button>Q {ar?"نطاق السعر":"Price range"}</button><button className="clear" onClick={()=>{setSpecialty("All");setGender("Any");setAvailable(false)}}>{ar?"مسح الفلاتر":"Clear filters"}</button></div><div className="results-head"><div><h2>{filtered.length} {ar?"مقدمي رعاية موثّقين":"verified providers"}</h2><p>{ar?"يتم التحقق من الترخيص والانتماء قبل النشر.":"Licence and affiliation are checked before publication."}</p></div><label>{ar?"ترتيب":"Sort"}<select value={sort} onChange={e=>setSort(e.target.value)}><option>Recommended</option><option>Rating</option><option>Price</option></select></label></div>
-      <div className="provider-results"><section className="provider-list">{filtered.map(p=><article className="provider-result" key={p.id}><div className={`provider-photo ${p.color}`}>{p.initials}<span>✓</span></div><div className="provider-info"><p>✓ {ar?"مقدم رعاية موثّق":"Verified provider"}</p><button className="provider-name" onClick={()=>open(p)}>{ar?p.nameAr:p.name}</button><h3>{ar?p.specialtyAr:p.specialty}</h3><span>⌖ {ar?p.facilityAr:p.facility} · {p.area}</span><div className="provider-tags"><i>★ {p.rating} <small>({p.reviews})</small></i>{p.languages.map(l=><i key={l}>{l}</i>)}<i>♿ {ar?"مدخل مهيأ":"Accessible"}</i></div><button className={compare.includes(p.id)?"compare active":"compare"} onClick={()=>toggleCompare(p.id)}>□ {compare.includes(p.id)?(ar?"تمت الإضافة":"Added"):(ar?"مقارنة":"Compare")}</button></div><aside><div><small>{ar?"أقرب موعد":"Next available"}</small><b>{p.next}</b></div><div><strong>{p.fee} {ar?"ر.ق":"QAR"}</strong><small>{ar?"شامل الرسوم":"incl. fees"}</small></div><button onClick={()=>open(p)}>{ar?"عرض الملف والمواعيد":"View profile & times"}</button></aside></article>)}</section><aside className="trust-panel"><span>♙</span><h2>{ar?"كيف نبني الثقة":"How Reyati builds trust"}</h2><p>{ar?"نفصل الحقائق الموثّقة عن معلومات مقدم الرعاية وتقييمات المرضى.":"We separate verified facts from provider-supplied information and patient reviews."}</p><ul><li><b>{ar?"ترخيص موثّق":"Verified licence"}</b><small>{ar?"تم فحصه من المصدر":"Checked against source"}</small></li><li><b>{ar?"سعر واضح":"Clear price"}</b><small>{ar?"قبل تأكيد الموعد":"Before booking confirmation"}</small></li><li><b>{ar?"توفر فعلي":"Real availability"}</b><small>{ar?"محدّث من جدول المنشأة":"Synced from facility schedule"}</small></li><li><b>{ar?"تقييمات موثوقة":"Trusted reviews"}</b><small>{ar?"بعد زيارة مكتملة فقط":"Only after completed visits"}</small></li></ul><a href="#">{ar?"تعرف على معايير التحقق":"About verification standards"} →</a></aside></div>
+type Provider = {
+  id: string;
+  name: string;
+  specialty: string;
+  gender: string | null;
+  languages: string[];
+  bioEn: string | null;
+  bioAr: string | null;
+  yearsExperience: number | null;
+  services: Service[];
+};
+
+type Slot = {
+  serviceLocationId: string;
+  providerId: string;
+  facilityId: string | null;
+  mode: "in_person" | "video";
+  scheduledStart: string;
+  scheduledEnd: string;
+  label: string;
+};
+
+type BookingState = "idle" | "submitting" | "confirmed" | "error";
+
+const colors = ["coral", "blue", "mint", "gold", "violet"];
+
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join("").toUpperCase();
+}
+
+function colorFor(id: string) {
+  return colors[[...id].reduce((sum, character) => sum + character.charCodeAt(0), 0) % colors.length];
+}
+
+export default function ProviderDiscovery() {
+  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState(false);
+  const [query, setQuery] = useState("");
+  const [specialty, setSpecialty] = useState("All");
+  const [gender, setGender] = useState("Any");
+  const [sort, setSort] = useState("Recommended");
+  const [selected, setSelected] = useState<Provider | null>(null);
+  const [serviceId, setServiceId] = useState("");
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState(false);
+  const [slot, setSlot] = useState<Slot | null>(null);
+  const [bookingKey, setBookingKey] = useState("");
+  const [booking, setBooking] = useState<BookingState>("idle");
+  const [bookingMessage, setBookingMessage] = useState("");
+  const ar = lang === "ar";
+
+  useEffect(() => {
+    const controller = new AbortController();
+    async function loadCatalog() {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/providers", { signal: controller.signal });
+        if (!response.ok) throw new Error("catalog unavailable");
+        const data = await response.json() as { providers?: Provider[] };
+        setProviders(Array.isArray(data.providers) ? data.providers : []);
+        setCatalogError(false);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") setCatalogError(true);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+    loadCatalog();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!selected || !serviceId) return;
+    const controller = new AbortController();
+    async function loadAvailability() {
+      try {
+        setSlotsLoading(true);
+        setAvailabilityError(false);
+        setSlots([]);
+        setSlot(null);
+        setBooking("idle");
+        const params = new URLSearchParams({ providerId: selected!.id, serviceLocationId: serviceId });
+        const response = await fetch(`/api/providers?${params}`, { signal: controller.signal });
+        if (!response.ok) throw new Error("availability unavailable");
+        const data = await response.json() as { slots?: Slot[] };
+        setSlots(Array.isArray(data.slots) ? data.slots : []);
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          setSlots([]);
+          setAvailabilityError(true);
+          setBookingMessage(ar ? "تعذر تحميل المواعيد. حاول مرة أخرى." : "Availability could not be loaded. Please try again.");
+        }
+      } finally {
+        if (!controller.signal.aborted) setSlotsLoading(false);
+      }
+    }
+    loadAvailability();
+    return () => controller.abort();
+  }, [selected, serviceId, ar]);
+
+  const filtered = useMemo(() => providers
+    .filter((provider) => specialty === "All" || provider.specialty === specialty)
+    .filter((provider) => gender === "Any" || provider.gender === gender)
+    .filter((provider) => {
+      const text = `${provider.name} ${provider.specialty} ${provider.services.map((service) => `${service.facilityName ?? ""} ${service.area ?? ""}`).join(" ")}`;
+      return text.toLowerCase().includes(query.toLowerCase());
+    })
+    .sort((a, b) => {
+      if (sort === "Price") return Math.min(...a.services.map((service) => service.feeQar)) - Math.min(...b.services.map((service) => service.feeQar));
+      return a.name.localeCompare(b.name);
+    }), [providers, specialty, gender, query, sort]);
+
+  const activeService = selected?.services.find((service) => service.id === serviceId) ?? null;
+
+  function openProvider(provider: Provider) {
+    setSelected(provider);
+    setServiceId(provider.services[0]?.id ?? "");
+    setSlots([]);
+    setSlot(null);
+    setBooking("idle");
+    setBookingMessage("");
+  }
+
+  function chooseSlot(nextSlot: Slot) {
+    setSlot(nextSlot);
+    setBookingKey(crypto.randomUUID());
+    setBooking("idle");
+    setBookingMessage("");
+  }
+
+  async function confirmBooking() {
+    if (!selected || !slot || booking === "submitting") return;
+    setBooking("submitting");
+    setBookingMessage("");
+    try {
+      const response = await fetch("/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": bookingKey || crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          providerId: selected.id,
+          facilityId: slot.facilityId,
+          scheduledStart: slot.scheduledStart,
+          scheduledEnd: slot.scheduledEnd,
+          mode: slot.mode,
+        }),
+      });
+      const data = await response.json() as { error?: string; message?: string };
+      if (response.status === 401) {
+        window.location.assign("/signin-with-chatgpt?return_to=/providers");
+        return;
+      }
+      if (!response.ok) throw new Error(data.message || data.error || "booking failed");
+      setBooking("confirmed");
+    } catch (error) {
+      setBooking("error");
+      setBookingMessage(error instanceof Error ? error.message : "booking failed");
+    }
+  }
+
+  return <main className={`providers-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
+    <header className="providers-header">
+      <a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
+      <nav aria-label={ar ? "التنقل الرئيسي" : "Main navigation"}>
+        <a className="active" href="/providers">{ar ? "ابحث عن رعاية" : "Find care"}</a>
+        <a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a>
+        <a href="/wallet">{ar ? "المحفظة الصحية" : "Health wallet"}</a>
+      </nav>
+      <div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label="Notifications">●</a><span>MA</span></div>
+    </header>
+
+    <section className="provider-search-hero">
+      <div>
+        <p>{ar ? "بحث موثوق وشفاف" : "TRUSTED, TRANSPARENT DISCOVERY"}</p>
+        <h1>{ar ? "اعثر على الرعاية المناسبة لك" : "Find care that fits you"}</h1>
+        <span>{ar ? "قارن مقدمي الرعاية الموثّقين والأسعار والتوفر الفعلي بثقة." : "Compare verified providers, transparent prices, and real availability with confidence."}</span>
+        <label><i>⌕</i><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "الطبيب أو التخصص أو المنشأة" : "Doctor, specialty, or facility"} aria-label={ar ? "البحث عن الرعاية" : "Search care"} /><b>⌖ {ar ? "الدوحة" : "Doha"}</b><button type="button">{ar ? "بحث" : "Search"}</button></label>
+      </div>
     </section>
-    {compare.length>0&&<div className="compare-bar"><div><span>⇄</span><p><b>{compare.length}/2 {ar?"للمقارنة":"selected to compare"}</b><small>{ar?"اختر مقدمَي رعاية لعرضهما جنباً إلى جنب":"Choose two providers for a side-by-side view"}</small></p></div><div className="compare-people">{compare.map(id=>{const p=providers.find(x=>x.id===id)!;return <button key={id} onClick={()=>toggleCompare(id)}><i className={p.color}>{p.initials}</i><b>{ar?p.nameAr:p.name}</b><span>×</span></button>})}</div><button disabled={compare.length<2} onClick={()=>{const p=providers.find(x=>x.id===compare[0]);if(p)open(p)}}>{ar?"مقارنة الآن":"Compare now"}</button></div>}
-    {selected&&<div className="profile-layer" onMouseDown={e=>e.target===e.currentTarget&&setSelected(null)}><aside className="provider-profile"><button className="drawer-close" onClick={()=>setSelected(null)}>×</button>{confirmed?<div className="profile-confirmed"><span>✓</span><p>{ar?"تم الحجز":"BOOKING CONFIRMED"}</p><h2>{ar?"موعدك جاهز":"Your appointment is set"}</h2><b>{slot} · {ar?selected.nameAr:selected.name}</b><small>{ar?"أرسلنا تفاصيل تجريبية إلى مركز الإشعارات.":"A prototype confirmation was added to your Notification Centre."}</small><a href="/appointments">{ar?"عرض مواعيدي":"View my appointments"}</a></div>:<><div className="profile-head"><div className={`provider-photo large ${selected.color}`}>{selected.initials}<span>✓</span></div><div><p>✓ {ar?"مقدم رعاية موثّق":"Verified provider"}</p><h2>{ar?selected.nameAr:selected.name}</h2><span>{ar?selected.specialtyAr:selected.specialty}</span><small>★ {selected.rating} ({selected.reviews} {ar?"تقييماً":"reviews"})</small></div></div><div className="verification-strip"><span>♙</span><p><b>{ar?"تم التحقق من الترخيص والانتماء":"Licence and affiliation verified"}</b>{ar?"آخر تحقق: ٢٤ يوليو ٢٠٢٦":"Last checked 24 July 2026"}</p><button>{ar?"عرض التفاصيل":"Details"}</button></div><section className="profile-about"><h3>{ar?"عن مقدم الرعاية":"About"}</h3><p>{ar?selected.aboutAr:selected.about}</p><div><article><b>{selected.years}+</b><small>{ar?"سنوات خبرة":"Years experience"}</small></article><article><b>{selected.languages.join(" · ")}</b><small>{ar?"اللغات":"Languages"}</small></article><article><b>♿</b><small>{ar?"منشأة مهيأة":"Accessible facility"}</small></article></div></section><section className="profile-location"><h3>{ar?"الموقع والسعر":"Location & price"}</h3><div><span>⌖</span><p><b>{ar?selected.facilityAr:selected.facility}</b><small>{selected.area}, Doha · {ar?"زيارة في العيادة":"In-person visit"}</small></p><strong>{selected.fee} {ar?"ر.ق":"QAR"}<small>{ar?"السعر الإجمالي":"total price"}</small></strong></div></section><section className="profile-slots"><div><h3>{ar?"اختر موعداً":"Choose a time"}</h3><span>{ar?"الأقرب · اليوم":"Earliest · Today"}</span></div><div>{selected.slots.map(s=><button className={slot===s?"active":""} key={s} onClick={()=>setSlot(s)}>{s}</button>)}</div></section><div className="profile-book"><div><small>{ar?"الإجمالي":"Total"}</small><b>{selected.fee} {ar?"ر.ق":"QAR"}</b></div><button disabled={!slot} onClick={()=>setConfirmed(true)}>{slot?(ar?"تأكيد الموعد":"Confirm appointment"):(ar?"اختر وقتاً للمتابعة":"Select a time to continue")}</button></div></>}</aside></div>}
-  </main>
+
+    <section className="providers-workspace">
+      <div className="filter-row">
+        <select value={specialty} onChange={(event) => setSpecialty(event.target.value)} aria-label={ar ? "التخصص" : "Specialty"}>
+          <option value="All">{ar ? "كل التخصصات" : "All specialties"}</option>
+          {[...new Set(providers.map((provider) => provider.specialty))].map((item) => <option key={item}>{item}</option>)}
+        </select>
+        <select value={gender} onChange={(event) => setGender(event.target.value)} aria-label={ar ? "الجنس" : "Gender"}>
+          <option value="Any">{ar ? "أي جنس" : "Any gender"}</option><option value="Female">{ar ? "طبيبة" : "Female"}</option><option value="Male">{ar ? "طبيب" : "Male"}</option>
+        </select>
+        <button className="clear" onClick={() => { setSpecialty("All"); setGender("Any"); setQuery(""); }}>{ar ? "مسح الفلاتر" : "Clear filters"}</button>
+      </div>
+      <div className="results-head">
+        <div><h2>{loading ? (ar ? "جارٍ تحميل مقدمي الرعاية" : "Loading verified providers") : `${filtered.length} ${ar ? "مقدمي رعاية موثّقين" : "verified providers"}`}</h2><p>{ar ? "يتم التحقق من الترخيص والانتماء قبل النشر." : "Licence and affiliation are checked before publication."}</p></div>
+        <label>{ar ? "ترتيب" : "Sort"}<select value={sort} onChange={(event) => setSort(event.target.value)}><option>Recommended</option><option>Price</option></select></label>
+      </div>
+
+      <div className="provider-results">
+        <section className="provider-list" aria-live="polite">
+          {catalogError && <article className="catalog-state error"><span>!</span><div><h2>{ar ? "تعذر تحميل مقدمي الرعاية" : "We couldn’t load providers"}</h2><p>{ar ? "يرجى تحديث الصفحة بعد قليل." : "Please refresh the page in a moment."}</p></div></article>}
+          {!loading && !catalogError && filtered.length === 0 && <article className="catalog-state"><span>✓</span><div><h2>{ar ? "لا يوجد مقدمو رعاية منشورون بعد" : "No providers are published yet"}</h2><p>{ar ? "ستظهر الملفات هنا بعد إكمال التحقق ونشر جدول المواعيد من المنشأة." : "Profiles will appear here after an organization completes verification and publishes real availability."}</p><a href="/provider/services">{ar ? "إعداد خدمات مقدم الرعاية" : "Set up provider services"} →</a></div></article>}
+          {filtered.map((provider) => {
+            const service = provider.services[0];
+            return <article className="provider-result" key={provider.id}>
+              <div className={`provider-photo ${colorFor(provider.id)}`}>{initials(provider.name)}<span>✓</span></div>
+              <div className="provider-info"><p>✓ {ar ? "مقدم رعاية موثّق" : "Verified provider"}</p><button className="provider-name" onClick={() => openProvider(provider)}>{provider.name}</button><h3>{provider.specialty}</h3><span>⌖ {service.facilityName ?? (ar ? "زيارة فيديو" : "Video consultation")}{service.area ? ` · ${service.area}` : ""}</span><div className="provider-tags">{provider.languages.map((language) => <i key={language}>{language}</i>)}{service.mode === "in_person" && <i>♿ {ar ? "تحقق من إمكانية الوصول" : "Accessibility details"}</i>}</div></div>
+              <aside><div><small>{ar ? "نوع الزيارة" : "Visit type"}</small><b>{service.mode === "video" ? (ar ? "فيديو" : "Video") : (ar ? "في العيادة" : "In person")}</b></div><div><strong>{service.feeQar} {ar ? "ر.ق" : "QAR"}</strong><small>{ar ? "السعر المنشور" : "published price"}</small></div><button onClick={() => openProvider(provider)}>{ar ? "عرض الملف والمواعيد" : "View profile & times"}</button></aside>
+            </article>;
+          })}
+        </section>
+        <aside className="trust-panel"><span>♙</span><h2>{ar ? "كيف نبني الثقة" : "How Reyati builds trust"}</h2><p>{ar ? "نعرض فقط الملفات المنشورة لمقدمي الرعاية والمنشآت النشطين بعد التحقق." : "Only published profiles belonging to active, verified providers and organizations appear here."}</p><ul><li><b>{ar ? "ترخيص موثّق" : "Verified licence"}</b><small>{ar ? "قبل نشر الملف" : "Before profile publication"}</small></li><li><b>{ar ? "سعر واضح" : "Clear price"}</b><small>{ar ? "من إعداد المنشأة" : "Published by the organization"}</small></li><li><b>{ar ? "توفر فعلي" : "Real availability"}</b><small>{ar ? "مع منع الحجز المزدوج" : "Protected against double booking"}</small></li></ul></aside>
+      </div>
+    </section>
+
+    {selected && <div className="profile-layer" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><aside className="provider-profile" aria-label={ar ? "ملف مقدم الرعاية" : "Provider profile"}>
+      <button className="drawer-close" onClick={() => setSelected(null)} aria-label={ar ? "إغلاق" : "Close"}>×</button>
+      {booking === "confirmed" ? <div className="profile-confirmed"><span>✓</span><p>{ar ? "تم الحجز" : "BOOKING CONFIRMED"}</p><h2>{ar ? "تم تأكيد موعدك" : "Your appointment is confirmed"}</h2><b>{slot?.label} · {selected.name}</b><small>{ar ? "تم حفظ الموعد بأمان في حسابك." : "The appointment is securely saved to your account."}</small><a href="/appointments">{ar ? "عرض مواعيدي" : "View my appointments"}</a></div> : <>
+        <div className="profile-head"><div className={`provider-photo large ${colorFor(selected.id)}`}>{initials(selected.name)}<span>✓</span></div><div><p>✓ {ar ? "مقدم رعاية موثّق" : "Verified provider"}</p><h2>{selected.name}</h2><span>{selected.specialty}</span></div></div>
+        <div className="verification-strip"><span>♙</span><p><b>{ar ? "تم التحقق من الترخيص والانتماء" : "Licence and affiliation verified"}</b>{ar ? "تم نشر الملف من منشأة نشطة" : "Published by an active organization"}</p></div>
+        <section className="profile-about"><h3>{ar ? "عن مقدم الرعاية" : "About"}</h3><p>{ar ? selected.bioAr || selected.bioEn || "لم تُضف نبذة بعد." : selected.bioEn || "The provider has not added a public biography yet."}</p><div><article><b>{selected.yearsExperience ?? "—"}</b><small>{ar ? "سنوات خبرة" : "Years experience"}</small></article><article><b>{selected.languages.join(" · ") || "—"}</b><small>{ar ? "اللغات" : "Languages"}</small></article><article><b>✓</b><small>{ar ? "هوية موثقة" : "Verified identity"}</small></article></div></section>
+        <section className="profile-location"><h3>{ar ? "الخدمة والموقع" : "Service & location"}</h3><select className="service-location-select" value={serviceId} onChange={(event) => setServiceId(event.target.value)} aria-label={ar ? "اختر الخدمة" : "Choose service"}>{selected.services.map((service) => <option value={service.id} key={service.id}>{service.mode === "video" ? (ar ? "زيارة فيديو" : "Video consultation") : service.facilityName} · {service.feeQar} QAR</option>)}</select>{activeService && <div><span>⌖</span><p><b>{activeService.facilityName ?? (ar ? "زيارة فيديو" : "Video consultation")}</b><small>{activeService.area ? `${activeService.area}, Doha · ` : ""}{activeService.slotDurationMinutes} {ar ? "دقيقة" : "minutes"}</small></p><strong>{activeService.feeQar} {ar ? "ر.ق" : "QAR"}<small>{ar ? "السعر المنشور" : "published price"}</small></strong></div>}</section>
+        <section className="profile-slots"><div><h3>{ar ? "اختر موعداً" : "Choose a time"}</h3><span>{ar ? "الأيام الـ ١٤ القادمة" : "Next 14 days"}</span></div><div>{slotsLoading ? <p className="slot-state">{ar ? "جارٍ تحميل المواعيد…" : "Loading availability…"}</p> : availabilityError ? <p className="slot-state error">{ar ? "تعذر تحميل المواعيد. حاول مرة أخرى." : "Availability could not be loaded. Please try again."}</p> : slots.length ? slots.map((item) => <button className={slot?.scheduledStart === item.scheduledStart ? "active" : ""} key={`${item.serviceLocationId}-${item.scheduledStart}`} onClick={() => chooseSlot(item)}>{item.label}</button>) : <p className="slot-state">{ar ? "لا توجد مواعيد متاحة حالياً." : "No bookable times are currently available."}</p>}</div></section>
+        {booking === "error" && <p className="booking-error" role="alert">{bookingMessage === "The requested time is no longer available" ? (ar ? "هذا الموعد لم يعد متاحاً. اختر موعداً آخر." : "That time was just booked. Please choose another slot.") : (ar ? "تعذر تأكيد الحجز. يرجى المحاولة مرة أخرى." : "We couldn’t confirm the booking. Please try again.")}</p>}
+        <div className="profile-book"><div><small>{ar ? "الإجمالي" : "Total"}</small><b>{activeService?.feeQar ?? "—"} {ar ? "ر.ق" : "QAR"}</b></div><button disabled={!slot || booking === "submitting"} onClick={confirmBooking}>{booking === "submitting" ? (ar ? "جارٍ التأكيد…" : "Confirming…") : slot ? (ar ? "تأكيد الموعد" : "Confirm appointment") : (ar ? "اختر وقتاً للمتابعة" : "Select a time to continue")}</button></div>
+      </>}
+    </aside></div>}
+  </main>;
 }

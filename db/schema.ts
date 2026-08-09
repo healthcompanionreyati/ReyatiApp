@@ -53,7 +53,13 @@ export const providerProfiles = sqliteTable("provider_profiles", {
   organizationId: text("organization_id").references(() => organizations.id, { onDelete: "restrict" }),
   licenseReference: text("license_reference").notNull(),
   specialty: text("specialty").notNull(),
+  gender: text("gender"),
+  languagesJson: text("languages_json").notNull().default("[]"),
+  bioEn: text("bio_en"),
+  bioAr: text("bio_ar"),
+  yearsExperience: integer("years_experience"),
   verificationStatus: text("verification_status").notNull().default("pending"),
+  publishedAt: integer("published_at", { mode: "timestamp_ms" }),
   ...timestamps,
 }, (table) => [
   uniqueIndex("idx_provider_profiles_user_id").on(table.userId),
@@ -69,6 +75,34 @@ export const facilities = sqliteTable("facilities", {
   status: text("status").notNull().default("active"),
   ...timestamps,
 }, (table) => [index("idx_facilities_org_status").on(table.organizationId, table.status)]);
+
+export const providerServiceLocations = sqliteTable("provider_service_locations", {
+  id: text("id").primaryKey(),
+  providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "cascade" }),
+  facilityId: text("facility_id").references(() => facilities.id, { onDelete: "restrict" }),
+  mode: text("mode").notNull(),
+  feeQar: integer("fee_qar").notNull(),
+  slotDurationMinutes: integer("slot_duration_minutes").notNull().default(30),
+  acceptingNewPatients: integer("accepting_new_patients", { mode: "boolean" }).notNull().default(true),
+  status: text("status").notNull().default("active"),
+  ...timestamps,
+}, (table) => [
+  index("idx_provider_service_locations_provider_status").on(table.providerId, table.status),
+  index("idx_provider_service_locations_facility_status").on(table.facilityId, table.status),
+]);
+
+export const providerAvailabilityWindows = sqliteTable("provider_availability_windows", {
+  id: text("id").primaryKey(),
+  serviceLocationId: text("service_location_id").notNull().references(() => providerServiceLocations.id, { onDelete: "cascade" }),
+  weekday: integer("weekday").notNull(),
+  startMinute: integer("start_minute").notNull(),
+  endMinute: integer("end_minute").notNull(),
+  timezone: text("timezone").notNull().default("Asia/Qatar"),
+  status: text("status").notNull().default("active"),
+  ...timestamps,
+}, (table) => [
+  index("idx_provider_availability_service_day_status").on(table.serviceLocationId, table.weekday, table.status),
+]);
 
 export const appointments = sqliteTable("appointments", {
   id: text("id").primaryKey(),

@@ -137,3 +137,24 @@ test("ships concurrency-safe, authorized appointment APIs", async () => {
   assert.match(authorization, /organization_admin/);
   assert.match(authorization, /scheduler/);
 });
+
+test("connects published provider discovery to real availability and booking", async () => {
+  const [catalog, providerPage, migration] = await Promise.all([
+    readFile(new URL("../lib/provider-catalog.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/providers/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0002_complex_wiccan.sql", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(migration, /CREATE TABLE `provider_service_locations`/);
+  assert.match(migration, /CREATE TABLE `provider_availability_windows`/);
+  assert.match(migration, /ALTER TABLE `provider_profiles` ADD `published_at`/);
+  assert.match(catalog, /verificationStatus, "verified"/);
+  assert.match(catalog, /isNotNull\(providerProfiles\.publishedAt\)/);
+  assert.match(catalog, /appointmentSlotLocks/);
+  assert.match(catalog, /timeZone: "Asia\/Qatar"/);
+  assert.match(providerPage, /fetch\("\/api\/providers"/);
+  assert.match(providerPage, /fetch\("\/api\/appointments"/);
+  assert.match(providerPage, /"Idempotency-Key"/);
+  assert.match(providerPage, /No providers are published yet/);
+  assert.doesNotMatch(providerPage, /prototype confirmation/i);
+});
