@@ -3,6 +3,7 @@ import "./globals.css";
 import "./appointments.css";
 import "./admin.css";
 import "./admin-verification.css";
+import "./admin-organizations.css";
 import "./admin-finance.css";
 import "./admin-cases.css";
 import "./admin-moderation.css";

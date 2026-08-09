@@ -23,8 +23,23 @@ export const organizations = sqliteTable("organizations", {
   name: text("name").notNull(),
   type: text("type").notNull(),
   status: text("status").notNull().default("pending"),
+  verificationVersion: integer("verification_version").notNull().default(1),
   ...timestamps,
 }, (table) => [index("idx_organizations_type_status").on(table.type, table.status)]);
+
+export const organizationVerificationReviews = sqliteTable("organization_verification_reviews", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id").notNull().references(() => organizations.id, { onDelete: "restrict" }),
+  reviewerUserId: text("reviewer_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  decision: text("decision").notNull(),
+  verificationVersion: integer("verification_version").notNull(),
+  notes: text("notes").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_organization_reviews_org_created").on(table.organizationId, table.createdAt),
+  index("idx_organization_reviews_reviewer_created").on(table.reviewerUserId, table.createdAt),
+  uniqueIndex("idx_organization_reviews_org_version").on(table.organizationId, table.verificationVersion),
+]);
 
 export const organizationMembers = sqliteTable("organization_members", {
   organizationId: text("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),

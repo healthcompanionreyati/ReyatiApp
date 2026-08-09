@@ -217,3 +217,31 @@ test("ships organization access controls and independent verification review", a
   assert.doesNotMatch(settingsPage, /Prototype invitation|Synthetic data/);
   assert.doesNotMatch(verificationPage, /Synthetic decisions|Prototype decision/);
 });
+
+test("ships a protected first-admin bootstrap and organization provisioning", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0005_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the organization verification migration");
+  const [administration, bootstrapRoute, organizationRoute, page, migration] = await Promise.all([
+    readFile(new URL("../lib/platform-administration.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/bootstrap/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/organizations/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/organizations/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+  ]);
+
+  assert.match(administration, /PLATFORM_BOOTSTRAP_EMAIL/);
+  assert.match(administration, /platform\.bootstrap_completed/);
+  assert.match(administration, /eq\(platformRoles\.role, "platform_admin"\)/);
+  assert.match(administration, /organization\.provisioned/);
+  assert.match(administration, /organization_owner/);
+  assert.match(administration, /facility\.provisioned/);
+  assert.match(bootstrapRoute, /claimPlatformAdministrator/);
+  assert.match(organizationRoute, /create_organization/);
+  assert.match(organizationRoute, /review_organization/);
+  assert.match(organizationRoute, /create_facility/);
+  assert.match(page, /Activate the first platform administrator/);
+  assert.match(page, /seven-day, email-bound invitation/);
+  assert.match(migration, /CREATE TABLE `organization_verification_reviews`/);
+  assert.match(migration, /idx_organization_reviews_org_version/);
+  assert.doesNotMatch(administration, /healthcompanionreyati/i);
+});
