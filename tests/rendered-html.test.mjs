@@ -245,3 +245,22 @@ test("ships a protected first-admin bootstrap and organization provisioning", as
   assert.match(migration, /idx_organization_reviews_org_version/);
   assert.doesNotMatch(administration, /healthcompanionreyati/i);
 });
+
+test("replaces the synthetic audit screen with a scoped live ledger", async () => {
+  const [service, route, page] = await Promise.all([
+    readFile(new URL("../lib/audit-log.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/audit/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/audit/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(service, /platform_admin/);
+  assert.match(service, /organization_auditor/);
+  assert.match(service, /eq\(organizationMembers\.role, "auditor"\)/);
+  assert.match(service, /metadataAvailable/);
+  assert.match(service, /maskedEmail/);
+  assert.match(service, /nextCursor/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /\/api\/admin\/audit/);
+  assert.match(page, /Load 50 more events/);
+  assert.doesNotMatch(page, /synthetic|prototype alert|Prototype investigation/i);
+});
