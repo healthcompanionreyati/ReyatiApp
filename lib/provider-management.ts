@@ -96,6 +96,7 @@ export async function createProviderProfile(userId: string, body: unknown) {
     bioAr: textValue(value.bioAr, "bioAr", 1500, false),
     yearsExperience: integerValue(value.yearsExperience, "yearsExperience", 0, 70),
     verificationStatus: "pending",
+    verificationVersion: 1,
     publishedAt: null,
     createdAt: now,
     updatedAt: now,

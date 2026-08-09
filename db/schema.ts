@@ -39,6 +39,31 @@ export const organizationMembers = sqliteTable("organization_members", {
   index("idx_organization_members_org_role").on(table.organizationId, table.role),
 ]);
 
+export const organizationInvitations = sqliteTable("organization_invitations", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  role: text("role").notNull(),
+  tokenHash: text("token_hash").notNull(),
+  status: text("status").notNull().default("pending"),
+  invitedByUserId: text("invited_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  acceptedByUserId: text("accepted_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  acceptedAt: integer("accepted_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_organization_invitations_token_hash").on(table.tokenHash),
+  index("idx_organization_invitations_org_status").on(table.organizationId, table.status),
+  index("idx_organization_invitations_email_status").on(table.email, table.status),
+]);
+
+export const platformRoles = sqliteTable("platform_roles", {
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: text("role").notNull(),
+  status: text("status").notNull().default("active"),
+  ...timestamps,
+}, (table) => [primaryKey({ columns: [table.userId, table.role] }), index("idx_platform_roles_role_status").on(table.role, table.status)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
@@ -59,12 +84,27 @@ export const providerProfiles = sqliteTable("provider_profiles", {
   bioAr: text("bio_ar"),
   yearsExperience: integer("years_experience"),
   verificationStatus: text("verification_status").notNull().default("pending"),
+  verificationVersion: integer("verification_version").notNull().default(1),
   publishedAt: integer("published_at", { mode: "timestamp_ms" }),
   ...timestamps,
 }, (table) => [
   uniqueIndex("idx_provider_profiles_user_id").on(table.userId),
   uniqueIndex("idx_provider_profiles_license_reference").on(table.licenseReference),
   index("idx_provider_profiles_org_status").on(table.organizationId, table.verificationStatus),
+]);
+
+export const providerVerificationReviews = sqliteTable("provider_verification_reviews", {
+  id: text("id").primaryKey(),
+  providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  reviewerUserId: text("reviewer_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  decision: text("decision").notNull(),
+  verificationVersion: integer("verification_version").notNull(),
+  notes: text("notes").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_provider_verification_reviews_provider_created").on(table.providerId, table.createdAt),
+  index("idx_provider_verification_reviews_reviewer_created").on(table.reviewerUserId, table.createdAt),
+  uniqueIndex("idx_provider_verification_reviews_provider_version").on(table.providerId, table.verificationVersion),
 ]);
 
 export const facilities = sqliteTable("facilities", {

@@ -1,29 +1,74 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-type Case={id:string,name:string,kind:string,facility:string,submitted:string,sla:string,risk:"High"|"Normal"|"Low",stage:string,checks:number};
-const cases:Case[]=[
-  {id:"VER-1842",name:"Dr. Hana Al-Sulaiti",kind:"Practitioner renewal",facility:"Al Rayyan Family Clinic",submitted:"31 Jul 2026",sla:"3h 18m",risk:"High",stage:"Evidence review",checks:4},
-  {id:"VER-1841",name:"Seaside Medical Center",kind:"New facility",facility:"Lusail",submitted:"31 Jul 2026",sla:"8h 42m",risk:"Normal",stage:"Source check",checks:3},
-  {id:"VER-1839",name:"Dr. Faisal Noor",kind:"Affiliation change",facility:"West Bay Clinic",submitted:"30 Jul 2026",sla:"1d 2h",risk:"Normal",stage:"Clarification",checks:2},
-  {id:"VER-1837",name:"Dr. Rania Mahmoud",kind:"Scope extension",facility:"Doha Women’s Centre",submitted:"30 Jul 2026",sla:"1d 6h",risk:"Low",stage:"Evidence review",checks:5},
-  {id:"VER-1834",name:"Al Waha Dental Centre",kind:"Facility renewal",facility:"Al Wakrah",submitted:"29 Jul 2026",sla:"2d 4h",risk:"High",stage:"Decision ready",checks:6},
-];
+type VerificationCase = {
+  providerId: string; providerName: string; providerEmail: string; organizationId: string;
+  organizationName: string; licenseReference: string; specialty: string; submittedAt: string; updatedAt: string;
+  membershipStatus: string; membershipRole: string;
+};
 
-export default function VerificationWorkspace(){
-  const [lang,setLang]=useState<"en"|"ar">("en");const [filter,setFilter]=useState("All");const [query,setQuery]=useState("");const [selected,setSelected]=useState<Case|null>(cases[0]);const [decision,setDecision]=useState("");const [notice,setNotice]=useState("");const ar=lang==="ar";
-  const rows=useMemo(()=>cases.filter(c=>(filter==="All"||c.risk===filter)&&`${c.id} ${c.name} ${c.facility}`.toLowerCase().includes(query.toLowerCase())),[filter,query]);
-  const decide=(d:string)=>{setDecision(d);setNotice(ar?"تم تسجيل القرار التجريبي في سجل التدقيق":"Prototype decision recorded in the audit trail");window.setTimeout(()=>setNotice(""),2600)};
-  return <main className={`verify-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
-    <aside className="verify-sidebar"><a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar?"عمليات المنصة":"Platform operations"}</span></a><div className="verify-role"><span>VR</span><div><b>{ar?"مراجع التحقق":"Verification reviewer"}</b><small>{ar?"نطاق التحقق · مصادقة متعددة":"Verification scope · MFA"}</small></div></div><nav><a href="/admin"><span>◫</span>{ar?"نظرة عامة":"Overview"}</a><a className="active" href="/admin/verification"><span>✓</span>{ar?"التحقق":"Verification"}<i>12</i></a><a href="/admin"><span>Q</span>{ar?"المالية":"Finance"}</a><a href="/admin"><span>◇</span>{ar?"الحالات":"Cases"}</a><a href="/admin"><span>◉</span>{ar?"الإشراف":"Moderation"}</a><a href="/admin"><span>▤</span>{ar?"التدقيق":"Audit"}</a></nav><div className="verify-side-note"><span>▣</span><p><b>{ar?"فصل الصلاحيات":"Separation of duties"}</b>{ar?"المراجع لا يستطيع تغيير أدلة المصدر أو نشر ملف مقدم الرعاية مباشرة.":"Reviewers cannot alter source evidence or publish a provider profile directly."}</p></div><div className="verify-links"><a href="/journeys">◇ {ar?"جميع المسارات":"All journeys"}</a><a href="/admin">← {ar?"لوحة العمليات":"Operations dashboard"}</a></div></aside>
-    <section className="verify-main"><header className="verify-top"><div><span>{ar?"بيئة النموذج":"PROTOTYPE ENVIRONMENT"}</span><b>{ar?"قرارات اصطناعية · مسجلة للتدقيق":"Synthetic decisions · audit logged"}</b></div><div><button onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button><a href="/notifications">●</a><span>VR</span></div></header><div className="verify-workspace">
-      <div className="verify-heading"><div><p>{ar?"الثقة والامتثال":"TRUST & COMPLIANCE"}</p><h1>{ar?"التحقق من مقدمي الرعاية":"Provider verification"}</h1><span>{ar?"راجع هوية مقدم الرعاية والترخيص والانتماء قبل النشر.":"Review provider identity, licence, and affiliation before publication."}</span></div><button onClick={()=>setNotice(ar?"تم تحديث القائمة":"Queue refreshed")}>↻ {ar?"تحديث القائمة":"Refresh queue"}</button></div>
-      <div className="verify-security"><span>▣</span><p><b>{ar?"الأدلة الحساسة محمية":"Sensitive evidence is protected"}</b>{ar?"الوصول حسب الدور، والتنزيل معطل، وكل مشاهدة وقرار مسجل.":"Access is role-scoped, downloads are disabled, and every view and decision is logged."}</p><i>{ar?"جلسة موثقة":"MFA SESSION"}</i></div>
-      <section className="verify-metrics">{[["12",ar?"في قائمة المراجعة":"In review queue","✓"],["3",ar?"عالية المخاطر":"High risk","!"],["7",ar?"تنتهي خلال 30 يوماً":"Expiring in 30 days","◷"],["94%",ar?"ضمن اتفاقية الخدمة":"Within SLA","↗"]].map(x=><article key={x[1]}><span>{x[2]}</span><div><b>{x[0]}</b><p>{x[1]}</p></div></article>)}</section>
-      <section className="verify-layout"><div className="queue-panel"><div className="verify-tools"><div>{["All","High","Normal","Low"].map(x=><button className={filter===x?"active":""} onClick={()=>setFilter(x)} key={x}>{ar&&x==="All"?"الكل":ar&&x==="High"?"عالي":ar&&x==="Normal"?"عادي":ar&&x==="Low"?"منخفض":x}</button>)}</div><label>⌕<input value={query} onChange={e=>setQuery(e.target.value)} placeholder={ar?"البحث بالاسم أو المرجع":"Search name or reference"}/></label></div><div className="verify-table"><header><span>{ar?"المرجع":"Reference"}</span><span>{ar?"مقدم الطلب":"Applicant"}</span><span>{ar?"نوع الطلب":"Request"}</span><span>{ar?"المخاطر":"Risk"}</span><span>{ar?"المرحلة":"Stage"}</span><span>{ar?"المدة":"SLA"}</span><span/></header>{rows.map(c=><button className={selected?.id===c.id?"selected":""} onClick={()=>{setSelected(c);setDecision("")}} key={c.id}><code>{c.id}</code><div><b>{c.name}</b><small>{c.facility}</small></div><span>{c.kind}</span><i className={c.risk.toLowerCase()}>{c.risk}</i><em>{c.stage}</em><strong>{c.sla}</strong><span>›</span></button>)}</div></div>
-        {selected&&<aside className="review-panel"><div className="review-head"><div><p>{selected.kind}</p><h2>{selected.name}</h2><span>{selected.id} · {selected.facility}</span></div><i className={selected.risk.toLowerCase()}>{selected.risk} risk</i></div>{decision?<div className="decision-done"><span>✓</span><h3>{decision}</h3><p>{ar?"تم تسجيل السبب والمراجع والوقت. لا يتم النشر تلقائياً.":"Reason, reviewer, and time were logged. Publication is not automatic."}</p><button onClick={()=>setDecision("")}>{ar?"العودة للمراجعة":"Return to review"}</button></div>:<><div className="review-progress"><div><span style={{width:`${selected.checks/6*100}%`}}/></div><p><b>{selected.checks}/6</b> {ar?"فحوص مكتملة":"checks complete"}</p></div><section className="identity-summary"><span>{selected.name.split(" ").map(x=>x[0]).join("").slice(0,2)}</span><div><b>{selected.name}</b><p>{ar?"رقم الهوية مخفي":"Identity number masked"} · •••• 8241</p><small>Qatar · {selected.facility}</small></div><i>✓ {ar?"مطابقة":"Matched"}</i></section><section className="evidence-checks"><h3>{ar?"الأدلة والفحوص":"Evidence & checks"}</h3>{[["Identity assurance","Government identity source","Passed"],["Professional licence","QCHP primary-source check",selected.risk==="High"?"Review":"Passed"],["Facility affiliation","Signed facility attestation","Passed"],["Sanctions screening","Approved screening source","Clear"],["Professional insurance","Coverage certificate",selected.checks>4?"Passed":"Pending"]].map((x,i)=><article key={x[0]}><span className={x[2]==="Passed"||x[2]==="Clear"?"pass":x[2]==="Pending"?"pending":"review"}>{x[2]==="Passed"||x[2]==="Clear"?"✓":x[2]==="Pending"?"◷":"!"}</span><div><b>{ar?(["توثيق الهوية","الترخيص المهني","الانتماء للمنشأة","فحص العقوبات","التأمين المهني"][i]):x[0]}</b><small>{x[1]}</small></div><i>{x[2]}</i><button onClick={()=>setNotice(ar?"تم فتح دليل اصطناعي محمي":"Protected synthetic evidence opened")}>{ar?"مراجعة":"Review"}</button></article>)}</section><div className="source-note"><span>ⓘ</span><p><b>{ar?"المصدر الأولي مطلوب":"Primary source required"}</b>{ar?"لا يعتمد القرار على مستند مقدم الطلب وحده؛ يجب تأكيد الترخيص من المصدر الرسمي.":"A submitted document alone is insufficient; licence status must be confirmed at the authoritative source."}</p></div><label className="decision-reason">{ar?"سبب القرار":"Decision reason"}<textarea placeholder={ar?"أضف سبباً واضحاً وقابلاً للتدقيق...":"Add a clear, auditable reason..."}/></label><div className="review-actions"><button onClick={()=>decide(ar?"تم طلب توضيح":"Clarification requested")}>{ar?"طلب توضيح":"Request clarification"}</button><button onClick={()=>decide(ar?"تمت الموافقة المشروطة":"Conditionally approved")}>{ar?"موافقة مشروطة":"Conditional approval"}</button><button onClick={()=>decide(ar?"تم اعتماد التحقق":"Verification approved")}>✓ {ar?"اعتماد":"Approve"}</button></div></>}</aside>}
-      </section><footer className="verify-footer"><span>♙</span><p>{ar?"بيانات اصطناعية لأغراض التخطيط فقط. القرارات لا تؤثر على ملفات حقيقية.":"Synthetic planning data only. Decisions do not affect real provider profiles."}</p><a href="/admin">{ar?"فتح سجل التدقيق":"Open audit log"}</a></footer>
-    </div></section>{notice&&<div className="verify-toast"><span>✓</span>{notice}</div>}
-  </main>
+async function request(path: string, init?: RequestInit) {
+  const response = await fetch(path, init); const payload = await response.json() as { data?: unknown; message?: string; error?: string };
+  if (response.status === 401) { window.location.assign("/signin-with-chatgpt?return_to=/admin/verification"); throw new Error("Authentication required"); }
+  if (!response.ok) { const error = new Error(payload.message || payload.error || "Request failed"); (error as Error & { status?: number }).status = response.status; throw error; }
+  return payload.data;
+}
+
+export default function VerificationWorkspace() {
+  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [cases, setCases] = useState<VerificationCase[]>([]);
+  const [selected, setSelected] = useState<VerificationCase | null>(null);
+  const [role, setRole] = useState("");
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const ar = lang === "ar";
+
+  async function load() {
+    try {
+      setError(""); const data = await request("/api/admin/verification") as { role: string; cases: VerificationCase[] };
+      setRole(data.role); setCases(data.cases); setSelected((current) => data.cases.find((item) => item.providerId === current?.providerId) ?? data.cases[0] ?? null); setForbidden(false);
+    } catch (caught) {
+      if ((caught as Error & { status?: number }).status === 403) setForbidden(true);
+      else setError(caught instanceof Error ? caught.message : "Unable to load verification queue");
+    } finally { setLoading(false); }
+  }
+
+  useEffect(() => {
+    let active = true;
+    request("/api/admin/verification").then((data) => {
+      if (!active) return; const queue = data as { role: string; cases: VerificationCase[] };
+      setRole(queue.role); setCases(queue.cases); setSelected(queue.cases[0] ?? null);
+    }).catch((caught) => { if (!active) return; if ((caught as Error & { status?: number }).status === 403) setForbidden(true); else setError(caught instanceof Error ? caught.message : "Unable to load verification queue"); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function decide(decision: "approved" | "rejected") {
+    if (!selected || saving) return; setSaving(true); setError("");
+    try {
+      await request("/api/admin/verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ providerId: selected.providerId, decision, notes }) });
+      setNotice(decision === "approved" ? (ar ? "تم اعتماد التحقق" : "Provider verification approved") : (ar ? "تم رفض التحقق وإلغاء النشر" : "Verification rejected and publication withdrawn"));
+      setNotes(""); await load();
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Decision could not be saved"); }
+    finally { setSaving(false); }
+  }
+
+  return <main className={`verify-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
+    <aside className="verify-sidebar"><a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati" /><span>{ar ? "عمليات المنصة" : "Platform operations"}</span></a><div className="verify-role"><span>VR</span><div><b>{ar ? "مراجع التحقق" : "Verification reviewer"}</b><small>{role ? role.replaceAll("_", " ") : (ar ? "صلاحية مستقلة مطلوبة" : "Independent role required")}</small></div></div><nav><a href="/admin"><span>◫</span>{ar ? "نظرة عامة" : "Overview"}</a><a className="active" href="/admin/verification"><span>✓</span>{ar ? "التحقق" : "Verification"}<i>{cases.length}</i></a><a href="/admin/audit"><span>▤</span>{ar ? "التدقيق" : "Audit"}</a></nav><div className="verify-side-note"><span>▣</span><p><b>{ar ? "فصل الصلاحيات" : "Separation of duties"}</b>{ar ? "لا يمكن لمراجع التحقق نشر خدمة أو تغيير أدلة مقدم الطلب." : "Verification reviewers cannot publish services or alter applicant evidence."}</p></div></aside>
+    <section className="verify-main"><header className="verify-top"><div><span>{ar ? "بيئة إنتاج محمية" : "PROTECTED OPERATIONS"}</span><b>{ar ? "قرارات حقيقية ومسجلة" : "Live, audited decisions"}</b></div><div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label="Notifications">●</a><span>VR</span></div></header><div className="verify-workspace">
+      <div className="verify-heading"><div><p>{ar ? "الثقة والامتثال" : "TRUST & COMPLIANCE"}</p><h1>{ar ? "التحقق من مقدمي الرعاية" : "Provider verification"}</h1><span>{ar ? "راجع الترخيص والانتماء قبل السماح بإنشاء خدمات قابلة للحجز." : "Review licence and affiliation before a provider can create bookable services."}</span></div><button onClick={load}>↻ {ar ? "تحديث القائمة" : "Refresh queue"}</button></div>
+      <div className="verify-security"><span>▣</span><p><b>{ar ? "بيانات الترخيص محمية" : "Licence data is protected"}</b>{ar ? "يقتصر الوصول على أدوار المنصة المستقلة، ويسجل كل قرار." : "Access is limited to independent platform roles and every decision is recorded."}</p><i>{ar ? "وصول مقيد" : "ROLE SCOPED"}</i></div>
+      {loading && <div className="verify-live-state"><span>◇</span><h2>{ar ? "جارٍ تحميل قائمة التحقق…" : "Loading verification queue…"}</h2></div>}
+      {!loading && forbidden && <div className="verify-live-state restricted"><span>♙</span><h2>{ar ? "صلاحية المراجع مطلوبة" : "Reviewer access is required"}</h2><p>{ar ? "يجب تعيين دور مراجع تحقق أو مسؤول منصة لهذا الحساب خارج مسار مقدم الرعاية." : "This account must be assigned an active verification reviewer or platform administrator role outside the provider workflow."}</p></div>}
+      {!loading && !forbidden && error && <div className="verify-live-state error"><span>!</span><h2>{ar ? "تعذر تحميل قائمة التحقق" : "Verification queue unavailable"}</h2><p>{error}</p></div>}
+      {!loading && !forbidden && !error && cases.length === 0 && <div className="verify-live-state"><span>✓</span><h2>{ar ? "لا توجد طلبات معلقة" : "The queue is clear"}</h2><p>{ar ? "ستظهر طلبات مقدمي الرعاية الجديدة هنا بعد إرسالها." : "New provider applications will appear here after submission."}</p></div>}
+      {!loading && !forbidden && cases.length > 0 && <section className="verify-layout"><div className="queue-panel"><div className="verify-tools"><div><button className="active">{ar ? "معلق" : "Pending"} <span>{cases.length}</span></button></div></div><div className="verify-table"><header><span>{ar ? "المتقدم" : "Applicant"}</span><span>{ar ? "المنشأة" : "Organization"}</span><span>{ar ? "التخصص" : "Specialty"}</span><span>{ar ? "الحالة" : "Status"}</span><span>{ar ? "تاريخ الإرسال" : "Submitted"}</span><span /><span /></header>{cases.map((item) => <button className={selected?.providerId === item.providerId ? "selected" : ""} onClick={() => { setSelected(item); setNotes(""); }} key={item.providerId}><div><b>{item.providerName}</b><small>{item.providerEmail}</small></div><span>{item.organizationName}</span><span>{item.specialty}</span><i className={item.membershipStatus === "active" ? "normal" : "high"}>{item.membershipStatus}</i><strong>{new Date(item.submittedAt).toLocaleDateString()}</strong><span>›</span></button>)}</div></div>
+        {selected && <aside className="review-panel"><div className="review-head"><div><p>{ar ? "طلب مقدم رعاية" : "Provider application"}</p><h2>{selected.providerName}</h2><span>{selected.organizationName}</span></div><i className="normal">Pending</i></div><section className="identity-summary"><span>{selected.providerName.split(" ").map((word) => word[0]).join("").slice(0, 2)}</span><div><b>{selected.specialty}</b><p>{selected.providerEmail}</p><small>{selected.organizationName}</small></div></section><section className="evidence-checks"><h3>{ar ? "بيانات المراجعة" : "Review facts"}</h3><article><span className="review">!</span><div><b>{ar ? "مرجع الترخيص" : "Licence reference"}</b><small>{selected.licenseReference}</small></div><i>{ar ? "يتطلب فحص المصدر" : "Source check required"}</i></article><article><span className={selected.membershipStatus === "active" ? "pass" : "review"}>{selected.membershipStatus === "active" ? "✓" : "!"}</span><div><b>{ar ? "الانتماء للمنشأة" : "Organization affiliation"}</b><small>{selected.organizationName} · {selected.membershipRole.replaceAll("_", " ")}</small></div><i>{selected.membershipStatus}</i></article></section><div className="source-note"><span>ⓘ</span><p><b>{ar ? "المصدر الأولي مطلوب" : "Primary source required"}</b>{ar ? "لا تعتمد القرار على المرجع المقدم وحده. تحقق من الجهة الرسمية قبل الموافقة." : "Do not approve from the submitted reference alone. Confirm status with the authoritative source."}</p></div><label className="decision-reason">{ar ? "ملاحظة القرار" : "Auditable decision note"}<textarea value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={2000} placeholder={ar ? "اكتب نتيجة فحص المصدر بوضوح…" : "Record the source check and rationale…"} /></label><div className="review-actions"><button disabled={saving || notes.trim().length < 10} onClick={() => decide("rejected")}>{ar ? "رفض" : "Reject"}</button><button disabled={saving || notes.trim().length < 10 || selected.membershipStatus !== "active"} onClick={() => decide("approved")}>✓ {ar ? "اعتماد" : "Approve"}</button></div></aside>}
+      </section>}
+    </div></section>{notice && <div className="verify-toast"><span>✓</span>{notice}</div>}
+  </main>;
 }

@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
-import { organizationMembers, organizations } from "@/db/schema";
+import { organizationMembers, organizations, platformRoles } from "@/db/schema";
 
 export const organizationRoles = [
   "organization_owner",
@@ -18,6 +18,17 @@ export class AuthorizationDeniedError extends Error {
     super("You do not have permission to access this resource");
     this.name = "AuthorizationDeniedError";
   }
+}
+
+export type PlatformRole = "platform_admin" | "verification_reviewer";
+
+export async function requirePlatformRole(userId: string, allowedRoles: readonly PlatformRole[]) {
+  const db = await getDb();
+  const role = await db.select({ role: platformRoles.role }).from(platformRoles).where(and(
+    eq(platformRoles.userId, userId), eq(platformRoles.status, "active"), inArray(platformRoles.role, [...allowedRoles]),
+  )).limit(1);
+  if (!role[0]) throw new AuthorizationDeniedError();
+  return role[0];
 }
 
 export async function getActiveMemberships(userId: string) {

@@ -1,4 +1,4 @@
-import { and, eq, gt, isNotNull, lt, notInArray } from "drizzle-orm";
+import { and, eq, gt, inArray, isNotNull, lt, notInArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   appointments,
@@ -6,6 +6,7 @@ import {
   auditEvents,
   facilities,
   organizations,
+  organizationMembers,
   patientProfiles,
   providerProfiles,
   providerAvailabilityWindows,
@@ -118,11 +119,14 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
   if (replay[0]) return { appointment: replay[0], replayed: true };
 
   const provider = await db.select({ profile: providerProfiles }).from(providerProfiles)
-    .innerJoin(users, eq(users.id, providerProfiles.userId)).where(and(
+    .innerJoin(users, eq(users.id, providerProfiles.userId))
+    .innerJoin(organizationMembers, and(eq(organizationMembers.userId, providerProfiles.userId), eq(organizationMembers.organizationId, providerProfiles.organizationId))).where(and(
     eq(providerProfiles.id, input.providerId),
     eq(providerProfiles.verificationStatus, "verified"),
     isNotNull(providerProfiles.publishedAt),
     eq(users.status, "active"),
+    eq(organizationMembers.status, "active"),
+    inArray(organizationMembers.role, ["practitioner", "organization_admin", "organization_owner"]),
   )).limit(1);
   if (!provider[0]) throw new AppointmentValidationError("The selected provider is not available for booking");
 

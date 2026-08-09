@@ -186,3 +186,34 @@ test("connects published provider discovery to real availability and booking", a
   assert.match(providerPage, /No providers are published yet/);
   assert.doesNotMatch(providerPage, /prototype confirmation/i);
 });
+
+test("ships organization access controls and independent verification review", async () => {
+  const [membership, verification, memberRoute, verificationRoute, settingsPage, verificationPage, migration] = await Promise.all([
+    readFile(new URL("../lib/organization-membership.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/verification-management.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/organizations/members/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/verification/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/settings/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/verification/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../drizzle/0004_real_karen_page.sql", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(migration, /CREATE TABLE `organization_invitations`/);
+  assert.match(migration, /CREATE TABLE `platform_roles`/);
+  assert.match(migration, /CREATE TABLE `provider_verification_reviews`/);
+  assert.match(migration, /idx_provider_verification_reviews_provider_version/);
+  assert.match(membership, /crypto\.subtle\.digest\("SHA-256"/);
+  assert.match(membership, /Invitation is invalid, expired, or belongs to another account/);
+  assert.match(membership, /organization_owner/);
+  assert.match(membership, /organization\.invitation_accepted/);
+  assert.match(verification, /requirePlatformRole/);
+  assert.match(verification, /Active practitioner affiliation is required for approval/);
+  assert.match(verification, /Reviewers cannot decide their own provider application/);
+  assert.match(verification, /provider\.verification_/);
+  assert.match(memberRoute, /AuthorizationDeniedError/);
+  assert.match(verificationRoute, /verification_reviewer|decideProviderVerification/);
+  assert.match(settingsPage, /Invitations are email-bound and expire in 7 days/);
+  assert.match(verificationPage, /Reviewer access is required/);
+  assert.doesNotMatch(settingsPage, /Prototype invitation|Synthetic data/);
+  assert.doesNotMatch(verificationPage, /Synthetic decisions|Prototype decision/);
+});

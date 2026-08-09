@@ -4,6 +4,7 @@ import {
   appointmentSlotLocks,
   facilities,
   organizations,
+  organizationMembers,
   providerAvailabilityWindows,
   providerProfiles,
   providerServiceLocations,
@@ -56,6 +57,7 @@ export async function getPublishedProviderCatalog() {
   }).from(providerProfiles)
     .innerJoin(users, eq(users.id, providerProfiles.userId))
     .innerJoin(organizations, eq(organizations.id, providerProfiles.organizationId))
+    .innerJoin(organizationMembers, and(eq(organizationMembers.organizationId, providerProfiles.organizationId), eq(organizationMembers.userId, providerProfiles.userId)))
     .innerJoin(providerServiceLocations, eq(providerServiceLocations.providerId, providerProfiles.id))
     .leftJoin(facilities, eq(facilities.id, providerServiceLocations.facilityId))
     .where(and(
@@ -63,6 +65,8 @@ export async function getPublishedProviderCatalog() {
       isNotNull(providerProfiles.publishedAt),
       eq(users.status, "active"),
       eq(organizations.status, "active"),
+      eq(organizationMembers.status, "active"),
+      inArray(organizationMembers.role, ["practitioner", "organization_admin", "organization_owner"]),
       eq(providerServiceLocations.status, "active"),
       eq(providerServiceLocations.acceptingNewPatients, true),
     ))
@@ -129,6 +133,7 @@ export async function getProviderAvailability(providerId: string, serviceLocatio
     .innerJoin(providerProfiles, eq(providerProfiles.id, providerServiceLocations.providerId))
     .innerJoin(users, eq(users.id, providerProfiles.userId))
     .innerJoin(organizations, eq(organizations.id, providerProfiles.organizationId))
+    .innerJoin(organizationMembers, and(eq(organizationMembers.organizationId, providerProfiles.organizationId), eq(organizationMembers.userId, providerProfiles.userId)))
     .leftJoin(facilities, eq(facilities.id, providerServiceLocations.facilityId))
     .where(and(
       eq(providerServiceLocations.providerId, providerId),
@@ -139,6 +144,8 @@ export async function getProviderAvailability(providerId: string, serviceLocatio
       isNotNull(providerProfiles.publishedAt),
       eq(users.status, "active"),
       eq(organizations.status, "active"),
+      eq(organizationMembers.status, "active"),
+      inArray(organizationMembers.role, ["practitioner", "organization_admin", "organization_owner"]),
     ));
   const availableServices = services.filter((service) =>
     service.mode === "video" || (service.mode === "in_person" && service.facilityId && service.facilityStatus === "active")
