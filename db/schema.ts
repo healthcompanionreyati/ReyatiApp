@@ -79,6 +79,23 @@ export const platformRoles = sqliteTable("platform_roles", {
   ...timestamps,
 }, (table) => [primaryKey({ columns: [table.userId, table.role] }), index("idx_platform_roles_role_status").on(table.role, table.status)]);
 
+export const platformRoleInvitations = sqliteTable("platform_role_invitations", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  role: text("role").notNull(),
+  tokenHash: text("token_hash").notNull(),
+  status: text("status").notNull().default("pending"),
+  invitedByUserId: text("invited_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  acceptedByUserId: text("accepted_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  acceptedAt: integer("accepted_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_platform_role_invitations_token_hash").on(table.tokenHash),
+  index("idx_platform_role_invitations_email_status").on(table.email, table.status),
+  index("idx_platform_role_invitations_role_status").on(table.role, table.status),
+]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

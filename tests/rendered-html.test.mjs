@@ -264,3 +264,30 @@ test("replaces the synthetic audit screen with a scoped live ledger", async () =
   assert.match(page, /Load 50 more events/);
   assert.doesNotMatch(page, /synthetic|prototype alert|Prototype investigation/i);
 });
+
+test("ships email-bound platform role invitations and administrator continuity controls", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0006_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the platform access migration");
+  const [access, route, page, authorization, audit, migration] = await Promise.all([
+    readFile(new URL("../lib/platform-access.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/platform-access/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/access/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/authorization.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/audit-log.ts", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+  ]);
+  assert.match(migration, /CREATE TABLE `platform_role_invitations`/);
+  assert.match(migration, /protect_final_platform_admin_update/);
+  assert.match(migration, /protect_final_platform_admin_delete/);
+  assert.match(access, /crypto\.subtle\.digest\("SHA-256"/);
+  assert.match(access, /Invitation is invalid, expired, or belongs to another account/);
+  assert.match(access, /status: "accepting"/);
+  assert.match(access, /The final active platform administrator cannot be suspended/);
+  assert.match(access, /targetUserId === userId/);
+  assert.match(route, /acceptPlatformRoleInvitation/);
+  assert.match(page, /Shown once\. Send it only to the invited email owner/);
+  assert.match(page, /Administrators cannot suspend themselves/);
+  assert.match(authorization, /security_auditor/);
+  assert.match(audit, /"platform_admin", "security_auditor"/);
+  assert.doesNotMatch(page, /synthetic|prototype/i);
+});

@@ -43,6 +43,13 @@
       "when": 1786317626486,
       "tag": "0005_right_abomination",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1786319682292,
+      "tag": "0006_oval_eternals",
+      "breakpoints": true
     }
   ]
 }

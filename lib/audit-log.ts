@@ -21,7 +21,7 @@ function maskedEmail(value: string | null) {
 
 async function auditScope(userId: string) {
   const db = await getDb();
-  const admin = await db.select({ role: platformRoles.role }).from(platformRoles).where(and(eq(platformRoles.userId, userId), eq(platformRoles.role, "platform_admin"), eq(platformRoles.status, "active"))).limit(1);
+  const admin = await db.select({ role: platformRoles.role }).from(platformRoles).where(and(eq(platformRoles.userId, userId), inArray(platformRoles.role, ["platform_admin", "security_auditor"]), eq(platformRoles.status, "active"))).limit(1);
   if (admin[0]) return { role: "platform_admin", organizationIds: null as string[] | null };
   const memberships = await db.select({ organizationId: organizationMembers.organizationId }).from(organizationMembers)
     .innerJoin(organizations, eq(organizations.id, organizationMembers.organizationId))
