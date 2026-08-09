@@ -108,3 +108,32 @@ test("ships the authenticated persistence foundation", async () => {
   assert.match(identityRoute, /getOrCreateCurrentUser/);
   assert.match(identityRoute, /Cache-Control.*no-store/);
 });
+
+test("ships concurrency-safe, authorized appointment APIs", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url)))
+    .find((name) => /^0001_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the appointment migration");
+
+  const [migration, bookingService, patientRoute, providerRoute, authorization] = await Promise.all([
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+    readFile(new URL("../lib/appointments.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/appointments/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/appointments/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/authorization.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(migration, /CREATE TABLE `appointment_slot_locks`/);
+  assert.match(migration, /CREATE UNIQUE INDEX `idx_appointment_slot_locks_provider_slot`/);
+  assert.match(migration, /CREATE UNIQUE INDEX `idx_appointment_slot_locks_patient_slot`/);
+  assert.match(migration, /idx_appointments_patient_idempotency/);
+  assert.match(bookingService, /Idempotency-Key/);
+  assert.match(bookingService, /appointment\.booked/);
+  assert.match(bookingService, /db\.insert\(appointmentSlotLocks\)/);
+  assert.match(patientRoute, /getOrCreateCurrentUser/);
+  assert.match(patientRoute, /status: result\.replayed \? 200 : 201/);
+  assert.match(providerRoute, /requireOrganizationRole/);
+  assert.match(providerRoute, /verificationStatus, "verified"/);
+  assert.match(authorization, /organization_owner/);
+  assert.match(authorization, /organization_admin/);
+  assert.match(authorization, /scheduler/);
+});

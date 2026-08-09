@@ -79,12 +79,27 @@ export const appointments = sqliteTable("appointments", {
   scheduledEnd: integer("scheduled_end", { mode: "timestamp_ms" }).notNull(),
   mode: text("mode").notNull(),
   status: text("status").notNull().default("pending"),
+  idempotencyKey: text("idempotency_key"),
   version: integer("version").notNull().default(1),
   ...timestamps,
 }, (table) => [
   index("idx_appointments_patient_start").on(table.patientId, table.scheduledStart),
   index("idx_appointments_provider_start").on(table.providerId, table.scheduledStart),
+  uniqueIndex("idx_appointments_patient_idempotency").on(table.patientId, table.idempotencyKey),
   index("idx_appointments_facility_start").on(table.facilityId, table.scheduledStart),
+]);
+
+export const appointmentSlotLocks = sqliteTable("appointment_slot_locks", {
+  id: text("id").primaryKey(),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "cascade" }),
+  patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }),
+  providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  slotStart: integer("slot_start", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_appointment_slot_locks_patient_slot").on(table.patientId, table.slotStart),
+  uniqueIndex("idx_appointment_slot_locks_provider_slot").on(table.providerId, table.slotStart),
+  index("idx_appointment_slot_locks_appointment").on(table.appointmentId),
 ]);
 
 export const consents = sqliteTable("consents", {
