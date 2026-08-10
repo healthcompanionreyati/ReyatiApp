@@ -207,6 +207,7 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
     scheduledEnd: input.scheduledEnd,
     mode: input.mode,
     status: "pending",
+    cancelledAt: null,
     idempotencyKey,
     version: 1,
     createdAt: now,
@@ -264,4 +265,27 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
     throw error;
   }
   return { appointment, replayed: false };
+}
+
+export async function cancelPatientAppointment(userId: string, body: Record<string, unknown>) {
+  const appointmentId = requiredString(body.appointmentId, "appointmentId");
+  const expectedVersion = body.version;
+  if (!Number.isSafeInteger(expectedVersion) || Number(expectedVersion) < 1) throw new AppointmentValidationError("version is invalid");
+  const db = await getDb();
+  const owned = await db.select({ appointment: appointments, providerUserId: providerProfiles.userId, providerOrganizationId: providerProfiles.organizationId })
+    .from(appointments).innerJoin(patientProfiles, eq(patientProfiles.id, appointments.patientId)).innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
+    .where(and(eq(appointments.id, appointmentId), eq(patientProfiles.userId, userId))).limit(1);
+  if (!owned[0]) throw new AppointmentValidationError("Appointment was not found");
+  if (!["pending", "confirmed"].includes(owned[0].appointment.status) || owned[0].appointment.scheduledStart <= new Date()) throw new AppointmentValidationError("This appointment can no longer be cancelled");
+  const now = new Date();
+  const updated = await db.update(appointments).set({ status: "cancelled", cancelledAt: now, version: Number(expectedVersion) + 1, updatedAt: now })
+    .where(and(eq(appointments.id, appointmentId), eq(appointments.patientId, owned[0].appointment.patientId), eq(appointments.version, Number(expectedVersion)), inArray(appointments.status, ["pending", "confirmed"])))
+    .returning({ id: appointments.id, version: appointments.version });
+  if (!updated[0]) throw new AppointmentConflictError("This appointment changed before cancellation. Refresh and try again.");
+  await db.batch([
+    db.insert(notifications).values(notificationRecord({ userId, type: "appointment", title: "Appointment cancelled", body: "Your appointment has been cancelled. No payment or refund status is implied by this notification.", actionPath: "/appointments", resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:patient`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] }),
+    db.insert(notifications).values(notificationRecord({ userId: owned[0].providerUserId, type: "appointment", title: "Appointment cancelled by patient", body: "A future appointment was cancelled and removed from your active schedule.", actionPath: "/provider", resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:provider`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] }),
+    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: owned[0].providerOrganizationId, action: "appointment.cancelled_by_patient", resourceType: "appointment", resourceId: appointmentId, outcome: "success", metadataJson: JSON.stringify({ previousStatus: owned[0].appointment.status }), createdAt: now }),
+  ]);
+  return { appointmentId, status: "cancelled", version: updated[0].version };
 }

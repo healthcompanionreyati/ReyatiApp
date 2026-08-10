@@ -1,4 +1,4 @@
-import { and, asc, eq, gt } from "drizzle-orm";
+import { and, asc, eq, gt, notInArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, patientProfiles, providerProfiles, users } from "@/db/schema";
 import { AuthorizationDeniedError, requireOrganizationRole } from "@/lib/authorization";
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
       .innerJoin(patientProfiles, eq(patientProfiles.id, appointments.patientId))
       .innerJoin(users, eq(users.id, patientProfiles.userId))
       .innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
-      .where(and(scope, gt(appointments.scheduledEnd, new Date())))
+      .where(and(scope, gt(appointments.scheduledEnd, new Date()), notInArray(appointments.status, ["cancelled", "declined"])))
       .orderBy(asc(appointments.scheduledStart));
 
     return Response.json({ appointments: rows }, { headers: noStore });

@@ -5,6 +5,7 @@ import {
   AppointmentConflictError,
   AppointmentValidationError,
   bookAppointment,
+  cancelPatientAppointment,
   validateBookingInput,
   validateIdempotencyKey,
 } from "@/lib/appointments";
@@ -32,6 +33,7 @@ export async function GET() {
       scheduledEnd: appointments.scheduledEnd,
       mode: appointments.mode,
       status: appointments.status,
+      cancelledAt: appointments.cancelledAt,
       version: appointments.version,
     }).from(appointments)
       .innerJoin(patientProfiles, eq(patientProfiles.id, appointments.patientId))
@@ -79,6 +81,19 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     return apiError(error, "Unable to book appointment");
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const user = await getOrCreateCurrentUser();
+    if (user.status !== "active") return Response.json({ error: "account_inactive" }, { status: 403, headers: noStore });
+    let body: Record<string, unknown>;
+    try { body = await request.json() as Record<string, unknown>; } catch { throw new AppointmentValidationError("A valid JSON body is required"); }
+    if (body.action !== "cancel") throw new AppointmentValidationError("action is invalid");
+    return Response.json({ appointment: await cancelPatientAppointment(user.id, body) }, { headers: noStore });
+  } catch (error) {
+    return apiError(error, "Unable to cancel appointment");
   }
 }
 

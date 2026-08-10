@@ -186,6 +186,7 @@ export const appointments = sqliteTable("appointments", {
   scheduledEnd: integer("scheduled_end", { mode: "timestamp_ms" }).notNull(),
   mode: text("mode").notNull(),
   status: text("status").notNull().default("pending"),
+  cancelledAt: integer("cancelled_at", { mode: "timestamp_ms" }),
   idempotencyKey: text("idempotency_key"),
   version: integer("version").notNull().default(1),
   ...timestamps,

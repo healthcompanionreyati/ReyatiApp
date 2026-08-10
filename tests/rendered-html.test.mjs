@@ -318,3 +318,29 @@ test("ships a durable, user-owned notification inbox for real workflow events", 
   assert.match(page, /Mark all as read/);
   assert.doesNotMatch(page, /seed:|Role switching|Prototype preferences|synthetic/i);
 });
+
+test("connects the patient appointment screen to owned bookings and safe cancellation", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0008_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the appointment lifecycle migration");
+  const [service, route, providerRoute, page, migration] = await Promise.all([
+    readFile(new URL("../lib/appointments.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/appointments/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/appointments/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/appointments/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+  ]);
+  assert.match(migration, /ADD `cancelled_at`/);
+  assert.match(migration, /release_appointment_slot_locks_on_cancellation/);
+  assert.match(migration, /DELETE FROM `appointment_slot_locks`/);
+  assert.match(service, /cancelPatientAppointment/);
+  assert.match(service, /eq\(patientProfiles\.userId, userId\)/);
+  assert.match(service, /eq\(appointments\.version, Number\(expectedVersion\)\)/);
+  assert.match(service, /appointment\.cancelled_by_patient/);
+  assert.match(service, /No payment or refund status is implied/);
+  assert.match(route, /export async function PATCH/);
+  assert.match(route, /body\.action !== "cancel"/);
+  assert.match(providerRoute, /notInArray\(appointments\.status, \["cancelled", "declined"\]\)/);
+  assert.match(page, /Account-owned bookings, current status/);
+  assert.match(page, /Confirm cancellation/);
+  assert.doesNotMatch(page, /Dr\. Laila Al-Kuwari|refund in progress|Mariam Ahmed|synthetic/i);
+});
