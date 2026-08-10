@@ -289,3 +289,79 @@ export async function cancelPatientAppointment(userId: string, body: Record<stri
   ]);
   return { appointmentId, status: "cancelled", version: updated[0].version };
 }
+
+type ProviderAppointmentAction = "confirm" | "decline" | "complete";
+
+export async function updateProviderAppointment(userId: string, body: Record<string, unknown>) {
+  const appointmentId = requiredString(body.appointmentId, "appointmentId");
+  const expectedVersion = body.version;
+  const action = body.action;
+  if (!Number.isSafeInteger(expectedVersion) || Number(expectedVersion) < 1) throw new AppointmentValidationError("version is invalid");
+  if (!(["confirm", "decline", "complete"] as unknown[]).includes(action)) throw new AppointmentValidationError("action is invalid");
+
+  const db = await getDb();
+  const owned = await db.select({
+    appointment: appointments,
+    patientUserId: patientProfiles.userId,
+    providerOrganizationId: providerProfiles.organizationId,
+  }).from(appointments)
+    .innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
+    .innerJoin(patientProfiles, eq(patientProfiles.id, appointments.patientId))
+    .where(and(eq(appointments.id, appointmentId), eq(providerProfiles.userId, userId)))
+    .limit(1);
+  if (!owned[0]) throw new AppointmentValidationError("Appointment was not found");
+
+  const current = owned[0].appointment;
+  const now = new Date();
+  const transition = action as ProviderAppointmentAction;
+  const nextStatus = transition === "confirm" ? "confirmed" : transition === "decline" ? "declined" : "completed";
+  const allowed = transition === "confirm"
+    ? current.status === "pending" && current.scheduledEnd > now
+    : transition === "decline"
+      ? current.status === "pending" && current.scheduledStart > now
+      : current.status === "confirmed" && current.scheduledStart <= now;
+  if (!allowed) throw new AppointmentValidationError(`This appointment cannot be ${nextStatus} from its current state`);
+
+  const updated = await db.update(appointments).set({
+    status: nextStatus,
+    version: Number(expectedVersion) + 1,
+    updatedAt: now,
+  }).where(and(
+    eq(appointments.id, appointmentId),
+    eq(appointments.providerId, current.providerId),
+    eq(appointments.status, current.status),
+    eq(appointments.version, Number(expectedVersion)),
+  )).returning({ id: appointments.id, version: appointments.version });
+  if (!updated[0]) throw new AppointmentConflictError("This appointment changed before the action was saved. Refresh and try again.");
+
+  const notificationCopy = {
+    confirmed: { title: "Appointment confirmed", body: "Your provider confirmed this appointment. Open appointments to review the current schedule." },
+    declined: { title: "Appointment request declined", body: "Your provider could not accept this appointment. The reserved time has been released so you can choose another option." },
+    completed: { title: "Appointment completed", body: "Your provider marked this appointment as completed. Payment and clinical records are managed separately." },
+  }[nextStatus];
+  await db.batch([
+    db.insert(notifications).values(notificationRecord({
+      userId: owned[0].patientUserId,
+      type: "appointment",
+      title: notificationCopy.title,
+      body: notificationCopy.body,
+      actionPath: "/appointments",
+      resourceType: "appointment",
+      resourceId: appointmentId,
+      dedupeKey: `appointment:${appointmentId}:${nextStatus}:patient`,
+      createdAt: now,
+    })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] }),
+    db.insert(auditEvents).values({
+      id: crypto.randomUUID(),
+      actorUserId: userId,
+      organizationId: owned[0].providerOrganizationId,
+      action: `appointment.${nextStatus}_by_provider`,
+      resourceType: "appointment",
+      resourceId: appointmentId,
+      outcome: "success",
+      metadataJson: JSON.stringify({ previousStatus: current.status }),
+      createdAt: now,
+    }),
+  ]);
+  return { appointmentId, status: nextStatus, version: updated[0].version };
+}

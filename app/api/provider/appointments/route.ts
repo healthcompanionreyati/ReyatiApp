@@ -1,8 +1,9 @@
-import { and, asc, eq, gt, notInArray } from "drizzle-orm";
+import { and, asc, eq, gt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, patientProfiles, providerProfiles, users } from "@/db/schema";
 import { AuthorizationDeniedError, requireOrganizationRole } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
+import { AppointmentConflictError, AppointmentValidationError, updateProviderAppointment } from "@/lib/appointments";
 
 export const dynamic = "force-dynamic";
 const noStore = { "Cache-Control": "private, no-store" };
@@ -46,8 +47,9 @@ export async function GET(request: Request) {
       .innerJoin(patientProfiles, eq(patientProfiles.id, appointments.patientId))
       .innerJoin(users, eq(users.id, patientProfiles.userId))
       .innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
-      .where(and(scope, gt(appointments.scheduledEnd, new Date()), notInArray(appointments.status, ["cancelled", "declined"])))
-      .orderBy(asc(appointments.scheduledStart));
+      .where(and(scope, gt(appointments.scheduledEnd, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))))
+      .orderBy(asc(appointments.scheduledStart))
+      .limit(100);
 
     return Response.json({ appointments: rows }, { headers: noStore });
   } catch (error) {
@@ -58,6 +60,23 @@ export async function GET(request: Request) {
       return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     }
     console.error("Unable to load provider appointments", error);
+    return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const currentUser = await getOrCreateCurrentUser();
+    if (currentUser.status !== "active") throw new AuthorizationDeniedError();
+    let body: Record<string, unknown>;
+    try { body = await request.json() as Record<string, unknown>; } catch { throw new AppointmentValidationError("A valid JSON body is required"); }
+    return Response.json({ appointment: await updateProviderAppointment(currentUser.id, body) }, { headers: noStore });
+  } catch (error) {
+    if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
+    if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
+    if (error instanceof AppointmentValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
+    if (error instanceof AppointmentConflictError) return Response.json({ error: "appointment_conflict", message: error.message }, { status: 409, headers: noStore });
+    console.error("Unable to update provider appointment", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

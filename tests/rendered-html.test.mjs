@@ -339,8 +339,28 @@ test("connects the patient appointment screen to owned bookings and safe cancell
   assert.match(service, /No payment or refund status is implied/);
   assert.match(route, /export async function PATCH/);
   assert.match(route, /body\.action !== "cancel"/);
-  assert.match(providerRoute, /notInArray\(appointments\.status, \["cancelled", "declined"\]\)/);
+  assert.match(providerRoute, /gt\(appointments\.scheduledEnd/);
   assert.match(page, /Account-owned bookings, current status/);
   assert.match(page, /Confirm cancellation/);
   assert.doesNotMatch(page, /Dr\. Laila Al-Kuwari|refund in progress|Mariam Ahmed|synthetic/i);
+});
+
+test("connects provider-owned appointments to audited lifecycle actions", async () => {
+  const [service, route, page] = await Promise.all([
+    readFile(new URL("../lib/appointments.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/appointments/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(service, /updateProviderAppointment/);
+  assert.match(service, /eq\(providerProfiles\.userId, userId\)/);
+  assert.match(service, /eq\(appointments\.version, Number\(expectedVersion\)\)/);
+  assert.match(service, /appointment\.\$\{nextStatus\}_by_provider/);
+  assert.match(service, /The reserved time has been released/);
+  assert.match(route, /export async function PATCH/);
+  assert.match(route, /updateProviderAppointment\(currentUser\.id, body\)/);
+  assert.match(page, /fetch\("\/api\/provider\/appointments"/);
+  assert.match(page, /Confirm request/);
+  assert.match(page, /Complete appointment/);
+  assert.match(page, /Patients are notified automatically/);
+  assert.doesNotMatch(page, /Noora Al-Mansoori|Synthetic-data prototype|synthetic and local/i);
 });

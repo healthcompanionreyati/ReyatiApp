@@ -24,6 +24,7 @@ import "./provider-patients.css";
 import "./provider-services.css";
 import "./provider-insights.css";
 import "./provider-settings.css";
+import "./provider-live.css";
 import "./quality.css";
 import "./ui-polish.css";
 import "./ui-completion.css";
