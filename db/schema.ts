@@ -256,3 +256,22 @@ export const auditEvents = sqliteTable("audit_events", {
   index("idx_audit_events_actor_created").on(table.actorUserId, table.createdAt),
   index("idx_audit_events_org_created").on(table.organizationId, table.createdAt),
 ]);
+
+export const notifications = sqliteTable("notifications", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  actionPath: text("action_path"),
+  resourceType: text("resource_type"),
+  resourceId: text("resource_id"),
+  dedupeKey: text("dedupe_key").notNull(),
+  status: text("status").notNull().default("unread"),
+  readAt: integer("read_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_notifications_user_status_created").on(table.userId, table.status, table.createdAt),
+  index("idx_notifications_user_created").on(table.userId, table.createdAt),
+  uniqueIndex("idx_notifications_user_dedupe").on(table.userId, table.dedupeKey),
+]);

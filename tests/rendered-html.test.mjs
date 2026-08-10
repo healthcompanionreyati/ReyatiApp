@@ -291,3 +291,30 @@ test("ships email-bound platform role invitations and administrator continuity c
   assert.match(audit, /"platform_admin", "security_auditor"/);
   assert.doesNotMatch(page, /synthetic|prototype/i);
 });
+
+test("ships a durable, user-owned notification inbox for real workflow events", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0007_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the notifications migration");
+  const [center, route, page, appointmentsService, verification, migration] = await Promise.all([
+    readFile(new URL("../lib/notification-center.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/notifications/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/notifications/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/appointments.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/verification-management.ts", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+  ]);
+  assert.match(migration, /CREATE TABLE `notifications`/);
+  assert.match(migration, /idx_notifications_user_status_created/);
+  assert.match(migration, /idx_notifications_user_dedupe/);
+  assert.match(center, /eq\(notifications\.userId, userId\)/);
+  assert.match(center, /mark_all_read/);
+  assert.match(center, /nextCursor/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(appointmentsService, /Appointment request received/);
+  assert.match(appointmentsService, /New appointment request/);
+  assert.match(verification, /Professional verification approved/);
+  assert.match(page, /Account-owned updates from your real Reyati activity/);
+  assert.match(page, /Mark all as read/);
+  assert.doesNotMatch(page, /seed:|Role switching|Prototype preferences|synthetic/i);
+});

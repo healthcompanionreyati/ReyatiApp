@@ -1,7 +1,8 @@
 import { and, asc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditEvents, organizationMembers, organizations, providerProfiles, providerServiceLocations, providerVerificationReviews, users } from "@/db/schema";
+import { auditEvents, notifications, organizationMembers, organizations, providerProfiles, providerServiceLocations, providerVerificationReviews, users } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
+import { notificationRecord } from "@/lib/notification-center";
 
 export class VerificationValidationError extends Error {
   constructor(message: string) { super(message); this.name = "VerificationValidationError"; }
@@ -50,6 +51,13 @@ export async function decideProviderVerification(userId: string, body: Record<st
     db.update(providerProfiles).set({ verificationStatus: decision === "approved" ? "verified" : "rejected", publishedAt: decision === "rejected" ? null : provider[0].publishedAt, updatedAt: now }).where(and(eq(providerProfiles.id, providerId), eq(providerProfiles.verificationStatus, "pending"))),
     ...(decision === "rejected" ? [db.update(providerServiceLocations).set({ status: "draft", updatedAt: now }).where(eq(providerServiceLocations.providerId, providerId))] : []),
     db.insert(providerVerificationReviews).values({ id: reviewId, providerId, reviewerUserId: userId, decision, verificationVersion: provider[0].verificationVersion, notes, createdAt: now }),
+    db.insert(notifications).values(notificationRecord({
+      userId: provider[0].userId, type: "provider_verification",
+      title: decision === "approved" ? "Professional verification approved" : "Professional verification needs attention",
+      body: decision === "approved" ? "Your professional verification is complete. You can now publish eligible services." : "Your verification was not approved. Open provider services to review the current status.",
+      actionPath: "/provider/services", resourceType: "provider_profile", resourceId: providerId,
+      dedupeKey: `provider-verification:${providerId}:${provider[0].verificationVersion}`, createdAt: now,
+    })),
     db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: provider[0].organizationId, action: `provider.verification_${decision}`, resourceType: "provider_profile", resourceId: providerId, outcome: "success", metadataJson: JSON.stringify({ reviewId }), createdAt: now }),
   ]);
   return { providerId, decision };

@@ -5,6 +5,7 @@ import {
   appointmentSlotLocks,
   auditEvents,
   facilities,
+  notifications,
   organizations,
   organizationMembers,
   patientProfiles,
@@ -13,6 +14,7 @@ import {
   providerServiceLocations,
   users,
 } from "@/db/schema";
+import { notificationRecord } from "@/lib/notification-center";
 
 const SLOT_MS = 15 * 60 * 1000;
 const MAX_ADVANCE_MS = 60 * 24 * 60 * 60 * 1000;
@@ -226,6 +228,18 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
     await db.batch([
       db.insert(appointments).values(appointment),
       db.insert(appointmentSlotLocks).values(slotLocks),
+      db.insert(notifications).values(notificationRecord({
+        userId, type: "appointment", title: "Appointment request received",
+        body: "Your appointment request is saved. Open appointments to review its current status.",
+        actionPath: "/appointments", resourceType: "appointment", resourceId: appointment.id,
+        dedupeKey: `appointment:${appointment.id}:patient`, createdAt: now,
+      })),
+      db.insert(notifications).values(notificationRecord({
+        userId: provider[0].profile.userId, type: "appointment", title: "New appointment request",
+        body: "A new appointment request was added to your schedule. Open the provider console to review it.",
+        actionPath: "/provider", resourceType: "appointment", resourceId: appointment.id,
+        dedupeKey: `appointment:${appointment.id}:provider`, createdAt: now,
+      })),
       db.insert(auditEvents).values({
         id: crypto.randomUUID(),
         actorUserId: userId,

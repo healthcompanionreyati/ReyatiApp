@@ -13,6 +13,7 @@ import "./partner.css";
 import "./partner-program.css";
 import "./auth.css";
 import "./notifications.css";
+import "./notifications-live.css";
 import "./providers.css";
 import "./family.css";
 import "./payments.css";
