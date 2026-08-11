@@ -35,6 +35,7 @@ import "./quality.css";
 import "./ui-polish.css";
 import "./ui-completion.css";
 import "./system-states.css";
+import "./recovery.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 

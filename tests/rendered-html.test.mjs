@@ -851,3 +851,27 @@ test("keeps the homepage hero lightweight and renderer-safe", async () => {
   assert.doesNotMatch(page, /care-conversation\.png/);
   assert.ok(image.size < 100_000, `homepage artwork is unexpectedly large: ${image.size} bytes`);
 });
+
+test("provides branded recovery for route, application, and missing-page failures", async () => {
+  const [screen, routeError, globalError, notFound, recoveryCss, layout] = await Promise.all([
+    readFile(new URL("../app/components/RecoveryScreen.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/error.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/global-error.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/not-found.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/recovery.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(screen, /SAFE RECOVERY/);
+  assert.match(screen, /Try again/);
+  assert.match(screen, /Return home/);
+  assert.match(screen, /Contact support/);
+  assert.match(screen, /secure Reyati data is not displayed/);
+  assert.match(routeError, /retry=\{reset\}/);
+  assert.match(routeError, /has not been changed by this failed view/);
+  assert.match(globalError, /<html lang="en" dir="ltr">/);
+  assert.match(globalError, /Reyati needs to reload/);
+  assert.match(notFound, /We could not find that page/);
+  assert.match(recoveryCss, /\.recovery-shell/);
+  assert.match(layout, /recovery\.css/);
+});
