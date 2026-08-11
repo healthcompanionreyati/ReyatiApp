@@ -1,30 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-type Tab="overview"|"methods"|"transactions"|"refunds";
-const tx=[
-  {id:"PAY-260802-1042",date:"2 Aug 2026",title:"Dr. Laila Al-Kuwari",type:"Family Medicine · Appointment",amount:"QAR 250",status:"Paid",method:"Visa ·· 4821"},
-  {id:"PAY-260728-0981",date:"28 Jul 2026",title:"Dr. Sara El-Masri",type:"Dermatology · Appointment",amount:"QAR 350",status:"Paid",method:"Benefits balance"},
-  {id:"RFD-260721-8814",date:"21 Jul 2026",title:"West Bay Clinic",type:"Cancelled appointment · Refund",amount:"− QAR 300",status:"Refunded",method:"Visa ·· 4821"},
-  {id:"PAY-260614-0714",date:"14 Jun 2026",title:"Al Rayyan Family Clinic",type:"Pediatrics · Appointment",amount:"QAR 280",status:"Paid",method:"Visa ·· 4821"},
-];
+type LedgerEntry = {
+  appointmentId: string;
+  appointmentStatus: string;
+  scheduledStart: string;
+  providerName: string;
+  specialty: string;
+  facilityName: string | null;
+  amountQar: number | null;
+  currency: string;
+  paymentStatus: string;
+  providerReference: string | null;
+  refundAmountQar: number | null;
+  statusUpdatedAt: string | null;
+  ledgerVersion: number | null;
+};
 
-export default function Payments(){
-  const [lang,setLang]=useState<"en"|"ar">("en");const [tab,setTab]=useState<Tab>("overview");const [checkout,setCheckout]=useState(false);const [step,setStep]=useState(0);const [benefits,setBenefits]=useState(true);const [method,setMethod]=useState("visa");const [receipt,setReceipt]=useState(false);const [toast,setToast]=useState("");const ar=lang==="ar";
-  const due=benefits?50:300;
-  const begin=()=>{setCheckout(true);setStep(0);setReceipt(false)};
-  return <main className={`payments-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
-    <header className="payments-header"><a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">{ar?"ابحث عن رعاية":"Find care"}</a><a href="/appointments">{ar?"المواعيد":"Appointments"}</a><a href="/wallet">{ar?"المحفظة الصحية":"Health wallet"}</a><a className="active" href="/payments">{ar?"المدفوعات":"Payments"}</a></nav><div><button onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button><a href="/notifications">●</a><span>MA</span></div></header>
-    <section className="payments-hero"><div><p>{ar?"واضح من السعر إلى الاسترداد":"CLEAR FROM PRICE TO REFUND"}</p><h1>{ar?"المدفوعات والفواتير":"Payments & billing"}</h1><span>{ar?"اعرف ما ستدفعه، وكيف تم تطبيق المزايا، وأين وصل الاسترداد.":"Know what you’ll pay, how benefits were applied, and where a refund stands."}</span></div><button onClick={begin}>＋ {ar?"تجربة الدفع":"Try checkout"}</button></section>
-    <section className="payments-workspace"><div className="payment-safety"><span>♙</span><p><b>{ar?"نموذج دفع آمن":"Safe payment prototype"}</b>{ar?"لا تتم معالجة بطاقات أو مدفوعات حقيقية. الأرقام والعمليات المعروضة اصطناعية بالكامل.":"No real cards or payments are processed. All numbers and transactions shown are synthetic."}</p></div><div className="payments-tabs">{(["overview","methods","transactions","refunds"] as Tab[]).map(t=><button className={tab===t?"active":""} onClick={()=>setTab(t)} key={t}>{t==="overview"?(ar?"نظرة عامة":"Overview"):t==="methods"?(ar?"وسائل الدفع":"Payment methods"):t==="transactions"?(ar?"المعاملات":"Transactions"):(ar?"الاستردادات":"Refunds")}{t==="refunds"&&<span>1</span>}</button>)}</div>
-      {tab==="overview"&&<div className="payment-overview"><div className="payment-metrics"><article><span>Q</span><div><p>{ar?"المدفوع هذا العام":"Paid this year"}</p><b>QAR 1,180</b><small>4 {ar?"مواعيد مكتملة":"completed appointments"}</small></div></article><article><span>↻</span><div><p>{ar?"قيد الاسترداد":"Refund in progress"}</p><b>QAR 250</b><small>{ar?"متوقع خلال ٣–٧ أيام عمل":"Expected in 3–7 business days"}</small></div></article><article><span>◎</span><div><p>{ar?"المزايا المستخدمة":"Benefits used"}</p><b>QAR 350</b><small>{ar?"من رصيد ممول بقيمة ٢٬٥٠٠":"of QAR 2,500 sponsored"}</small></div></article></div><div className="payments-grid"><section className="payment-panel"><div className="panel-title"><div><h2>{ar?"الدفعة القادمة":"Upcoming payment"}</h2><p>{ar?"راجع التكلفة قبل الموعد":"Review cost before appointment"}</p></div><i>{ar?"بانتظار الدفع":"Payment due"}</i></div><div className="due-appointment"><div className="payment-date"><b>11</b><span>AUG</span></div><div><p>{ar?"طب الأطفال":"Pediatrics"}</p><h3>{ar?"د. هناء السليطي":"Dr. Hana Al-Sulaiti"}</h3><span>{ar?"يوسف أحمد · عيادة الريان العائلية":"Yousef Ahmed · Al Rayyan Family Clinic"}</span></div><strong>QAR 280</strong></div><div className="coverage-preview"><span>◎</span><p><b>{ar?"يمكن تغطية ٢٣٠ ر.ق من المزايا":"QAR 230 may be covered by benefits"}</b>{ar?"المبلغ المتوقع من جيبك: ٥٠ ر.ق":"Expected out-of-pocket: QAR 50"}</p></div><button className="payment-primary" onClick={begin}>{ar?"مراجعة والدفع":"Review & pay"}</button></section><aside className="payment-panel"><div className="panel-title"><div><h2>{ar?"آخر المعاملات":"Recent activity"}</h2><p>{ar?"حالة الدفع والاسترداد":"Payment and refund status"}</p></div><button onClick={()=>setTab("transactions")}>{ar?"عرض الكل":"View all"}</button></div>{tx.slice(0,3).map(t=><div className="mini-transaction" key={t.id}><span className={t.status==="Refunded"?"refund":"paid"}>{t.status==="Refunded"?"↻":"✓"}</span><div><b>{t.title}</b><small>{t.date} · {t.method}</small></div><strong>{t.amount}</strong></div>)}</aside></div></div>}
-      {tab==="methods"&&<div className="payment-methods"><div className="section-heading"><div><h2>{ar?"وسائل الدفع المحفوظة":"Saved payment methods"}</h2><p>{ar?"لا يتم تخزين رقم البطاقة الكامل داخل رعايتي.":"Reyati never stores the full card number."}</p></div><button onClick={()=>setToast(ar?"تم فتح نموذج إضافة بطاقة تجريبي":"Prototype add-card form opened")}>＋ {ar?"إضافة وسيلة":"Add method"}</button></div><article className="card-method"><div className="card-visual"><span>VISA</span><b>•••• •••• •••• 4821</b><small>MARIAM AHMED · 08/29</small></div><div><p>{ar?"الوسيلة الافتراضية":"Default method"}</p><h3>Visa ending 4821</h3><span>{ar?"التحقق الإضافي مفعّل للمدفوعات الحساسة":"Step-up verification enabled for sensitive payments"}</span><div><button>{ar?"تعيين كافتراضي":"Set default"}</button><button>{ar?"إزالة":"Remove"}</button></div></div></article><article className="benefit-method"><span>◎</span><div><p>{ar?"مزايا Atlas Consulting":"Atlas Consulting benefits"}</p><h3>QAR 2,150 {ar?"متاح":"available"}</h3><small>{ar?"يتم تطبيق المزايا المؤهلة قبل الخصم من البطاقة.":"Eligible benefits are applied before charging your card."}</small></div><i>{ar?"نشط":"Active"}</i></article></div>}
-      {tab==="transactions"&&<div className="transactions-view"><div className="transaction-tools"><div><button className="active">{ar?"الكل":"All"}</button><button>{ar?"المدفوعات":"Payments"}</button><button>{ar?"الاستردادات":"Refunds"}</button></div><label>⌕<input placeholder={ar?"البحث بالمرجع أو مقدم الرعاية":"Search reference or provider"}/></label></div><section className="transaction-table"><div className="transaction-head"><span>{ar?"التاريخ":"Date"}</span><span>{ar?"الوصف":"Description"}</span><span>{ar?"الوسيلة":"Method"}</span><span>{ar?"الحالة":"Status"}</span><span>{ar?"المبلغ":"Amount"}</span><span/></div>{tx.map(t=><button key={t.id} onClick={()=>setReceipt(true)}><time>{t.date}<small>{t.id}</small></time><div><b>{t.title}</b><small>{t.type}</small></div><span>{t.method}</span><i className={t.status.toLowerCase()}>{t.status}</i><strong>{t.amount}</strong><em>›</em></button>)}</section></div>}
-      {tab==="refunds"&&<div className="refund-view"><div className="refund-summary"><span>↻</span><div><p>{ar?"استرداد نشط":"ACTIVE REFUND"}</p><h2>QAR 250</h2><small>RFD-260802-8814 · Visa ·· 4821</small></div><i>{ar?"قيد المعالجة":"Processing"}</i></div><ol className="refund-timeline"><li className="done"><span>✓</span><div><b>{ar?"تم طلب الاسترداد":"Refund requested"}</b><small>2 Aug · 10:42 AM</small></div></li><li className="done"><span>✓</span><div><b>{ar?"تمت الموافقة":"Approved by Reyati"}</b><small>2 Aug · 10:42 AM</small></div></li><li className="current"><span>3</span><div><b>{ar?"أُرسل إلى مزود الدفع":"Sent to payment provider"}</b><small>{ar?"المعالجة لدى البنك":"Processing with your bank"}</small></div></li><li><span>4</span><div><b>{ar?"مكتمل":"Completed"}</b><small>{ar?"متوقع خلال ٣–٧ أيام عمل":"Expected within 3–7 business days"}</small></div></li></ol><div className="refund-truth"><span>i</span><p><b>{ar?"حالة واضحة دون وعود غير دقيقة":"Clear status without false promises"}</b>{ar?"يعتمد وقت ظهور المبلغ على مزود الدفع والبنك. ستبقى حالة رعايتي محدثة عند وصول التأكيد.":"The posting time depends on the payment provider and bank. Reyati updates the status when confirmation arrives."}</p><button onClick={()=>setToast(ar?"تم إنشاء طلب دعم للاسترداد":"Refund support request created")}>{ar?"تحتاج مساعدة؟":"Need help?"}</button></div></div>}
+type Filter = "all" | "not_charged" | "paid" | "refunds" | "unavailable";
+
+function label(value: string) {
+  const labels: Record<string, string> = {
+    not_charged: "No charge recorded",
+    unavailable: "Status unavailable",
+    authorized: "Authorized",
+    refund_pending: "Refund confirmed — pending",
+    refunded: "Refunded",
+    failed: "Payment failed",
+  };
+  return labels[value] || value.replaceAll("_", " ").replace(/^./, (character) => character.toUpperCase());
+}
+
+function formatMoney(amount: number | null, currency = "QAR") {
+  return amount === null ? "Amount unavailable" : `${currency} ${amount.toLocaleString("en-QA")}`;
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-QA", { timeZone: "Asia/Qatar", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+export default function Payments() {
+  const [entries, setEntries] = useState<LedgerEntry[]>([]);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [selected, setSelected] = useState<LedgerEntry | null>(null);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/patient/payments", { cache: "no-store" }).then(async (response) => {
+      const payload = await response.json() as { entries?: LedgerEntry[]; error?: string };
+      if (response.status === 401) {
+        window.location.assign("/signin-with-chatgpt?return_to=/payments");
+        throw new Error("Authentication required");
+      }
+      if (!response.ok) throw new Error(payload.error || "Payment records are temporarily unavailable.");
+      return payload.entries || [];
+    }).then((items) => { if (active) setEntries(items); })
+      .catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : "Payment records are temporarily unavailable."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const visible = useMemo(() => entries.filter((entry) => {
+    const matchesFilter = filter === "all" || entry.paymentStatus === filter || (filter === "refunds" && ["refund_pending", "refunded"].includes(entry.paymentStatus));
+    const normalized = query.trim().toLowerCase();
+    return matchesFilter && (!normalized || `${entry.providerName} ${entry.specialty} ${entry.appointmentId} ${entry.providerReference || ""}`.toLowerCase().includes(normalized));
+  }), [entries, filter, query]);
+
+  const paidTotal = entries.filter((entry) => entry.paymentStatus === "paid").reduce((sum, entry) => sum + (entry.amountQar || 0), 0);
+  const notChargedTotal = entries.filter((entry) => entry.paymentStatus === "not_charged").reduce((sum, entry) => sum + (entry.amountQar || 0), 0);
+  const refunds = entries.filter((entry) => ["refund_pending", "refunded"].includes(entry.paymentStatus)).length;
+
+  return <main className="payments-shell payments-live-shell" id="main-content">
+    <header className="payments-header"><a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">Find care</a><a href="/appointments">Appointments</a><a href="/wallet">Health records</a><a className="active" href="/payments">Payments</a><a href="/support">Support</a></nav><div><a href="/notifications">Notifications</a><span>RY</span></div></header>
+    <section className="payments-hero"><div><p>ACCOUNT-OWNED FINANCIAL STATUS</p><h1>Payments & billing</h1><span>See the recorded payment state tied to each of your appointments—without confusing schedule changes with refunds.</span></div><a href="/support">Payment support</a></section>
+    <section className="payments-workspace">
+      <div className="payment-safety"><span>i</span><p><b>No payment provider is connected yet.</b> New bookings are recorded as “No charge recorded” using the provider’s published fee. Reyati will never claim a payment or refund unless a trusted payment integration confirms it.</p></div>
+
+      <div className="payment-metrics payments-live-metrics"><article><span>Q</span><div><p>Confirmed paid</p><b>{formatMoney(paidTotal)}</b><small>From recorded paid entries only</small></div></article><article><span>○</span><div><p>No charge recorded</p><b>{formatMoney(notChargedTotal)}</b><small>Published fees, not money collected</small></div></article><article><span>↻</span><div><p>Recorded refunds</p><b>{refunds}</b><small>Only provider-confirmed refund states</small></div></article></div>
+
+      <section className="payment-panel payments-live-panel"><div className="panel-title"><div><h2>Appointment payment ledger</h2><p>Only appointments owned by your signed-in patient account appear here.</p></div></div>
+        <div className="payments-live-toolbar"><div>{(["all", "not_charged", "paid", "refunds", "unavailable"] as Filter[]).map((item) => <button key={item} className={filter === item ? "active" : ""} onClick={() => setFilter(item)}>{item === "all" ? "All" : item === "refunds" ? "Refunds" : label(item)}</button>)}</div><label aria-label="Search payment records">⌕<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search provider or reference"/></label></div>
+        {error && <div className="payments-live-error"><span>{error}</span><button onClick={() => setError("")}>×</button></div>}
+        {loading ? <div className="payments-live-state"><span>◌</span><h2>Loading your payment ledger</h2><p>Checking the latest recorded status.</p></div>
+          : visible.length === 0 ? <div className="payments-live-state"><span>Q</span><h2>{query || filter !== "all" ? "No matching entries" : "No appointment payment records yet"}</h2><p>Payment status will appear after you book with a provider that publishes a fee.</p><a href="/providers">Find care</a></div>
+          : <div className="payments-live-list">{visible.map((entry) => <button key={entry.appointmentId} onClick={() => setSelected(entry)}><time>{formatDate(entry.scheduledStart)}<small>{entry.appointmentId}</small></time><div><b>{entry.providerName}</b><small>{entry.specialty} · {entry.facilityName || "Facility not recorded"}</small></div><span>Appointment: {label(entry.appointmentStatus)}</span><i className={entry.paymentStatus}>{label(entry.paymentStatus)}</i><strong>{formatMoney(entry.amountQar, entry.currency)}</strong><em>›</em></button>)}</div>}
+      </section>
     </section>
-    {checkout&&<div className="checkout-layer"><section className="checkout-dialog"><button className="drawer-close" onClick={()=>setCheckout(false)}>×</button>{step===0&&<><p>{ar?"مراجعة التكلفة":"COST REVIEW"}</p><h2>{ar?"راجع قبل الدفع":"Review before you pay"}</h2><div className="checkout-provider"><span>HS</span><div><b>{ar?"د. هناء السليطي":"Dr. Hana Al-Sulaiti"}</b><small>{ar?"طب الأطفال · ١١ أغسطس، ١٠:٠٠ ص":"Pediatrics · 11 Aug, 10:00 AM"}</small><p>{ar?"المريض: يوسف أحمد":"Patient: Yousef Ahmed"}</p></div></div><dl className="cost-breakdown"><div><dt>{ar?"رسوم الاستشارة":"Consultation fee"}</dt><dd>QAR 280</dd></div><div><dt>{ar?"رسوم المنصة":"Platform fee"}</dt><dd>QAR 20</dd></div><div className="benefit-line"><dt><b>{ar?"تطبيق مزايا Atlas":"Apply Atlas benefits"}</b><small>{ar?"الرصيد المتاح: ١٬٤٢٠ ر.ق":"Available: QAR 1,420"}</small></dt><dd><button className={benefits?"toggle on":"toggle"} onClick={()=>setBenefits(!benefits)}><span/></button></dd></div><div className="discount"><dt>{ar?"المزايا المطبقة":"Benefits applied"}</dt><dd>− QAR {benefits?250:0}</dd></div><div className="total"><dt>{ar?"المبلغ المطلوب اليوم":"Due today"}</dt><dd>QAR {due}</dd></div></dl><div className="cancellation-policy"><span>i</span><p><b>{ar?"إلغاء مجاني حتى ١٠ أغسطس، ١٠:٠٠ ص":"Free cancellation until 10 Aug, 10:00 AM"}</b>{ar?"بعد ذلك قد تُطبق رسوم بقيمة ٥٠ ر.ق. وستظهر قبل التأكيد.":"After that, a QAR 50 fee may apply and will be shown before confirmation."}</p></div><button className="payment-primary full" onClick={()=>setStep(1)}>{ar?"متابعة إلى الدفع":"Continue to payment"} →</button></>}{step===1&&<><p>{ar?"وسيلة الدفع":"PAYMENT METHOD"}</p><h2>{ar?"ادفع بأمان":"Pay securely"}</h2><div className="checkout-total"><span>{ar?"المبلغ الإجمالي":"Total due"}</span><b>QAR {due}</b></div><div className="method-options"><button className={method==="visa"?"active":""} onClick={()=>setMethod("visa")}><span>VISA</span><div><b>Visa ·· 4821</b><small>{ar?"تنتهي في ٠٨/٢٩":"Expires 08/29"}</small></div><i>{method==="visa"?"✓":""}</i></button><button className={method==="apple"?"active":""} onClick={()=>setMethod("apple")}><span>●</span><div><b>Apple Pay</b><small>{ar?"تأكيد على هذا الجهاز":"Confirm on this device"}</small></div><i>{method==="apple"?"✓":""}</i></button></div><label className="save-receipt"><input type="checkbox" defaultChecked/>{ar?"إرسال إيصال تجريبي إلى m•••••@example.test":"Send prototype receipt to m•••••@example.test"}</label><div className="secure-charge"><span>♙</span><p>{ar?"سيطلب المنتج الحقيقي تحققاً إضافياً عند الحاجة. لا تتم معالجة أي دفعة في هذا النموذج.":"Production may request step-up verification when needed. No payment is processed in this prototype."}</p></div><div className="checkout-actions"><button onClick={()=>setStep(0)}>{ar?"رجوع":"Back"}</button><button className="payment-primary" onClick={()=>setStep(2)}>{ar?`دفع ${due} ر.ق`:`Pay QAR ${due}`}</button></div></>}{step===2&&<div className="payment-success"><span>✓</span><p>{ar?"تمت المحاكاة":"PAYMENT SIMULATED"}</p><h2>{ar?"تم تأكيد الموعد":"Appointment confirmed"}</h2><b>QAR {due} · {method==="visa"?"Visa ·· 4821":"Apple Pay"}</b><small>{ar?"مرجع تجريبي: PAY-260811-1198. لم يتم خصم أي مبلغ حقيقي.":"Prototype reference PAY-260811-1198. No real charge was made."}</small><div><a href="/appointments">{ar?"عرض الموعد":"View appointment"}</a><button onClick={()=>{setCheckout(false);setReceipt(true)}}>{ar?"عرض الإيصال":"View receipt"}</button></div></div>}</section></div>}
-    {receipt&&<div className="checkout-layer" onMouseDown={e=>e.target===e.currentTarget&&setReceipt(false)}><section className="receipt-dialog"><button className="drawer-close" onClick={()=>setReceipt(false)}>×</button><img src="/brand/reyati-logo.svg" alt="Reyati"/><p>{ar?"إيصال تجريبي":"PROTOTYPE RECEIPT"}</p><h2>QAR 250.00</h2><span>{ar?"تم الدفع · ٢ أغسطس ٢٠٢٦":"Paid · 2 August 2026"}</span><dl><div><dt>{ar?"المرجع":"Reference"}</dt><dd>PAY-260802-1042</dd></div><div><dt>{ar?"مقدم الرعاية":"Provider"}</dt><dd>{ar?"د. ليلى الكواري":"Dr. Laila Al-Kuwari"}</dd></div><div><dt>{ar?"رسوم الاستشارة":"Consultation"}</dt><dd>QAR 250</dd></div><div><dt>{ar?"وسيلة الدفع":"Payment method"}</dt><dd>Visa ·· 4821</dd></div></dl><div className="receipt-note">{ar?"هذا مستند اصطناعي للنموذج وليس إثبات دفع حقيقياً.":"Synthetic prototype document — not proof of a real payment."}</div><button onClick={()=>setToast(ar?"تم إعداد تنزيل الإيصال التجريبي":"Prototype receipt prepared for download")}>↓ {ar?"تنزيل الإيصال":"Download receipt"}</button></section></div>}
-    {toast&&<div className="payment-toast"><span>✓</span>{toast}<button onClick={()=>setToast("")}>×</button></div>}
-  </main>
+
+    {selected && <div className="checkout-layer" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><section className="receipt-dialog payments-live-detail"><button className="drawer-close" onClick={() => setSelected(null)} aria-label="Close">×</button><img src="/brand/reyati-logo.svg" alt="Reyati"/><p>PAYMENT STATUS RECORD</p><h2>{formatMoney(selected.amountQar, selected.currency)}</h2><span className={`payment-status-large ${selected.paymentStatus}`}>{label(selected.paymentStatus)}</span><dl><div><dt>Provider</dt><dd>{selected.providerName}</dd></div><div><dt>Appointment</dt><dd>{formatDate(selected.scheduledStart)}</dd></div><div><dt>Appointment status</dt><dd>{label(selected.appointmentStatus)}</dd></div><div><dt>Payment reference</dt><dd>{selected.providerReference || "No provider reference recorded"}</dd></div><div><dt>Refund amount</dt><dd>{selected.refundAmountQar === null ? "No confirmed refund" : formatMoney(selected.refundAmountQar, selected.currency)}</dd></div><div><dt>Ledger version</dt><dd>{selected.ledgerVersion || "Legacy appointment — untracked"}</dd></div></dl><div className="refund-truth"><span>i</span><p><b>Schedule and payment states are separate.</b>Cancelling an appointment does not prove that money was collected, that a refund is owed, or that a refund was completed.</p></div><a href="/support">Ask about this payment</a></section></div>}
+  </main>;
 }

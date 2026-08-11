@@ -9,6 +9,7 @@ import {
   organizations,
   organizationMembers,
   patientProfiles,
+  paymentLedgerEntries,
   providerProfiles,
   providerAvailabilityWindows,
   providerServiceLocations,
@@ -229,6 +230,12 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
     await db.batch([
       db.insert(appointments).values(appointment),
       db.insert(appointmentSlotLocks).values(slotLocks),
+      db.insert(paymentLedgerEntries).values({
+        id: crypto.randomUUID(), appointmentId: appointment.id, patientId: patient.id,
+        amountQar: service[0].feeQar, currency: "QAR", status: "not_charged",
+        providerReference: null, refundAmountQar: null, statusUpdatedAt: now,
+        version: 1, createdAt: now, updatedAt: now,
+      }),
       db.insert(notifications).values(notificationRecord({
         userId, type: "appointment", title: "Appointment request received",
         body: "Your appointment request is saved. Open appointments to review its current status.",

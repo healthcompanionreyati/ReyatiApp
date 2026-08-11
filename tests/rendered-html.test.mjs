@@ -416,3 +416,30 @@ test("exposes only patient-owned, approved fields from finalized visit records",
   assert.match(appointmentsPage, /Visit record/);
   assert.doesNotMatch(page, /Dr\. Laila|Doha Diagnostic|Mariam Ahmed|prescription|Synthetic document|Confirm secure share/i);
 });
+
+test("ships an account-owned payment ledger without invented charges or refunds", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0010_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the payment ledger migration");
+  const [schema, migration, booking, service, route, page] = await Promise.all([
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+    readFile(new URL("../lib/appointments.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/patient-payments.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/patient/payments/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/payments/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(schema, /export const paymentLedgerEntries/);
+  assert.match(schema, /idx_payment_ledger_patient_status_updated/);
+  assert.match(migration, /CHECK \(`status` IN \('not_charged', 'authorized', 'paid', 'refund_pending', 'refunded', 'failed'\)\)/);
+  assert.match(migration, /PRAGMA optimize/);
+  assert.match(booking, /db\.insert\(paymentLedgerEntries\)/);
+  assert.match(booking, /status: "not_charged"/);
+  assert.match(service, /eq\(patientProfiles\.userId, userId\)/);
+  assert.match(service, /patient\.payment_ledger_viewed/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /No payment provider is connected yet/);
+  assert.match(page, /Cancelling an appointment does not prove/);
+  assert.match(page, /No provider reference recorded/);
+  assert.doesNotMatch(page, /Visa|Apple Pay|Dr\. Laila|Mariam Ahmed|Atlas Consulting|PAY-260|Refund in progress|Try checkout|synthetic/i);
+});

@@ -228,6 +228,24 @@ export const encounterNotes = sqliteTable("encounter_notes", {
   index("idx_encounter_notes_author_status").on(table.authorUserId, table.status),
 ]);
 
+export const paymentLedgerEntries = sqliteTable("payment_ledger_entries", {
+  id: text("id").primaryKey(),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }),
+  amountQar: integer("amount_qar").notNull(),
+  currency: text("currency").notNull().default("QAR"),
+  status: text("status").notNull().default("not_charged"),
+  providerReference: text("provider_reference"),
+  refundAmountQar: integer("refund_amount_qar"),
+  statusUpdatedAt: integer("status_updated_at", { mode: "timestamp_ms" }).notNull(),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_payment_ledger_appointment").on(table.appointmentId),
+  index("idx_payment_ledger_patient_status_updated").on(table.patientId, table.status, table.statusUpdatedAt),
+  uniqueIndex("idx_payment_ledger_provider_reference").on(table.providerReference),
+]);
+
 export const consents = sqliteTable("consents", {
   id: text("id").primaryKey(),
   subjectUserId: text("subject_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
