@@ -716,3 +716,20 @@ test("replaces fabricated employer and programme surfaces with audited activatio
   assert.match(programmePage, /Appointments, providers, services, diagnoses, clinical notes, medications, claims/);
   assert.doesNotMatch(programmePage, /Atlas Consulting|Reyati Plus|Reyati Essential|Executive Care|Aisha M\.|Fahad K\.|EMP-1058|QAR 612|248|73%|Prototype change saved|All changes are safely simulated/i);
 });
+
+test("turns the journey catalog into a truthful production capability directory", async () => {
+  const page = await readFile(new URL("../app/journeys/page.tsx", import.meta.url), "utf8");
+
+  assert.match(page, /Every workspace\. An honest status\./);
+  assert.match(page, /Authorization is enforced server-side/);
+  assert.match(page, /Recorded payment status; no checkout or money movement/);
+  assert.match(page, /Recorded aggregates; no settlement or refund controls/);
+  assert.match(page, /Activation boundary; no review source connected/);
+  assert.match(page, /Activation requirements; no employer data connected/);
+  assert.match(page, /Private production workspace/);
+  assert.match(page, /tone: "live"/);
+  assert.match(page, /tone: "readonly"/);
+  assert.match(page, /tone: "restricted"/);
+  assert.match(page, /tone: "inactive"/);
+  assert.doesNotMatch(page, /CONNECTED PRODUCT PROTOTYPE|All data is synthetic|every action is safely simulated|Planning prototype|Prototype coverage|Checkout, receipts, and refunds|Settlements, reconciliation, refunds|Privacy redaction, content integrity/i);
+});
