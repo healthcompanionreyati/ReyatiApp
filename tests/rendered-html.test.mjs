@@ -820,3 +820,21 @@ test("requires deliberate confirmation for high-impact platform access and verif
   assert.match(verification, /Publication will be withdrawn/);
   assert.doesNotMatch(verification, /onClick=\{\(\) => decide\("rejected"\)\}/);
 });
+
+test("shows accessible field-level validation across product forms", async () => {
+  const [accessibility, quality] = await Promise.all([
+    readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/quality.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(accessibility, /document\.addEventListener\("invalid", handleInvalid, true\)/);
+  assert.match(accessibility, /This field is required\./);
+  assert.match(accessibility, /Enter a valid email address\./);
+  assert.match(accessibility, /aria-invalid/);
+  assert.match(accessibility, /aria-describedby/);
+  assert.match(accessibility, /field-validation-error/);
+  assert.match(accessibility, /requestAnimationFrame\(\(\) => \{ control\.focus\(\)/);
+  assert.match(accessibility, /control\.validity\.valid\) clearFieldError/);
+  assert.match(quality, /\.field-validation-error/);
+  assert.match(quality, /\[aria-invalid="true"\]/);
+});

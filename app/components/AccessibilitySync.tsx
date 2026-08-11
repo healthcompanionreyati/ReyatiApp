@@ -7,6 +7,55 @@ export default function AccessibilitySync() {
     let activeDialog: HTMLElement | null = null;
     let dialogOpener: HTMLElement | null = null;
     let dialogSequence = 0;
+    let fieldSequence = 0;
+    let invalidFocusQueued = false;
+
+    type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+    const validationMessage = (control: FormControl) => {
+      const validity = control.validity;
+      if (validity.valueMissing) return "This field is required.";
+      if (validity.typeMismatch && control instanceof HTMLInputElement && control.type === "email") return "Enter a valid email address.";
+      if (validity.tooShort) return `Enter at least ${control.minLength} characters.`;
+      if (validity.tooLong) return `Use no more than ${control.maxLength} characters.`;
+      if (validity.rangeUnderflow && control instanceof HTMLInputElement) return `Enter ${control.min} or more.`;
+      if (validity.rangeOverflow && control instanceof HTMLInputElement) return `Enter ${control.max} or less.`;
+      if (validity.patternMismatch) return control.title || "Use the requested format.";
+      return control.validationMessage || "Check this field and try again.";
+    };
+
+    const clearFieldError = (control: FormControl) => {
+      const errorId = control.dataset.validationError;
+      if (!errorId) return;
+      document.getElementById(errorId)?.remove();
+      const describedBy = (control.getAttribute("aria-describedby") ?? "").split(/\s+/).filter((id) => id && id !== errorId);
+      if (describedBy.length) control.setAttribute("aria-describedby", describedBy.join(" "));
+      else control.removeAttribute("aria-describedby");
+      control.removeAttribute("aria-invalid");
+      delete control.dataset.validationError;
+    };
+
+    const showFieldError = (control: FormControl) => {
+      if (control.validity.valid) { clearFieldError(control); return; }
+      if (!control.id) control.id = `reyati-field-${++fieldSequence}`;
+      const errorId = control.dataset.validationError || `${control.id}-error`;
+      let message = document.getElementById(errorId);
+      if (!message) {
+        message = document.createElement("span");
+        message.id = errorId;
+        message.className = "field-validation-error";
+        message.setAttribute("role", "alert");
+        const label = control.closest("label");
+        if (label?.contains(control)) label.append(message);
+        else control.insertAdjacentElement("afterend", message);
+      }
+      message.textContent = validationMessage(control);
+      control.dataset.validationError = errorId;
+      control.setAttribute("aria-invalid", "true");
+      const describedBy = new Set((control.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean));
+      describedBy.add(errorId);
+      control.setAttribute("aria-describedby", [...describedBy].join(" "));
+    };
 
     const sync = () => {
       const root = document.querySelector<HTMLElement>("main[dir]");
@@ -130,13 +179,37 @@ export default function AccessibilitySync() {
       }
     };
 
+    const handleInvalid = (event: Event) => {
+      const control = event.target;
+      if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement)) return;
+      showFieldError(control);
+      if (!invalidFocusQueued) {
+        invalidFocusQueued = true;
+        requestAnimationFrame(() => { control.focus(); invalidFocusQueued = false; });
+      }
+    };
+
+    const handleFieldInput = (event: Event) => {
+      const control = event.target;
+      if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement)) return;
+      if (!control.dataset.validationError) return;
+      if (control.validity.valid) clearFieldError(control);
+      else showFieldError(control);
+    };
+
     sync();
     document.addEventListener("keydown", handleDialogKeys);
+    document.addEventListener("invalid", handleInvalid, true);
+    document.addEventListener("input", handleFieldInput);
+    document.addEventListener("change", handleFieldInput);
     const observer = new MutationObserver(sync);
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["dir", "class", "disabled"] });
     return () => {
       observer.disconnect();
       document.removeEventListener("keydown", handleDialogKeys);
+      document.removeEventListener("invalid", handleInvalid, true);
+      document.removeEventListener("input", handleFieldInput);
+      document.removeEventListener("change", handleFieldInput);
       document.body.classList.remove("has-open-dialog");
       activeDialog = null;
       dialogOpener = null;

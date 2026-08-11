@@ -124,6 +124,10 @@ body.has-open-dialog { overflow: hidden; }
 .appointment-confirm-trigger{width:100%;margin-top:14px;min-height:42px}
 @media(max-width:520px){.confirm-action-dialog{padding:24px 18px}.confirm-action-buttons{grid-template-columns:1fr}}
 
+.field-validation-error{display:block;width:100%;margin-top:6px;color:#9b3e32;font:700 10px/1.45 Manrope,Arial,sans-serif;letter-spacing:0}
+input[aria-invalid="true"],select[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b54e3e!important;box-shadow:0 0 0 3px rgba(181,78,62,.12)!important;background-color:#fffafa!important}
+input[aria-invalid="true"]:focus,select[aria-invalid="true"]:focus,textarea[aria-invalid="true"]:focus{outline:2px solid #b54e3e!important;outline-offset:2px}
+
 .production-toast {
   position: fixed;
   inset-inline-end: 22px;
