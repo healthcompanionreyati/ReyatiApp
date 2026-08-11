@@ -9,17 +9,20 @@ import {
   validateBookingInput,
   validateIdempotencyKey,
 } from "@/lib/appointments";
+import { AuthorizationDeniedError } from "@/lib/authorization";
+import { resolveCareSubject } from "@/lib/family-access";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 const noStore = { "Cache-Control": "private, no-store" };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getOrCreateCurrentUser();
     if (user.status !== "active") {
       return Response.json({ error: "account_inactive" }, { status: 403, headers: noStore });
     }
+    const subjectUserId = await resolveCareSubject(user.id, new URL(request.url).searchParams.get("subjectUserId"), "appointments");
     const db = await getDb();
     const rows = await db.select({
       id: appointments.id,
@@ -40,9 +43,9 @@ export async function GET() {
       .innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
       .innerJoin(users, eq(users.id, providerProfiles.userId))
       .leftJoin(facilities, eq(facilities.id, appointments.facilityId))
-      .where(eq(patientProfiles.userId, user.id))
+      .where(eq(patientProfiles.userId, subjectUserId))
       .orderBy(desc(appointments.scheduledStart));
-    return Response.json({ appointments: rows }, { headers: noStore });
+    return Response.json({ appointments: rows, delegated: subjectUserId !== user.id }, { headers: noStore });
   } catch (error) {
     return apiError(error, "Unable to load patient appointments");
   }
@@ -61,7 +64,9 @@ export async function POST(request: Request) {
     if (user.status !== "active") {
       return Response.json({ error: "account_inactive" }, { status: 403, headers: noStore });
     }
-    const result = await bookAppointment(user.id, validateBookingInput(body), idempotencyKey);
+    const value = body as Record<string, unknown>;
+    const subjectUserId = await resolveCareSubject(user.id, typeof value.subjectUserId === "string" ? value.subjectUserId : null, "appointments");
+    const result = await bookAppointment(user.id, subjectUserId, validateBookingInput(body), idempotencyKey);
     const publicAppointment = {
       id: result.appointment.id,
       providerId: result.appointment.providerId,
@@ -91,7 +96,8 @@ export async function PATCH(request: Request) {
     let body: Record<string, unknown>;
     try { body = await request.json() as Record<string, unknown>; } catch { throw new AppointmentValidationError("A valid JSON body is required"); }
     if (body.action !== "cancel") throw new AppointmentValidationError("action is invalid");
-    return Response.json({ appointment: await cancelPatientAppointment(user.id, body) }, { headers: noStore });
+    const subjectUserId = await resolveCareSubject(user.id, typeof body.subjectUserId === "string" ? body.subjectUserId : null, "appointments");
+    return Response.json({ appointment: await cancelPatientAppointment(user.id, subjectUserId, body) }, { headers: noStore });
   } catch (error) {
     return apiError(error, "Unable to cancel appointment");
   }
@@ -100,6 +106,9 @@ export async function PATCH(request: Request) {
 function apiError(error: unknown, message: string) {
   if (error instanceof AuthenticationRequiredError) {
     return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
+  }
+  if (error instanceof AuthorizationDeniedError) {
+    return Response.json({ error: "access_denied", message: "Appointment access is not active for this account" }, { status: 403, headers: noStore });
   }
   if (error instanceof AppointmentValidationError) {
     return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });

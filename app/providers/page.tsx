@@ -64,6 +64,7 @@ export default function ProviderDiscovery() {
   const [bookingKey, setBookingKey] = useState("");
   const [booking, setBooking] = useState<BookingState>("idle");
   const [bookingMessage, setBookingMessage] = useState("");
+  const [subjectUserId, setSubjectUserId] = useState<string | null>(null);
   const ar = lang === "ar";
 
   useEffect(() => {
@@ -75,6 +76,7 @@ export default function ProviderDiscovery() {
         if (!response.ok) throw new Error("catalog unavailable");
         const data = await response.json() as { providers?: Provider[] };
         setProviders(Array.isArray(data.providers) ? data.providers : []);
+        setSubjectUserId(new URLSearchParams(window.location.search).get("subjectUserId"));
         setCatalogError(false);
       } catch (error) {
         if ((error as Error).name !== "AbortError") setCatalogError(true);
@@ -163,11 +165,12 @@ export default function ProviderDiscovery() {
           scheduledStart: slot.scheduledStart,
           scheduledEnd: slot.scheduledEnd,
           mode: slot.mode,
+          subjectUserId,
         }),
       });
       const data = await response.json() as { error?: string; message?: string };
       if (response.status === 401) {
-        window.location.assign("/signin-with-chatgpt?return_to=/providers");
+        window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(`/providers${window.location.search}`)}`);
         return;
       }
       if (!response.ok) throw new Error(data.message || data.error || "booking failed");
@@ -188,6 +191,8 @@ export default function ProviderDiscovery() {
       </nav>
       <div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label="Notifications">●</a><span>MA</span></div>
     </header>
+
+    {subjectUserId && <div className="providers-delegated-note"><b>Booking with delegated consent.</b> This request will belong to the patient who granted appointment access. The patient, provider, and your account will be notified, and the action will be audited.</div>}
 
     <section className="provider-search-hero">
       <div>
@@ -233,7 +238,7 @@ export default function ProviderDiscovery() {
 
     {selected && <div className="profile-layer" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><aside className="provider-profile" aria-label={ar ? "ملف مقدم الرعاية" : "Provider profile"}>
       <button className="drawer-close" onClick={() => setSelected(null)} aria-label={ar ? "إغلاق" : "Close"}>×</button>
-      {booking === "confirmed" ? <div className="profile-confirmed"><span>✓</span><p>{ar ? "تم الحجز" : "BOOKING CONFIRMED"}</p><h2>{ar ? "تم تأكيد موعدك" : "Your appointment is confirmed"}</h2><b>{slot?.label} · {selected.name}</b><small>{ar ? "تم حفظ الموعد بأمان في حسابك." : "The appointment is securely saved to your account."}</small><a href="/appointments">{ar ? "عرض مواعيدي" : "View my appointments"}</a></div> : <>
+      {booking === "confirmed" ? <div className="profile-confirmed"><span>✓</span><p>{ar ? "تم الحجز" : "BOOKING CONFIRMED"}</p><h2>{ar ? "تم تأكيد موعدك" : "Your appointment is confirmed"}</h2><b>{slot?.label} · {selected.name}</b><small>{ar ? "تم حفظ الموعد بأمان في حسابك." : subjectUserId ? "The appointment is securely saved to the patient account that granted access." : "The appointment is securely saved to your account."}</small><a href={subjectUserId ? `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/appointments"}>{ar ? "عرض مواعيدي" : subjectUserId ? "View delegated appointments" : "View my appointments"}</a></div> : <>
         <div className="profile-head"><div className={`provider-photo large ${colorFor(selected.id)}`}>{initials(selected.name)}<span>✓</span></div><div><p>✓ {ar ? "مقدم رعاية موثّق" : "Verified provider"}</p><h2>{selected.name}</h2><span>{selected.specialty}</span></div></div>
         <div className="verification-strip"><span>♙</span><p><b>{ar ? "تم التحقق من الترخيص والانتماء" : "Licence and affiliation verified"}</b>{ar ? "تم نشر الملف من منشأة نشطة" : "Published by an active organization"}</p></div>
         <section className="profile-about"><h3>{ar ? "عن مقدم الرعاية" : "About"}</h3><p>{ar ? selected.bioAr || selected.bioEn || "لم تُضف نبذة بعد." : selected.bioEn || "The provider has not added a public biography yet."}</p><div><article><b>{selected.yearsExperience ?? "—"}</b><small>{ar ? "سنوات خبرة" : "Years experience"}</small></article><article><b>{selected.languages.join(" · ") || "—"}</b><small>{ar ? "اللغات" : "Languages"}</small></article><article><b>✓</b><small>{ar ? "هوية موثقة" : "Verified identity"}</small></article></div></section>

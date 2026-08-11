@@ -70,10 +70,14 @@ export async function getFamilyAccess(userId: string) {
   return { managed, delegated, invitations };
 }
 
-export async function resolveCareSubject(userId: string, requestedSubjectUserId: string | null, scope: "records" | "payments") {
+export async function resolveCareSubject(userId: string, requestedSubjectUserId: string | null, scope: "appointments" | "records" | "payments") {
   if (!requestedSubjectUserId || requestedSubjectUserId === userId) return userId;
   if (requestedSubjectUserId.length > 128) throw new AuthorizationDeniedError();
-  const permissionColumn = scope === "records" ? careRelationships.recordsAccess : careRelationships.paymentsAccess;
+  const permissionColumn = scope === "appointments"
+    ? careRelationships.appointmentsAccess
+    : scope === "records"
+      ? careRelationships.recordsAccess
+      : careRelationships.paymentsAccess;
   const db = await getDb();
   const relationship = await db.select({ id: careRelationships.id }).from(careRelationships).where(and(
     eq(careRelationships.managerUserId, userId),

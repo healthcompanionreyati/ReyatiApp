@@ -11,10 +11,12 @@ type Appointment = {
 const terminalStatuses = ["cancelled", "completed", "declined", "no_show"];
 
 async function request(init?: RequestInit) {
-  const response = await fetch("/api/appointments", init);
-  const payload = await response.json() as { appointments?: Appointment[]; appointment?: unknown; message?: string; error?: string };
+  const subjectUserId = new URLSearchParams(window.location.search).get("subjectUserId");
+  const endpoint = subjectUserId ? `/api/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/api/appointments";
+  const response = await fetch(endpoint, init);
+  const payload = await response.json() as { appointments?: Appointment[]; appointment?: unknown; delegated?: boolean; message?: string; error?: string };
   if (response.status === 401) {
-    window.location.assign("/signin-with-chatgpt?return_to=/appointments");
+    window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(`/appointments${window.location.search}`)}`);
     throw new Error("Authentication required");
   }
   if (!response.ok) {
@@ -22,7 +24,7 @@ async function request(init?: RequestInit) {
     (error as Error & { status?: number }).status = response.status;
     throw error;
   }
-  return payload;
+  return { ...payload, requestedSubjectUserId: subjectUserId };
 }
 
 function initials(name: string) { return name.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase(); }
@@ -37,17 +39,19 @@ export default function Appointments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [subjectUserId, setSubjectUserId] = useState<string | null>(null);
+  const [delegated, setDelegated] = useState(false);
 
   async function load() {
     setError("");
-    try { const payload = await request(); setItems(payload.appointments ?? []); }
+    try { const payload = await request(); setItems(payload.appointments ?? []); setDelegated(Boolean(payload.delegated)); setSubjectUserId(payload.requestedSubjectUserId); }
     catch (caught) { setError(caught instanceof Error ? caught.message : "Appointments unavailable"); }
     finally { setLoading(false); }
   }
 
   useEffect(() => {
     let active = true;
-    request().then((payload) => { if (active) setItems(payload.appointments ?? []); })
+    request().then((payload) => { if (active) { setItems(payload.appointments ?? []); setDelegated(Boolean(payload.delegated)); setSubjectUserId(payload.requestedSubjectUserId); } })
       .catch((caught) => { if (active) setError(caught instanceof Error ? caught.message : "Appointments unavailable"); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -60,25 +64,27 @@ export default function Appointments() {
     .filter((item) => new Date(item.scheduledEnd).valueOf() <= referenceTime || terminalStatuses.includes(item.status))
     .sort((a, b) => new Date(b.scheduledStart).valueOf() - new Date(a.scheduledStart).valueOf()), [items, referenceTime]);
   const visible = tab === "upcoming" ? upcoming : history;
+  const providersPath = subjectUserId ? `/providers?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/providers";
 
   async function cancelAppointment() {
     if (!selected || cancelling) return;
     setCancelling(true); setError("");
     try {
-      await request({ method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancel", appointmentId: selected.id, version: selected.version }) });
+      await request({ method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancel", appointmentId: selected.id, version: selected.version, subjectUserId }) });
       setSelected(null); setNotice("Appointment cancelled and schedule released"); await load();
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Appointment could not be cancelled"); }
     finally { setCancelling(false); }
   }
 
   return <main className="appointments-shell" id="main-content">
-    <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">Find care</a><a className="active" href="/appointments">Appointments</a><a href="/wallet">Health wallet</a><a href="/payments">Payments</a><a href="/support">Support</a></nav><div><a href="/notifications" className="appointment-notification-link">●</a><span className="avatar">RY</span></div></header>
-    <section className="appointments-hero"><div><p>Your care journey</p><h1>Appointments</h1><span>Account-owned bookings, current status, and safe lifecycle controls.</span></div><a href="/providers">＋ Book new appointment</a></section>
+    <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href={providersPath}>Find care</a><a className="active" href="/appointments">Appointments</a><a href="/wallet">Health wallet</a><a href="/payments">Payments</a><a href="/support">Support</a></nav><div><a href="/notifications" className="appointment-notification-link">●</a><span className="avatar">RY</span></div></header>
+    <section className="appointments-hero"><div><p>Your care journey</p><h1>Appointments</h1><span>Account-owned bookings, current status, and safe lifecycle controls.</span></div><a href={providersPath}>＋ Book new appointment</a></section>
+    {delegated && <div className="appointments-delegated-note"><b>Managing appointments with consent.</b> You can view, book, and cancel only while this revocable appointment permission remains active. Every delegated action is audited.</div>}
     <section className="appointments-content">
       <div className="appointment-tabs"><button className={tab === "upcoming" ? "active" : ""} onClick={() => setTab("upcoming")}>Upcoming <span>{upcoming.length}</span></button><button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}>History <span>{history.length}</span></button><a href="/support">Support</a></div>
       {error && <div className="appointment-live-error">{error}<button onClick={() => setError("")}>×</button></div>}
       {loading ? <div className="appointment-live-state"><span>◇</span><h2>Loading your appointments…</h2></div>
-        : visible.length === 0 ? <div className="appointment-live-state"><span>◷</span><h2>{tab === "upcoming" ? "No upcoming appointments" : "No appointment history"}</h2><p>{tab === "upcoming" ? "Browse verified providers and choose a published time when you are ready." : "Completed and cancelled appointments will appear here."}</p>{tab === "upcoming" && <a href="/providers">Find care</a>}</div>
+        : visible.length === 0 ? <div className="appointment-live-state"><span>◷</span><h2>{tab === "upcoming" ? "No upcoming appointments" : "No appointment history"}</h2><p>{tab === "upcoming" ? "Browse verified providers and choose a published time when you are ready." : "Completed and cancelled appointments will appear here."}</p>{tab === "upcoming" && <a href={providersPath}>Find care</a>}</div>
         : <div className="appointment-live-list">{visible.map((item) => {
           const start = new Date(item.scheduledStart);
           const canCancel = tab === "upcoming" && ["pending", "confirmed"].includes(item.status) && start.valueOf() > referenceTime;

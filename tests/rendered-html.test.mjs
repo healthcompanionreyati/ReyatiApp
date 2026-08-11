@@ -474,3 +474,30 @@ test("ships email-bound family consent and server-enforced delegated record scop
   assert.match(paymentsRoute, /resolveCareSubject/);
   assert.doesNotMatch(familyPage, /Mariam Ahmed|Yousef Ahmed|Noura Ahmed|Fatima Ali|benefits balance|Synthetic prototype activity/i);
 });
+
+test("enforces consent-scoped delegated appointment management end to end", async () => {
+  const [familyService, appointmentService, route, appointmentsPage, providersPage, familyPage] = await Promise.all([
+    readFile(new URL("../lib/family-access.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/appointments.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/appointments/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/appointments/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/providers/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/family/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(familyService, /scope: "appointments" \| "records" \| "payments"/);
+  assert.match(familyService, /careRelationships\.appointmentsAccess/);
+  assert.match(route, /resolveCareSubject\(user\.id, new URL\(request\.url\).*"appointments"/s);
+  assert.match(route, /bookAppointment\(user\.id, subjectUserId/);
+  assert.match(route, /cancelPatientAppointment\(user\.id, subjectUserId/);
+  assert.match(route, /error: "access_denied"/);
+  assert.match(appointmentService, /bookAppointment\(actorUserId: string, subjectUserId: string/);
+  assert.match(appointmentService, /title: "Appointment booked for delegated care"/);
+  assert.match(appointmentService, /title: "Delegated appointment cancelled"/);
+  assert.match(appointmentService, /metadataJson: JSON\.stringify\(\{ mode: input\.mode, serviceLocationId: input\.serviceLocationId, delegated \}\)/);
+  assert.match(appointmentsPage, /version: selected\.version, subjectUserId/);
+  assert.match(appointmentsPage, /Every delegated action is audited/);
+  assert.match(providersPage, /subjectUserId,/);
+  assert.match(providersPage, /Booking with delegated consent/);
+  assert.match(familyPage, /Book care/);
+  assert.match(familyPage, /\/appointments\?subjectUserId=/);
+});

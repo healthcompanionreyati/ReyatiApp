@@ -112,9 +112,10 @@ export async function getOrCreatePatientProfile(userId: string) {
   return created[0];
 }
 
-export async function bookAppointment(userId: string, input: BookingInput, idempotencyKey: string) {
+export async function bookAppointment(actorUserId: string, subjectUserId: string, input: BookingInput, idempotencyKey: string) {
   const db = await getDb();
-  const patient = await getOrCreatePatientProfile(userId);
+  const patient = await getOrCreatePatientProfile(subjectUserId);
+  const delegated = actorUserId !== subjectUserId;
   const replay = await db.select().from(appointments).where(and(
     eq(appointments.patientId, patient.id),
     eq(appointments.idempotencyKey, idempotencyKey),
@@ -237,7 +238,7 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
         version: 1, createdAt: now, updatedAt: now,
       }),
       db.insert(notifications).values(notificationRecord({
-        userId, type: "appointment", title: "Appointment request received",
+        userId: subjectUserId, type: "appointment", title: "Appointment request received",
         body: "Your appointment request is saved. Open appointments to review its current status.",
         actionPath: "/appointments", resourceType: "appointment", resourceId: appointment.id,
         dedupeKey: `appointment:${appointment.id}:patient`, createdAt: now,
@@ -250,15 +251,21 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
       })),
       db.insert(auditEvents).values({
         id: crypto.randomUUID(),
-        actorUserId: userId,
+        actorUserId,
         organizationId: provider[0].profile.organizationId,
         action: "appointment.booked",
         resourceType: "appointment",
         resourceId: appointment.id,
         outcome: "success",
-        metadataJson: JSON.stringify({ mode: input.mode, serviceLocationId: input.serviceLocationId }),
+        metadataJson: JSON.stringify({ mode: input.mode, serviceLocationId: input.serviceLocationId, delegated }),
         createdAt: now,
       }),
+      ...(delegated ? [db.insert(notifications).values(notificationRecord({
+        userId: actorUserId, type: "appointment", title: "Appointment booked for delegated care",
+        body: "The appointment request was saved for the person who granted you access. Both the patient and provider were notified.",
+        actionPath: `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}`, resourceType: "appointment", resourceId: appointment.id,
+        dedupeKey: `appointment:${appointment.id}:manager`, createdAt: now,
+      }))] : []),
     ]);
   } catch (error) {
     if (error instanceof Error && /unique|constraint/i.test(error.message)) {
@@ -274,14 +281,14 @@ export async function bookAppointment(userId: string, input: BookingInput, idemp
   return { appointment, replayed: false };
 }
 
-export async function cancelPatientAppointment(userId: string, body: Record<string, unknown>) {
+export async function cancelPatientAppointment(actorUserId: string, subjectUserId: string, body: Record<string, unknown>) {
   const appointmentId = requiredString(body.appointmentId, "appointmentId");
   const expectedVersion = body.version;
   if (!Number.isSafeInteger(expectedVersion) || Number(expectedVersion) < 1) throw new AppointmentValidationError("version is invalid");
   const db = await getDb();
   const owned = await db.select({ appointment: appointments, providerUserId: providerProfiles.userId, providerOrganizationId: providerProfiles.organizationId })
     .from(appointments).innerJoin(patientProfiles, eq(patientProfiles.id, appointments.patientId)).innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
-    .where(and(eq(appointments.id, appointmentId), eq(patientProfiles.userId, userId))).limit(1);
+    .where(and(eq(appointments.id, appointmentId), eq(patientProfiles.userId, subjectUserId))).limit(1);
   if (!owned[0]) throw new AppointmentValidationError("Appointment was not found");
   if (!["pending", "confirmed"].includes(owned[0].appointment.status) || owned[0].appointment.scheduledStart <= new Date()) throw new AppointmentValidationError("This appointment can no longer be cancelled");
   const now = new Date();
@@ -290,9 +297,10 @@ export async function cancelPatientAppointment(userId: string, body: Record<stri
     .returning({ id: appointments.id, version: appointments.version });
   if (!updated[0]) throw new AppointmentConflictError("This appointment changed before cancellation. Refresh and try again.");
   await db.batch([
-    db.insert(notifications).values(notificationRecord({ userId, type: "appointment", title: "Appointment cancelled", body: "Your appointment has been cancelled. No payment or refund status is implied by this notification.", actionPath: "/appointments", resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:patient`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] }),
+    db.insert(notifications).values(notificationRecord({ userId: subjectUserId, type: "appointment", title: "Appointment cancelled", body: "Your appointment has been cancelled. No payment or refund status is implied by this notification.", actionPath: "/appointments", resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:patient`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] }),
     db.insert(notifications).values(notificationRecord({ userId: owned[0].providerUserId, type: "appointment", title: "Appointment cancelled by patient", body: "A future appointment was cancelled and removed from your active schedule.", actionPath: "/provider", resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:provider`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] }),
-    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: owned[0].providerOrganizationId, action: "appointment.cancelled_by_patient", resourceType: "appointment", resourceId: appointmentId, outcome: "success", metadataJson: JSON.stringify({ previousStatus: owned[0].appointment.status }), createdAt: now }),
+    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId, organizationId: owned[0].providerOrganizationId, action: "appointment.cancelled_by_patient", resourceType: "appointment", resourceId: appointmentId, outcome: "success", metadataJson: JSON.stringify({ previousStatus: owned[0].appointment.status, delegated: actorUserId !== subjectUserId }), createdAt: now }),
+    ...(actorUserId !== subjectUserId ? [db.insert(notifications).values(notificationRecord({ userId: actorUserId, type: "appointment", title: "Delegated appointment cancelled", body: "The appointment was cancelled for the person who granted you access. The patient and provider were notified.", actionPath: `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}`, resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:manager`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] })] : []),
   ]);
   return { appointmentId, status: "cancelled", version: updated[0].version };
 }
