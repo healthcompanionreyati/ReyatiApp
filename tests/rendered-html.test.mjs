@@ -802,3 +802,21 @@ test("requires branded confirmation before sensitive patient, provider, and fami
   assert.doesNotMatch(family, /window\.confirm/);
   assert.match(quality, /\.confirm-action-layer/);
 });
+
+test("requires deliberate confirmation for high-impact platform access and verification decisions", async () => {
+  const [access, verification] = await Promise.all([
+    readFile(new URL("../app/admin/access/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/verification/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(access, /ConfirmActionDialog/);
+  assert.match(access, /Suspend role/);
+  assert.match(access, /lose access to protected operational workspaces/);
+  assert.match(access, /Revoke invitation/);
+  assert.match(access, /A new email-bound invitation must be created/);
+  assert.match(access, /row\.status === "active" \? setConfirming/);
+  assert.match(verification, /confirmReject/);
+  assert.match(verification, /Reject verification/);
+  assert.match(verification, /Publication will be withdrawn/);
+  assert.doesNotMatch(verification, /onClick=\{\(\) => decide\("rejected"\)\}/);
+});
