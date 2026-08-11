@@ -2,6 +2,17 @@
 
 import { useEffect } from "react";
 
+const routeTitles: Record<string, string> = {
+  "/": "Home", "/providers": "Find care", "/appointments": "Appointments", "/wallet": "Health records",
+  "/payments": "Payments", "/family": "Family access", "/support": "Support", "/notifications": "Notifications",
+  "/auth": "Secure account", "/journeys": "Care journeys", "/provider": "Provider dashboard",
+  "/provider/services": "Provider services", "/provider/settings": "Provider settings", "/provider/patients": "Provider patients",
+  "/provider/insights": "Provider insights", "/provider/encounter": "Encounter workspace", "/partner": "Partner workspace",
+  "/partner/program": "Partner programme", "/admin": "Operations overview", "/admin/access": "Platform access",
+  "/admin/audit": "Audit ledger", "/admin/cases": "Support operations", "/admin/finance": "Finance operations",
+  "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification",
+};
+
 export default function AccessibilitySync() {
   useEffect(() => {
     let activeDialog: HTMLElement | null = null;
@@ -64,6 +75,8 @@ export default function AccessibilitySync() {
 
       document.documentElement.dir = direction;
       document.documentElement.lang = arabic ? "ar" : "en";
+      const routeTitle = routeTitles[window.location.pathname] ?? "Page not found";
+      document.title = `${routeTitle} · Reyati`;
 
       const skipLink = document.querySelector<HTMLAnchorElement>(".skip-link");
       if (skipLink) skipLink.textContent = arabic ? "انتقل إلى المحتوى الرئيسي" : "Skip to main content";

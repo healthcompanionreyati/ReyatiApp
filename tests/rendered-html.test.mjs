@@ -894,3 +894,23 @@ test("reports offline and restored connectivity without claiming workflow succes
   assert.match(networkCss, /\.network-status\.offline/);
   assert.match(layout, /<NetworkStatus\/>/);
 });
+
+test("provides truthful route loading feedback and workspace-specific document titles", async () => {
+  const [loading, loadingCss, accessibility, layout] = await Promise.all([
+    readFile(new URL("../app/loading.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/route-loading.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(loading, /Preparing your secure workspace/);
+  assert.match(loading, /No care, payment, or access status is assumed/);
+  assert.match(loading, /aria-busy="true"/);
+  assert.match(loadingCss, /@keyframes reyati-loading/);
+  assert.match(loadingCss, /prefers-reduced-motion:reduce/);
+  assert.match(accessibility, /const routeTitles: Record<string, string>/);
+  assert.match(accessibility, /document\.title = `\$\{routeTitle\} · Reyati`/);
+  assert.match(accessibility, /"\/admin\/verification": "Provider verification"/);
+  assert.match(accessibility, /"\/provider\/encounter": "Encounter workspace"/);
+  assert.match(layout, /route-loading\.css/);
+});

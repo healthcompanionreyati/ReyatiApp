@@ -1,7 +1,9 @@
 export default function Loading() {
-  return <main className="system-loading" aria-label="Loading Reyati">
-    <img src="/brand/reyati-logo.svg" alt="Reyati" />
-    <div aria-hidden="true"><span/><span/><span/></div>
-    <p>Preparing your care experience…</p>
+  return <main className="route-loading" id="main-content" role="status" aria-live="polite" aria-busy="true">
+    <img src="/brand/reyati-logo.svg" alt="Reyati"/>
+    <div className="route-loading-mark" aria-hidden="true"><span/><span/><span/></div>
+    <h1>Preparing your secure workspace</h1>
+    <p>Loading the latest information available to your Reyati account.</p>
+    <small>No care, payment, or access status is assumed while this page loads.</small>
   </main>;
 }
