@@ -25,6 +25,7 @@ import "./provider-services.css";
 import "./provider-insights.css";
 import "./provider-settings.css";
 import "./provider-live.css";
+import "./encounter-live.css";
 import "./quality.css";
 import "./ui-polish.css";
 import "./ui-completion.css";

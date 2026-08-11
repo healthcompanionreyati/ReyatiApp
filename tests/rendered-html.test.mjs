@@ -353,6 +353,7 @@ test("connects provider-owned appointments to audited lifecycle actions", async 
   ]);
   assert.match(service, /updateProviderAppointment/);
   assert.match(service, /eq\(providerProfiles\.userId, userId\)/);
+  assert.match(service, /eq\(providerProfiles\.verificationStatus, "verified"\)/);
   assert.match(service, /eq\(appointments\.version, Number\(expectedVersion\)\)/);
   assert.match(service, /appointment\.\$\{nextStatus\}_by_provider/);
   assert.match(service, /The reserved time has been released/);
@@ -360,7 +361,37 @@ test("connects provider-owned appointments to audited lifecycle actions", async 
   assert.match(route, /updateProviderAppointment\(currentUser\.id, body\)/);
   assert.match(page, /fetch\("\/api\/provider\/appointments"/);
   assert.match(page, /Confirm request/);
-  assert.match(page, /Complete appointment/);
+  assert.match(page, /Open encounter/);
   assert.match(page, /Patients are notified automatically/);
   assert.doesNotMatch(page, /Noora Al-Mansoori|Synthetic-data prototype|synthetic and local/i);
+});
+
+test("ships provider-owned, immutable clinical encounter records", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0009_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the encounter records migration");
+  const [schema, migration, service, route, page, providerPage] = await Promise.all([
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+    readFile(new URL("../lib/encounters.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/encounters/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/encounter/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(schema, /export const encounterNotes/);
+  assert.match(schema, /idx_encounter_notes_appointment/);
+  assert.match(migration, /validate_encounter_finalization_on_update/);
+  assert.match(migration, /complete_appointment_on_encounter_update/);
+  assert.match(migration, /PRAGMA optimize/);
+  assert.match(service, /eq\(providerProfiles\.userId, userId\)/);
+  assert.match(service, /A finalized encounter cannot be edited/);
+  assert.match(service, /eq\(encounterNotes\.version, value\.version\)/);
+  assert.match(service, /Clinical content remains protected and is not included/);
+  assert.match(service, /encounter\.finalized/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(route, /export async function PUT/);
+  assert.match(page, /Save private draft/);
+  assert.match(page, /Finalize encounter/);
+  assert.match(page, /No allergies, diagnoses, consent, demographics, or documents are inferred/);
+  assert.match(providerPage, /\/provider\/encounter\?appointmentId=/);
+  assert.doesNotMatch(page, /Yousef Hassan|Penicillin|blood count|Dr\. Laila|Synthetic-data prototype/i);
 });

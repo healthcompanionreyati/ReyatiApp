@@ -211,6 +211,23 @@ export const appointmentSlotLocks = sqliteTable("appointment_slot_locks", {
   index("idx_appointment_slot_locks_appointment").on(table.appointmentId),
 ]);
 
+export const encounterNotes = sqliteTable("encounter_notes", {
+  id: text("id").primaryKey(),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  authorUserId: text("author_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("draft"),
+  historyText: text("history_text").notNull().default(""),
+  assessmentText: text("assessment_text").notNull().default(""),
+  planText: text("plan_text").notNull().default(""),
+  patientInstructions: text("patient_instructions").notNull().default(""),
+  version: integer("version").notNull().default(1),
+  finalizedAt: integer("finalized_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_encounter_notes_appointment").on(table.appointmentId),
+  index("idx_encounter_notes_author_status").on(table.authorUserId, table.status),
+]);
+
 export const consents = sqliteTable("consents", {
   id: text("id").primaryKey(),
   subjectUserId: text("subject_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
