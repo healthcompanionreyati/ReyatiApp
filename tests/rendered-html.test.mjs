@@ -683,26 +683,36 @@ test("replaces fabricated moderation decisions with an audited capability bounda
   assert.doesNotMatch(page, /REV-770|REV-769|Pearl Health Clinic|Al Noor Medical Center|psoriasis|Prototype moderation decision logged|Approve for publication|Redact & publish|Review removed|Privacy alert|Appeal rate|Synthetic/i);
 });
 
-test("replaces the fabricated employer portal with an audited activation boundary", async () => {
-  const [service, route, page] = await Promise.all([
+test("replaces fabricated employer and programme surfaces with audited activation boundaries", async () => {
+  const [service, route, page, programmePage] = await Promise.all([
     readFile(new URL("../lib/partner-capability.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/partner/capability/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/partner/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/partner/program/page.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(service, /partner\.capability_boundary_viewed/);
   assert.match(service, /workspaceEnabled: false/);
   assert.match(service, /financialActionsEnabled: false/);
+  assert.match(service, /surface: "workspace" \| "programme"/);
+  assert.match(service, /resourceId: surface/);
   assert.match(service, /employee_roster.*connected: false/s);
   assert.match(service, /funding_ledger.*connected: false/s);
   assert.doesNotMatch(service, /patientProfiles|providerProfiles|appointments|encounterNotes|paymentLedgerEntries|careRelationships/);
   assert.match(route, /getOrCreateCurrentUser/);
   assert.match(route, /AuthorizationDeniedError/);
   assert.match(route, /Cache-Control.*no-store/);
+  assert.match(route, /requestedSurface === "programme"/);
   assert.match(page, /fetch\("\/api\/partner\/capability"/);
   assert.match(page, /Placeholder members, balances, invoices, and utilization metrics have been removed/);
   assert.match(page, /Requirements before activation/);
   assert.match(page, /an employer must never see appointments, services, providers, diagnoses, clinical notes/);
   assert.match(page, /\/support/);
   assert.doesNotMatch(page, /Atlas Consulting|EMP-1048|Maha A\.|Khalid R\.|QAR 612|QAR 900|INV-2026|248|August invoice|Benefits utilization|HR roster sync|Secure benefits link sent|Prototype change saved/i);
+  assert.match(programmePage, /fetch\("\/api\/partner\/capability\?surface=programme"/);
+  assert.match(programmePage, /Create, edit, and publish are disabled/);
+  assert.match(programmePage, /Required publication workflow/);
+  assert.match(programmePage, /Data that must never be used/);
+  assert.match(programmePage, /Appointments, providers, services, diagnoses, clinical notes, medications, claims/);
+  assert.doesNotMatch(programmePage, /Atlas Consulting|Reyati Plus|Reyati Essential|Executive Care|Aisha M\.|Fahad K\.|EMP-1058|QAR 612|248|73%|Prototype change saved|All changes are safely simulated/i);
 });

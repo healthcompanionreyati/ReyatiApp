@@ -1,7 +1,7 @@
 import { getDb } from "@/db";
 import { auditEvents } from "@/db/schema";
 
-export async function getPartnerCapabilityBoundary(userId: string, operatorName: string) {
+export async function getPartnerCapabilityBoundary(userId: string, operatorName: string, surface: "workspace" | "programme" = "workspace") {
   const db = await getDb();
   const now = new Date();
   await db.insert(auditEvents).values({
@@ -10,7 +10,7 @@ export async function getPartnerCapabilityBoundary(userId: string, operatorName:
     organizationId: null,
     action: "partner.capability_boundary_viewed",
     resourceType: "partner_capability",
-    resourceId: "employer_workspace",
+    resourceId: surface,
     outcome: "success",
     metadataJson: null,
     createdAt: now,
