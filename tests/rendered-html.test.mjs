@@ -914,3 +914,22 @@ test("provides truthful route loading feedback and workspace-specific document t
   assert.match(accessibility, /"\/provider\/encounter": "Encounter workspace"/);
   assert.match(layout, /route-loading\.css/);
 });
+
+test("protects meaningful unfinished forms before navigation or tab close", async () => {
+  const [guard, layout] = await Promise.all([
+    readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(guard, /textarea, input\[required\], select\[required\]/);
+  assert.match(guard, /form\.dataset\.reyatiDirty = "true"/);
+  assert.match(guard, /window\.addEventListener\("beforeunload", beforeUnload\)/);
+  assert.match(guard, /document\.addEventListener\("click", interceptNavigation, true\)/);
+  assert.match(guard, /event\.metaKey \|\| event\.ctrlKey/);
+  assert.match(guard, /destination\.origin !== window\.location\.origin/);
+  assert.match(guard, /Leave with unsent information\?/);
+  assert.match(guard, /Reyati has not saved this unfinished information/);
+  assert.match(guard, /ConfirmActionDialog/);
+  assert.doesNotMatch(guard, /window\.confirm/);
+  assert.match(layout, /<UnsavedChangesGuard\/>/);
+});

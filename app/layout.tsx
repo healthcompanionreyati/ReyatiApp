@@ -41,6 +41,7 @@ import "./route-loading.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";
+import UnsavedChangesGuard from "./components/UnsavedChangesGuard";
 
 export const metadata: Metadata = {
   title: {
@@ -72,5 +73,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" dir="ltr"><body><a className="skip-link" href="#main-content">Skip to main content</a>{children}<NetworkStatus/><AccessibilitySync/><MobileDock/></body></html>;
+  return <html lang="en" dir="ltr"><body><a className="skip-link" href="#main-content">Skip to main content</a>{children}<NetworkStatus/><UnsavedChangesGuard/><AccessibilitySync/><MobileDock/></body></html>;
 }
