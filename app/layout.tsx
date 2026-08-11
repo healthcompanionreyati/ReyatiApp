@@ -36,8 +36,10 @@ import "./ui-polish.css";
 import "./ui-completion.css";
 import "./system-states.css";
 import "./recovery.css";
+import "./network-status.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
+import NetworkStatus from "./components/NetworkStatus";
 
 export const metadata: Metadata = {
   title: {
@@ -69,5 +71,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" dir="ltr"><body><a className="skip-link" href="#main-content">Skip to main content</a>{children}<AccessibilitySync/><MobileDock/></body></html>;
+  return <html lang="en" dir="ltr"><body><a className="skip-link" href="#main-content">Skip to main content</a>{children}<NetworkStatus/><AccessibilitySync/><MobileDock/></body></html>;
 }

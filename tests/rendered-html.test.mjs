@@ -875,3 +875,22 @@ test("provides branded recovery for route, application, and missing-page failure
   assert.match(recoveryCss, /\.recovery-shell/);
   assert.match(layout, /recovery\.css/);
 });
+
+test("reports offline and restored connectivity without claiming workflow success", async () => {
+  const [network, networkCss, layout] = await Promise.all([
+    readFile(new URL("../app/components/NetworkStatus.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/network-status.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(network, /window\.addEventListener\("offline", markOffline\)/);
+  assert.match(network, /window\.addEventListener\("online", markOnline\)/);
+  assert.match(network, /Reyati cannot confirm new saves or status updates/);
+  assert.match(network, /Reload live data before relying on appointment, payment, or access status/);
+  assert.match(network, /window\.location\.reload\(\)/);
+  assert.match(network, /role="alert" aria-live="assertive"/);
+  assert.match(network, /role="status" aria-live="polite"/);
+  assert.doesNotMatch(network, /saved successfully|updated successfully/i);
+  assert.match(networkCss, /\.network-status\.offline/);
+  assert.match(layout, /<NetworkStatus\/>/);
+});
