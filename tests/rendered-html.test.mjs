@@ -950,3 +950,20 @@ test("makes every button inside a form explicitly submit or non-submit", async (
     }
   }
 });
+
+test("discovers each dialog close control and lets Escape use it", async () => {
+  const [accessibility, organizations, settings] = await Promise.all([
+    readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/organizations/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/settings/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(accessibility, /const closeButton = dialog\.querySelector<HTMLButtonElement>/);
+  assert.match(accessibility, /className\.endsWith\("-close"\)/);
+  assert.match(accessibility, /button\.textContent\?\.trim\(\) === "×"/);
+  assert.match(accessibility, /closeButton\.dataset\.dialogClose = "true"/);
+  assert.match(accessibility, /\[data-dialog-close='true'\]/);
+  assert.match(accessibility, /if \(closeButton\) \{[\s\S]*?event\.preventDefault\(\);[\s\S]*?closeButton\.click\(\)/);
+  assert.match(organizations, /<button type="button" onClick=\{\(\) => setReviewing\(null\)\}>×<\/button>/);
+  assert.match(settings, /className="settings-close"/);
+});

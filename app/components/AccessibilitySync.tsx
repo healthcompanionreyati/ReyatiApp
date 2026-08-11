@@ -147,6 +147,17 @@ export default function AccessibilitySync() {
           } else if (!dialog.getAttribute("aria-label")) {
             dialog.setAttribute("aria-label", arabic ? "نافذة حوار" : "Dialog");
           }
+          const buttons = [...dialog.querySelectorAll<HTMLButtonElement>("button")];
+          const closeButton = dialog.querySelector<HTMLButtonElement>(".drawer-close, .drawer-x, .modal-close")
+            ?? buttons.find((button) => [...button.classList].some((className) => className.endsWith("-close")))
+            ?? buttons.find((button) => button.textContent?.trim() === "×")
+            ?? buttons.find((button) => /^(close|cancel|go back)$/i.test(button.textContent?.trim() ?? ""));
+          if (closeButton) {
+            closeButton.dataset.dialogClose = "true";
+            if (!closeButton.getAttribute("aria-label") && closeButton.textContent?.trim() === "×") {
+              closeButton.setAttribute("aria-label", arabic ? "إغلاق" : "Close");
+            }
+          }
         }
       });
 
@@ -169,7 +180,11 @@ export default function AccessibilitySync() {
       if (event.key === "Escape") {
         const layers = document.querySelectorAll<HTMLElement>('[class*="-layer"]');
         const activeLayer = layers.item(layers.length - 1);
-        activeLayer?.querySelector<HTMLButtonElement>(".drawer-close, .drawer-x, .modal-close")?.click();
+        const closeButton = activeLayer?.querySelector<HTMLButtonElement>("[data-dialog-close='true'], .drawer-close, .drawer-x, .modal-close");
+        if (closeButton) {
+          event.preventDefault();
+          closeButton.click();
+        }
         return;
       }
       if (event.key !== "Tab" || !activeDialog) return;
