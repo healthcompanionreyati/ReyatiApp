@@ -629,3 +629,32 @@ test("ships a live role-gated admin overview without duplicate synthetic queues"
   assert.match(page, /\/admin\/audit/);
   assert.doesNotMatch(page, /VER-1842|RFD-8814|SUP-184|SAF-031|Dr\. Hana|Al Noor Medical Center|Synthetic data|PROTOTYPE ENVIRONMENT|Synthetic evidence package|Record decision/i);
 });
+
+test("ships a read-only admin finance ledger without invented money movement", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0013_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the finance aggregate index migration");
+  const [schema, migration, service, route, page] = await Promise.all([
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+    readFile(new URL("../lib/admin-finance.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/finance/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/finance/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(schema, /idx_payment_ledger_status_updated/);
+  assert.match(migration, /CREATE INDEX `idx_payment_ledger_status_updated`/);
+  assert.match(migration, /PRAGMA optimize/);
+  assert.match(service, /requirePlatformRole\(userId, \["platform_admin"\]\)/);
+  assert.match(service, /groupBy\(paymentLedgerEntries\.status\)/);
+  assert.match(service, /platform\.finance_ledger_viewed/);
+  assert.doesNotMatch(service, /patientProfiles|users|providerProfiles|appointments|patientId|appointmentId/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /AuthorizationDeniedError/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /fetch\("\/api\/admin\/finance"/);
+  assert.match(page, /Recorded value does not prove money moved/);
+  assert.match(page, /No acquirer file, bank statement, or provider-payable account is connected/);
+  assert.match(page, /This page contains no patient names or appointment references/);
+  assert.match(page, /Export CSV/);
+  assert.doesNotMatch(page, /STL-2608|RFD-8814|PAY-|Al Noor Medical Center|Pearl Health Clinic|Upcoming settlements|Ledger match|Second approval|Reconciliation history|Synthetic financial data|Prototype finance report/i);
+});

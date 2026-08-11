@@ -1,32 +1,111 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-type Tab="settlements"|"reconciliation"|"refunds"|"ledger";
-type Settlement={id:string,provider:string,period:string,gross:number,fees:number,net:number,status:"Ready"|"Review"|"Scheduled"|"Paid",variance:number};
-const settlements:Settlement[]=[
-  {id:"STL-2608-041",provider:"Al Noor Medical Center",period:"1–7 Aug",gross:42850,fees:3428,net:39422,status:"Review",variance:600},
-  {id:"STL-2608-040",provider:"Pearl Health Clinic",period:"1–7 Aug",gross:31420,fees:2514,net:28906,status:"Ready",variance:0},
-  {id:"STL-2608-039",provider:"West Bay Clinic",period:"1–7 Aug",gross:28760,fees:2301,net:26459,status:"Scheduled",variance:0},
-  {id:"STL-2608-038",provider:"Al Rayyan Family Clinic",period:"25–31 Jul",gross:36600,fees:2928,net:33672,status:"Paid",variance:0},
-];
-const refunds=[["RFD-8814","RYT-••1042","QAR 250","Cancellation","Approved"],["RFD-8808","RYT-••0981","QAR 600","Manual review","Needs review"],["RFD-8802","RYT-••0963","QAR 180","Provider cancelled","Ready"],["RFD-8798","RYT-••0944","QAR 350","Duplicate charge","Processed"]];
+type StatusRow = {
+  status: string;
+  entryCount: number;
+  recordedAmountQar: number;
+  refundAmountQar: number;
+  latestUpdate: string | null;
+};
 
-export default function FinanceOperations(){
-  const [lang,setLang]=useState<"en"|"ar">("en");const [tab,setTab]=useState<Tab>("settlements");const [selected,setSelected]=useState<Settlement|null>(settlements[0]);const [filter,setFilter]=useState("All");const [notice,setNotice]=useState("");const [approved,setApproved]=useState(false);const ar=lang==="ar";
-  const rows=useMemo(()=>settlements.filter(s=>filter==="All"||s.status===filter),[filter]);const money=(n:number)=>`QAR ${n.toLocaleString("en-US")}`;const flash=(m:string)=>{setNotice(m);window.setTimeout(()=>setNotice(""),2600)};
-  return <main className={`finance-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
-    <aside className="finance-sidebar"><a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar?"عمليات المنصة":"Platform operations"}</span></a><div className="finance-role"><span>FO</span><div><b>{ar?"مشغل المالية":"Finance operator"}</b><small>{ar?"نطاق مالي · مصادقة متعددة":"Financial scope · MFA"}</small></div></div><nav><a href="/admin"><span>◫</span>{ar?"نظرة عامة":"Overview"}</a><a href="/admin/verification"><span>✓</span>{ar?"التحقق":"Verification"}</a><a className="active" href="/admin/finance"><span>Q</span>{ar?"المالية":"Finance"}<i>4</i></a><a href="/admin"><span>◇</span>{ar?"الحالات":"Cases"}</a><a href="/admin"><span>◉</span>{ar?"الإشراف":"Moderation"}</a><a href="/admin"><span>▤</span>{ar?"التدقيق":"Audit"}</a></nav><div className="finance-side-note"><span>⌘</span><p><b>{ar?"تحكم مزدوج":"Dual control"}</b>{ar?"يتطلب تحرير الأموال مراجعين مختلفين للحساب والموافقة.":"Releasing funds requires separate calculation and approval reviewers."}</p></div><div className="finance-links"><a href="/journeys">◇ {ar?"جميع المسارات":"All journeys"}</a><a href="/admin">← {ar?"لوحة العمليات":"Operations dashboard"}</a></div></aside>
-    <section className="finance-main"><header className="finance-top"><div><span>{ar?"بيئة النموذج":"PROTOTYPE ENVIRONMENT"}</span><b>{ar?"لا توجد حركة أموال حقيقية":"No real money movement"}</b></div><div><button onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button><a href="/notifications">●</a><span>FO</span></div></header><div className="finance-workspace">
-      <div className="finance-heading"><div><p>{ar?"الأموال والتسويات":"FUNDS & RECONCILIATION"}</p><h1>{ar?"العمليات المالية":"Finance operations"}</h1><span>{ar?"طابق المدفوعات وأصدر الاستردادات وجهز تسويات مقدمي الرعاية.":"Match payments, issue refunds, and prepare provider settlements."}</span></div><button onClick={()=>flash(ar?"تم إعداد تقرير مالي تجريبي":"Prototype finance report prepared")}>⇩ {ar?"تصدير التقرير":"Export report"}</button></div>
-      <div className="finance-banner"><span>▣</span><p><b>{ar?"بيانات مالية فقط":"Financial data only"}</b>{ar?"لا تظهر التشخيصات أو الملاحظات أو تفاصيل الرعاية. مراجع الحجز مخفية افتراضياً.":"No diagnoses, notes, or care details appear here. Booking references are masked by default."}</p><i>{ar?"أقل صلاحية":"LEAST PRIVILEGE"}</i></div>
-      <section className="finance-metrics">{[["QAR 128.9k",ar?"تسويات قادمة":"Upcoming settlements","Q"],["QAR 600",ar?"فرق غير مطابق":"Unmatched variance","!"],["4",ar?"استردادات معلقة":"Pending refunds","↩"],["99.4%",ar?"تطابق الدفتر":"Ledger match","✓"]].map(x=><article key={x[1]}><span>{x[2]}</span><div><b>{x[0]}</b><p>{x[1]}</p></div></article>)}</section>
-      <div className="finance-tabs">{(["settlements","reconciliation","refunds","ledger"] as Tab[]).map(x=><button key={x} className={tab===x?"active":""} onClick={()=>setTab(x)}>{x==="settlements"?(ar?"التسويات":"Settlements"):x==="reconciliation"?(ar?"المطابقة":"Reconciliation"):x==="refunds"?(ar?"الاستردادات":"Refunds"):(ar?"دفتر الأستاذ":"Ledger")}</button>)}</div>
-      {tab==="settlements"&&<section className="finance-layout"><div className="settlement-panel"><div className="finance-tools"><div>{["All","Ready","Review","Scheduled","Paid"].map(x=><button className={filter===x?"active":""} key={x} onClick={()=>setFilter(x)}>{x}</button>)}</div><label>⌕<input placeholder={ar?"البحث عن تسوية":"Search settlements"}/></label></div><div className="settlement-table"><header><span>{ar?"مقدم الرعاية":"Provider"}</span><span>{ar?"الفترة":"Period"}</span><span>{ar?"الإجمالي":"Gross"}</span><span>{ar?"الرسوم":"Fees"}</span><span>{ar?"الصافي":"Net"}</span><span>{ar?"الحالة":"Status"}</span><span/></header>{rows.map(s=><button className={selected?.id===s.id?"selected":""} key={s.id} onClick={()=>{setSelected(s);setApproved(false)}}><div><b>{s.provider}</b><small>{s.id}</small></div><span>{s.period}</span><span>{money(s.gross)}</span><span>−{money(s.fees)}</span><strong>{money(s.net)}</strong><i className={s.status.toLowerCase()}>{s.status}</i><em>›</em></button>)}</div></div>{selected&&<aside className="settlement-detail"><div className="settlement-head"><div><p>{selected.id}</p><h2>{selected.provider}</h2><span>{selected.period} · Weekly settlement</span></div><i className={selected.status.toLowerCase()}>{selected.status}</i></div>{approved?<div className="release-done"><span>✓</span><h3>{ar?"تم إرسال الموافقة الثانية":"Second approval requested"}</h3><p>{ar?"لا تزال التسوية غير محررة حتى يوافق مراجع ثانٍ.":"The settlement remains unreleased until a second reviewer approves it."}</p><button onClick={()=>setApproved(false)}>{ar?"عرض التفاصيل":"View details"}</button></div>:<><section className="settlement-total"><p>{ar?"صافي التسوية":"NET SETTLEMENT"}</p><b>{money(selected.net)}</b><span>{selected.variance?`${money(selected.variance)} ${ar?"فرق قيد المراجعة":"variance under review"}`:(ar?"تمت مطابقة جميع البنود":"All items matched")}</span></section><dl className="settlement-breakdown"><div><dt>{ar?"مدفوعات المرضى":"Patient payments"}</dt><dd>{money(selected.gross)}</dd></div><div><dt>{ar?"رسوم منصة رعايتي":"Reyati platform fee"}</dt><dd>−{money(selected.fees)}</dd></div><div><dt>{ar?"الاستردادات":"Refund adjustments"}</dt><dd>QAR 0</dd></div><div><dt>{ar?"الصافي المستحق":"Net payable"}</dt><dd>{money(selected.net)}</dd></div></dl>{selected.variance>0&&<div className="variance-alert"><span>!</span><p><b>{ar?"فرق في المطابقة":"Reconciliation variance"}</b>{ar?"دفعة واحدة بقيمة 600 ر.ق. لا تطابق ملف الاستحواذ.":"One QAR 600 payment does not match the acquirer file."}</p><button onClick={()=>setTab("reconciliation")}>{ar?"التحقيق":"Investigate"}</button></div>}<div className="control-checks"><h3>{ar?"فحوص الإصدار":"Release controls"}</h3>{[["Provider bank account verified","Passed"],["Booking ledger reconciled",selected.variance?"Blocked":"Passed"],["Refund window closed","Passed"],["Calculation reviewer","FIN-••11"]].map(x=><div key={x[0]}><span>{x[1]==="Passed"?"✓":x[1]==="Blocked"?"!":"♙"}</span><p>{x[0]}<b>{x[1]}</b></p></div>)}</div><label className="finance-reason">{ar?"ملاحظة الموافقة":"Approval note"}<textarea placeholder={ar?"سبب واضح وقابل للتدقيق...":"Clear, auditable reason..."}/></label><div className="settlement-actions"><button onClick={()=>flash(ar?"تم تنزيل كشف تجريبي":"Prototype statement prepared")}>⇩ {ar?"كشف الحساب":"Statement"}</button><button disabled={selected.variance>0} onClick={()=>setApproved(true)}>✓ {ar?"طلب الموافقة الثانية":"Request second approval"}</button></div></>}</aside>}</section>}
-      {tab==="reconciliation"&&<section className="recon-layout"><article className="recon-panel"><div className="section-head"><div><h2>{ar?"مطابقة 1–7 أغسطس":"Reconciliation · 1–7 August"}</h2><p>{ar?"دفتر رعايتي مقابل ملف المستحوذ وحسابات مقدمي الرعاية.":"Reyati ledger versus acquirer and provider accounts."}</p></div><span>99.4% {ar?"مطابق":"matched"}</span></div><div className="recon-flow"><div><span>R</span><b>Reyati ledger</b><strong>QAR 128,930</strong><small>418 entries</small></div><i>↔</i><div><span>A</span><b>Acquirer file</b><strong>QAR 128,330</strong><small>417 entries</small></div><i>↔</i><div><span>P</span><b>Provider statements</b><strong>QAR 128,930</strong><small>4 providers</small></div></div><div className="recon-score"><p><span style={{width:"99.4%"}}/></p><b>QAR 600 {ar?"فرق":"variance"}</b></div><div className="mismatch-table"><header><span>{ar?"المرجع":"Reference"}</span><span>{ar?"المصدر":"Source"}</span><span>{ar?"المتوقع":"Expected"}</span><span>{ar?"المستلم":"Received"}</span><span>{ar?"السبب المحتمل":"Likely cause"}</span><span/></header><article><code>PAY-••9081</code><span>Acquirer</span><b>QAR 600</b><strong>QAR 0</strong><i>{ar?"توقيت الملف":"File timing"}</i><button onClick={()=>flash(ar?"تم إنشاء حالة مطابقة":"Reconciliation case created")}>{ar?"إنشاء حالة":"Create case"}</button></article></div></article><aside className="recon-timeline"><h2>{ar?"سجل المطابقة":"Reconciliation history"}</h2>{[["07:05","Ledger period closed","418 entries"],["07:12","Acquirer file received","Signed source"],["07:14","Automated match completed","417 matched"],["07:18","Variance routed to review","FIN-••11"]].map((x,i)=><div key={x[0]}><span className={i<3?"done":"current"}>{i<3?"✓":"!"}</span><p><b>{x[1]}</b><small>{x[0]} · {x[2]}</small></p></div>)}</aside></section>}
-      {tab==="refunds"&&<section className="refund-panel"><div className="section-head"><div><h2>{ar?"قائمة الاستردادات":"Refund queue"}</h2><p>{ar?"معالجة مالية دون عرض تفاصيل الرعاية.":"Financial processing without care details."}</p></div><button onClick={()=>flash(ar?"تم تحديث قائمة الاستردادات":"Refund queue refreshed")}>↻ {ar?"تحديث":"Refresh"}</button></div><div className="refund-table"><header><span>{ar?"المرجع":"Reference"}</span><span>{ar?"الحجز":"Booking"}</span><span>{ar?"المبلغ":"Amount"}</span><span>{ar?"السبب":"Reason"}</span><span>{ar?"الحالة":"Status"}</span><span/></header>{refunds.map(r=><article key={r[0]}><code>{r[0]}</code><span>{r[1]}</span><b>{r[2]}</b><span>{r[3]}</span><i className={r[4].toLowerCase().replace(" ","-")}>{r[4]}</i><button onClick={()=>flash(`${r[0]} ${ar?"تمت مراجعته":"reviewed"}`)}>{ar?"مراجعة":"Review"}</button></article>)}</div><footer><span>▣</span><p>{ar?"يتطلب الاسترداد اليدوي سبباً وموافقة ثانية إذا تجاوز 500 ر.ق.":"Manual refunds require a reason and a second approval above QAR 500."}</p></footer></section>}
-      {tab==="ledger"&&<section className="ledger-layout"><article><div className="section-head"><div><h2>{ar?"دفتر الأستاذ التشغيلي":"Operational ledger"}</h2><p>{ar?"قيد مزدوج وغير قابل للتعديل لكل حركة مالية.":"Double-entry, immutable record for every financial movement."}</p></div><button onClick={()=>flash(ar?"تم إعداد تصدير الدفتر":"Ledger export prepared")}>⇩ CSV</button></div>{[["08:42","PAY-••1142","Patient payment","Cash clearing","QAR 250","Balanced"],["08:39","FEE-••1142","Platform fee","Provider payable","QAR 20","Balanced"],["08:21","RFD-••8814","Refund payable","Cash clearing","QAR 250","Balanced"],["07:58","STL-••038","Provider payable","Bank settlement","QAR 33,672","Posted"]].map(x=><div className="ledger-row" key={x[1]}><time>{x[0]}</time><code>{x[1]}</code><p><b>{x[2]}</b><small>{x[3]}</small></p><strong>{x[4]}</strong><i>{x[5]}</i></div>)}</article><aside><h2>{ar?"سلامة الدفتر":"Ledger integrity"}</h2><div className="integrity-ring"><span><b>100%</b><small>{ar?"متوازن":"balanced"}</small></span></div><dl><div><dt>{ar?"قيود اليوم":"Entries today"}</dt><dd>842</dd></div><div><dt>{ar?"غير متوازن":"Unbalanced"}</dt><dd>0</dd></div><div><dt>{ar?"آخر إغلاق":"Last close"}</dt><dd>07:05</dd></div></dl><p>✓ {ar?"تم التحقق من سلامة السجل":"Record integrity verified"}</p></aside></section>}
-      <footer className="finance-footer"><span>ⓘ</span><p>{ar?"بيانات مالية اصطناعية للتخطيط فقط. لا يتم تحريك أموال أو إصدار استردادات حقيقية.":"Synthetic financial data for planning only. No real funds move and no real refunds are issued."}</p><a href="/admin">{ar?"سجل التدقيق":"Audit log"}</a></footer>
-    </div></section>{notice&&<div className="finance-toast"><span>✓</span>{notice}</div>}
-  </main>
+type FinanceData = {
+  operatorName: string;
+  generatedAt: string;
+  metrics: {
+    totalEntries: number;
+    recordedAmountQar: number;
+    paidAmountQar: number;
+    recordedRefundAmountQar: number;
+    pendingRefundEntries: number;
+    providerReferencedEntries: number;
+  };
+  statuses: StatusRow[];
+};
+
+const explanations: Record<string, [string, string]> = {
+  not_charged: ["Created at booking; no charge is claimed", "تم إنشاؤه عند الحجز؛ لا توجد مطالبة بتحصيل"],
+  authorized: ["An authorization status was recorded", "تم تسجيل حالة تفويض"],
+  paid: ["A paid status was recorded", "تم تسجيل حالة مدفوعة"],
+  refund_pending: ["A pending refund status was recorded", "تم تسجيل حالة استرداد معلّق"],
+  refunded: ["A refunded status was recorded", "تم تسجيل حالة مستردة"],
+  failed: ["A failed payment status was recorded", "تم تسجيل حالة دفع فاشلة"],
+};
+
+function label(value: string) {
+  return value.replaceAll("_", " ").replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "FA";
+}
+
+function qar(value: number, ar: boolean) {
+  return new Intl.NumberFormat(ar ? "ar-QA" : "en-QA", { style: "currency", currency: "QAR", maximumFractionDigits: 0 }).format(value);
+}
+
+async function requestFinance() {
+  const response = await fetch("/api/admin/finance", { credentials: "same-origin" });
+  if (response.status === 401) throw new Error("auth");
+  if (response.status === 403) throw new Error("forbidden");
+  if (!response.ok) throw new Error("unavailable");
+  const payload = await response.json() as { data: FinanceData };
+  return payload.data;
+}
+
+export default function FinanceOperations() {
+  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [data, setData] = useState<FinanceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<"auth" | "forbidden" | "unavailable" | null>(null);
+  const ar = lang === "ar";
+
+  useEffect(() => {
+    let active = true;
+    requestFinance().then((next) => { if (active) setData(next); })
+      .catch((reason: Error) => { if (active) setError(reason.message === "auth" || reason.message === "forbidden" ? reason.message : "unavailable"); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function refresh() {
+    setLoading(true); setError(null);
+    try { setData(await requestFinance()); }
+    catch (reason) { setError(reason instanceof Error && (reason.message === "auth" || reason.message === "forbidden") ? reason.message : "unavailable"); }
+    finally { setLoading(false); }
+  }
+
+  function exportAggregate() {
+    if (!data) return;
+    const rows = [
+      ["Reyati payment ledger aggregate"],
+      ["Generated", data.generatedAt],
+      [],
+      ["Status", "Entry count", "Recorded amount QAR", "Recorded refund QAR", "Latest update"],
+      ...data.statuses.map((row) => [row.status, row.entryCount, row.recordedAmountQar, row.refundAmountQar, row.latestUpdate ?? ""]),
+    ];
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url; anchor.download = "reyati-payment-ledger-aggregate.csv"; anchor.click(); URL.revokeObjectURL(url);
+  }
+
+  const avatar = initials(data?.operatorName ?? "Finance Admin");
+  const largestCount = Math.max(1, ...(data?.statuses.map((row) => row.entryCount) ?? [1]));
+
+  return <main className={`finance-shell live-finance-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
+    <aside className="finance-sidebar"><a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "عمليات المنصة" : "Platform operations"}</span></a><div className="finance-role"><span>{avatar}</span><div><b>{data?.operatorName ?? (ar ? "مسؤول المنصة" : "Platform administrator")}</b><small>{ar ? "عرض مالي للقراءة فقط" : "Read-only finance view"}</small></div></div><nav><a href="/admin"><span>◫</span>{ar ? "نظرة عامة" : "Overview"}</a><a href="/admin/organizations"><span>▣</span>{ar ? "المؤسسات" : "Organizations"}</a><a className="active" href="/admin/finance"><span>Q</span>{ar ? "المالية" : "Finance"}</a><a href="/admin/cases"><span>◇</span>{ar ? "حالات الدعم" : "Support cases"}</a><a href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a></nav><div className="finance-side-note"><span>▣</span><p><b>{ar ? "لا توجد حركة أموال" : "No money movement"}</b>{ar ? "هذه الصفحة تقرأ حالات الدفتر المسجلة فقط ولا تنفذ تحصيلاً أو استرداداً أو تسوية." : "This page reads recorded ledger states only. It cannot charge, refund, reconcile, or settle funds."}</p></div><div className="finance-links"><a href="/support">◇ {ar ? "الدعم" : "Support"}</a><a href="/admin">← {ar ? "لوحة العمليات" : "Operations overview"}</a></div></aside>
+    <section className="finance-main"><header className="finance-top"><div><span>{ar ? "دفتر مسجل" : "RECORDED LEDGER"}</span><b>{ar ? "وصول إداري محمي للقراءة فقط" : "Protected, read-only administrator access"}</b></div><div><button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label={ar ? "الإشعارات" : "Notifications"}>●</a><span>{avatar}</span></div></header><div className="finance-workspace">
+      <div className="finance-heading"><div><p>{ar ? "حالة دفتر المدفوعات" : "PAYMENT LEDGER STATE"}</p><h1>{ar ? "العمليات المالية" : "Finance operations"}</h1><span>{ar ? "إجماليات حقيقية من إدخالات الدفتر المرتبطة بالحجوزات، دون بيانات المرضى أو تفاصيل الرعاية." : "Live aggregates from booking-linked ledger entries, without patient identity or care details."}</span></div><div className="finance-heading-actions"><button type="button" disabled={loading} onClick={() => void refresh()}>↻ {ar ? "تحديث" : "Refresh"}</button><button type="button" disabled={!data} onClick={exportAggregate}>⇩ {ar ? "تصدير CSV" : "Export CSV"}</button></div></div>
+      <div className="finance-banner"><span>▣</span><p><b>{ar ? "القيمة المسجلة لا تعني أن المال تحرك" : "Recorded value does not prove money moved"}</b>{ar ? "ينشئ الحجز إدخالاً بحالة «غير محصّل» وبقيمة الخدمة المنشورة. لا تُعتبر القيمة مدفوعة إلا إذا سجّل الدفتر حالة مدفوعة صراحةً." : "Booking creates a not-charged entry using the published service fee. Value is counted as paid only when the ledger explicitly records a paid status."}</p><i>{ar ? "لا توجد بيانات مرضى" : "NO PATIENT DATA"}</i></div>
+
+      {loading && !data ? <section className="finance-live-state" aria-live="polite"><span>◌</span><h2>{ar ? "جارٍ تحميل دفتر المدفوعات" : "Loading payment ledger"}</h2><p>{ar ? "يتم التحقق من دور مسؤول المنصة." : "Verifying the platform administrator role."}</p></section> : error ? <section className="finance-live-state" role="alert"><span>!</span><h2>{error === "auth" ? (ar ? "يلزم تسجيل الدخول" : "Sign in required") : error === "forbidden" ? (ar ? "دور مسؤول المنصة مطلوب" : "Platform administrator access required") : (ar ? "تعذر تحميل الدفتر" : "Ledger could not be loaded")}</h2><p>{error === "forbidden" ? (ar ? "يجب تعيين دور مسؤول منصة نشط لهذا الحساب." : "This account must have an active platform administrator role.") : (ar ? "أعد المحاولة أو افتح الدعم." : "Try again or open support if the problem continues.")}</p><a href={error === "auth" ? "/auth" : error === "forbidden" ? "/admin/access" : "/support"}>{error === "auth" ? (ar ? "تسجيل الدخول" : "Sign in") : error === "forbidden" ? (ar ? "مراجعة الوصول" : "Review access") : (ar ? "فتح الدعم" : "Open support")}</a></section> : data && <>
+        <section className="finance-metrics live-finance-metrics"><article><span>▤</span><div><b>{data.metrics.totalEntries}</b><p>{ar ? "إدخالات الدفتر" : "Ledger entries"}</p></div></article><article><span>Q</span><div><b>{qar(data.metrics.recordedAmountQar, ar)}</b><p>{ar ? "قيمة مواعيد مسجلة" : "Recorded appointment value"}</p></div></article><article><span>✓</span><div><b>{qar(data.metrics.paidAmountQar, ar)}</b><p>{ar ? "مسجل كمدفوع" : "Recorded as paid"}</p></div></article><article><span>↩</span><div><b>{qar(data.metrics.recordedRefundAmountQar, ar)}</b><p>{ar ? "قيمة استرداد مسجلة" : "Recorded refund value"}</p></div></article></section>
+        {data.metrics.totalEntries === 0 ? <section className="finance-live-state finance-empty"><span>▤</span><h2>{ar ? "لا توجد إدخالات دفتر بعد" : "No ledger entries yet"}</h2><p>{ar ? "سيتم إنشاء الإدخال الأول عندما يُحجز موعد بخدمة منشورة." : "The first entry will be created when an appointment is booked against a published service."}</p><a href="/admin">{ar ? "العودة إلى العمليات" : "Return to operations"}</a></section> : <section className="live-ledger-panel"><div className="section-head"><div><h2>{ar ? "توزيع حالات الدفتر" : "Ledger status distribution"}</h2><p>{ar ? "حالات مسجلة على الخادم فقط" : "Only server-recorded states are shown"}</p></div><span>{data.metrics.providerReferencedEntries} {ar ? "بمرجع مزود" : "with provider reference"}</span></div><div className="live-ledger-table"><header><span>{ar ? "الحالة" : "Status"}</span><span>{ar ? "الإدخالات" : "Entries"}</span><span>{ar ? "القيمة المسجلة" : "Recorded value"}</span><span>{ar ? "قيمة الاسترداد" : "Refund value"}</span><span>{ar ? "آخر تحديث" : "Latest update"}</span></header>{data.statuses.map((row) => <article key={row.status}><div><i className={row.status}/><span><b>{label(row.status)}</b><small>{ar ? explanations[row.status][1] : explanations[row.status][0]}</small></span></div><strong>{row.entryCount}</strong><span>{qar(row.recordedAmountQar, ar)}</span><span>{qar(row.refundAmountQar, ar)}</span><time>{row.latestUpdate ? new Intl.DateTimeFormat(ar ? "ar-QA" : "en-QA", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Qatar" }).format(new Date(row.latestUpdate)) : (ar ? "لا يوجد" : "None")}</time><p><i style={{ width: `${(row.entryCount / largestCount) * 100}%` }}/></p></article>)}</div></section>}
+        <section className="finance-boundaries"><article><span>↔</span><div><h2>{ar ? "التسويات والمطابقة" : "Settlements and reconciliation"}</h2><p>{ar ? "لا يوجد ملف مستحوذ أو كشف بنك أو حساب مستحقات لمقدم الخدمة متصل برعايتي." : "No acquirer file, bank statement, or provider-payable account is connected to Reyati."}</p></div><b>{ar ? "غير متاح" : "Unavailable"}</b></article><article><span>↩</span><div><h2>{ar ? "تنفيذ الاسترداد" : "Refund execution"}</h2><p>{ar ? "يمكن للدفتر تسجيل حالة وقيمة الاسترداد، لكنه لا يستطيع إرسال الأموال إلى وسيلة الدفع." : "The ledger can record refund state and value, but it cannot send funds to a payment method."}</p></div><b>{data.metrics.pendingRefundEntries ? `${data.metrics.pendingRefundEntries} ${ar ? "معلّق" : "recorded pending"}` : (ar ? "لا يوجد معلّق" : "None pending")}</b></article></section>
+        <footer className="finance-footer live-finance-footer"><span>ⓘ</span><p>{ar ? "كل عرض لهذه الإجماليات مسجل في سجل التدقيق. لا تحتوي هذه الصفحة على أسماء المرضى أو مراجع المواعيد." : "Every view of these aggregates is audited. This page contains no patient names or appointment references."}</p><a href="/admin/audit">{ar ? "فتح سجل التدقيق" : "Open audit ledger"}</a></footer>
+      </>}
+    </div></section>
+  </main>;
 }

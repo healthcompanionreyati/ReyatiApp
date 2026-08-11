@@ -243,6 +243,7 @@ export const paymentLedgerEntries = sqliteTable("payment_ledger_entries", {
 }, (table) => [
   uniqueIndex("idx_payment_ledger_appointment").on(table.appointmentId),
   index("idx_payment_ledger_patient_status_updated").on(table.patientId, table.status, table.statusUpdatedAt),
+  index("idx_payment_ledger_status_updated").on(table.status, table.statusUpdatedAt),
   uniqueIndex("idx_payment_ledger_provider_reference").on(table.providerReference),
 ]);
 
