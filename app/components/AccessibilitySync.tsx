@@ -154,7 +154,9 @@ export default function AccessibilitySync() {
             ?? buttons.find((button) => /^(close|cancel|go back)$/i.test(button.textContent?.trim() ?? ""));
           if (closeButton) {
             closeButton.dataset.dialogClose = "true";
-            if (!closeButton.getAttribute("aria-label") && closeButton.textContent?.trim() === "×") {
+            const closeLabel = closeButton.getAttribute("aria-label");
+            const inheritedDismissLabel = closeLabel === "Dismiss message" || closeLabel === "إخفاء الرسالة";
+            if (closeButton.textContent?.trim() === "×" && (!closeLabel || inheritedDismissLabel)) {
               closeButton.setAttribute("aria-label", arabic ? "إغلاق" : "Close");
             }
           }

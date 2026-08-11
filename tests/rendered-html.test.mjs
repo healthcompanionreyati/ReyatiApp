@@ -962,6 +962,8 @@ test("discovers each dialog close control and lets Escape use it", async () => {
   assert.match(accessibility, /className\.endsWith\("-close"\)/);
   assert.match(accessibility, /button\.textContent\?\.trim\(\) === "×"/);
   assert.match(accessibility, /closeButton\.dataset\.dialogClose = "true"/);
+  assert.match(accessibility, /closeLabel === "Dismiss message" \|\| closeLabel === "إخفاء الرسالة"/);
+  assert.match(accessibility, /\(!closeLabel \|\| inheritedDismissLabel\)/);
   assert.match(accessibility, /\[data-dialog-close='true'\]/);
   assert.match(accessibility, /if \(closeButton\) \{[\s\S]*?event\.preventDefault\(\);[\s\S]*?closeButton\.click\(\)/);
   assert.match(organizations, /<button type="button" onClick=\{\(\) => setReviewing\(null\)\}>×<\/button>/);
