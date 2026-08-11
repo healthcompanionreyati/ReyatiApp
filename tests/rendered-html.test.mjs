@@ -577,3 +577,27 @@ test("derives the provider patient directory only from provider-owned appointmen
   assert.match(page, /\/provider\/encounter\?appointmentId=/);
   assert.doesNotMatch(page, /Noora Al-Mansoori|Yousef Hassan|Al Noor Medical Center|Synthetic data|Prototype consent request sent|Request more access|Patient-shared document/i);
 });
+
+test("computes audited provider insights from appointment aggregates without invented KPIs", async () => {
+  const [service, route, page] = await Promise.all([
+    readFile(new URL("../lib/provider-insights.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/insights/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/insights/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(service, /eq\(appointments\.providerId, profile\.id\)/);
+  assert.match(service, /requireOrganizationRole/);
+  assert.match(service, /groupBy\(appointments\.status\)/);
+  assert.match(service, /groupBy\(qatarDay\)/);
+  assert.match(service, /privacyThreshold = 10/);
+  assert.match(service, /provider\.insights_viewed/);
+  assert.doesNotMatch(service, /patientProfiles|encounterNotes|paymentLedgerEntries|dateOfBirth|email:/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /\[7, 30, 90\]\.includes\(requested\)/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /fetch\(`\/api\/provider\/insights\?days=\$\{range\}`/);
+  assert.match(page, /Discovery source, wait time, and capacity utilization are not currently recorded/);
+  assert.match(page, /No patient identity or clinical context is included/);
+  assert.match(page, /Export CSV/);
+  assert.doesNotMatch(page, /184|78%|11 min|Reyati search|Returning patients|Al Noor Medical Center|Aggregate prototype report|Synthetic data|synthetic for planning/i);
+});
