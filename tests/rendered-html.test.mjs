@@ -733,3 +733,27 @@ test("turns the journey catalog into a truthful production capability directory"
   assert.match(page, /tone: "inactive"/);
   assert.doesNotMatch(page, /CONNECTED PRODUCT PROTOTYPE|All data is synthetic|every action is safely simulated|Planning prototype|Prototype coverage|Checkout, receipts, and refunds|Settlements, reconciliation, refunds|Privacy redaction, content integrity/i);
 });
+
+test("uses explicit shared navigation mappings and accessible dialog behavior", async () => {
+  const [dock, accessibility, authPage, authStyles] = await Promise.all([
+    readFile(new URL("../app/components/MobileDock.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(dock, /aliases: \["\/family", "\/payments", "\/support", "\/notifications"\]/);
+  assert.match(dock, /label: "Status"/);
+  assert.match(dock, /label: "Programme"/);
+  assert.match(dock, /label: "Directory"/);
+  assert.doesNotMatch(dock, /href: "\/payments".*label: "Payments"/);
+  assert.match(accessibility, /انتقل إلى المحتوى الرئيسي/);
+  assert.match(accessibility, /aria-labelledby/);
+  assert.match(accessibility, /latestDialog\.focus/);
+  assert.match(accessibility, /opener\?\.isConnected/);
+  assert.doesNotMatch(accessibility, /adminRoutes|links?\.href =|\.href = "\/admin\/audit"/);
+  assert.match(authPage, /auth-security-note/);
+  assert.match(authStyles, /\.auth-security-note/);
+  assert.doesNotMatch(authPage, /prototype-alert/);
+  assert.doesNotMatch(authStyles, /prototype-alert/);
+});

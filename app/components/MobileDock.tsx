@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type DockItem = { href: string; icon: string; label: string; exact?: boolean };
+type DockItem = { href: string; icon: string; label: string; exact?: boolean; aliases?: string[] };
 
 const patientRoutes = ["/", "/providers", "/appointments", "/wallet", "/family", "/payments", "/support", "/notifications"];
 
@@ -11,7 +11,7 @@ const patientItems: DockItem[] = [
   { href: "/providers", icon: "⌕", label: "Find care" },
   { href: "/appointments", icon: "◉", label: "Visits" },
   { href: "/wallet", icon: "▤", label: "Records" },
-  { href: "/journeys", icon: "◇", label: "More" },
+  { href: "/journeys", icon: "◇", label: "More", aliases: ["/family", "/payments", "/support", "/notifications"] },
 ];
 
 const providerItems: DockItem[] = [
@@ -31,14 +31,15 @@ const adminItems: DockItem[] = [
 ];
 
 const partnerItems: DockItem[] = [
-  { href: "/partner", icon: "⌂", label: "Overview", exact: true },
-  { href: "/partner/program", icon: "◇", label: "Program" },
-  { href: "/payments", icon: "◫", label: "Payments" },
+  { href: "/partner", icon: "⌂", label: "Status", exact: true },
+  { href: "/partner/program", icon: "◇", label: "Programme" },
   { href: "/support", icon: "?", label: "Support" },
-  { href: "/journeys", icon: "↗", label: "Switch" },
+  { href: "/journeys", icon: "↗", label: "Directory" },
+  { href: "/auth", icon: "◎", label: "Account" },
 ];
 
 function active(path: string, item: DockItem) {
+  if (item.aliases?.some((alias) => path === alias || path.startsWith(`${alias}/`))) return true;
   return item.exact ? path === item.href : path === item.href || path.startsWith(`${item.href}/`);
 }
 

@@ -4,6 +4,10 @@ import { useEffect } from "react";
 
 export default function AccessibilitySync() {
   useEffect(() => {
+    let activeDialog: HTMLElement | null = null;
+    let dialogOpener: HTMLElement | null = null;
+    let dialogSequence = 0;
+
     const sync = () => {
       const root = document.querySelector<HTMLElement>("main[dir]");
       const direction = root?.dir === "rtl" ? "rtl" : "ltr";
@@ -11,6 +15,9 @@ export default function AccessibilitySync() {
 
       document.documentElement.dir = direction;
       document.documentElement.lang = arabic ? "ar" : "en";
+
+      const skipLink = document.querySelector<HTMLAnchorElement>(".skip-link");
+      if (skipLink) skipLink.textContent = arabic ? "انتقل إلى المحتوى الرئيسي" : "Skip to main content";
 
       const main = document.querySelector<HTMLElement>("main");
       if (main && !main.id) main.id = "main-content";
@@ -31,13 +38,6 @@ export default function AccessibilitySync() {
         if (!button.getAttribute("aria-label")) button.setAttribute("aria-label", arabic ? "إغلاق" : "Close");
       });
 
-      const adminNav = document.querySelector(".verify-sidebar nav, .finance-sidebar nav, .cases-sidebar nav, .moderation-sidebar nav, .audit-sidebar nav");
-      const adminRoutes = ["/admin", "/admin/verification", "/admin/finance", "/admin/cases", "/admin/moderation", "/admin/audit"];
-      adminNav?.querySelectorAll<HTMLAnchorElement>("a").forEach((link, index) => {
-        if (adminRoutes[index]) link.href = adminRoutes[index];
-      });
-      document.querySelectorAll<HTMLAnchorElement>(".verify-footer a, .cases-footer a").forEach((link) => { link.href = "/admin/audit"; });
-
       const note = document.querySelector<HTMLTextAreaElement>(".case-collab textarea");
       const owner = document.querySelector<HTMLSelectElement>(".case-collab select");
       if (note) note.setAttribute("aria-label", arabic ? "ملاحظة داخلية" : "Internal note");
@@ -50,8 +50,27 @@ export default function AccessibilitySync() {
           dialog.setAttribute("role", "dialog");
           dialog.setAttribute("aria-modal", "true");
           if (!dialog.hasAttribute("tabindex")) dialog.tabIndex = -1;
+          const heading = dialog.querySelector<HTMLElement>("h1, h2");
+          if (heading) {
+            if (!heading.id) heading.id = `reyati-dialog-title-${++dialogSequence}`;
+            dialog.setAttribute("aria-labelledby", heading.id);
+          } else if (!dialog.getAttribute("aria-label")) {
+            dialog.setAttribute("aria-label", arabic ? "نافذة حوار" : "Dialog");
+          }
         }
       });
+
+      const latestDialog = modalLayers.item(modalLayers.length - 1)?.querySelector<HTMLElement>("aside, section, [class*='dialog']") ?? null;
+      if (latestDialog && latestDialog !== activeDialog) {
+        dialogOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        activeDialog = latestDialog;
+        queueMicrotask(() => latestDialog.focus());
+      } else if (!latestDialog && activeDialog) {
+        activeDialog = null;
+        const opener = dialogOpener;
+        dialogOpener = null;
+        if (opener?.isConnected) queueMicrotask(() => opener.focus());
+      }
 
       document.body.classList.toggle("has-open-dialog", modalLayers.length > 0);
     };
@@ -71,6 +90,8 @@ export default function AccessibilitySync() {
       observer.disconnect();
       document.removeEventListener("keydown", closeOnEscape);
       document.body.classList.remove("has-open-dialog");
+      activeDialog = null;
+      dialogOpener = null;
     };
   }, []);
 
