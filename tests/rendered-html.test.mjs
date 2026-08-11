@@ -658,3 +658,27 @@ test("ships a read-only admin finance ledger without invented money movement", a
   assert.match(page, /Export CSV/);
   assert.doesNotMatch(page, /STL-2608|RFD-8814|PAY-|Al Noor Medical Center|Pearl Health Clinic|Upcoming settlements|Ledger match|Second approval|Reconciliation history|Synthetic financial data|Prototype finance report/i);
 });
+
+test("replaces fabricated moderation decisions with an audited capability boundary", async () => {
+  const [service, route, page] = await Promise.all([
+    readFile(new URL("../lib/admin-moderation.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/moderation/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/moderation/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(service, /requirePlatformRole\(userId, \["platform_admin"\]\)/);
+  assert.match(service, /platform\.moderation_boundary_viewed/);
+  assert.match(service, /queueCount: 0/);
+  assert.match(service, /decisionsEnabled: false/);
+  assert.doesNotMatch(service, /patientProfiles|providerProfiles|appointments|encounterNotes|paymentLedgerEntries/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /AuthorizationDeniedError/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /fetch\("\/api\/admin\/moderation"/);
+  assert.match(page, /Reyati does not currently collect or publish reviews/);
+  assert.match(page, /A public review system must never ask patients to publish diagnoses/);
+  assert.match(page, /Requirements before activation/);
+  assert.match(page, /\/admin\/cases/);
+  assert.match(page, /\/admin\/audit/);
+  assert.doesNotMatch(page, /REV-770|REV-769|Pearl Health Clinic|Al Noor Medical Center|psoriasis|Prototype moderation decision logged|Approve for publication|Redact & publish|Review removed|Privacy alert|Appeal rate|Synthetic/i);
+});
