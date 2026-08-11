@@ -534,3 +534,20 @@ test("ships durable user-owned support cases with a role-gated operations queue"
   assert.doesNotMatch(supportPage, /SUP-260802|RFD-260802|simulation|synthetic/i);
   assert.doesNotMatch(adminPage, /SAF-031|PRV-092|SUP-184|Prototype case|synthetic/i);
 });
+
+test("replaces simulated OTP authentication with the dispatch-owned ChatGPT identity", async () => {
+  const [page, auth, identityRoute] = await Promise.all([
+    readFile(new URL("../app/auth/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/chatgpt-auth.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/me/route.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /getChatGPTUser/);
+  assert.match(page, /chatGPTSignInPath\("\/auth"\)/);
+  assert.match(page, /chatGPTSignOutPath\("\/"\)/);
+  assert.match(page, /Signing in identifies you; it does not grant provider/);
+  assert.match(page, /Reyati never asks for a password, SMS code, or payment credential/);
+  assert.match(auth, /oai-authenticated-user-id/);
+  assert.match(auth, /safeRelativeReturnPath/);
+  assert.match(identityRoute, /getOrCreateCurrentUser/);
+  assert.doesNotMatch(page, /Prototype code|synthetic contact|useState|otp|defaultValue|example\.test|Mariam Ahmed/i);
+});
