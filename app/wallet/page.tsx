@@ -1,34 +1,75 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-type Filter = "all" | "verified" | "uploaded";
-type Tab = "timeline" | "sharing";
-type Doc = { id:number; title:string; type:string; date:string; source:string; author:string; facility:string; verified:boolean; icon:string; version:string };
+type VisitRecord = {
+  appointmentId: string;
+  providerName: string;
+  specialty: string;
+  facilityName: string | null;
+  scheduledStart: string;
+  scheduledEnd: string;
+  mode: string;
+  patientInstructions: string;
+  noteVersion: number;
+  finalizedAt: string;
+};
 
-const documents: Doc[] = [
-  { id:1,title:"Visit summary",type:"Consultation",date:"28 July 2026",source:"Provider issued",author:"Dr. Laila Al-Kuwari",facility:"Al Noor Medical Center",verified:true,icon:"▤",version:"Final · v1" },
-  { id:2,title:"Complete blood count",type:"Laboratory result",date:"22 July 2026",source:"Partner issued",author:"Doha Diagnostic Laboratory",facility:"Doha Diagnostic Laboratory",verified:true,icon:"◫",version:"Final · v1" },
-  { id:3,title:"Previous prescription",type:"Prescription image",date:"14 June 2026",source:"Uploaded by you",author:"Mariam Ahmed",facility:"No facility verified",verified:false,icon:"◇",version:"Original upload" },
-  { id:4,title:"Discharge summary",type:"Hospital document",date:"02 February 2026",source:"Uploaded by you",author:"Mariam Ahmed",facility:"Facility not confirmed",verified:false,icon:"▥",version:"Original upload" },
-];
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "PR";
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-QA", { timeZone: "Asia/Qatar", dateStyle: "long", timeStyle: "short" }).format(new Date(value));
+}
 
 export default function Wallet() {
-  const [lang,setLang]=useState<"en"|"ar">("en"); const ar=lang==="ar";
-  const [tab,setTab]=useState<Tab>("timeline"); const [filter,setFilter]=useState<Filter>("all");
-  const [selected,setSelected]=useState<Doc|null>(null); const [share,setShare]=useState<Doc|null>(null); const [shared,setShared]=useState(false);
-  const [uploadNotice,setUploadNotice]=useState(false);
-  const visible=useMemo(()=>documents.filter(d=>filter==="all"||(filter==="verified"?d.verified:!d.verified)),[filter]);
-  return <main className={`wallet-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
-    <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/">{ar?"ابحث عن رعاية":"Find care"}</a><a href="/appointments">{ar?"المواعيد":"Appointments"}</a><a className="active" href="/wallet">{ar?"محفظتي الصحية":"Health wallet"}</a></nav><div><button onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button><span className="avatar">MA</span></div></header>
-    <section className="wallet-hero"><div><p>{ar?"سجل صحي يتحكم به المريض":"Patient-controlled health record"}</p><h1>{ar?"محفظتي الصحية":"My Health Wallet"}</h1><span>{ar?"احتفظي بمستنداتك الصحية، واعرفي مصدرها، وشاركيها بأمان عند الحاجة.":"Keep your health documents together, understand their source, and share them safely when needed."}</span></div><button onClick={()=>{setUploadNotice(true);window.setTimeout(()=>setUploadNotice(false),3200)}}>＋ {ar?"رفع مستند":"Upload document"}</button></section>
-    <section className="wallet-notice"><span>i</span><p><b>{ar?"محفظتك ليست السجل الطبي القانوني للمنشأة.":"Your Wallet is not the facility’s legal medical record."}</b>{ar?" تُظهر رعايتي مصدر كل مستند وحالة التحقق منه بوضوح.":" Reyati clearly shows every document’s source and verification status."}</p></section>
-    <section className="wallet-content"><div className="wallet-tabs"><button className={tab==="timeline"?"active":""} onClick={()=>setTab("timeline")}>{ar?"الخط الزمني":"Timeline"}<span>{documents.length}</span></button><button className={tab==="sharing"?"active":""} onClick={()=>setTab("sharing")}>{ar?"المشاركة والوصول":"Sharing & access"}<span>{shared?2:1}</span></button></div>
-      {tab==="timeline"&&<><div className="wallet-toolbar"><div><button className={filter==="all"?"active":""} onClick={()=>setFilter("all")}>{ar?"الكل":"All"}</button><button className={filter==="verified"?"active":""} onClick={()=>setFilter("verified")}>✓ {ar?"مصدر موثّق":"Verified source"}</button><button className={filter==="uploaded"?"active":""} onClick={()=>setFilter("uploaded")}>{ar?"مرفوع بواسطتي":"Uploaded by me"}</button></div><label>⌕<input placeholder={ar?"ابحث في المستندات":"Search documents"}/></label></div><div className="timeline-list">{visible.map((d,i)=><article className="wallet-document" key={d.id}><div className="timeline-date"><b>{d.date.split(" ")[0]}</b><span>{d.date.split(" ").slice(1).join(" ")}</span><i/></div><div className="document-card"><span className="document-icon">{d.icon}</span><div className="document-main"><p>{d.type}</p><h2>{d.title}</h2><span>{d.author} · {d.facility}</span><div><i className={d.verified?"verified-source":"patient-source"}>{d.verified?"✓ Verified source":"Uploaded by you · Not provider verified"}</i><small>{d.version}</small></div></div><div className="document-actions"><button onClick={()=>setSelected(d)}>{ar?"عرض التفاصيل":"View details"}</button><button onClick={()=>setShare(d)}>↗ {ar?"مشاركة":"Share"}</button></div></div>{i<visible.length-1&&<span className="timeline-line"/>}</article>)}</div></>}
-      {tab==="sharing"&&<div className="sharing-list"><div className="sharing-heading"><div><h2>{ar?"الوصول النشط":"Active access"}</h2><p>{ar?"مشاركة مرتبطة بمستند وغرض ومدة محددة.":"Every share is document-, purpose-, recipient-, and time-bound."}</p></div></div>{shared&&<article><span className="share-avatar">LK</span><div><b>Dr. Laila Al-Kuwari</b><p>Visit summary · Purpose: upcoming appointment</p><small>Expires 9 August 2026</small></div><i className="active-access">{ar?"نشط":"Active"}</i><button onClick={()=>setShared(false)}>{ar?"إلغاء الوصول":"Revoke"}</button></article>}<article><span className="share-avatar">OR</span><div><b>Dr. Omar Rahman</b><p>Complete blood count · Purpose: second opinion</p><small>Expires today at 6:00 PM</small></div><i className="active-access">{ar?"نشط":"Active"}</i><button>{ar?"إلغاء الوصول":"Revoke"}</button></article><div className="sharing-heading history"><div><h2>{ar?"سجل الوصول":"Access history"}</h2><p>{ar?"سجل واضح للمشاركة والعرض والإلغاء.":"A clear history of sharing, viewing, and revocation."}</p></div></div>{[["28 Jul · 10:14","Dr. Laila viewed Visit summary","Viewed for ongoing care"],["22 Jul · 17:02","You shared Complete blood count","Second opinion · 10 days"],["18 Jul · 09:31","Access revoked for Pearl Health Clinic","Revoked by you"]].map(([date,event,meta])=><div className="history-row" key={event}><time>{date}</time><span/><div><b>{event}</b><small>{meta}</small></div></div>)}</div>}
+  const [records, setRecords] = useState<VisitRecord[]>([]);
+  const [selected, setSelected] = useState<VisitRecord | null>(null);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/patient/records", { cache: "no-store" }).then(async (response) => {
+      const payload = await response.json() as { records?: VisitRecord[]; error?: string };
+      if (response.status === 401) {
+        window.location.assign("/signin-with-chatgpt?return_to=/wallet");
+        throw new Error("Authentication required");
+      }
+      if (!response.ok) throw new Error(payload.error || "Health records are temporarily unavailable.");
+      return payload.records || [];
+    }).then((items) => {
+      if (!active) return;
+      setRecords(items);
+      const appointmentId = new URLSearchParams(window.location.search).get("appointmentId");
+      if (appointmentId) setSelected(items.find((item) => item.appointmentId === appointmentId) || null);
+    }).catch((caught: unknown) => {
+      if (active) setError(caught instanceof Error ? caught.message : "Health records are temporarily unavailable.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const visible = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return records;
+    return records.filter((record) => `${record.providerName} ${record.specialty} ${record.facilityName || ""}`.toLowerCase().includes(normalized));
+  }, [query, records]);
+
+  return <main className="wallet-shell wallet-live-shell" id="main-content">
+    <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">Find care</a><a href="/appointments">Appointments</a><a className="active" href="/wallet">Health records</a><a href="/payments">Payments</a><a href="/support">Support</a></nav><div><a className="wallet-live-notifications" href="/notifications">Notifications</a><span className="avatar">RY</span></div></header>
+    <section className="wallet-hero"><div><p>Patient-owned visit records</p><h1>My Health Records</h1><span>Review finalized visit information released to your account by your care providers.</span></div><a href="/appointments">View appointments</a></section>
+    <section className="wallet-notice"><span>i</span><p><b>Your records are private to your signed-in account.</b> This view includes provider identity, visit provenance, and approved patient instructions. Internal history, assessment, and plan notes are not exposed here.</p></section>
+
+    <section className="wallet-content">
+      <div className="wallet-live-heading"><div><p>FINALIZED VISITS</p><h2>Visit record timeline</h2><span>{records.length} {records.length === 1 ? "record" : "records"}</span></div><label aria-label="Search records">⌕<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search provider or specialty"/></label></div>
+      {error && <div className="wallet-live-error"><span>{error}</span><button onClick={() => setError("")}>×</button></div>}
+      {loading ? <div className="wallet-live-state"><span>◌</span><h2>Loading your records</h2><p>Checking finalized visits owned by your account.</p></div>
+        : visible.length === 0 ? <div className="wallet-live-state"><span>▤</span><h2>{query ? "No matching records" : "No finalized visit records yet"}</h2><p>{query ? "Try a different provider or specialty." : "A record will appear after your provider finalizes an eligible encounter."}</p><a href="/appointments">Review appointments</a></div>
+        : <div className="wallet-live-list">{visible.map((record) => <article key={record.appointmentId}><div className="wallet-record-date"><b>{new Date(record.scheduledStart).toLocaleDateString([], { day: "2-digit" })}</b><span>{new Date(record.scheduledStart).toLocaleDateString([], { month: "short", year: "numeric" })}</span></div><span className="wallet-record-avatar">{initials(record.providerName)}</span><div className="wallet-record-main"><p>FINALIZED VISIT RECORD</p><h2>{record.providerName}</h2><span>{record.specialty} · {record.facilityName || (record.mode === "video" ? "Video consultation" : "Facility not recorded")}</span><small>Finalized {formatDate(record.finalizedAt)} · Version {record.noteVersion}</small></div><button onClick={() => setSelected(record)}>View record</button></article>)}</div>}
     </section>
-    {selected&&<div className="wallet-modal-layer"><aside className="document-detail"><button className="drawer-close" onClick={()=>setSelected(null)}>×</button><p>{selected.type}</p><h2>{selected.title}</h2><div className={`provenance-banner ${selected.verified?"verified":"unverified"}`}><span>{selected.verified?"✓":"!"}</span><div><b>{selected.verified?(ar?"مصدر موثّق":"Verified source"):(ar?"مستند أضفته أنت":"Document uploaded by you")}</b><p>{selected.verified?(ar?"أصدره مقدم رعاية معتمد.":"Issued by an approved healthcare source."):(ar?"لم يتحقق مقدم رعاية من محتواه.":"Its contents have not been verified by a provider.")}</p></div></div><dl><div><dt>{ar?"المصدر":"Source"}</dt><dd>{selected.source}</dd></div><div><dt>{ar?"المؤلف":"Author"}</dt><dd>{selected.author}</dd></div><div><dt>{ar?"المنشأة":"Facility"}</dt><dd>{selected.facility}</dd></div><div><dt>{ar?"التاريخ":"Date"}</dt><dd>{selected.date}</dd></div><div><dt>{ar?"الإصدار":"Version"}</dt><dd>{selected.version}</dd></div></dl><div className="document-preview"><span>{selected.icon}</span><p>{ar?"معاينة المستند التجريبي":"Synthetic document preview"}</p><small>{ar?"لا يحتوي هذا النموذج على بيانات صحية حقيقية.":"This prototype contains no real health information."}</small></div><button className="primary" onClick={()=>{setShare(selected);setSelected(null)}}>↗ {ar?"مشاركة هذا المستند":"Share this document"}</button></aside></div>}
-    {share&&<div className="wallet-modal-layer"><div className="share-dialog"><button className="drawer-close" onClick={()=>setShare(null)}>×</button><p>{ar?"مشاركة آمنة":"Secure share"}</p><h2>{share.title}</h2><label>{ar?"مقدم الرعاية":"Provider"}<select defaultValue="laila"><option value="laila">Dr. Laila Al-Kuwari · Al Noor Medical Center</option><option value="omar">Dr. Omar Rahman · West Bay Clinic</option></select></label><label>{ar?"غرض المشاركة":"Purpose"}<select defaultValue="appointment"><option value="appointment">Upcoming appointment</option><option value="opinion">Second opinion</option><option value="followup">Follow-up care</option></select></label><label>{ar?"مدة الوصول":"Access duration"}<select defaultValue="7"><option value="1">24 hours</option><option value="7">7 days</option><option value="30">30 days</option></select></label><div className="share-summary"><span>◇</span><p>{ar?"يمكن للمستلم عرض هذا المستند فقط للغرض والمدة المحددين. يمكنك إلغاء الوصول في أي وقت.":"The recipient can view only this document for the selected purpose and duration. You can revoke access at any time."}</p></div><button className="primary" onClick={()=>{setShared(true);setShare(null);setTab("sharing")}}>{ar?"تأكيد المشاركة":"Confirm secure share"}</button></div></div>}
-    {uploadNotice&&<div className="production-toast" role="status" aria-live="polite"><span>i</span><p>{ar?"رفع المستندات غير مفعّل في هذه البيئة التجريبية.":"Document uploads are unavailable in this demonstration environment."}</p><button aria-label={ar?"إغلاق":"Dismiss"} onClick={()=>setUploadNotice(false)}>×</button></div>}
+
+    {selected && <div className="wallet-modal-layer" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><aside className="document-detail wallet-record-detail"><button className="drawer-close" onClick={() => setSelected(null)} aria-label="Close">×</button><p>FINALIZED VISIT RECORD</p><h2>{formatDate(selected.scheduledStart)}</h2><div className="provenance-banner verified"><span>✓</span><div><b>Provider-issued record</b><p>Finalized by the provider responsible for this appointment and delivered to your account.</p></div></div><dl><div><dt>Provider</dt><dd>{selected.providerName}</dd></div><div><dt>Specialty</dt><dd>{selected.specialty}</dd></div><div><dt>Facility</dt><dd>{selected.facilityName || (selected.mode === "video" ? "Video consultation" : "Not recorded")}</dd></div><div><dt>Visit mode</dt><dd>{selected.mode.replaceAll("_", " ")}</dd></div><div><dt>Record version</dt><dd>{selected.noteVersion}</dd></div><div><dt>Appointment reference</dt><dd>{selected.appointmentId}</dd></div></dl><section className="wallet-instructions"><p>Instructions from your provider</p><div>{selected.patientInstructions || "No patient instructions were included in this finalized record."}</div></section><div className="wallet-record-boundary"><span>i</span><p><b>Internal clinical notes remain protected.</b> Contact your provider if you need clarification or an official copy of the facility medical record.</p></div><a className="primary" href="/support">Get support</a></aside></div>}
   </main>;
 }

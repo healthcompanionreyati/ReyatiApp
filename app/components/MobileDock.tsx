@@ -10,7 +10,7 @@ const patientItems: DockItem[] = [
   { href: "/", icon: "⌂", label: "Home", exact: true },
   { href: "/providers", icon: "⌕", label: "Find care" },
   { href: "/appointments", icon: "◉", label: "Visits" },
-  { href: "/wallet", icon: "▤", label: "Wallet" },
+  { href: "/wallet", icon: "▤", label: "Records" },
   { href: "/journeys", icon: "◇", label: "More" },
 ];
 

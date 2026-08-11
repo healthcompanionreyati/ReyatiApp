@@ -395,3 +395,24 @@ test("ships provider-owned, immutable clinical encounter records", async () => {
   assert.match(providerPage, /\/provider\/encounter\?appointmentId=/);
   assert.doesNotMatch(page, /Yousef Hassan|Penicillin|blood count|Dr\. Laila|Synthetic-data prototype/i);
 });
+
+test("exposes only patient-owned, approved fields from finalized visit records", async () => {
+  const [service, route, page, appointmentsPage] = await Promise.all([
+    readFile(new URL("../lib/patient-records.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/patient/records/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/wallet/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/appointments/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(service, /eq\(patientProfiles\.userId, userId\)/);
+  assert.match(service, /eq\(encounterNotes\.status, "finalized"\)/);
+  assert.match(service, /patientInstructions: encounterNotes\.patientInstructions/);
+  assert.match(service, /patient\.visit_records_viewed/);
+  assert.doesNotMatch(service, /historyText:|assessmentText:|planText:/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /Patient-owned visit records/);
+  assert.match(page, /Internal history, assessment, and plan notes are not exposed here/);
+  assert.match(page, /No patient instructions were included/);
+  assert.match(appointmentsPage, /Visit record/);
+  assert.doesNotMatch(page, /Dr\. Laila|Doha Diagnostic|Mariam Ahmed|prescription|Synthetic document|Confirm secure share/i);
+});

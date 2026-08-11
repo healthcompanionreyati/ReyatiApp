@@ -26,6 +26,8 @@ import "./provider-insights.css";
 import "./provider-settings.css";
 import "./provider-live.css";
 import "./encounter-live.css";
+import "./wallet-live.css";
+import "./patient-record-links.css";
 import "./quality.css";
 import "./ui-polish.css";
 import "./ui-completion.css";
