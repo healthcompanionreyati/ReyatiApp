@@ -757,3 +757,24 @@ test("uses explicit shared navigation mappings and accessible dialog behavior", 
   assert.doesNotMatch(authPage, /prototype-alert/);
   assert.doesNotMatch(authStyles, /prototype-alert/);
 });
+
+test("announces workflow states and keeps keyboard focus inside active dialogs", async () => {
+  const [accessibility, quality] = await Promise.all([
+    readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/quality.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(accessibility, /role", "alert/);
+  assert.match(accessibility, /aria-live", "assertive/);
+  assert.match(accessibility, /role", "status/);
+  assert.match(accessibility, /aria-live", "polite/);
+  assert.match(accessibility, /aria-busy/);
+  assert.match(accessibility, /Dismiss message/);
+  assert.match(accessibility, /event\.key !== "Tab" \|\| !activeDialog/);
+  assert.match(accessibility, /activeDialog\.querySelectorAll<HTMLElement>\(selector\)/);
+  assert.match(accessibility, /event\.shiftKey/);
+  assert.match(accessibility, /last\.focus\(\)/);
+  assert.match(accessibility, /first\.focus\(\)/);
+  assert.match(quality, /:focus-visible/);
+  assert.match(quality, /prefers-reduced-motion: reduce/);
+});
