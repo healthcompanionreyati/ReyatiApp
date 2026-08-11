@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import test from "node:test";
 
 const projectRoot = new URL("../", import.meta.url);
@@ -837,4 +837,17 @@ test("shows accessible field-level validation across product forms", async () =>
   assert.match(accessibility, /control\.validity\.valid\) clearFieldError/);
   assert.match(quality, /\.field-validation-error/);
   assert.match(quality, /\[aria-invalid="true"\]/);
+});
+
+test("keeps the homepage hero lightweight and renderer-safe", async () => {
+  const [page, image] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    stat(new URL("../public/brand/care-conversation.webp", import.meta.url)),
+  ]);
+
+  assert.match(page, /care-conversation\.webp/);
+  assert.match(page, /width="960" height="640"/);
+  assert.match(page, /decoding="async"/);
+  assert.doesNotMatch(page, /care-conversation\.png/);
+  assert.ok(image.size < 100_000, `homepage artwork is unexpectedly large: ${image.size} bytes`);
 });
