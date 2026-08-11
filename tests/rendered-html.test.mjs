@@ -501,3 +501,36 @@ test("enforces consent-scoped delegated appointment management end to end", asyn
   assert.match(familyPage, /Book care/);
   assert.match(familyPage, /\/appointments\?subjectUserId=/);
 });
+
+test("ships durable user-owned support cases with a role-gated operations queue", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0012_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the support case migration");
+  const [schema, migration, service, userRoute, adminRoute, supportPage, adminPage, authorization] = await Promise.all([
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+    readFile(new URL("../lib/support-cases.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/support/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/cases/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/support/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/cases/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/authorization.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(schema, /export const supportCases/);
+  assert.match(schema, /export const supportCaseMessages/);
+  assert.match(migration, /CHECK \(`status` IN \('open', 'in_progress', 'waiting_requester', 'waiting_support', 'resolved', 'closed'\)\)/);
+  assert.match(migration, /idx_support_cases_status_priority_updated/);
+  assert.match(migration, /PRAGMA optimize/);
+  assert.match(service, /eq\(supportCases\.requesterUserId, userId\)/);
+  assert.match(service, /requirePlatformRole\(userId, \["platform_admin", "support_agent"\]\)/);
+  assert.match(service, /eq\(supportCases\.version, Number\(expectedVersion\)\)/);
+  assert.match(service, /support\.case_created/);
+  assert.match(service, /Support request updated/);
+  assert.match(userRoute, /getOrCreateCurrentUser/);
+  assert.match(adminRoute, /AuthorizationDeniedError/);
+  assert.match(authorization, /"support_agent"/);
+  assert.match(supportPage, /Create and track secure, account-owned support requests/);
+  assert.match(supportPage, /This channel is not for emergencies/);
+  assert.match(adminPage, /Only active support agents and platform administrators/);
+  assert.doesNotMatch(supportPage, /SUP-260802|RFD-260802|simulation|synthetic/i);
+  assert.doesNotMatch(adminPage, /SAF-031|PRV-092|SUP-184|Prototype case|synthetic/i);
+});

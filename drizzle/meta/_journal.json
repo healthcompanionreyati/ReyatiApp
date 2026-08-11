@@ -85,6 +85,13 @@
       "when": 1786426156121,
       "tag": "0011_bored_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1786428634656,
+      "tag": "0012_nasty_hellion",
+      "breakpoints": true
     }
   ]
 }

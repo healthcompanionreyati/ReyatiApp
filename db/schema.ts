@@ -346,3 +346,33 @@ export const notifications = sqliteTable("notifications", {
   index("idx_notifications_user_created").on(table.userId, table.createdAt),
   uniqueIndex("idx_notifications_user_dedupe").on(table.userId, table.dedupeKey),
 ]);
+
+export const supportCases = sqliteTable("support_cases", {
+  id: text("id").primaryKey(),
+  reference: text("reference").notNull(),
+  requesterUserId: text("requester_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  assignedToUserId: text("assigned_to_user_id").references(() => users.id, { onDelete: "restrict" }),
+  category: text("category").notNull(),
+  subject: text("subject").notNull(),
+  description: text("description").notNull(),
+  relatedReference: text("related_reference"),
+  privacyRequestType: text("privacy_request_type"),
+  priority: text("priority").notNull().default("normal"),
+  status: text("status").notNull().default("open"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_support_cases_reference").on(table.reference),
+  index("idx_support_cases_requester_updated").on(table.requesterUserId, table.updatedAt),
+  index("idx_support_cases_status_priority_updated").on(table.status, table.priority, table.updatedAt),
+  index("idx_support_cases_assignee_status").on(table.assignedToUserId, table.status),
+]);
+
+export const supportCaseMessages = sqliteTable("support_case_messages", {
+  id: text("id").primaryKey(),
+  caseId: text("case_id").notNull().references(() => supportCases.id, { onDelete: "cascade" }),
+  authorUserId: text("author_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  authorKind: text("author_kind").notNull(),
+  body: text("body").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_support_case_messages_case_created").on(table.caseId, table.createdAt)]);

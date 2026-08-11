@@ -7,7 +7,7 @@ export class PlatformAccessValidationError extends Error {
   constructor(message: string) { super(message); this.name = "PlatformAccessValidationError"; }
 }
 
-const assignableRoles: readonly PlatformRole[] = ["platform_admin", "verification_reviewer", "security_auditor"];
+const assignableRoles: readonly PlatformRole[] = ["platform_admin", "verification_reviewer", "security_auditor", "support_agent"];
 
 function valueText(value: unknown, name: string, max = 128) {
   if (typeof value !== "string" || !value.trim() || value.trim().length > max) throw new PlatformAccessValidationError(`${name} is invalid`);

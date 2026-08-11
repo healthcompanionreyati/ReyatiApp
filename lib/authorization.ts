@@ -20,7 +20,7 @@ export class AuthorizationDeniedError extends Error {
   }
 }
 
-export type PlatformRole = "platform_admin" | "verification_reviewer" | "security_auditor";
+export type PlatformRole = "platform_admin" | "verification_reviewer" | "security_auditor" | "support_agent";
 
 export async function requirePlatformRole(userId: string, allowedRoles: readonly PlatformRole[]) {
   const db = await getDb();
