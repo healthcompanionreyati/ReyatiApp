@@ -553,3 +553,27 @@ test("replaces simulated OTP authentication with the dispatch-owned ChatGPT iden
   assert.match(identityRoute, /getOrCreateCurrentUser/);
   assert.doesNotMatch(page, /Prototype code|synthetic contact|useState|otp|defaultValue|example\.test|Mariam Ahmed/i);
 });
+
+test("derives the provider patient directory only from provider-owned appointments", async () => {
+  const [service, route, page] = await Promise.all([
+    readFile(new URL("../lib/provider-patients.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/provider/patients/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/patients/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(service, /eq\(providerProfiles\.userId, userId\)/);
+  assert.match(service, /requireOrganizationRole/);
+  assert.match(service, /innerJoin\(patientProfiles, eq\(patientProfiles\.id, appointments\.patientId\)\)/);
+  assert.match(service, /provider\.patient_directory_viewed/);
+  assert.match(service, /patientCount: patients\.length, truncated/);
+  assert.doesNotMatch(service, /dateOfBirth|email:|encounterNotes|paymentLedgerEntries|careRelationships/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /AuthorizationDeniedError/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /fetch\("\/api\/provider\/patients"/);
+  assert.match(page, /Only patients connected through your provider-owned appointments appear here/);
+  assert.match(page, /It does not grant access to records, payments, demographics, or consent data/);
+  assert.match(page, /No appointment-linked patients yet/);
+  assert.match(page, /\/provider\/encounter\?appointmentId=/);
+  assert.doesNotMatch(page, /Noora Al-Mansoori|Yousef Hassan|Al Noor Medical Center|Synthetic data|Prototype consent request sent|Request more access|Patient-shared document/i);
+});

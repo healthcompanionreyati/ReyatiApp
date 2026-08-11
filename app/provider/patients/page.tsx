@@ -1,27 +1,116 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-type Patient={id:number,name:string,nameAr:string,initials:string,age:number,sex:string,ref:string,last:string,lastAr:string,next:string,nextAr:string,access:"Active"|"Expiring"|"Visit only",shared:number,alert?:string,alertAr?:string};
-const patients:Patient[]=[
-  {id:1,name:"Noora Al-Mansoori",nameAr:"نورة المنصوري",initials:"NM",age:42,sex:"Female",ref:"RYT-P-••4821",last:"14 Jul 2026",lastAr:"١٤ يوليو ٢٠٢٦",next:"Today · 9:00 AM",nextAr:"اليوم · ٩:٠٠ ص",access:"Active",shared:3},
-  {id:2,name:"Yousef Hassan",nameAr:"يوسف حسن",initials:"YH",age:37,sex:"Male",ref:"RYT-P-••1948",last:"22 Jun 2026",lastAr:"٢٢ يونيو ٢٠٢٦",next:"Today · 10:00 AM",nextAr:"اليوم · ١٠:٠٠ ص",access:"Visit only",shared:1,alert:"Shared document available",alertAr:"مستند مشترك متاح"},
-  {id:3,name:"Aisha Rahman",nameAr:"عائشة رحمن",initials:"AR",age:29,sex:"Female",ref:"RYT-P-••7712",last:"3 Mar 2026",lastAr:"٣ مارس ٢٠٢٦",next:"Today · 11:30 AM",nextAr:"اليوم · ١١:٣٠ ص",access:"Expiring",shared:2,alert:"Access expires today",alertAr:"ينتهي الوصول اليوم"},
-  {id:4,name:"Khalid Al-Sayed",nameAr:"خالد السيد",initials:"KS",age:51,sex:"Male",ref:"RYT-P-••3041",last:"18 May 2026",lastAr:"١٨ مايو ٢٠٢٦",next:"Today · 1:30 PM",nextAr:"اليوم · ١:٣٠ م",access:"Active",shared:4},
-  {id:5,name:"Fatima Ibrahim",nameAr:"فاطمة إبراهيم",initials:"FI",age:64,sex:"Female",ref:"RYT-P-••6509",last:"2 Jul 2026",lastAr:"٢ يوليو ٢٠٢٦",next:"Today · 3:00 PM",nextAr:"اليوم · ٣:٠٠ م",access:"Active",shared:2},
-  {id:6,name:"Mariam Ahmed",nameAr:"مريم أحمد",initials:"MA",age:34,sex:"Female",ref:"RYT-P-••1042",last:"8 Apr 2026",lastAr:"٨ أبريل ٢٠٢٦",next:"2 Aug · 4:30 PM",nextAr:"٢ أغسطس · ٤:٣٠ م",access:"Visit only",shared:1},
-];
+type AppointmentSummary = {
+  id: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  status: string;
+  mode: string;
+};
 
-export default function ProviderPatients(){
-  const [lang,setLang]=useState<"en"|"ar">("en");const [query,setQuery]=useState("");const [filter,setFilter]=useState("all");const [selected,setSelected]=useState<Patient|null>(null);const [requesting,setRequesting]=useState(false);const [notice,setNotice]=useState("");const ar=lang==="ar";
-  const filtered=useMemo(()=>patients.filter(p=>(filter==="all"||(filter==="today"&&p.next.startsWith("Today"))||(filter==="attention"&&!!p.alert))&&`${p.name} ${p.nameAr} ${p.ref}`.toLowerCase().includes(query.toLowerCase())),[query,filter]);
-  return <main className={`provider-patients-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
-    <aside className="patient-provider-sidebar"><a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar?"بوابة مقدم الرعاية":"Provider console"}</span></a><div className="patient-facility"><span>AN</span><div><b>{ar?"مركز النور الطبي":"Al Noor Medical Center"}</b><small>{ar?"فرع الوعب":"Al Waab location"}</small></div></div><nav><a href="/provider"><span>◫</span>{ar?"اليوم":"Today"}</a><a href="/provider"><span>□</span>{ar?"التقويم":"Calendar"}</a><a className="active" href="/provider/patients"><span>♙</span>{ar?"المرضى":"Patients"}<i>6</i></a><a href="/provider/services"><span>◇</span>{ar?"الخدمات":"Services"}</a><a href="/provider/insights"><span>↗</span>{ar?"التقارير":"Insights"}</a><a href="/provider/settings"><span>⚙</span>{ar?"الإعدادات":"Settings"}</a></nav><div className="patient-sidebar-bottom"><a href="/journeys">◇ {ar?"جميع المسارات":"All journeys"}</a><a href="/provider">← {ar?"لوحة مقدم الرعاية":"Provider dashboard"}</a><p>{ar?"بيانات اصطناعية · وصول بلا امتيازات حقيقية":"Synthetic data · No live privileges"}</p></div></aside>
-    <section className="patient-provider-main"><header className="patient-provider-top"><div><span>⌖</span><div><b>{ar?"مركز النور الطبي · الوعب":"Al Noor Medical Center · Al Waab"}</b><small>{ar?"دور ممارس · وصول محدد":"Practitioner role · scoped access"}</small></div></div><div><button onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button><a href="/notifications">●</a><span>LK</span></div></header>
-      <div className="patient-provider-workspace"><div className="patient-workspace-heading"><div><p>{ar?"مساحة وصول محددة بالموافقة":"CONSENT-SCOPED WORKSPACE"}</p><h1>{ar?"المرضى":"Patients"}</h1><span>{ar?"لا تظهر إلا الملفات المرتبطة بعلاقة رعاية حالية أو موعد أو مشاركة صريحة.":"Only profiles with a current care relationship, appointment, or explicit share are visible."}</span></div><button>＋ {ar?"البحث بمرجع دعوة":"Find by invitation reference"}</button></div><div className="patient-access-note"><span>♙</span><p><b>{ar?"لا توجد قائمة مرضى عالمية":"There is no global patient directory"}</b>{ar?"البحث محصور في المرضى الذين لديك غرض رعاية مشروع للوصول إليهم. كل عرض مسجّل.":"Search is limited to patients you have a legitimate care purpose to access. Every view is logged."}</p></div><div className="patient-metrics"><article><span>♙</span><div><b>6</b><p>{ar?"علاقات رعاية نشطة":"Active care relationships"}</p></div></article><article><span>◎</span><div><b>5</b><p>{ar?"مواعيد اليوم":"Patients today"}</p></div></article><article><span>!</span><div><b>2</b><p>{ar?"تحتاج إلى انتباه":"Access items needing attention"}</p></div></article></div><div className="patient-tools"><div><button className={filter==="all"?"active":""} onClick={()=>setFilter("all")}>{ar?"الكل":"All"}</button><button className={filter==="today"?"active":""} onClick={()=>setFilter("today")}>{ar?"اليوم":"Today"}</button><button className={filter==="attention"?"active":""} onClick={()=>setFilter("attention")}>{ar?"تحتاج انتباهاً":"Needs attention"}</button></div><label>⌕<input value={query} onChange={e=>setQuery(e.target.value)} placeholder={ar?"الاسم أو مرجع المريض":"Name or patient reference"}/></label></div><section className="patient-directory"><div className="patient-directory-head"><span>{ar?"المريض":"Patient"}</span><span>{ar?"آخر زيارة":"Last visit"}</span><span>{ar?"القادم":"Next"}</span><span>{ar?"نطاق الوصول":"Access scope"}</span><span>{ar?"المشترك":"Shared"}</span><span/></div>{filtered.map(p=><button key={p.id} onClick={()=>setSelected(p)}><div className="directory-person"><span>{p.initials}</span><div><b>{ar?p.nameAr:p.name}</b><small>{p.ref} · {p.age} {ar?"سنة":"years"}</small>{p.alert&&<em>! {ar?p.alertAr:p.alert}</em>}</div></div><time>{ar?p.lastAr:p.last}</time><span>{ar?p.nextAr:p.next}</span><i className={p.access.toLowerCase().replace(" ","-")}>{p.access}</i><strong>▤ {p.shared}</strong><em>›</em></button>)}</section></div>
+type PatientSummary = {
+  patientId: string;
+  patientName: string;
+  appointmentCount: number;
+  latestAppointment: AppointmentSummary;
+  nextAppointment: AppointmentSummary | null;
+};
+
+type Directory = {
+  providerName: string;
+  organizationName: string;
+  patients: PatientSummary[];
+  truncated: boolean;
+};
+
+type Filter = "all" | "upcoming" | "recent";
+const recentWindowStart = Date.now() - 90 * 24 * 60 * 60 * 1000;
+
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "P";
+}
+
+function formatDate(value: string, lang: "en" | "ar") {
+  return new Intl.DateTimeFormat(lang === "ar" ? "ar-QA" : "en-QA", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Qatar",
+  }).format(new Date(value));
+}
+
+export default function ProviderPatients() {
+  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [directory, setDirectory] = useState<Directory | null>(null);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
+  const [error, setError] = useState<"auth" | "forbidden" | "unavailable" | null>(null);
+  const ar = lang === "ar";
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/provider/patients", { signal: controller.signal, credentials: "same-origin" })
+      .then(async (response) => {
+        if (response.status === 401) throw new Error("auth");
+        if (response.status === 403) throw new Error("forbidden");
+        if (!response.ok) throw new Error("unavailable");
+        return response.json() as Promise<Directory>;
+      })
+      .then(setDirectory)
+      .catch((reason: Error) => {
+        if (reason.name === "AbortError") return;
+        setError(reason.message === "auth" || reason.message === "forbidden" ? reason.message : "unavailable");
+      });
+    return () => controller.abort();
+  }, []);
+
+  const visiblePatients = useMemo(() => {
+    const normalized = query.trim().toLocaleLowerCase();
+    return (directory?.patients ?? []).filter((patient) => {
+      if (normalized && !patient.patientName.toLocaleLowerCase().includes(normalized)) return false;
+      if (filter === "upcoming") return Boolean(patient.nextAppointment);
+      if (filter === "recent") return new Date(patient.latestAppointment.scheduledStart).getTime() >= recentWindowStart;
+      return true;
+    });
+  }, [directory, filter, query]);
+
+  const upcomingCount = directory?.patients.filter((patient) => patient.nextAppointment).length ?? 0;
+  const providerInitials = initials(directory?.providerName ?? "Provider");
+
+  return <main className={`provider-patients-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
+    <aside className="patient-provider-sidebar">
+      <a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
+      <div className="patient-facility"><span>{providerInitials}</span><div><b>{directory?.organizationName ?? (ar ? "مساحة مقدم الرعاية" : "Provider workspace")}</b><small>{directory?.providerName ?? (ar ? "حساب موثّق" : "Verified account")}</small></div></div>
+      <nav>
+        <a href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}</a>
+        <a className="active" href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}{directory && <i>{directory.patients.length}</i>}</a>
+        <a href="/provider/services"><span>◇</span>{ar ? "الخدمات" : "Services"}</a>
+        <a href="/provider/insights"><span>↗</span>{ar ? "التقارير" : "Insights"}</a>
+        <a href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>
+      </nav>
+      <div className="patient-sidebar-bottom"><a href="/support">◇ {ar ? "الدعم" : "Support"}</a><a href="/provider">← {ar ? "لوحة مقدم الرعاية" : "Provider dashboard"}</a><p>{ar ? "وصول محمي · كل عرض مسجّل" : "Protected access · every view is logged"}</p></div>
+    </aside>
+
+    <section className="patient-provider-main">
+      <header className="patient-provider-top">
+        <div><span>⌖</span><div><b>{directory?.organizationName ?? (ar ? "مساحة مقدم الرعاية" : "Provider workspace")}</b><small>{ar ? "دليل مرتبط بالمواعيد" : "Appointment-linked directory"}</small></div></div>
+        <div><button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label={ar ? "الإشعارات" : "Notifications"}>●</a><span>{providerInitials}</span></div>
+      </header>
+
+      <div className="patient-provider-workspace">
+        <div className="patient-workspace-heading"><div><p>{ar ? "نطاق مقدم الرعاية" : "PROVIDER-OWNED ROSTER"}</p><h1>{ar ? "المرضى" : "Patients"}</h1><span>{ar ? "لا يظهر هنا إلا المرضى المرتبطون بمواعيدك الفعلية." : "Only patients connected through your provider-owned appointments appear here."}</span></div><a href="/provider">{ar ? "إدارة المواعيد" : "Manage appointments"} →</a></div>
+
+        <div className="patient-access-note"><span>♙</span><p><b>{ar ? "هذا ليس سجلاً صحياً" : "This is not a health-record directory"}</b>{ar ? "يعرض الاسم وسياق الموعد فقط. لا يمنح الوصول إلى السجلات أو المدفوعات أو البيانات الديموغرافية أو الموافقات." : "It shows only identity and appointment context. It does not grant access to records, payments, demographics, or consent data."}</p></div>
+
+        {error ? <section className="patient-state" role="alert"><span>!</span><h2>{error === "auth" ? (ar ? "يلزم تسجيل الدخول" : "Sign in required") : error === "forbidden" ? (ar ? "دور مقدم رعاية موثّق مطلوب" : "Verified provider access required") : (ar ? "تعذر تحميل المرضى" : "Patients could not be loaded")}</h2><p>{error === "forbidden" ? (ar ? "يجب أن يكون حسابك موثّقاً وعضواً نشطاً في المؤسسة." : "Your account must be verified and have active organization membership.") : (ar ? "أعد المحاولة أو تواصل مع الدعم إذا استمرت المشكلة." : "Try again, or contact support if the problem continues.")}</p><a href={error === "auth" ? "/auth" : error === "forbidden" ? "/provider/services" : "/support"}>{error === "auth" ? (ar ? "تسجيل الدخول" : "Sign in") : error === "forbidden" ? (ar ? "إكمال الإعداد" : "Review provider setup") : (ar ? "فتح الدعم" : "Open support")}</a></section> : !directory ? <section className="patient-state patient-loading" aria-live="polite"><span>◌</span><h2>{ar ? "جارٍ تحميل دليل المرضى" : "Loading patient directory"}</h2><p>{ar ? "نحن نتحقق من صلاحيات مقدم الرعاية." : "We are verifying your provider scope."}</p></section> : <>
+          <div className="patient-metrics"><article><span>♙</span><div><b>{directory.patients.length}</b><p>{ar ? "مرضى مرتبطون" : "Appointment-linked patients"}</p></div></article><article><span>◎</span><div><b>{upcomingCount}</b><p>{ar ? "لديهم موعد قادم" : "With upcoming appointments"}</p></div></article><article><span>✓</span><div><b>{directory.patients.length - upcomingCount}</b><p>{ar ? "سياق سابق فقط" : "Past context only"}</p></div></article></div>
+          {directory.truncated && <p className="patient-limit-note">{ar ? "تُعرض أحدث 500 علاقة موعد. استخدم البحث أو لوحة المواعيد للوصول إلى سياق أقدم." : "Showing the 500 most recent appointment relationships. Use the appointments dashboard for older context."}</p>}
+          <div className="patient-tools"><div><button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>{ar ? "الكل" : "All"}</button><button className={filter === "upcoming" ? "active" : ""} onClick={() => setFilter("upcoming")}>{ar ? "قادم" : "Upcoming"}</button><button className={filter === "recent" ? "active" : ""} onClick={() => setFilter("recent")}>{ar ? "آخر ٩٠ يوماً" : "Last 90 days"}</button></div><label>⌕<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "البحث بالاسم" : "Search by name"} aria-label={ar ? "البحث عن مريض" : "Search patients"}/></label></div>
+
+          {visiblePatients.length ? <section className="patient-directory"><div className="patient-directory-head"><span>{ar ? "المريض" : "Patient"}</span><span>{ar ? "آخر موعد" : "Latest appointment"}</span><span>{ar ? "الموعد القادم" : "Next appointment"}</span><span>{ar ? "الحالة" : "Status"}</span><span>{ar ? "الإجمالي" : "Total"}</span><span/></div>{visiblePatients.map((patient) => <article key={patient.patientId}><div className="directory-person"><span>{initials(patient.patientName)}</span><div><b>{patient.patientName}</b><small>{ar ? "مرتبط بمواعيدك فقط" : "Linked through your appointments only"}</small></div></div><time>{formatDate(patient.latestAppointment.scheduledStart, lang)}</time><span>{patient.nextAppointment ? formatDate(patient.nextAppointment.scheduledStart, lang) : (ar ? "لا يوجد" : "None")}</span><i className={patient.nextAppointment ? "active" : "visit-only"}>{patient.nextAppointment?.status ?? patient.latestAppointment.status}</i><strong>{patient.appointmentCount}</strong><a href={patient.nextAppointment ? `/provider/encounter?appointmentId=${encodeURIComponent(patient.nextAppointment.id)}` : "/provider"} aria-label={`${ar ? "فتح سياق موعد" : "Open appointment context"}: ${patient.patientName}`}>›</a></article>)}</section> : <section className="patient-state patient-empty"><span>♙</span><h2>{query || filter !== "all" ? (ar ? "لا توجد نتائج مطابقة" : "No matching patients") : (ar ? "لا يوجد مرضى مرتبطون بعد" : "No appointment-linked patients yet")}</h2><p>{query || filter !== "all" ? (ar ? "غيّر البحث أو عامل التصفية." : "Adjust the search or filter.") : (ar ? "سيظهر المريض هنا بعد حجز موعد مع ملف مقدم الرعاية الخاص بك." : "A patient will appear here after an appointment is booked with your provider profile.")}</p>{!query && filter === "all" && <a href="/provider/services">{ar ? "مراجعة الخدمات المنشورة" : "Review published services"}</a>}</section>}
+        </>}
+      </div>
     </section>
-    {selected&&<div className="patient-detail-layer" onMouseDown={e=>e.target===e.currentTarget&&setSelected(null)}><aside className="patient-detail"><button className="drawer-close" onClick={()=>setSelected(null)}>×</button><p>{ar?"سياق رعاية موثّق":"VERIFIED CARE CONTEXT"}</p><div className="patient-detail-head"><span>{selected.initials}</span><div><h2>{ar?selected.nameAr:selected.name}</h2><small>{selected.ref} · {selected.age} {ar?"سنة":"years"}</small></div></div><div className={`access-banner ${selected.access.toLowerCase().replace(" ","-")}`}><span>♙</span><div><b>{selected.access}</b><p>{selected.access==="Active"?(ar?"مشاركة رعاية نشطة. تنتهي في ٣١ ديسمبر ٢٠٢٦.":"Active care share. Expires 31 Dec 2026."):selected.access==="Expiring"?(ar?"تنتهي صلاحية الوصول عند منتصف الليل اليوم.":"Access expires at midnight today."):(ar?"الوصول محدود بهذا الموعد والمعلومات اللازمة له.":"Access is limited to this visit and necessary information.")}</p></div><button onClick={()=>setRequesting(true)}>{ar?"التفاصيل":"Details"}</button></div><section><h3>{ar?"سياق اليوم":"Today’s care context"}</h3><dl><div><dt>{ar?"الموعد":"Appointment"}</dt><dd>{ar?selected.nextAr:selected.next}</dd></div><div><dt>{ar?"سبب الزيارة":"Visit reason"}</dt><dd>{selected.id===2?"Persistent cough":selected.id===3?"Annual health review":"Follow-up"}</dd></div><div><dt>{ar?"الموقع":"Location"}</dt><dd>{ar?"مركز النور الطبي":"Al Noor Medical Center"}</dd></div><div><dt>{ar?"حالة الموافقة":"Consent"}</dt><dd className="consent-valid">✓ {ar?"صالح لهذا الغرض":"Valid for this purpose"}</dd></div></dl></section><section><div className="patient-shared-title"><h3>{ar?"المعلومات المشتركة":"Shared information"}</h3><span>{selected.shared} {ar?"عناصر":"items"}</span></div>{Array.from({length:selected.shared}).map((_,i)=><button className="shared-patient-document" key={i}><span>▤</span><div><b>{i===0?(ar?"ملخص الزيارة السابق":"Previous visit summary"):(ar?"مستند شاركه المريض":"Patient-shared document")}</b><small>{ar?"مصدر موثّق · مناسب لهذه الزيارة":"Verified source · relevant to this visit"}</small></div><i>{ar?"عرض":"View"}</i></button>)}<p className="sharing-boundary">{ar?"لا تظهر أي معلومات خارج نطاق المشاركة الحالي.":"No information outside the current share is visible."}</p></section><div className="patient-detail-actions"><button onClick={()=>setRequesting(true)}>{ar?"طلب وصول إضافي":"Request more access"}</button><a href="/provider/encounter">{ar?"بدء الزيارة":"Start encounter"} →</a></div></aside></div>}
-    {requesting&&<div className="access-request-layer"><section className="access-request"><button className="drawer-close" onClick={()=>setRequesting(false)}>×</button><p>{ar?"طلب وصول بموافقة":"CONSENTED ACCESS REQUEST"}</p><h2>{ar?"اطلب الحد الأدنى اللازم":"Request only what is needed"}</h2><span>{ar?"سيُرسل الطلب إلى المريض مع الغرض والمدة والحق في الرفض.":"The patient receives the purpose, duration, and right to decline."}</span><label>{ar?"الغرض من الوصول":"Purpose of access"}<select><option>Current visit assessment</option><option>Follow-up care coordination</option><option>Review a specific shared result</option></select></label><label>{ar?"المدة":"Duration"}<select><option>This appointment only</option><option>7 days</option><option>30 days</option></select></label><div className="requested-fields"><b>{ar?"الحقول المطلوبة":"Requested fields"}</b>{[["Visit summaries",true],["Active medications",true],["Lab results",false],["Full wallet",false]].map(([x,on])=><button className={on?"selected":""} key={String(x)}><span>{on?"✓":""}</span>{x}</button>)}</div><div className="request-explain"><span>♙</span><p>{ar?"لا يبدأ الوصول حتى يوافق المريض. يُسجل الطلب والموافقة والاستخدام والانتهاء.":"Access begins only after patient approval. Request, consent, use, and expiry are logged."}</p></div><button className="send-access-request" onClick={()=>{setRequesting(false);setNotice(ar?"تم إرسال طلب موافقة تجريبي":"Prototype consent request sent")}}>{ar?"إرسال الطلب إلى المريض":"Send request to patient"}</button></section></div>}
-    {notice&&<div className="provider-patient-toast"><span>✓</span>{notice}<button onClick={()=>setNotice("")}>×</button></div>}
-  </main>
+  </main>;
 }
