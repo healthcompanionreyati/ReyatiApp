@@ -1,58 +1,86 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-type View = "overview" | "members" | "funding" | "invoices";
-type Member = { id: string; name: string; relation: string; plan: string; status: "Active" | "Pending" | "Ending"; balance: string };
+type PartnerBoundary = {
+  operatorName: string;
+  generatedAt: string;
+  workspaceEnabled: boolean;
+  financialActionsEnabled: boolean;
+  sources: { id: string; connected: boolean }[];
+};
 
-const members: Member[] = [
-  { id: "EMP-1048", name: "Maha A.", relation: "Employee", plan: "Reyati Plus", status: "Active", balance: "QAR 1,820" },
-  { id: "EMP-1049", name: "Khalid R.", relation: "Employee + family", plan: "Reyati Plus", status: "Active", balance: "QAR 3,400" },
-  { id: "EMP-1050", name: "Noor H.", relation: "Employee", plan: "Reyati Essential", status: "Pending", balance: "—" },
-  { id: "EMP-1051", name: "Yousef M.", relation: "Employee + family", plan: "Reyati Plus", status: "Ending", balance: "QAR 920" },
-];
+const sourceCopy: Record<string, { en: string; ar: string; detailEn: string; detailAr: string; mark: string }> = {
+  employer_registry: { en: "Employer registry", ar: "سجل أصحاب العمل", detailEn: "No verified employer organization model is connected.", detailAr: "لا يوجد نموذج مؤسسة صاحب عمل موثّق ومتصّل.", mark: "OR" },
+  employee_roster: { en: "Employee roster", ar: "قائمة الموظفين", detailEn: "No HR roster or eligibility feed is connected.", detailAr: "لا توجد قائمة موارد بشرية أو تغذية أهلية متصلة.", mark: "HR" },
+  benefit_plans: { en: "Benefit plans", ar: "خطط المزايا", detailEn: "No approved plan, allowance, or rule records exist.", detailAr: "لا توجد سجلات معتمدة للخطط أو المخصصات أو القواعد.", mark: "BP" },
+  funding_ledger: { en: "Funding ledger", ar: "سجل التمويل", detailEn: "No bank, payment, settlement, or funding source is connected.", detailAr: "لا يوجد مصدر مصرفي أو دفع أو تسوية أو تمويل متصل.", mark: "FL" },
+  invoice_store: { en: "Invoice documents", ar: "مستندات الفواتير", detailEn: "No generated or signed invoice source is connected.", detailAr: "لا يوجد مصدر متصل لفواتير منشأة أو موقعة.", mark: "ID" },
+};
 
 export default function PartnerPortal() {
-  const [view, setView] = useState<View>("overview");
   const [lang, setLang] = useState<"en" | "ar">("en");
-  const [selected, setSelected] = useState<Member | null>(null);
-  const [query, setQuery] = useState("");
-  const [notice, setNotice] = useState("");
+  const [data, setData] = useState<PartnerBoundary | null>(null);
+  const [error, setError] = useState<"forbidden" | "unavailable" | null>(null);
   const ar = lang === "ar";
-  const filtered = useMemo(() => members.filter(m => `${m.id} ${m.name} ${m.plan}`.toLowerCase().includes(query.toLowerCase())), [query]);
-  const nav: [View, string, string, string][] = [
-    ["overview", "Overview", "نظرة عامة", "◫"], ["members", "Members", "الأعضاء", "◎"],
-    ["funding", "Funding", "التمويل", "Q"], ["invoices", "Invoices", "الفواتير", "▤"],
-  ];
 
-  return <main className={`partner-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
+  useEffect(() => {
+    let active = true;
+    fetch("/api/partner/capability", { credentials: "same-origin", cache: "no-store" })
+      .then(async (response) => {
+        if (response.status === 401 || response.status === 403) throw new Error("forbidden");
+        if (!response.ok) throw new Error("unavailable");
+        return response.json();
+      })
+      .then((payload) => active && setData(payload.data))
+      .catch((reason) => active && setError(reason.message === "forbidden" ? "forbidden" : "unavailable"));
+    return () => { active = false; };
+  }, []);
+
+  return <main className={`partner-shell live-partner-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="partner-sidebar">
-      <a className="partner-brand" href="/"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "مزايا الشركاء" : "Partner benefits"}</span></a>
-      <div className="partner-org"><span>AC</span><div><b>Atlas Consulting</b><small>{ar ? "مساحة عمل صاحب العمل" : "Employer workspace"}</small></div><i>⌄</i></div>
-      <nav>{nav.map(([id,en,arabic,icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}><span>{icon}</span>{ar ? arabic : en}{id === "members" && <em>248</em>}</button>)}<a className="partner-program-link" href="/partner/program"><span>⚙</span>{ar ? "إعداد البرنامج" : "Programme setup"}</a></nav>
-      <div className="partner-side-note"><span>♙</span><p><b>{ar ? "الخصوصية مضمونة" : "Privacy protected"}</b>{ar ? "لا يمكن لصاحب العمل الاطلاع على الزيارات أو التشخيصات أو السجلات الطبية الفردية." : "Employers cannot view individual visits, diagnoses, or medical records."}</p></div>
-      <div className="partner-links"><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/admin">← {ar ? "عمليات المنصة" : "Platform operations"}</a><a href="/">← {ar ? "تجربة المريض" : "Patient experience"}</a></div>
+      <a className="partner-brand" href="/"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "مساحة الشركاء" : "Partner workspace"}</span></a>
+      <div className="partner-org boundary-org"><span>—</span><div><b>{ar ? "لا توجد مؤسسة متصلة" : "No organization connected"}</b><small>{ar ? "وصول الشركاء غير مفعّل" : "Partner access not enabled"}</small></div></div>
+      <nav className="partner-boundary-nav">
+        <a className="active" href="/partner"><span>◇</span>{ar ? "حالة المساحة" : "Workspace status"}</a>
+        <span><i>○</i>{ar ? "الأعضاء والأهلية" : "Members & eligibility"}</span>
+        <span><i>○</i>{ar ? "التمويل والفواتير" : "Funding & invoices"}</span>
+        <span><i>○</i>{ar ? "إعداد البرنامج" : "Programme setup"}</span>
+      </nav>
+      <div className="partner-side-note"><span>♙</span><p><b>{ar ? "حاجز خصوصية فعّال" : "Privacy boundary active"}</b>{ar ? "لا تعرض ريّاتي بيانات موظفين أو صحية أو مالية ما لم تكن مصادرها وصلاحياتها متصلة فعلياً." : "Reyati does not show employee, health, or financial data unless real sources and permissions are connected."}</p></div>
+      <div className="partner-links"><a href="/support">? {ar ? "طلب الدعم" : "Request support"}</a><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/">← {ar ? "العودة إلى ريّاتي" : "Back to Reyati"}</a></div>
     </aside>
 
     <section className="partner-main">
-      <header className="partner-top"><div><span className="partner-period">2026 BENEFIT YEAR</span><b>{ar ? "١ يناير – ٣١ ديسمبر" : "1 Jan – 31 Dec"}</b></div><div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><button className="partner-help">? <span>{ar ? "مركز المساعدة" : "Help centre"}</span></button><span className="partner-avatar">SA</span></div></header>
-      {view === "overview" && <Overview ar={ar} go={setView} open={setSelected}/>} 
-      {view === "members" && <Members ar={ar} query={query} setQuery={setQuery} rows={filtered} open={setSelected} setNotice={setNotice}/>} 
-      {view === "funding" && <Funding ar={ar} setNotice={setNotice}/>} 
-      {view === "invoices" && <Invoices ar={ar} setNotice={setNotice}/>} 
-    </section>
+      <header className="partner-top"><div><span className="partner-period">{ar ? "حدود القدرة" : "CAPABILITY BOUNDARY"}</span><b>{ar ? "وضع آمن للإنتاج" : "Production-safe state"}</b></div><div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/support">{ar ? "الدعم" : "Support"}</a><span className="partner-avatar">{data?.operatorName?.slice(0, 2).toUpperCase() || "R"}</span></div></header>
+      <div className="partner-workspace live-partner-workspace">
+        <div className="partner-heading"><div><p>{ar ? "بوابة صاحب العمل" : "EMPLOYER PORTAL"}</p><h1>{ar ? "مساحة الشركاء غير مفعّلة" : "Partner workspace is not active"}</h1><span>{ar ? "لا يوجد حالياً مصدر موثوق لبيانات أصحاب العمل أو الموظفين أو المزايا أو التمويل في ريّاتي." : "Reyati currently has no authoritative employer, employee, benefits, or funding source."}</span></div><a href="/support">{ar ? "ناقش التفعيل" : "Discuss activation"}</a></div>
 
-    {selected && <div className="partner-drawer-layer" onMouseDown={e => e.target === e.currentTarget && setSelected(null)}><aside className="partner-drawer"><button className="drawer-close" onClick={() => setSelected(null)}>×</button><span className="drawer-kicker">{ar ? "ملف الأهلية" : "Eligibility profile"}</span><h2>{selected.name}</h2><p>{selected.id} · {selected.relation}</p><div className="partner-status-line"><i className={selected.status.toLowerCase()}>{selected.status}</i><b>{selected.plan}</b></div><section><h3>{ar ? "المزايا الممولة" : "Funded benefits"}</h3><div className="balance-card"><span>{ar ? "الرصيد المتاح" : "Available balance"}</span><b>{selected.balance}</b><small>{ar ? "يتجدد في ١ يناير ٢٠٢٧" : "Renews 1 January 2027"}</small></div><dl><div><dt>{ar ? "تاريخ البدء" : "Start date"}</dt><dd>1 Jan 2026</dd></div><div><dt>{ar ? "المعالون" : "Dependants"}</dt><dd>{selected.relation.includes("family") ? "3" : "0"}</dd></div><div><dt>{ar ? "مصدر الأهلية" : "Eligibility source"}</dt><dd>HR roster sync</dd></div></dl></section><div className="clinical-boundary"><span>♙</span><p><b>{ar ? "المعلومات الصحية غير متاحة" : "Health information is not available"}</b>{ar ? "لديك وصول إداري فقط. لا تظهر الخدمات أو مقدمو الرعاية أو التشخيصات." : "You have administrative access only. Services, providers, and diagnoses are never shown."}</p></div><button className="primary wide" onClick={() => {setNotice(ar ? "تم إرسال رابط المزايا بأمان" : "Secure benefits link sent"); setSelected(null)}}>{ar ? "إرسال رابط المزايا" : "Send benefits link"}</button></aside></div>}
-    {notice && <div className="partner-toast"><span>✓</span>{notice}<button onClick={() => setNotice("")}>×</button></div>}
+        {!data && !error && <div className="partner-live-state"><span/><p>{ar ? "جارٍ التحقق من الوصول…" : "Checking access…"}</p></div>}
+        {error && <div className="partner-live-state error"><h2>{error === "forbidden" ? (ar ? "تسجيل الدخول مطلوب" : "Sign-in required") : (ar ? "تعذر تحميل الحالة" : "Unable to load status")}</h2><p>{ar ? "لم يتم عرض أي بيانات شريك. حاول مرة أخرى أو تواصل مع الدعم." : "No partner data was shown. Try again or contact support."}</p><a href="/auth">{ar ? "فتح الحساب" : "Open account"}</a></div>}
+        {data && <>
+          <section className="partner-boundary-banner"><span>!</span><div><b>{ar ? "لا توجد بيانات تشغيلية لعرضها" : "There is no operational partner data to display"}</b><p>{ar ? "أزلنا الأعضاء والأرصدة والفواتير ومقاييس الاستخدام التجريبية. لن تصبح الإجراءات متاحة حتى تُنفّذ مصادر بيانات موثوقة وتفويضات على الخادم." : "Placeholder members, balances, invoices, and utilization metrics have been removed. Actions remain unavailable until authoritative sources and server-side authorization exist."}</p></div><i>{ar ? "غير نشط" : "NOT ACTIVE"}</i></section>
+
+          <section className="partner-boundary-summary">
+            <article><span>{ar ? "مساحات صاحب العمل" : "Employer workspaces"}</span><b>0</b><small>{ar ? "لا يوجد سجل متصل" : "No connected registry"}</small></article>
+            <article><span>{ar ? "الإجراءات المالية" : "Financial actions"}</span><b>{ar ? "معطّلة" : "Disabled"}</b><small>{ar ? "لا يوجد مزود أو سجل" : "No provider or ledger"}</small></article>
+            <article><span>{ar ? "بيانات الموظفين" : "Employee data"}</span><b>{ar ? "غير محمّلة" : "Not loaded"}</b><small>{ar ? "الخصوصية حسب التصميم" : "Private by design"}</small></article>
+          </section>
+
+          <section className="partner-source-panel"><div className="partner-panel-heading"><div><h2>{ar ? "جاهزية مصادر البيانات" : "Data-source readiness"}</h2><p>{ar ? "كل قدرة أدناه غير متصلة عن قصد." : "Every capability below is intentionally disconnected."}</p></div><span>{data.sources.filter((source) => source.connected).length} / {data.sources.length} {ar ? "متصلة" : "connected"}</span></div><div className="partner-source-grid">{data.sources.map((source) => { const copy = sourceCopy[source.id]; return <article key={source.id}><span>{copy.mark}</span><div><b>{ar ? copy.ar : copy.en}</b><small>{ar ? copy.detailAr : copy.detailEn}</small></div><i>{ar ? "غير متصل" : "NOT CONNECTED"}</i></article>; })}</div></section>
+
+          <section className="partner-activation"><h2>{ar ? "المتطلبات قبل التفعيل" : "Requirements before activation"}</h2><p>{ar ? "يجب تنفيذ هذه الضوابط والتحقق منها قبل عرض أي مساحة لصاحب عمل." : "These controls must be implemented and verified before any employer workspace is shown."}</p><ol>
+            <li>{ar ? "نوع مؤسسة مخصص لأصحاب العمل مع تحقق ومالك مسؤول." : "A dedicated employer organization type with verification and an accountable owner."}</li>
+            <li>{ar ? "دعوات مرتبطة بالبريد وأدوار منفصلة لإدارة الأهلية والتمويل والتدقيق." : "Email-bound invitations and separate eligibility, finance, and audit roles."}</li>
+            <li>{ar ? "قائمة موظفين قابلة للتتبع مع موافقة وغرض واحتفاظ وحذف محددين." : "A traceable employee roster with defined consent, purpose, retention, and deletion."}</li>
+            <li>{ar ? "خطط مزايا وقواعد أهلية ذات إصدارات من دون استخدام بيانات صحية." : "Versioned benefit plans and eligibility rules that never use health data."}</li>
+            <li>{ar ? "سجل تمويل وفواتير غير قابل للتغيير مع تسوية وموافقات مزدوجة." : "An immutable funding and invoice ledger with reconciliation and dual approval."}</li>
+            <li>{ar ? "اختبارات فصل البيانات لضمان عدم كشف الزيارات أو مقدمي الرعاية أو التشخيصات." : "Data-separation tests proving visits, providers, and diagnoses cannot be exposed."}</li>
+          </ol></section>
+
+          <section className="partner-health-boundary"><span>♙</span><div><h2>{ar ? "فصل صحي مطلق" : "Strict health-data separation"}</h2><p>{ar ? "حتى بعد التفعيل، لا يجوز لصاحب العمل رؤية المواعيد أو الخدمات أو مقدمي الرعاية أو التشخيصات أو الملاحظات السريرية أو علاقات الرعاية الفردية." : "Even after activation, an employer must never see appointments, services, providers, diagnoses, clinical notes, or individual care relationships."}</p></div></section>
+        </>}
+      </div>
+    </section>
   </main>;
 }
-
-function Heading({ar,title,subtitle,action}:{ar:boolean,title:string,subtitle:string,action?:React.ReactNode}){return <div className="partner-heading"><div><p>{ar ? "بوابة صاحب العمل" : "EMPLOYER PORTAL"}</p><h1>{title}</h1><span>{subtitle}</span></div>{action}</div>}
-
-function Overview({ar,go,open}:{ar:boolean,go:(v:View)=>void,open:(m:Member)=>void}){return <div className="partner-workspace"><Heading ar={ar} title={ar ? "صباح الخير، سارة" : "Good morning, Sara"} subtitle={ar ? "إليك ملخص برنامج المزايا اليوم." : "Here’s your benefits programme at a glance."} action={<button onClick={()=>go("members")}>＋ {ar ? "إضافة أعضاء" : "Add members"}</button>}/><div className="partner-metrics">{[["248",ar?"عضواً مؤهلاً":"Eligible members","+8 this month"],["QAR 612k",ar?"رصيد ممول":"Funded balance","68% available"],["73%",ar?"تفعيل الحساب":"Account activation","+6% this quarter"],["QAR 18.4k",ar?"فاتورة أغسطس":"August invoice","Due 14 Aug"]].map(([n,label,note],i)=><article key={label}><span className={`metric-mark m${i}`}>{i===0?"◎":i===1?"Q":i===2?"↗":"▤"}</span><div><b>{n}</b><p>{label}</p><small>{note}</small></div></article>)}</div><div className="partner-grid"><section className="partner-panel utilization"><div className="panel-head"><div><h2>{ar ? "استخدام المزايا" : "Benefits utilization"}</h2><p>{ar ? "بيانات مجمعة فقط · لا توجد تفاصيل صحية فردية" : "Aggregate data only · no individual health details"}</p></div><select aria-label="Period"><option>{ar ? "آخر ٦ أشهر" : "Last 6 months"}</option></select></div><div className="chart-wrap"><div className="chart-y"><span>120k</span><span>80k</span><span>40k</span><span>0</span></div><div className="bar-chart">{[[48,31],[53,36],[60,42],[55,38],[70,49],[76,53]].map(([a,b],i)=><div key={i}><span style={{height:`${a}%`}}/><i style={{height:`${b}%`}}/><small>{["Mar","Apr","May","Jun","Jul","Aug"][i]}</small></div>)}</div></div><div className="chart-legend"><span><i/>Allocated</span><span><i/>Used</span><b>QAR 214k used YTD</b></div></section><aside className="partner-panel"><div className="panel-head"><div><h2>{ar ? "تحتاج إلى انتباه" : "Needs attention"}</h2><p>{ar ? "إجراءات إدارية فقط" : "Administrative actions only"}</p></div></div><button className="attention-card" onClick={()=>go("members")}><span className="amber">!</span><div><b>6 {ar?"سجلات أهلية معلقة":"eligibility records pending"}</b><small>{ar?"راجعها قبل مسير الرواتب":"Review before payroll closes"}</small></div><i>›</i></button><button className="attention-card" onClick={()=>go("invoices")}><span className="blue">▤</span><div><b>{ar?"فاتورة أغسطس جاهزة":"August invoice is ready"}</b><small>QAR 18,420 · Due 14 Aug</small></div><i>›</i></button><button className="attention-card" onClick={()=>open(members[3])}><span className="rose">◎</span><div><b>1 {ar?"عضوية تنتهي قريباً":"membership ending soon"}</b><small>{ar?"تأكد من تاريخ الانتهاء":"Confirm end date"}</small></div><i>›</i></button></aside></div></div>}
-
-function Members({ar,query,setQuery,rows,open,setNotice}:{ar:boolean,query:string,setQuery:(v:string)=>void,rows:Member[],open:(m:Member)=>void,setNotice:(v:string)=>void}){return <div className="partner-workspace"><Heading ar={ar} title={ar?"الأعضاء والأهلية":"Members & eligibility"} subtitle={ar?"إدارة التغطية دون الوصول إلى المعلومات الصحية.":"Manage benefit access without exposure to health information."} action={<button onClick={()=>setNotice(ar?"تم فتح قالب إضافة الأعضاء":"Member upload template prepared")}>＋ {ar?"إضافة أعضاء":"Add members"}</button>}/><div className="member-toolbar"><div><button className="active">{ar?"الكل":"All"} <span>248</span></button><button>{ar?"معلق":"Pending"} <span>6</span></button><button>{ar?"ينتهي قريباً":"Ending soon"} <span>1</span></button></div><label>⌕<input value={query} onChange={e=>setQuery(e.target.value)} placeholder={ar?"البحث بالاسم أو الرقم":"Search name or member ID"}/></label></div><section className="member-table"><div className="member-head"><span>{ar?"العضو":"Member"}</span><span>{ar?"نوع التغطية":"Coverage"}</span><span>{ar?"الخطة":"Plan"}</span><span>{ar?"الرصيد":"Balance"}</span><span>{ar?"الحالة":"Status"}</span><span/></div>{rows.map(m=><button key={m.id} onClick={()=>open(m)}><div className="member-name"><span>{m.name.split(" ").map(x=>x[0]).join("")}</span><div><b>{m.name}</b><small>{m.id}</small></div></div><span>{m.relation}</span><span>{m.plan}</span><b>{m.balance}</b><i className={m.status.toLowerCase()}>{m.status}</i><strong>›</strong></button>)}</section><p className="privacy-foot">♙ {ar?"لا تتضمن هذه القائمة أي معلومات عن المواعيد أو مقدمي الرعاية أو التشخيصات.":"This list never includes appointment, provider, or diagnosis information."}</p></div>}
-
-function Funding({ar,setNotice}:{ar:boolean,setNotice:(v:string)=>void}){return <div className="partner-workspace"><Heading ar={ar} title={ar?"التمويل والأرصدة":"Funding & balances"} subtitle={ar?"تتبع المخصصات واستهلاك البرنامج على مستوى المؤسسة.":"Track allocations and programme-level spend."} action={<button onClick={()=>setNotice(ar?"تم إعداد طلب زيادة التمويل":"Funding request prepared")}>＋ {ar?"إضافة تمويل":"Add funding"}</button>}/><div className="funding-hero"><div><p>{ar?"إجمالي الرصيد المتاح":"Total available balance"}</p><h2>QAR 612,480</h2><span>{ar?"من أصل ٩٠٠٬٠٠٠ ريال قطري ممولة في ٢٠٢٦":"of QAR 900,000 funded for 2026"}</span><div><i style={{width:"68%"}}/></div><small>68% {ar?"متاح":"available"}</small></div><aside><span>↗</span><div><b>QAR 287,520</b><p>{ar?"استخدام حتى تاريخه":"Used year to date"}</p></div><div><b>QAR 1,159</b><p>{ar?"متوسط المخصص لكل عضو":"Average allocation per member"}</p></div></aside></div><section className="partner-panel funding-ledger"><div className="panel-head"><div><h2>{ar?"سجل التمويل":"Funding ledger"}</h2><p>{ar?"الحركات على مستوى المؤسسة":"Organisation-level movements"}</p></div></div>{[["1 Aug 2026","Monthly allocation","+ QAR 75,000","Completed"],["31 Jul 2026","Benefits utilized","− QAR 18,420","Settled"],["1 Jul 2026","Monthly allocation","+ QAR 75,000","Completed"],["30 Jun 2026","Benefits utilized","− QAR 22,160","Settled"]].map(r=><div className="ledger-row" key={r[0]+r[1]}><span>{r[0]}</span><b>{r[1]}</b><strong className={r[2].startsWith("+")?"credit":"debit"}>{r[2]}</strong><i>{r[3]}</i></div>)}</section></div>}
-
-function Invoices({ar,setNotice}:{ar:boolean,setNotice:(v:string)=>void}){return <div className="partner-workspace"><Heading ar={ar} title={ar?"الفواتير والتسوية":"Invoices & reconciliation"} subtitle={ar?"مستندات شهرية واضحة وقابلة للتنزيل.":"Clear monthly documents ready for reconciliation."}/><section className="invoice-table"><div className="invoice-head"><span>{ar?"الفترة":"Period"}</span><span>{ar?"رقم الفاتورة":"Invoice"}</span><span>{ar?"المبلغ":"Amount"}</span><span>{ar?"الحالة":"Status"}</span><span>{ar?"تاريخ الاستحقاق":"Due date"}</span><span/></div>{[["August 2026","INV-2026-0814","QAR 18,420","Due","14 Aug 2026"],["July 2026","INV-2026-0712","QAR 21,870","Paid","12 Jul 2026"],["June 2026","INV-2026-0614","QAR 22,160","Paid","14 Jun 2026"],["May 2026","INV-2026-0515","QAR 19,240","Paid","15 May 2026"]].map(r=><div className="invoice-row" key={r[1]}><b>{r[0]}</b><code>{r[1]}</code><strong>{r[2]}</strong><i className={r[3].toLowerCase()}>{r[3]}</i><span>{r[4]}</span><button onClick={()=>setNotice(`${r[1]} ${ar?"جاهزة للتنزيل":"ready to download"}`)}>↓ PDF</button></div>)}</section><div className="invoice-help"><span>?</span><div><b>{ar?"هل تحتاج إلى مساعدة في التسوية؟":"Need reconciliation support?"}</b><p>{ar?"يمكن لفريق نجاح الشركاء مساعدتك دون الاطلاع على أي بيانات صحية شخصية.":"Our partner success team can help without accessing personal health data."}</p></div><button onClick={()=>setNotice(ar?"تم إنشاء طلب دعم":"Support request created")}>{ar?"تواصل معنا":"Contact support"}</button></div></div>}
