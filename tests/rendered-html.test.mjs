@@ -933,3 +933,20 @@ test("protects meaningful unfinished forms before navigation or tab close", asyn
   assert.doesNotMatch(guard, /window\.confirm/);
   assert.match(layout, /<UnsavedChangesGuard\/>/);
 });
+
+test("makes every button inside a form explicitly submit or non-submit", async () => {
+  const formFiles = [
+    "admin/organizations/page.tsx", "support/page.tsx", "admin/audit/page.tsx", "admin/access/page.tsx",
+    "admin/cases/page.tsx", "provider/services/page.tsx", "provider/settings/page.tsx",
+  ];
+  const sources = await Promise.all(formFiles.map((file) => readFile(new URL(`../app/${file}`, import.meta.url), "utf8")));
+  for (const [index, source] of sources.entries()) {
+    const forms = source.match(/<form[\s\S]*?<\/form>/g) ?? [];
+    assert.ok(forms.length > 0, `expected forms in ${formFiles[index]}`);
+    for (const form of forms) {
+      for (const button of form.match(/<button\b[^>]*>/g) ?? []) {
+        assert.match(button, /\btype=(?:"(?:submit|button|reset)"|\{)/, `implicit form button in ${formFiles[index]}: ${button}`);
+      }
+    }
+  }
+});
