@@ -37,12 +37,12 @@ test("renders the branded Reyati patient experience", async () => {
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.equal(response.headers.get("x-frame-options"), "DENY");
   assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
-  assert.match(html, /Good morning, Mariam/);
+  assert.match(html, /Welcome to Reyati/);
   assert.match(html, /Care, intelligently connected\./);
   assert.match(html, /src="\/brand\/reyati-logo\.svg"/);
-  assert.match(html, /aria-label="Search by doctor, specialty, or symptom"/);
-  assert.match(html, /Explore all prototype journeys/);
-  assert.doesNotMatch(html, /codex-preview|Building your site|react-loading-skeleton/i);
+  assert.match(html, /Every destination below uses authenticated, account-owned data/);
+  assert.match(html, /No information is invented on this page/);
+  assert.doesNotMatch(html, /codex-preview|Building your site|react-loading-skeleton|Dr\. Laila|Mariam Ahmed|prototype journeys|synthetic data/i);
 });
 
 test("renders representative provider and operations routes", async () => {
@@ -106,7 +106,9 @@ test("keeps starter preview infrastructure out of the product", async () => {
   assert.match(layout, /import "\.\/ui-completion\.css"/);
   assert.match(layout, /import "\.\/system-states\.css"/);
   assert.match(layout, /<AccessibilitySync\/>/);
-  assert.match(page, /aria-label=\{t\.search\}/);
+  assert.match(page, /fetch\("\/api\/me"/);
+  assert.match(page, /fetch\("\/api\/appointments"/);
+  assert.match(page, /No information is invented on this page/);
   assert.doesNotMatch(layout, /codex-preview|_sites-preview/);
   assert.doesNotMatch(page, /SkeletonPreview|_sites-preview/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
