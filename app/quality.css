@@ -109,6 +109,21 @@ body :where(button, input, select, textarea, label) { font-size: 11px !important
 .skip-link:focus { transform: translateY(0); }
 body.has-open-dialog { overflow: hidden; }
 
+.confirm-action-layer{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:18px;background:rgba(8,42,67,.66);backdrop-filter:blur(4px)}
+.confirm-action-dialog{position:relative;width:min(460px,100%);padding:28px;background:#fff;border:1px solid #d9e6ea;border-radius:20px;box-shadow:0 24px 70px rgba(8,42,67,.28);color:#082a43}
+.confirm-action-dialog>.drawer-close{position:absolute;inset-block-start:16px;inset-inline-end:16px;width:32px;height:32px;border:0;border-radius:10px;background:#eef5f6;color:#476873;font-size:18px}
+.confirm-action-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#fff0df;color:#a65339;font:800 18px Sora,Arial,sans-serif}
+.confirm-action-dialog>p{margin:17px 0 6px;color:#9b4935;font-size:9px!important;font-weight:800;letter-spacing:1px}
+.confirm-action-dialog h2{margin:0;font:700 22px/1.25 Sora,Arial,sans-serif}
+.confirm-action-copy{margin:16px 0;padding:14px;border:1px solid #eadbd7;border-radius:13px;background:#fff8f6}
+.confirm-action-copy p,.confirm-action-copy strong{display:block;margin:0;font-size:11px!important;line-height:1.6}
+.confirm-action-copy p{color:#526f79}.confirm-action-copy strong{margin-top:8px;color:#813d30}
+.confirm-action-buttons{display:grid;grid-template-columns:1fr 1.25fr;gap:8px}
+.confirm-action-buttons button{min-height:43px;border:1px solid #cbdde2;background:#fff;color:#315866;border-radius:11px;font-weight:800}
+.confirm-action-buttons .danger-action{border-color:#a65339;background:#a65339;color:#fff}
+.appointment-confirm-trigger{width:100%;margin-top:14px;min-height:42px}
+@media(max-width:520px){.confirm-action-dialog{padding:24px 18px}.confirm-action-buttons{grid-template-columns:1fr}}
+
 .production-toast {
   position: fixed;
   inset-inline-end: 22px;

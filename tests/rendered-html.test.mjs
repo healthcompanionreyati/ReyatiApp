@@ -343,7 +343,8 @@ test("connects the patient appointment screen to owned bookings and safe cancell
   assert.match(route, /body\.action !== "cancel"/);
   assert.match(providerRoute, /gt\(appointments\.scheduledEnd/);
   assert.match(page, /Account-owned bookings, current status/);
-  assert.match(page, /Confirm cancellation/);
+  assert.match(page, /Cancel this appointment\?/);
+  assert.match(page, /This does not prove a payment was refunded/);
   assert.doesNotMatch(page, /Dr\. Laila Al-Kuwari|refund in progress|Mariam Ahmed|synthetic/i);
 });
 
@@ -777,4 +778,27 @@ test("announces workflow states and keeps keyboard focus inside active dialogs",
   assert.match(accessibility, /first\.focus\(\)/);
   assert.match(quality, /:focus-visible/);
   assert.match(quality, /prefers-reduced-motion: reduce/);
+});
+
+test("requires branded confirmation before sensitive patient, provider, and family actions", async () => {
+  const [dialog, appointments, provider, family, quality] = await Promise.all([
+    readFile(new URL("../app/components/ConfirmActionDialog.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/appointments/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/family/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/quality.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(dialog, /CONFIRM SENSITIVE ACTION/);
+  assert.match(dialog, /disabled=\{busy\}/);
+  assert.match(dialog, /Go back/);
+  assert.match(dialog, /event\.target === event\.currentTarget && !busy/);
+  assert.match(appointments, /confirmCancellation/);
+  assert.match(appointments, /This does not prove a payment was refunded/);
+  assert.match(provider, /confirmDecline/);
+  assert.match(provider, /This cannot be changed back to pending/);
+  assert.match(family, /setRevoking/);
+  assert.match(family, /Restoring access requires a new invitation, verification, and consent flow/);
+  assert.doesNotMatch(family, /window\.confirm/);
+  assert.match(quality, /\.confirm-action-layer/);
 });

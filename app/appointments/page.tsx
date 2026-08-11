@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import ConfirmActionDialog from "@/app/components/ConfirmActionDialog";
 
 type Appointment = {
   id: string; providerId: string; serviceLocationId: string | null; providerName: string; specialty: string;
@@ -34,6 +35,7 @@ export default function Appointments() {
   const [items, setItems] = useState<Appointment[]>([]);
   const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
   const [selected, setSelected] = useState<Appointment | null>(null);
+  const [confirmCancellation, setConfirmCancellation] = useState(false);
   const [referenceTime] = useState(() => Date.now());
   const [cancelling, setCancelling] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ export default function Appointments() {
     setCancelling(true); setError("");
     try {
       await request({ method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancel", appointmentId: selected.id, version: selected.version, subjectUserId }) });
-      setSelected(null); setNotice("Appointment cancelled and schedule released"); await load();
+      setConfirmCancellation(false); setSelected(null); setNotice("Appointment cancelled and schedule released"); await load();
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Appointment could not be cancelled"); }
     finally { setCancelling(false); }
   }
@@ -91,7 +93,8 @@ export default function Appointments() {
           return <article key={item.id}><div className="appointment-date"><b>{start.toLocaleDateString([], { day: "2-digit" })}</b><span>{start.toLocaleDateString([], { month: "short" }).toUpperCase()}</span></div><div className="appointment-live-provider"><span>{initials(item.providerName)}</span><div><p>{start.toLocaleString([], { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}</p><h2>{item.providerName}</h2><small>{item.specialty} · {item.facilityName || (item.mode === "video" ? "Video consultation" : "Facility pending")}</small></div></div><i className={item.status}>{statusLabel(item.status)}</i><div className="appointment-live-actions"><button onClick={() => setSelected(item)}>View details</button>{item.status === "completed" && <a href={`/wallet?appointmentId=${encodeURIComponent(item.id)}`}>Visit record</a>}{canCancel && <button className="cancel" onClick={() => setSelected(item)}>Cancel</button>}</div></article>;
         })}</div>}
     </section>
-    {selected && <div className="appointment-modal-layer" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><div className="appointment-dialog wide"><button className="drawer-close" onClick={() => setSelected(null)}>×</button><p>APPOINTMENT DETAIL</p><h2>{new Date(selected.scheduledStart).toLocaleString([], { dateStyle: "full", timeStyle: "short" })}</h2><div className="selected-doctor"><div className="doctor-avatar blue">{initials(selected.providerName)}<span>✓</span></div><div><h3>{selected.providerName}</h3><p>{selected.specialty} · {selected.facilityName || (selected.mode === "video" ? "Video consultation" : "Facility pending")}</p></div></div><dl className="appointment-detail-list"><div><dt>Status</dt><dd>{statusLabel(selected.status)}</dd></div><div><dt>Visit mode</dt><dd>{statusLabel(selected.mode)}</dd></div><div><dt>Reference</dt><dd>{selected.id}</dd></div><div><dt>Ends</dt><dd>{new Date(selected.scheduledEnd).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</dd></div></dl><div className="policy-box"><span>i</span><p><b>Payment status is managed separately.</b>Cancelling here releases the clinical schedule. It does not promise or imply a refund.</p></div>{["pending", "confirmed"].includes(selected.status) && new Date(selected.scheduledStart).valueOf() > referenceTime && <><div className="appointment-cancel-warning"><b>Cancel this appointment?</b><p>The provider will be notified and the reserved time will be released immediately.</p></div><div className="dialog-actions"><button className="secondary" onClick={() => setSelected(null)}>Keep appointment</button><button className="danger-action" disabled={cancelling} onClick={() => void cancelAppointment()}>{cancelling ? "Cancelling…" : "Confirm cancellation"}</button></div></>}</div></div>}
+    {selected && <div className="appointment-modal-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) { setConfirmCancellation(false); setSelected(null); } }}><div className="appointment-dialog wide"><button className="drawer-close" onClick={() => { setConfirmCancellation(false); setSelected(null); }}>×</button><p>APPOINTMENT DETAIL</p><h2>{new Date(selected.scheduledStart).toLocaleString([], { dateStyle: "full", timeStyle: "short" })}</h2><div className="selected-doctor"><div className="doctor-avatar blue">{initials(selected.providerName)}<span>✓</span></div><div><h3>{selected.providerName}</h3><p>{selected.specialty} · {selected.facilityName || (selected.mode === "video" ? "Video consultation" : "Facility pending")}</p></div></div><dl className="appointment-detail-list"><div><dt>Status</dt><dd>{statusLabel(selected.status)}</dd></div><div><dt>Visit mode</dt><dd>{statusLabel(selected.mode)}</dd></div><div><dt>Reference</dt><dd>{selected.id}</dd></div><div><dt>Ends</dt><dd>{new Date(selected.scheduledEnd).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</dd></div></dl><div className="policy-box"><span>i</span><p><b>Payment status is managed separately.</b>Cancelling here releases the clinical schedule. It does not promise or imply a refund.</p></div>{["pending", "confirmed"].includes(selected.status) && new Date(selected.scheduledStart).valueOf() > referenceTime && <button className="danger-action appointment-confirm-trigger" onClick={() => setConfirmCancellation(true)}>Cancel appointment</button>}</div></div>}
+    <ConfirmActionDialog open={Boolean(selected && confirmCancellation)} title="Cancel this appointment?" description="The provider will be notified and the reserved time will be released immediately." consequence="This does not prove a payment was refunded. Payment status is handled separately." confirmLabel="Cancel appointment" busyLabel="Cancelling…" busy={cancelling} onCancel={() => setConfirmCancellation(false)} onConfirm={() => void cancelAppointment()}/>
     {notice && <div className="appointment-live-toast">✓ {notice}<button onClick={() => setNotice("")}>×</button></div>}
   </main>;
 }

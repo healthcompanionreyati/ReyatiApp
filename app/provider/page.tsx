@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import ConfirmActionDialog from "@/app/components/ConfirmActionDialog";
 
 type Appointment = {
   id: string;
@@ -45,6 +46,7 @@ export default function ProviderConsole() {
   const [saving, setSaving] = useState<Action | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [confirmDecline, setConfirmDecline] = useState(false);
   const [referenceTime] = useState(() => Date.now());
 
   const loadAppointments = useCallback(async () => {
@@ -99,6 +101,7 @@ export default function ProviderConsole() {
       if (!response.ok || !payload.appointment) throw new Error(payload.message || "The appointment could not be updated.");
       setAppointments((items) => items.map((item) => item.id === selected.id ? { ...item, ...payload.appointment } : item));
       setNotice(`Appointment ${payload.appointment.status}. The patient has been notified.`);
+      setConfirmDecline(false);
       setSelectedId(null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The appointment could not be updated.");
@@ -146,6 +149,7 @@ export default function ProviderConsole() {
       </div>
     </section>
 
-    {selected && <aside className="appointment-drawer"><button className="drawer-close" onClick={() => setSelectedId(null)} aria-label="Close">×</button><p>Appointment detail</p><h2>{dateTime(selected.scheduledStart)}</h2><div className="drawer-patient"><span>{initials(selected.patientName)}</span><div><b>{selected.patientName}</b><small>Account-owned patient booking</small></div></div><dl><div><dt>Status</dt><dd><i className={`status ${selected.status}`}>{label(selected.status)}</i></dd></div><div><dt>Visit mode</dt><dd>{label(selected.mode)}</dd></div><div><dt>Ends</dt><dd>{time(selected.scheduledEnd)}</dd></div><div><dt>Reference</dt><dd>{selected.id}</dd></div></dl><div className="provider-lifecycle-note"><b>Safe lifecycle control</b><p>Every action checks the current booking version and provider ownership before saving. Patients are notified automatically.</p></div><div className="drawer-actions provider-live-actions">{selected.status === "pending" && <><button className="primary" disabled={saving !== null} onClick={() => void updateAppointment("confirm")}>{saving === "confirm" ? "Confirming…" : "Confirm request"}</button><button className="danger-action" disabled={saving !== null} onClick={() => void updateAppointment("decline")}>{saving === "decline" ? "Declining…" : "Decline"}</button></>}{selected.status === "confirmed" && new Date(selected.scheduledStart).valueOf() <= referenceTime && <a className="primary full encounter-link" href={`/provider/encounter?appointmentId=${encodeURIComponent(selected.id)}`}>Open encounter</a>}{selected.status === "confirmed" && new Date(selected.scheduledStart).valueOf() > referenceTime && <div className="provider-action-wait">The encounter workspace becomes available once the scheduled visit begins.</div>}{terminalStatuses.includes(selected.status) && <div className="completed-banner">This appointment is closed as {label(selected.status).toLowerCase()}.</div>}</div><p className="drawer-footnote">Schedule actions do not create clinical notes or make payment or refund decisions.</p></aside>}
+    {selected && <aside className="appointment-drawer"><button className="drawer-close" onClick={() => { setConfirmDecline(false); setSelectedId(null); }} aria-label="Close">×</button><p>Appointment detail</p><h2>{dateTime(selected.scheduledStart)}</h2><div className="drawer-patient"><span>{initials(selected.patientName)}</span><div><b>{selected.patientName}</b><small>Account-owned patient booking</small></div></div><dl><div><dt>Status</dt><dd><i className={`status ${selected.status}`}>{label(selected.status)}</i></dd></div><div><dt>Visit mode</dt><dd>{label(selected.mode)}</dd></div><div><dt>Ends</dt><dd>{time(selected.scheduledEnd)}</dd></div><div><dt>Reference</dt><dd>{selected.id}</dd></div></dl><div className="provider-lifecycle-note"><b>Safe lifecycle control</b><p>Every action checks the current booking version and provider ownership before saving. Patients are notified automatically.</p></div><div className="drawer-actions provider-live-actions">{selected.status === "pending" && <><button className="primary" disabled={saving !== null} onClick={() => void updateAppointment("confirm")}>{saving === "confirm" ? "Confirming…" : "Confirm request"}</button><button className="danger-action" disabled={saving !== null} onClick={() => setConfirmDecline(true)}>Decline</button></>}{selected.status === "confirmed" && new Date(selected.scheduledStart).valueOf() <= referenceTime && <a className="primary full encounter-link" href={`/provider/encounter?appointmentId=${encodeURIComponent(selected.id)}`}>Open encounter</a>}{selected.status === "confirmed" && new Date(selected.scheduledStart).valueOf() > referenceTime && <div className="provider-action-wait">The encounter workspace becomes available once the scheduled visit begins.</div>}{terminalStatuses.includes(selected.status) && <div className="completed-banner">This appointment is closed as {label(selected.status).toLowerCase()}.</div>}</div><p className="drawer-footnote">Schedule actions do not create clinical notes or make payment or refund decisions.</p></aside>}
+    <ConfirmActionDialog open={Boolean(selected && confirmDecline)} title={`Decline ${selected?.patientName ?? "this patient"}’s request?`} description="The appointment request will be closed and the patient will be notified immediately." consequence="This cannot be changed back to pending. The patient must make a new booking request." confirmLabel="Decline request" busyLabel="Declining…" busy={saving === "decline"} onCancel={() => setConfirmDecline(false)} onConfirm={() => void updateAppointment("decline")}/>
   </main>;
 }
