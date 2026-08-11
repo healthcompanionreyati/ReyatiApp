@@ -601,3 +601,31 @@ test("computes audited provider insights from appointment aggregates without inv
   assert.match(page, /Export CSV/);
   assert.doesNotMatch(page, /184|78%|11 min|Reyati search|Returning patients|Al Noor Medical Center|Aggregate prototype report|Synthetic data|synthetic for planning/i);
 });
+
+test("ships a live role-gated admin overview without duplicate synthetic queues", async () => {
+  const [service, route, page] = await Promise.all([
+    readFile(new URL("../lib/admin-overview.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/admin/overview/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(service, /requirePlatformRole\(userId, \["platform_admin"\]\)/);
+  assert.match(service, /groupBy\(organizations\.status\)/);
+  assert.match(service, /groupBy\(providerProfiles\.verificationStatus\)/);
+  assert.match(service, /groupBy\(supportCases\.status, supportCases\.priority\)/);
+  assert.match(service, /platform\.overview_viewed/);
+  assert.doesNotMatch(service, /requesterUserId|requesterName|email:|description|metadataJson: auditEvents/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /AuthorizationDeniedError/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(page, /fetch\("\/api\/admin\/overview"/);
+  assert.match(page, /This overview does not perform administrative decisions/);
+  assert.match(page, /Settlement and refund operations are not connected yet/);
+  assert.match(page, /No review source is connected yet/);
+  assert.match(page, /\/admin\/organizations/);
+  assert.match(page, /\/admin\/verification/);
+  assert.match(page, /\/admin\/cases/);
+  assert.match(page, /\/admin\/access/);
+  assert.match(page, /\/admin\/audit/);
+  assert.doesNotMatch(page, /VER-1842|RFD-8814|SUP-184|SAF-031|Dr\. Hana|Al Noor Medical Center|Synthetic data|PROTOTYPE ENVIRONMENT|Synthetic evidence package|Record decision/i);
+});
