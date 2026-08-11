@@ -47,18 +47,21 @@ export default function Payments() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [delegated, setDelegated] = useState(false);
 
   useEffect(() => {
     let active = true;
-    fetch("/api/patient/payments", { cache: "no-store" }).then(async (response) => {
-      const payload = await response.json() as { entries?: LedgerEntry[]; error?: string };
+    const subjectUserId = new URLSearchParams(window.location.search).get("subjectUserId");
+    const endpoint = subjectUserId ? `/api/patient/payments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/api/patient/payments";
+    fetch(endpoint, { cache: "no-store" }).then(async (response) => {
+      const payload = await response.json() as { entries?: LedgerEntry[]; delegated?: boolean; error?: string };
       if (response.status === 401) {
         window.location.assign("/signin-with-chatgpt?return_to=/payments");
         throw new Error("Authentication required");
       }
       if (!response.ok) throw new Error(payload.error || "Payment records are temporarily unavailable.");
-      return payload.entries || [];
-    }).then((items) => { if (active) setEntries(items); })
+      return { entries: payload.entries || [], delegated: payload.delegated === true };
+    }).then((result) => { if (active) { setEntries(result.entries); setDelegated(result.delegated); } })
       .catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : "Payment records are temporarily unavailable."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -79,6 +82,7 @@ export default function Payments() {
     <section className="payments-hero"><div><p>ACCOUNT-OWNED FINANCIAL STATUS</p><h1>Payments & billing</h1><span>See the recorded payment state tied to each of your appointments—without confusing schedule changes with refunds.</span></div><a href="/support">Payment support</a></section>
     <section className="payments-workspace">
       <div className="payment-safety"><span>i</span><p><b>No payment provider is connected yet.</b> New bookings are recorded as “No charge recorded” using the provider’s published fee. Reyati will never claim a payment or refund unless a trusted payment integration confirms it.</p></div>
+      {delegated && <div className="payments-delegated-note">You are viewing payment status through an active payments permission. Access is revocable and audited.</div>}
 
       <div className="payment-metrics payments-live-metrics"><article><span>Q</span><div><p>Confirmed paid</p><b>{formatMoney(paidTotal)}</b><small>From recorded paid entries only</small></div></article><article><span>○</span><div><p>No charge recorded</p><b>{formatMoney(notChargedTotal)}</b><small>Published fees, not money collected</small></div></article><article><span>↻</span><div><p>Recorded refunds</p><b>{refunds}</b><small>Only provider-confirmed refund states</small></div></article></div>
 

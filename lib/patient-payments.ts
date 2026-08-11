@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, auditEvents, facilities, patientProfiles, paymentLedgerEntries, providerProfiles, providerServiceLocations, users } from "@/db/schema";
 
-export async function getPatientPaymentLedger(userId: string) {
+export async function getPatientPaymentLedger(userId: string, actorUserId = userId) {
   const db = await getDb();
   const rows = await db.select({
     appointmentId: appointments.id,
@@ -38,9 +38,9 @@ export async function getPatientPaymentLedger(userId: string) {
     paymentStatus: row.paymentStatus ?? "unavailable",
   }));
   await db.insert(auditEvents).values({
-    id: crypto.randomUUID(), actorUserId: userId, organizationId: null,
+    id: crypto.randomUUID(), actorUserId, organizationId: null,
     action: "patient.payment_ledger_viewed", resourceType: "payment_ledger", resourceId: userId,
-    outcome: "success", metadataJson: JSON.stringify({ entryCount: entries.length }), createdAt: new Date(),
+    outcome: "success", metadataJson: JSON.stringify({ entryCount: entries.length, delegated: actorUserId !== userId }), createdAt: new Date(),
   });
   return entries;
 }

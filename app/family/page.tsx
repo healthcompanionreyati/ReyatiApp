@@ -1,32 +1,113 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-type Profile={id:number,name:string,nameAr:string,initials:string,relation:string,relationAr:string,age:number,status:string,statusAr:string,color:string,access:string,accessAr:string,next?:string,nextAr?:string};
-const profiles:Profile[]=[
-  {id:1,name:"Mariam Ahmed",nameAr:"مريم أحمد",initials:"MA",relation:"Account owner",relationAr:"صاحبة الحساب",age:34,status:"Verified",statusAr:"موثّق",color:"teal",access:"Full access",accessAr:"وصول كامل",next:"Sun, 2 Aug · 4:30 PM",nextAr:"الأحد، ٢ أغسطس · ٤:٣٠ م"},
-  {id:2,name:"Yousef Ahmed",nameAr:"يوسف أحمد",initials:"YA",relation:"Son",relationAr:"الابن",age:8,status:"Guardian managed",statusAr:"بإدارة ولي الأمر",color:"blue",access:"Full guardian access",accessAr:"وصول كامل لولي الأمر",next:"Tue, 11 Aug · 10:00 AM",nextAr:"الثلاثاء، ١١ أغسطس · ١٠:٠٠ ص"},
-  {id:3,name:"Noura Ahmed",nameAr:"نورة أحمد",initials:"NA",relation:"Daughter",relationAr:"الابنة",age:15,status:"Transition review",statusAr:"مراجعة انتقالية",color:"gold",access:"Age-aware shared access",accessAr:"وصول مشترك حسب العمر"},
-  {id:4,name:"Fatima Ali",nameAr:"فاطمة علي",initials:"FA",relation:"Mother",relationAr:"الأم",age:67,status:"Consent granted",statusAr:"بموافقة صريحة",color:"rose",access:"Appointments only",accessAr:"المواعيد فقط"},
-];
+type Managed = {
+  id: string; subjectLabel: string; subjectName: string | null; subjectUserId: string | null; relationshipType: string; status: string;
+  appointmentsAccess: boolean; recordsAccess: boolean; paymentsAccess: boolean; expiresAt: string | null; version: number;
+};
+type Delegated = {
+  id: string; managerName: string; relationshipType: string; status: string;
+  appointmentsAccess: boolean; recordsAccess: boolean; paymentsAccess: boolean; expiresAt: string | null; version: number;
+};
+type Invitation = { id: string; relationshipId: string; email: string; status: string; expiresAt: string };
+type FamilyData = { managed: Managed[]; delegated: Delegated[]; invitations: Invitation[] };
 
-export default function Family(){
-  const [lang,setLang]=useState<"en"|"ar">("en");const [selected,setSelected]=useState(profiles[0]);const [tab,setTab]=useState<"overview"|"access"|"activity">("overview");const [adding,setAdding]=useState(false);const [notice,setNotice]=useState("");const [permissions,setPermissions]=useState({appointments:true,wallet:false,documents:false,notifications:true});const ar=lang==="ar";
-  const select=(p:Profile)=>{setSelected(p);setTab("overview")};
-  return <main className={`family-shell ${ar?"arabic":""}`} dir={ar?"rtl":"ltr"}>
-    <header className="family-header"><a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">{ar?"ابحث عن رعاية":"Find care"}</a><a href="/appointments">{ar?"المواعيد":"Appointments"}</a><a href="/wallet">{ar?"المحفظة الصحية":"Health wallet"}</a><a className="active" href="/family">{ar?"العائلة":"Family"}</a></nav><div><button onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button><a href="/notifications">●</a><span>MA</span></div></header>
-    <section className="family-hero"><div><p>{ar?"الرعاية معاً، بخصوصية":"CARE TOGETHER, WITH PRIVACY"}</p><h1>{ar?"العائلة والمعالون":"Family & dependants"}</h1><span>{ar?"ساعد عائلتك في الوصول إلى الرعاية، مع حدود واضحة للموافقة والخصوصية في كل مرحلة عمرية.":"Help your family access care with clear consent and privacy boundaries at every age."}</span></div><button onClick={()=>setAdding(true)}>＋ {ar?"إضافة فرد من العائلة":"Add family member"}</button></section>
-    <section className="family-workspace"><div className="family-note"><span>♙</span><p><b>{ar?"كل ملف مستقل":"Every profile remains separate"}</b>{ar?"لا تمنح العلاقة العائلية وصولاً تلقائياً للسجلات الصحية. يعتمد الوصول على العمر والوصاية والموافقة والغرض.":"A family relationship never grants automatic health-record access. Access depends on age, guardianship, consent, and purpose."}</p></div>
-      <div className="family-layout"><aside className="profile-list"><div><h2>{ar?"ملفات العائلة":"Family profiles"}</h2><span>{profiles.length}</span></div>{profiles.map(p=><button className={selected.id===p.id?"active":""} key={p.id} onClick={()=>select(p)}><span className={p.color}>{p.initials}</span><div><b>{ar?p.nameAr:p.name}</b><small>{ar?p.relationAr:p.relation} · {p.age} {ar?"سنة":"years"}</small></div><i>›</i></button>)}<button className="add-profile" onClick={()=>setAdding(true)}>＋ {ar?"إضافة ملف":"Add profile"}</button></aside>
-        <section className="family-profile"><div className="family-profile-head"><span className={selected.color}>{selected.initials}</span><div><p>{ar?selected.relationAr:selected.relation}</p><h2>{ar?selected.nameAr:selected.name}</h2><small>{selected.age} {ar?"سنة":"years old"}</small></div><i className={selected.status.includes("Transition")?"warning":"safe"}>✓ {ar?selected.statusAr:selected.status}</i></div>
-          {selected.status.includes("Transition")&&<div className="age-transition"><span>!</span><p><b>{ar?"مراجعة الخصوصية المرتبطة بالعمر":"Age-based privacy review"}</b>{ar?"مع اقتراب نورة من مرحلة الاستقلال، راجعوا معاً ما يمكن مشاركته ومن يمكنه رؤية معلوماتها.":"As Noura approaches independent consent, review together what is shared and who can see it."}</p><button onClick={()=>setTab("access")}>{ar?"مراجعة الوصول":"Review access"}</button></div>}
-          <div className="family-tabs"><button className={tab==="overview"?"active":""} onClick={()=>setTab("overview")}>{ar?"نظرة عامة":"Overview"}</button><button className={tab==="access"?"active":""} onClick={()=>setTab("access")}>{ar?"الوصول والموافقة":"Access & consent"}</button><button className={tab==="activity"?"active":""} onClick={()=>setTab("activity")}>{ar?"النشاط":"Activity"}</button></div>
-          {tab==="overview"&&<div className="family-overview"><div className="family-stats"><article><span>◎</span><div><b>{selected.next||"—"}</b><small>{ar?"الموعد القادم":"Next appointment"}</small></div></article><article><span>Q</span><div><b>{selected.id===2?"QAR 1,420":selected.id===3?"QAR 980":"QAR 2,150"}</b><small>{ar?"رصيد المزايا":"Benefits balance"}</small></div></article><article><span>▤</span><div><b>{selected.id===1?"5":"2"}</b><small>{ar?"مستندات المحفظة":"Wallet documents"}</small></div></article></div><section className="family-actions"><h3>{ar?"إجراءات سريعة":"Quick actions"}</h3><div><a href="/providers"><span>＋</span><b>{ar?"حجز موعد":"Book appointment"}</b><small>{ar?"ابحث عن مقدم رعاية موثّق":"Find a verified provider"}</small></a><a href="/appointments"><span>◎</span><b>{ar?"إدارة المواعيد":"Manage appointments"}</b><small>{ar?"عرض أو إعادة جدولة":"View or reschedule"}</small></a><a href="/wallet"><span>▤</span><b>{ar?"فتح المحفظة":"Open wallet"}</b><small>{ar?"عرض المعلومات المسموح بها":"View permitted information"}</small></a></div></section><section className="family-upcoming"><div><h3>{ar?"الموعد القادم":"Upcoming appointment"}</h3><a href="/appointments">{ar?"عرض الكل":"View all"} →</a></div>{selected.next?<article><time><b>{selected.next.split(" · ")[0]}</b><span>{selected.next.split(" · ")[1]}</span></time><div><p>{ar?"طب الأسرة":"Family Medicine"}</p><b>{ar?"د. ليلى الكواري":"Dr. Laila Al-Kuwari"}</b><small>{ar?"مركز النور الطبي · في العيادة":"Al Noor Medical Center · In person"}</small></div><i>{ar?"مؤكد":"Confirmed"}</i></article>:<p className="empty-family">{ar?"لا توجد مواعيد قادمة.":"No upcoming appointments."}</p>}</section></div>}
-          {tab==="access"&&<div className="family-access"><div className="access-summary"><span>♙</span><div><b>{ar?selected.accessAr:selected.access}</b><p>{selected.id===1?(ar?"أنت صاحب هذا الملف.":"You own this profile."):selected.id===2?(ar?"تدير هذا الملف بصفتك ولي أمر موثّقاً.":"You manage this profile as a verified guardian."):selected.id===3?(ar?"تتغير بعض الصلاحيات حسب العمر والموافقة.":"Some permissions change with age and consent."):(ar?"منحت فاطمة وصولاً محدوداً وقابلاً للإلغاء.":"Fatima granted limited, revocable access.")}</p></div></div><h3>{ar?"ما الذي يمكنك إدارته":"What you can manage"}</h3>{Object.entries(permissions).map(([key,value])=><div className="family-permission" key={key}><span>{key==="appointments"?"◎":key==="wallet"?"Q":key==="documents"?"▤":"●"}</span><div><b>{key==="appointments"?(ar?"المواعيد":"Appointments"):key==="wallet"?(ar?"رصيد المزايا":"Benefits balance"):key==="documents"?(ar?"مستندات صحية محددة":"Selected health documents"):(ar?"الإشعارات":"Notifications")}</b><small>{key==="documents"?(ar?"يتطلب موافقة صريحة ومحددة":"Requires explicit, specific consent"):(ar?"يمكن تغييره في أي وقت":"Can be changed anytime")}</small></div><button className={value?"toggle on":"toggle"} disabled={selected.id===1||key==="appointments"} onClick={()=>setPermissions(v=>({...v,[key]:!v[key as keyof typeof v]}))}><span/></button></div>)}<div className="access-audit"><b>{ar?"سجل الوصول محفوظ":"Access history is recorded"}</b><p>{ar?"يُسجل من رأى ماذا ومتى ولماذا. يمكن إلغاء الوصول المشترك فوراً.":"Who viewed what, when, and why is logged. Shared access can be revoked immediately."}</p><button onClick={()=>setTab("activity")}>{ar?"عرض سجل النشاط":"View activity log"} →</button></div></div>}
-          {tab==="activity"&&<div className="family-activity"><h3>{ar?"النشاط الأخير":"Recent activity"}</h3>{[["Today, 10:14 AM","Appointment viewed","Mariam · iPhone"],["31 Jul, 6:20 PM","Benefits balance checked","Mariam · Safari"],["29 Jul, 2:05 PM","Access permission updated","Consent reference CNS-••48"]].map((a,i)=><article key={a[0]}><span>{i===2?"♙":"✓"}</span><div><b>{a[1]}</b><small>{a[0]} · {a[2]}</small></div></article>)}<p>{ar?"هذا سجل تجريبي ببيانات اصطناعية. في المنتج الحقيقي سيكون السجل غير قابل للتعديل.":"Synthetic prototype activity. Production history would be immutable."}</p></div>}
-        </section></div>
+function label(value: string) { return value.replaceAll("_", " ").replace(/^./, (character) => character.toUpperCase()); }
+function initials(value: string) { return value.split(/\s+|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "FM"; }
+
+async function request(body?: Record<string, unknown>) {
+  const response = await fetch("/api/family", body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : { cache: "no-store" });
+  const payload = await response.json() as { data?: FamilyData | { acceptPath?: string }; message?: string; error?: string };
+  if (response.status === 401) {
+    window.location.assign("/signin-with-chatgpt?return_to=/family");
+    throw new Error("Authentication required");
+  }
+  if (!response.ok) throw new Error(payload.message || payload.error || "Request failed");
+  return payload.data;
+}
+
+export default function Family() {
+  const [data, setData] = useState<FamilyData>({ managed: [], delegated: [], invitations: [] });
+  const [tab, setTab] = useState<"managed" | "delegated">("managed");
+  const [adding, setAdding] = useState(false);
+  const [kind, setKind] = useState<"dependent" | "adult_family" | "caregiver">("dependent");
+  const [subjectLabel, setSubjectLabel] = useState("");
+  const [email, setEmail] = useState("");
+  const [permissions, setPermissions] = useState({ appointmentsAccess: true, recordsAccess: false, paymentsAccess: false });
+  const [acceptLink, setAcceptLink] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    const token = new URLSearchParams(window.location.search).get("invitation");
+    Promise.resolve().then(async () => {
+      if (token) {
+        await request({ action: "accept", token });
+        window.history.replaceState({}, "", "/family");
+      }
+      return request();
+    }).then((result) => {
+      if (active && result && "managed" in result) {
+        setData(result); if (token) { setTab("delegated"); setNotice("Care access invitation accepted."); }
+      }
+    }).catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : "Family access is unavailable."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function reload() {
+    const result = await request();
+    if (result && "managed" in result) setData(result);
+  }
+
+  async function submitRelationship() {
+    setSaving(true); setError(""); setAcceptLink("");
+    try {
+      if (kind === "dependent") {
+        await request({ action: "create_dependent", subjectLabel, relationshipType: "dependent" });
+        setNotice("Dependent request created. No care access is active until verification is completed.");
+      } else {
+        const result = await request({ action: "invite_adult", email, relationshipType: kind, ...permissions });
+        if (result && "acceptPath" in result && result.acceptPath) setAcceptLink(`${window.location.origin}${result.acceptPath}`);
+        setNotice("Consent invitation created. Access remains inactive until the invited account accepts.");
+      }
+      setAdding(false); setSubjectLabel(""); setEmail(""); await reload();
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "The relationship could not be created."); }
+    finally { setSaving(false); }
+  }
+
+  async function revoke(relationshipId: string) {
+    if (!window.confirm("Revoke this care relationship and all recorded permissions?")) return;
+    setSaving(true); setError("");
+    try { await request({ action: "revoke", relationshipId }); setNotice("Care relationship revoked."); await reload(); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "Access could not be revoked."); }
+    finally { setSaving(false); }
+  }
+
+  return <main className="family-shell family-live-shell" id="main-content">
+    <header className="family-header"><a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">Find care</a><a href="/appointments">Appointments</a><a href="/wallet">Health records</a><a className="active" href="/family">Family access</a><a href="/support">Support</a></nav><div><a href="/notifications">Notifications</a><span>RY</span></div></header>
+    <section className="family-hero"><div><p>CARE TOGETHER, WITH CONSENT</p><h1>Family & delegated care</h1><span>Create verified relationship requests and explicit, revocable permission grants without merging anyone’s account or health record.</span></div><button onClick={() => setAdding(true)}>＋ Add relationship</button></section>
+    <section className="family-workspace"><div className="family-note"><span>i</span><p><b>A family name never grants automatic access.</b> Dependents remain locked pending verification. Adults and caregivers must accept an email-bound invitation before any selected permission becomes active.</p></div>
+      {error && <div className="family-live-alert error"><span>{error}</span><button onClick={() => setError("")}>×</button></div>}
+      {notice && <div className="family-live-alert success"><span>{notice}</span><button onClick={() => setNotice("")}>×</button></div>}
+      {acceptLink && <div className="family-invite-link"><div><b>Consent invitation link</b><p>Share this link only with the invited email owner. It expires in seven days and can be used once.</p><code>{acceptLink}</code></div><button onClick={() => void navigator.clipboard.writeText(acceptLink)}>Copy link</button></div>}
+      <div className="family-live-tabs"><button className={tab === "managed" ? "active" : ""} onClick={() => setTab("managed")}>Relationships I manage <span>{data.managed.length}</span></button><button className={tab === "delegated" ? "active" : ""} onClick={() => setTab("delegated")}>Access to my care <span>{data.delegated.length}</span></button></div>
+
+      {loading ? <div className="family-live-state"><span>◌</span><h2>Loading care relationships</h2><p>Checking current consent and verification state.</p></div> : tab === "managed" ? <div className="family-live-grid">
+        {data.managed.length === 0 && <div className="family-live-state"><span>♧</span><h2>No care relationships yet</h2><p>Add a dependent verification request or invite an adult to consent to scoped access.</p><button onClick={() => setAdding(true)}>Add relationship</button></div>}
+        {data.managed.map((item) => <article key={item.id}><header><span>{initials(item.subjectName || item.subjectLabel)}</span><div><p>{label(item.relationshipType)}</p><h2>{item.subjectName || item.subjectLabel}</h2></div><i className={item.status}>{label(item.status)}</i></header><div className="family-permission-summary"><b>Recorded permissions</b><span className={item.appointmentsAccess ? "on" : "off"}>Appointments</span><span className={item.recordsAccess ? "on" : "off"}>Health records</span><span className={item.paymentsAccess ? "on" : "off"}>Payments</span></div>{item.status === "pending_verification" && <p className="family-boundary">No permissions are active until guardianship or dependency evidence is verified.</p>}{item.status === "pending_consent" && <p className="family-boundary">Requested permissions remain inactive until the invited email owner accepts.</p>}{item.status === "active" && <><p className="family-boundary">Permission changes require fresh consent. Revoke and create a new invitation to change scope.</p><div className="family-scope-links">{item.subjectUserId && item.recordsAccess && <a href={`/wallet?subjectUserId=${encodeURIComponent(item.subjectUserId)}`}>View records</a>}{item.subjectUserId && item.paymentsAccess && <a href={`/payments?subjectUserId=${encodeURIComponent(item.subjectUserId)}`}>View payments</a>}</div></>}{item.status !== "revoked" && <button disabled={saving} onClick={() => void revoke(item.id)}>Revoke relationship</button>}</article>)}
+      </div> : <div className="family-live-grid">
+        {data.delegated.length === 0 && <div className="family-live-state"><span>♙</span><h2>No one has delegated access</h2><p>Accepted invitations granting another account access to your care will appear here.</p></div>}
+        {data.delegated.map((item) => <article key={item.id}><header><span>{initials(item.managerName)}</span><div><p>{label(item.relationshipType)}</p><h2>{item.managerName}</h2></div><i className="active">Active</i></header><div className="family-permission-summary"><b>They can manage</b><span className={item.appointmentsAccess ? "on" : "off"}>Appointments</span><span className={item.recordsAccess ? "on" : "off"}>Health records</span><span className={item.paymentsAccess ? "on" : "off"}>Payments</span></div>{item.expiresAt && <p className="family-boundary">Caregiver access expires {new Date(item.expiresAt).toLocaleString()}.</p>}<button disabled={saving} onClick={() => void revoke(item.id)}>Revoke consent</button></article>)}
+      </div>}
     </section>
-    {adding&&<div className="family-modal-layer" onMouseDown={e=>e.target===e.currentTarget&&setAdding(false)}><section className="family-modal"><button className="drawer-close" onClick={()=>setAdding(false)}>×</button><p>{ar?"إضافة علاقة موثّقة":"ADD A VERIFIED RELATIONSHIP"}</p><h2>{ar?"إضافة فرد من العائلة":"Add a family member"}</h2><span>{ar?"لن يؤدي هذا تلقائياً إلى مشاركة السجلات الصحية.":"This does not automatically share health records."}</span><div className="relationship-options">{[["♡",ar?"طفل أو معال":"Child or dependant",ar?"يتطلب إثبات الوصاية":"Guardian evidence required"],["◇",ar?"شخص بالغ":"Adult family member",ar?"يتطلب موافقته الصريحة":"Requires their explicit consent"],["◎",ar?"مقدم رعاية":"Caregiver",ar?"صلاحيات محدودة زمنياً وغرضاً":"Time- and purpose-limited access"]].map((r,i)=><button key={r[1]} className={i===0?"active":""}><span>{r[0]}</span><div><b>{r[1]}</b><small>{r[2]}</small></div><i>{i===0?"✓":""}</i></button>)}</div><label>{ar?"الاسم الكامل التجريبي":"Synthetic full name"}<input defaultValue={ar?"سلمان أحمد":"Salman Ahmed"}/></label><label>{ar?"تاريخ الميلاد":"Date of birth"}<input defaultValue="18 June 2021"/></label><div className="relationship-warning"><span>♙</span><p>{ar?"سيتم التحقق من العلاقة قبل تفعيل الوصول. سيحدد العمر والموافقة نطاق ما يمكنك إدارته.":"The relationship is verified before access begins. Age and consent determine what you can manage."}</p></div><button className="family-primary" onClick={()=>{setAdding(false);setNotice(ar?"تم إنشاء طلب التحقق التجريبي":"Prototype verification request created")}}>{ar?"بدء التحقق من العلاقة":"Start relationship verification"}</button></section></div>}
-    {notice&&<div className="family-toast"><span>✓</span>{notice}<button onClick={()=>setNotice("")}>×</button></div>}
-  </main>
+
+    {adding && <div className="family-modal-layer" onMouseDown={(event) => event.target === event.currentTarget && setAdding(false)}><section className="family-modal family-live-modal"><button className="drawer-close" onClick={() => setAdding(false)} aria-label="Close">×</button><p>ADD A VERIFIED RELATIONSHIP</p><h2>Choose the consent path</h2><span>Creating a relationship does not merge accounts or expose health information.</span><div className="relationship-options"><button className={kind === "dependent" ? "active" : ""} onClick={() => setKind("dependent")}><span>♧</span><div><b>Child or dependent</b><small>Creates a locked verification request</small></div><i>{kind === "dependent" ? "✓" : ""}</i></button><button className={kind === "adult_family" ? "active" : ""} onClick={() => setKind("adult_family")}><span>◇</span><div><b>Adult family member</b><small>Requires explicit email-bound consent</small></div><i>{kind === "adult_family" ? "✓" : ""}</i></button><button className={kind === "caregiver" ? "active" : ""} onClick={() => setKind("caregiver")}><span>♙</span><div><b>Caregiver</b><small>Consent expires after 30 days</small></div><i>{kind === "caregiver" ? "✓" : ""}</i></button></div>
+        {kind === "dependent" ? <><label>Dependent display name<input maxLength={80} value={subjectLabel} onChange={(event) => setSubjectLabel(event.target.value)} placeholder="Name used for the verification request"/></label><div className="relationship-warning"><span>i</span><p>No booking, payment, or record access is granted. A future verification workflow must establish guardianship or dependency first.</p></div></> : <><label>Invited account email<input type="email" maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="person@example.com"/></label><fieldset className="family-permission-picker"><legend>Requested permissions</legend>{([['appointmentsAccess', 'Appointments'], ['recordsAccess', 'Health records'], ['paymentsAccess', 'Payments']] as const).map(([key, text]) => <label key={key}><input type="checkbox" checked={permissions[key]} onChange={(event) => setPermissions((current) => ({ ...current, [key]: event.target.checked }))}/><span><b>{text}</b><small>Requires acceptance by the invited account</small></span></label>)}</fieldset><div className="relationship-warning"><span>i</span><p>The invitation token is stored only as a secure hash and must be accepted by the exact invited email within seven days.</p></div></>}
+        <button className="family-primary" disabled={saving || (kind === "dependent" ? !subjectLabel.trim() : !email.trim())} onClick={() => void submitRelationship()}>{saving ? "Saving…" : kind === "dependent" ? "Create verification request" : "Create consent invitation"}</button></section></div>}
+  </main>;
 }

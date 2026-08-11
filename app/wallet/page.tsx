@@ -29,22 +29,25 @@ export default function Wallet() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [delegated, setDelegated] = useState(false);
 
   useEffect(() => {
     let active = true;
-    fetch("/api/patient/records", { cache: "no-store" }).then(async (response) => {
-      const payload = await response.json() as { records?: VisitRecord[]; error?: string };
+    const subjectUserId = new URLSearchParams(window.location.search).get("subjectUserId");
+    const endpoint = subjectUserId ? `/api/patient/records?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/api/patient/records";
+    fetch(endpoint, { cache: "no-store" }).then(async (response) => {
+      const payload = await response.json() as { records?: VisitRecord[]; delegated?: boolean; error?: string };
       if (response.status === 401) {
         window.location.assign("/signin-with-chatgpt?return_to=/wallet");
         throw new Error("Authentication required");
       }
       if (!response.ok) throw new Error(payload.error || "Health records are temporarily unavailable.");
-      return payload.records || [];
-    }).then((items) => {
+      return { records: payload.records || [], delegated: payload.delegated === true };
+    }).then((result) => {
       if (!active) return;
-      setRecords(items);
+      setRecords(result.records); setDelegated(result.delegated);
       const appointmentId = new URLSearchParams(window.location.search).get("appointmentId");
-      if (appointmentId) setSelected(items.find((item) => item.appointmentId === appointmentId) || null);
+      if (appointmentId) setSelected(result.records.find((item) => item.appointmentId === appointmentId) || null);
     }).catch((caught: unknown) => {
       if (active) setError(caught instanceof Error ? caught.message : "Health records are temporarily unavailable.");
     }).finally(() => { if (active) setLoading(false); });
@@ -61,6 +64,7 @@ export default function Wallet() {
     <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">Find care</a><a href="/appointments">Appointments</a><a className="active" href="/wallet">Health records</a><a href="/payments">Payments</a><a href="/support">Support</a></nav><div><a className="wallet-live-notifications" href="/notifications">Notifications</a><span className="avatar">RY</span></div></header>
     <section className="wallet-hero"><div><p>Patient-owned visit records</p><h1>My Health Records</h1><span>Review finalized visit information released to your account by your care providers.</span></div><a href="/appointments">View appointments</a></section>
     <section className="wallet-notice"><span>i</span><p><b>Your records are private to your signed-in account.</b> This view includes provider identity, visit provenance, and approved patient instructions. Internal history, assessment, and plan notes are not exposed here.</p></section>
+    {delegated && <section className="wallet-delegated-note">You are viewing records through an active, scoped care relationship. This access is revocable and audited.</section>}
 
     <section className="wallet-content">
       <div className="wallet-live-heading"><div><p>FINALIZED VISITS</p><h2>Visit record timeline</h2><span>{records.length} {records.length === 1 ? "record" : "records"}</span></div><label aria-label="Search records">⌕<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search provider or specialty"/></label></div>

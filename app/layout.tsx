@@ -29,6 +29,8 @@ import "./encounter-live.css";
 import "./wallet-live.css";
 import "./patient-record-links.css";
 import "./payments-live.css";
+import "./family-live.css";
+import "./delegated-access.css";
 import "./quality.css";
 import "./ui-polish.css";
 import "./ui-completion.css";

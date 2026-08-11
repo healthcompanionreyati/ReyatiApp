@@ -443,3 +443,34 @@ test("ships an account-owned payment ledger without invented charges or refunds"
   assert.match(page, /No provider reference recorded/);
   assert.doesNotMatch(page, /Visa|Apple Pay|Dr\. Laila|Mariam Ahmed|Atlas Consulting|PAY-260|Refund in progress|Try checkout|synthetic/i);
 });
+
+test("ships email-bound family consent and server-enforced delegated record scopes", async () => {
+  const migrationName = (await readdir(new URL("../drizzle", import.meta.url))).find((name) => /^0011_.*\.sql$/.test(name));
+  assert.ok(migrationName, "expected the care relationships migration");
+  const [schema, migration, service, route, familyPage, recordsRoute, paymentsRoute] = await Promise.all([
+    readFile(new URL("../db/schema.ts", import.meta.url), "utf8"),
+    readFile(new URL(`../drizzle/${migrationName}`, import.meta.url), "utf8"),
+    readFile(new URL("../lib/family-access.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/family/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/family/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/patient/records/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/patient/payments/route.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(schema, /export const careRelationships/);
+  assert.match(schema, /export const careRelationshipInvitations/);
+  assert.match(migration, /status` != 'active' OR `subject_user_id` IS NOT NULL/);
+  assert.match(migration, /PRAGMA optimize/);
+  assert.match(service, /crypto\.subtle\.digest\("SHA-256"/);
+  assert.match(service, /invitation\.email !== userEmail\.toLowerCase\(\)/);
+  assert.match(service, /expiresAt: relationshipExpiresAt/);
+  assert.match(service, /eq\(permissionColumn, true\)/);
+  assert.match(service, /care_relationship\.revoked/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /Cache-Control.*no-store/);
+  assert.match(familyPage, /No care access is active until verification is completed/);
+  assert.match(familyPage, /Share this link only with the invited email owner/);
+  assert.match(familyPage, /View records/);
+  assert.match(recordsRoute, /resolveCareSubject/);
+  assert.match(paymentsRoute, /resolveCareSubject/);
+  assert.doesNotMatch(familyPage, /Mariam Ahmed|Yousef Ahmed|Noura Ahmed|Fatima Ali|benefits balance|Synthetic prototype activity/i);
+});

@@ -246,6 +246,41 @@ export const paymentLedgerEntries = sqliteTable("payment_ledger_entries", {
   uniqueIndex("idx_payment_ledger_provider_reference").on(table.providerReference),
 ]);
 
+export const careRelationships = sqliteTable("care_relationships", {
+  id: text("id").primaryKey(),
+  managerUserId: text("manager_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  subjectUserId: text("subject_user_id").references(() => users.id, { onDelete: "restrict" }),
+  subjectLabel: text("subject_label").notNull(),
+  relationshipType: text("relationship_type").notNull(),
+  status: text("status").notNull(),
+  appointmentsAccess: integer("appointments_access", { mode: "boolean" }).notNull().default(false),
+  recordsAccess: integer("records_access", { mode: "boolean" }).notNull().default(false),
+  paymentsAccess: integer("payments_access", { mode: "boolean" }).notNull().default(false),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  index("idx_care_relationships_manager_status").on(table.managerUserId, table.status),
+  index("idx_care_relationships_subject_status").on(table.subjectUserId, table.status),
+]);
+
+export const careRelationshipInvitations = sqliteTable("care_relationship_invitations", {
+  id: text("id").primaryKey(),
+  relationshipId: text("relationship_id").notNull().references(() => careRelationships.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  tokenHash: text("token_hash").notNull(),
+  status: text("status").notNull().default("pending"),
+  invitedByUserId: text("invited_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  acceptedByUserId: text("accepted_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  acceptedAt: integer("accepted_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_care_relationship_invitations_token").on(table.tokenHash),
+  uniqueIndex("idx_care_relationship_invitations_relationship").on(table.relationshipId),
+  index("idx_care_relationship_invitations_email_status").on(table.email, table.status),
+]);
+
 export const consents = sqliteTable("consents", {
   id: text("id").primaryKey(),
   subjectUserId: text("subject_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

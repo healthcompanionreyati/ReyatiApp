@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, auditEvents, encounterNotes, facilities, patientProfiles, providerProfiles, users } from "@/db/schema";
 
-export async function getPatientVisitRecords(userId: string) {
+export async function getPatientVisitRecords(userId: string, actorUserId = userId) {
   const db = await getDb();
   const records = await db.select({
     appointmentId: appointments.id,
@@ -31,13 +31,13 @@ export async function getPatientVisitRecords(userId: string) {
   const visible = records.filter((record) => record.finalizedAt !== null);
   await db.insert(auditEvents).values({
     id: crypto.randomUUID(),
-    actorUserId: userId,
+    actorUserId,
     organizationId: null,
     action: "patient.visit_records_viewed",
     resourceType: "patient_record_collection",
     resourceId: userId,
     outcome: "success",
-    metadataJson: JSON.stringify({ recordCount: visible.length }),
+    metadataJson: JSON.stringify({ recordCount: visible.length, delegated: actorUserId !== userId }),
     createdAt: new Date(),
   });
   return visible;
