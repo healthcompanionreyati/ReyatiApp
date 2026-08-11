@@ -969,3 +969,20 @@ test("discovers each dialog close control and lets Escape use it", async () => {
   assert.match(organizations, /<button type="button" onClick=\{\(\) => setReviewing\(null\)\}>×<\/button>/);
   assert.match(settings, /className="settings-close"/);
 });
+
+test("keeps mobile chrome and account actions at reliable touch sizes", async () => {
+  const [completion, quality, auth] = await Promise.all([
+    readFile(new URL("../app/ui-completion.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/quality.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(completion, /@media \(max-width: 760px\)/);
+  assert.match(completion, /body > main > header/);
+  assert.match(completion, /\.auth-stage > header/);
+  assert.match(completion, /\.auth-actions/);
+  assert.match(completion, /\.auth-stage > footer a/);
+  assert.match(completion, /min-height: 44px/);
+  assert.match(quality, /\.mobile-dock a \{[\s\S]*?min-height: 50px/);
+  assert.match(auth, /@media\(max-width:560px\)/);
+});

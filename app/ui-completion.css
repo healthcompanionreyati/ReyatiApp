@@ -201,6 +201,19 @@ body { min-width: 320px; }
 }
 
 @media (max-width: 760px) {
+  /* Mobile chrome and account actions remain comfortable, reliable touch targets. */
+  :where(body > main > header, .auth-stage > header, [class$="-header"], [class$="-top"], [class$="-topbar"])
+    :where(a, button),
+  :where(.auth-actions, .drawer-actions, .service-drawer-actions, .recovery-actions)
+    :where(a, button),
+  .auth-card > .auth-primary,
+  .auth-stage > footer a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   :where(.wallet-header, .providers-header, .family-header, .payments-header, .support-header,
     .notification-header, .provider-topbar, .services-top, .insights-top, .settings-top,
     .patient-provider-top, .partner-top, .program-top, .admin-topbar, .verify-top,
