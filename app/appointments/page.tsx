@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ConfirmActionDialog from "@/app/components/ConfirmActionDialog";
 
 type Appointment = {
@@ -15,7 +15,7 @@ async function request(init?: RequestInit) {
   const subjectUserId = new URLSearchParams(window.location.search).get("subjectUserId");
   const endpoint = subjectUserId ? `/api/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/api/appointments";
   const response = await fetch(endpoint, init);
-  const payload = await response.json() as { appointments?: Appointment[]; appointment?: unknown; delegated?: boolean; message?: string; error?: string };
+  const payload = await response.json().catch(() => ({})) as { appointments?: Appointment[]; appointment?: unknown; delegated?: boolean; message?: string; error?: string };
   if (response.status === 401) {
     window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(`/appointments${window.location.search}`)}`);
     throw new Error("Authentication required");
@@ -44,20 +44,21 @@ export default function Appointments() {
   const [subjectUserId, setSubjectUserId] = useState<string | null>(null);
   const [delegated, setDelegated] = useState(false);
 
-  async function load() {
-    setError("");
-    try { const payload = await request(); setItems(payload.appointments ?? []); setDelegated(Boolean(payload.delegated)); setSubjectUserId(payload.requestedSubjectUserId); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "Appointments unavailable"); }
-    finally { setLoading(false); }
-  }
+  const load = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true); setError("");
+    try { const payload = await request({ cache: "no-store", signal }); setItems(payload.appointments ?? []); setDelegated(Boolean(payload.delegated)); setSubjectUserId(payload.requestedSubjectUserId); }
+    catch (caught) {
+      if (caught instanceof DOMException && caught.name === "AbortError") return;
+      setError(caught instanceof Error ? caught.message : "Appointments unavailable");
+    }
+    finally { if (!signal?.aborted) setLoading(false); }
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    request().then((payload) => { if (active) { setItems(payload.appointments ?? []); setDelegated(Boolean(payload.delegated)); setSubjectUserId(payload.requestedSubjectUserId); } })
-      .catch((caught) => { if (active) setError(caught instanceof Error ? caught.message : "Appointments unavailable"); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
+    const controller = new AbortController();
+    queueMicrotask(() => { if (!controller.signal.aborted) void load(controller.signal); });
+    return () => controller.abort();
+  }, [load]);
 
   const upcoming = useMemo(() => items
     .filter((item) => new Date(item.scheduledEnd).valueOf() > referenceTime && !terminalStatuses.includes(item.status))
@@ -84,8 +85,9 @@ export default function Appointments() {
     {delegated && <div className="appointments-delegated-note"><b>Managing appointments with consent.</b> You can view, book, and cancel only while this revocable appointment permission remains active. Every delegated action is audited.</div>}
     <section className="appointments-content">
       <div className="appointment-tabs"><button className={tab === "upcoming" ? "active" : ""} onClick={() => setTab("upcoming")}>Upcoming <span>{upcoming.length}</span></button><button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}>History <span>{history.length}</span></button><a href="/support">Support</a></div>
-      {error && <div className="appointment-live-error">{error}<button onClick={() => setError("")}>×</button></div>}
+      {error && <div className="appointment-live-error">{error}<button type="button" onClick={() => void load()}>Try again</button></div>}
       {loading ? <div className="appointment-live-state"><span>◇</span><h2>Loading your appointments…</h2></div>
+        : error ? <div className="appointment-live-state error"><span>!</span><h2>Appointment status unavailable</h2><p>Reyati could not confirm your latest bookings. Try again before relying on this list.</p></div>
         : visible.length === 0 ? <div className="appointment-live-state"><span>◷</span><h2>{tab === "upcoming" ? "No upcoming appointments" : "No appointment history"}</h2><p>{tab === "upcoming" ? "Browse verified providers and choose a published time when you are ready." : "Completed and cancelled appointments will appear here."}</p>{tab === "upcoming" && <a href={providersPath}>Find care</a>}</div>
         : <div className="appointment-live-list">{visible.map((item) => {
           const start = new Date(item.scheduledStart);

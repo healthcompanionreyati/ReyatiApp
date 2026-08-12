@@ -972,6 +972,20 @@ test("keeps the provider schedule recoverable across authentication and response
   assert.match(provider, /return \(\) => controller\.abort\(\)/);
 });
 
+test("keeps patient appointments retryable and distinct from confirmed empty data", async () => {
+  const appointments = await readFile(new URL("../app/appointments/page.tsx", import.meta.url), "utf8");
+
+  assert.match(appointments, /response\.json\(\)\.catch\(\(\) => \(\{\}\)\)/);
+  assert.match(appointments, /const load = useCallback\(async \(signal\?: AbortSignal\)/);
+  assert.match(appointments, /request\(\{ cache: "no-store", signal \}\)/);
+  assert.match(appointments, /caught instanceof DOMException && caught\.name === "AbortError"/);
+  assert.match(appointments, /const controller = new AbortController\(\)/);
+  assert.match(appointments, /return \(\) => controller\.abort\(\)/);
+  assert.match(appointments, /onClick=\{\(\) => void load\(\)\}>Try again/);
+  assert.match(appointments, /error \? <div className="appointment-live-state error"/);
+  assert.match(appointments, /Appointment status unavailable/);
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),
