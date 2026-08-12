@@ -49,31 +49,25 @@ export default function ProviderConsole() {
   const [confirmDecline, setConfirmDecline] = useState(false);
   const [referenceTime] = useState(() => Date.now());
 
-  const loadAppointments = useCallback(async () => {
+  const loadAppointments = useCallback(async (signal?: AbortSignal) => {
     setLoading(true); setError("");
     try {
-      const response = await fetch("/api/provider/appointments", { cache: "no-store" });
-      const payload = await response.json() as { appointments?: Appointment[]; message?: string; error?: string };
+      const response = await fetch("/api/provider/appointments", { cache: "no-store", signal });
+      if (response.status === 401) { window.location.assign("/signin-with-chatgpt?return_to=/provider"); return; }
+      const payload = await response.json().catch(() => ({})) as { appointments?: Appointment[]; message?: string; error?: string };
       if (!response.ok) throw new Error(payload.message || (response.status === 403 ? "A verified provider profile is required." : "Unable to load your schedule."));
       setAppointments(payload.appointments || []);
     } catch (caught) {
+      if (caught instanceof DOMException && caught.name === "AbortError") return;
       setError(caught instanceof Error ? caught.message : "Unable to load your schedule.");
-    } finally { setLoading(false); }
+    } finally { if (!signal?.aborted) setLoading(false); }
   }, []);
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/provider/appointments", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = await response.json() as { appointments?: Appointment[]; message?: string };
-        if (!response.ok) throw new Error(payload.message || (response.status === 403 ? "A verified provider profile is required." : "Unable to load your schedule."));
-        return payload.appointments || [];
-      })
-      .then((items) => { if (active) setAppointments(items); })
-      .catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : "Unable to load your schedule."); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, []);
+    const controller = new AbortController();
+    queueMicrotask(() => { if (!controller.signal.aborted) void loadAppointments(controller.signal); });
+    return () => controller.abort();
+  }, [loadAppointments]);
 
   const selected = appointments.find((item) => item.id === selectedId) || null;
   const visible = useMemo(() => appointments.filter((item) => {

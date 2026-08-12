@@ -959,6 +959,19 @@ test("keeps homepage API failures retryable and distinct from confirmed empty da
   assert.match(home, /:nextAppointment\?<section className="next-appt"/);
 });
 
+test("keeps the provider schedule recoverable across authentication and response failures", async () => {
+  const provider = await readFile(new URL("../app/provider/page.tsx", import.meta.url), "utf8");
+
+  assert.match(provider, /loadAppointments = useCallback\(async \(signal\?: AbortSignal\)/);
+  assert.match(provider, /cache: "no-store", signal/);
+  assert.match(provider, /response\.status === 401/);
+  assert.match(provider, /\/signin-with-chatgpt\?return_to=\/provider/);
+  assert.match(provider, /response\.json\(\)\.catch\(\(\) => \(\{\}\)\)/);
+  assert.match(provider, /caught instanceof DOMException && caught\.name === "AbortError"/);
+  assert.match(provider, /const controller = new AbortController\(\)/);
+  assert.match(provider, /return \(\) => controller\.abort\(\)/);
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),
