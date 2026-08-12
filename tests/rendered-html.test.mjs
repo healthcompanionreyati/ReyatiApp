@@ -946,6 +946,19 @@ test("coalesces shared accessibility scans during dynamic page updates", async (
   assert.doesNotMatch(accessibility, /new MutationObserver\(sync\)/);
 });
 
+test("keeps homepage API failures retryable and distinct from confirmed empty data", async () => {
+  const home = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+
+  assert.match(home, /const loadWorkspace=useCallback/);
+  assert.match(home, /new AbortController\(\)/);
+  assert.match(home, /identityResponse\.json\(\)\.catch\(\(\)=>\(\{\}\)\)/);
+  assert.match(home, /appointmentResponse\.json\(\)\.catch\(\(\)=>\(\{\}\)\)/);
+  assert.match(home, /onClick=\{\(\)=>void loadWorkspace\(\)\}>Try again/);
+  assert.match(home, /error\?<div className="appointment-live-state error"/);
+  assert.match(home, /Appointment status unavailable/);
+  assert.match(home, /:nextAppointment\?<section className="next-appt"/);
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),
