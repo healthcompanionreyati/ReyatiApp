@@ -20,6 +20,8 @@ export default function AccessibilitySync() {
     let dialogSequence = 0;
     let fieldSequence = 0;
     let invalidFocusQueued = false;
+    let syncFrame: number | null = null;
+    let disposed = false;
 
     type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -178,6 +180,14 @@ export default function AccessibilitySync() {
       document.body.classList.toggle("has-open-dialog", modalLayers.length > 0);
     };
 
+    const scheduleSync = () => {
+      if (disposed || syncFrame !== null) return;
+      syncFrame = window.requestAnimationFrame(() => {
+        syncFrame = null;
+        if (!disposed) sync();
+      });
+    };
+
     const handleDialogKeys = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         const layers = document.querySelectorAll<HTMLElement>('[class*="-layer"]');
@@ -232,10 +242,12 @@ export default function AccessibilitySync() {
     document.addEventListener("invalid", handleInvalid, true);
     document.addEventListener("input", handleFieldInput);
     document.addEventListener("change", handleFieldInput);
-    const observer = new MutationObserver(sync);
+    const observer = new MutationObserver(scheduleSync);
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["dir", "class", "disabled"] });
     return () => {
+      disposed = true;
       observer.disconnect();
+      if (syncFrame !== null) window.cancelAnimationFrame(syncFrame);
       document.removeEventListener("keydown", handleDialogKeys);
       document.removeEventListener("invalid", handleInvalid, true);
       document.removeEventListener("input", handleFieldInput);

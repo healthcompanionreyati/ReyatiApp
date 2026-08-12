@@ -932,6 +932,20 @@ test("provides truthful route loading feedback and workspace-specific document t
   assert.match(layout, /route-loading\.css/);
 });
 
+test("coalesces shared accessibility scans during dynamic page updates", async () => {
+  const accessibility = await readFile(
+    new URL("../app/components/AccessibilitySync.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(accessibility, /const scheduleSync = \(\) =>/);
+  assert.match(accessibility, /if \(disposed \|\| syncFrame !== null\) return/);
+  assert.match(accessibility, /syncFrame = window\.requestAnimationFrame/);
+  assert.match(accessibility, /new MutationObserver\(scheduleSync\)/);
+  assert.match(accessibility, /disposed = true;[\s\S]*?observer\.disconnect\(\);[\s\S]*?window\.cancelAnimationFrame\(syncFrame\)/);
+  assert.doesNotMatch(accessibility, /new MutationObserver\(sync\)/);
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),
