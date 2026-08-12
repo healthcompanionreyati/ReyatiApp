@@ -780,6 +780,23 @@ test("announces workflow states and keeps keyboard focus inside active dialogs",
   assert.match(quality, /prefers-reduced-motion: reduce/);
 });
 
+test("announces visual alerts with urgency that matches their outcome", async () => {
+  const [accessibility, access, organizations, encounter] = await Promise.all([
+    readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/access/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/admin/organizations/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/provider/encounter/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(accessibility, /\[class\*="-alert"\]:not\(\.success\)/);
+  assert.match(accessibility, /\[class\*="-alert"\]\.success/);
+  assert.match(accessibility, /aria-live", "assertive/);
+  assert.match(accessibility, /aria-live", "polite/);
+  assert.match(access, /className="accessops-alert"/);
+  assert.match(organizations, /className="orgops-alert error"/);
+  assert.match(encounter, /className="encounter-live-alert success"/);
+});
+
 test("requires branded confirmation before sensitive patient, provider, and family actions", async () => {
   const [dialog, appointments, provider, family, quality] = await Promise.all([
     readFile(new URL("../app/components/ConfirmActionDialog.tsx", import.meta.url), "utf8"),

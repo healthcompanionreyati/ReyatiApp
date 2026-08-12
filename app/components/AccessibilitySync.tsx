@@ -105,12 +105,12 @@ export default function AccessibilitySync() {
         }
       });
 
-      document.querySelectorAll<HTMLElement>('[class*="-error"], .family-live-alert.error, .moderation-live-state.error, .partner-live-state.error, .programme-live-state.error').forEach((message) => {
+      document.querySelectorAll<HTMLElement>('[class*="-error"], [class*="-alert"]:not(.success), .moderation-live-state.error, .partner-live-state.error, .programme-live-state.error').forEach((message) => {
         message.setAttribute("role", "alert");
         message.setAttribute("aria-live", "assertive");
         message.setAttribute("aria-atomic", "true");
       });
-      document.querySelectorAll<HTMLElement>('[class*="-toast"], [class*="-notice"], .family-live-alert.success').forEach((message) => {
+      document.querySelectorAll<HTMLElement>('[class*="-toast"], [class*="-notice"], [class*="-alert"].success').forEach((message) => {
         if (!message.hasAttribute("role")) message.setAttribute("role", "status");
         if (!message.hasAttribute("aria-live")) message.setAttribute("aria-live", "polite");
         message.setAttribute("aria-atomic", "true");
