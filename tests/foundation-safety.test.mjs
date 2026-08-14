@@ -43,6 +43,22 @@ test("capability registry declares ownership and activation boundaries", async (
   }
   assert.match(registry, /id: "independent_authentication"[\s\S]*?status: "foundation"/);
   assert.match(registry, /id: "outbound_communications"[\s\S]*?status: "foundation"/);
+  assert.match(registry, /id: "operational_observability"[\s\S]*?status: "foundation"/);
+});
+
+test("operations health is role-scoped, privacy-minimized, and truthful about pilot blockers", async () => {
+  const service = await source("lib/operations-health.ts");
+  const route = await source("app/api/admin/operations/route.ts");
+  const page = await source("app/admin/operations/page.tsx");
+  assert.match(service, /requirePlatformRole\(userId, \["platform_admin", "security_auditor"\]\)/);
+  assert.match(service, /external_error_tracking[\s\S]*?status: "blocked"/);
+  assert.match(service, /backup_rehearsal[\s\S]*?status: "blocked"/);
+  assert.match(service, /platform_rate_limiting[\s\S]*?status: "partial"/);
+  assert.doesNotMatch(service, /supportCases\.description|supportCases\.subject|users\.email/);
+  assert.match(route, /getOrCreateCurrentUser\(\)/);
+  assert.match(route, /reportOperationalError/);
+  assert.match(page, /No patient identity, clinical content, support descriptions, recipient details, or audit payloads/);
+  assert.match(page, /not a claim of full monitoring coverage or pilot readiness/);
 });
 
 test("expand-only identity and communications tables are present", async () => {

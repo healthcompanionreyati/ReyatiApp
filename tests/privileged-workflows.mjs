@@ -68,11 +68,16 @@ assert.equal(updatedCommunications.data.availability.emailDelivery, false, "Pref
 await request("/api/account/communications/verify", { identity: identities.patient, method: "POST", body: { action: "request" }, status: 409 });
 await request("/api/webhooks/resend", { identity: identities.patient, method: "POST", body: {}, status: 404 });
 await request("/api/admin/communications", { identity: identities.patient, status: 403 });
+await request("/api/admin/operations", { identity: identities.patient, status: 403 });
 const communicationOperations = await request("/api/admin/communications", { identity: identities.admin });
 assert.equal(communicationOperations.data.activation.deliveryEnabled, false);
 const queueRun = await request("/api/admin/communications", { identity: identities.admin, method: "POST", body: { limit: 10 } });
 assert.equal(queueRun.data.enabled, false);
 assert.equal(queueRun.data.claimed, 0);
+const operationsHealth = await request("/api/admin/operations", { identity: identities.admin });
+assert.equal(operationsHealth.data.databaseReachable, true);
+assert.ok(operationsHealth.data.controls.some((control) => control.id === "external_error_tracking" && control.status === "blocked"));
+assert.equal(operationsHealth.data.recentSignals.every((signal) => !("userId" in signal) && !("resourceId" in signal)), true);
 
 const organization = await request("/api/admin/organizations", {
   identity: identities.admin,

@@ -10,3 +10,5 @@ Status: Pilot foundation; accountable names and rota are still required.
 6. Complete a blameless review with cause, impact, timeline, corrective actions, owners, and due dates.
 
 Emergency care must never be routed through Reyati support. User-facing surfaces continue to direct life-threatening emergencies in Qatar to 999.
+
+The protected `/admin/operations` workspace provides bounded operational and security signals without patient identity, clinical content, support descriptions, or event payloads. It is an internal triage aid, not a substitute for external monitoring or the approved incident process.

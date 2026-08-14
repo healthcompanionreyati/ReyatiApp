@@ -77,6 +77,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/verification"><span>✓</span>{ar ? "التحقق" : "Verification"}</a>
         <a className="admin-verification-link" href="/admin/cases"><span>◇</span>{ar ? "حالات الدعم" : "Support cases"}</a>
         <a className="admin-verification-link" href="/admin/communications"><span>✉</span>{ar ? "الاتصالات" : "Communications"}</a>
+        <a className="admin-verification-link" href="/admin/operations"><span>◉</span>{ar ? "صحة النظام" : "System health"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>
