@@ -11,6 +11,8 @@ Use a vendor-neutral D1 outbox with versioned, privacy-minimized templates and a
 
 No application route or Worker schedule invokes delivery in this milestone. The compiled `outboundEmailDelivery` gate remains `false`, and hosted Resend variables are not configured by Codex.
 
+The account communication settings screen is live. It stores the user's English or Arabic preference and prospective email opt-in, keeps essential in-app notifications authoritative, and displays the platform-provided email as `provider_asserted`. Saving an opt-in never marks a contact verified and never bypasses the delivery gate.
+
 ## Activation requirements
 
 - Custom domain and sending subdomain selected.

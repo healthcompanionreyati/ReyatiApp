@@ -15,6 +15,7 @@ const journeys: Journey[] = [
   { group: "patient", href: "/family", icon: "♧", title: "Family access", titleAr: "وصول العائلة", text: "Explicit, revocable delegated permissions", textAr: "صلاحيات مفوضة صريحة وقابلة للإلغاء", status: "Live", statusAr: "نشط", tone: "live" },
   { group: "patient", href: "/payments", icon: "Q", title: "Payment records", titleAr: "سجلات الدفع", text: "Recorded payment status; no checkout or money movement", textAr: "حالة دفع مسجلة من دون دفع أو حركة أموال", status: "Read only", statusAr: "للقراءة فقط", tone: "readonly" },
   { group: "patient", href: "/notifications", icon: "●", title: "Notifications", titleAr: "الإشعارات", text: "Durable privacy-safe account updates", textAr: "تحديثات دائمة وآمنة للخصوصية", status: "Live", statusAr: "نشط", tone: "live" },
+  { group: "patient", href: "/settings/communications", icon: "@", title: "Communication settings", titleAr: "إعدادات الاتصال", text: "Language and future email delivery preferences", textAr: "اللغة وتفضيلات تسليم البريد الإلكتروني مستقبلاً", status: "Live", statusAr: "نشط", tone: "live" },
   { group: "patient", href: "/support", icon: "?", title: "Support", titleAr: "الدعم", text: "Account-owned cases and secure replies", textAr: "طلبات مملوكة للحساب وردود آمنة", status: "Live", statusAr: "نشط", tone: "live" },
   { group: "provider", href: "/provider", icon: "✚", title: "Provider schedule", titleAr: "جدول مقدم الرعاية", text: "Provider-owned appointment lifecycle", textAr: "دورة حياة المواعيد المملوكة لمقدم الرعاية", status: "Role gated", statusAr: "حسب الدور", tone: "restricted" },
   { group: "provider", href: "/provider/patients", icon: "♙", title: "Patient directory", titleAr: "دليل المرضى", text: "Identity and appointment context only", textAr: "الهوية وسياق الموعد فقط", status: "Role gated", statusAr: "حسب الدور", tone: "restricted" },
@@ -36,7 +37,7 @@ const journeys: Journey[] = [
 const capabilityByHref: Record<string, string> = {
   "/": "patient_home", "/providers": "provider_discovery", "/appointments": "appointment_booking",
   "/wallet": "health_records", "/family": "family_access", "/payments": "payment_records",
-  "/notifications": "in_app_notifications", "/support": "support_cases", "/provider": "provider_schedule",
+  "/notifications": "in_app_notifications", "/settings/communications": "communication_preferences", "/support": "support_cases", "/provider": "provider_schedule",
   "/provider/patients": "provider_patients", "/provider/services": "provider_catalog", "/provider/insights": "provider_insights",
   "/provider/settings": "organization_access", "/provider/encounter": "encounter_notes", "/partner": "partner_workspace",
   "/partner/program": "partner_program", "/admin": "platform_overview", "/admin/verification": "provider_verification",

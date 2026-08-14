@@ -41,6 +41,7 @@ import "./route-loading.css";
 import "./premium-navigation.css";
 import "./premium-ui.css";
 import "./readability-fixes.css";
+import "./communications-settings.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";

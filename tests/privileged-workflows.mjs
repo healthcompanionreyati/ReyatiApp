@@ -54,6 +54,18 @@ if (!bootstrap.data.isAdmin) {
 await request("/api/admin/overview", { identity: identities.patient, status: 403 });
 await request("/api/provider/appointments", { identity: identities.patient, status: 403 });
 
+const initialCommunications = await request("/api/account/communications", { identity: identities.patient });
+assert.equal(initialCommunications.data.contact.independentlyVerified, false, "Platform email must not be presented as independently verified");
+assert.equal(initialCommunications.data.preferences.inAppEnabled, true, "Authoritative in-app updates must remain active");
+const updatedCommunications = await request("/api/account/communications", {
+  identity: identities.patient,
+  method: "POST",
+  body: { locale: "ar", emailEnabled: true },
+});
+assert.equal(updatedCommunications.data.preferences.locale, "ar");
+assert.equal(updatedCommunications.data.preferences.emailEnabled, true);
+assert.equal(updatedCommunications.data.availability.emailDelivery, false, "Preference must not bypass the delivery feature gate");
+
 const organization = await request("/api/admin/organizations", {
   identity: identities.admin,
   method: "POST",

@@ -86,3 +86,19 @@ test("transactional email templates exclude clinical detail", async () => {
   assert.match(templates, /safeActionPath/);
   assert.match(templates, /never ask for your password/);
 });
+
+test("communication preferences are account-owned, audited, and do not bypass delivery gates", async () => {
+  const service = await source("lib/communications/preferences.ts");
+  const route = await source("app/api/account/communications/route.ts");
+  const page = await source("app/settings/communications/page.tsx");
+  assert.match(service, /eq\(contactMethods\.userId, userId\)/);
+  assert.match(service, /eq\(notificationPreferences\.userId, userId\)/);
+  assert.match(service, /communications\.preference_updated/);
+  assert.match(service, /foundationFlags\.outboundEmailDelivery/);
+  assert.doesNotMatch(service, /status:\s*"verified"/);
+  assert.match(route, /getOrCreateCurrentUser\(\)/);
+  assert.match(route, /user\.status !== "active"/);
+  assert.match(page, /Nothing will be sent until verification and delivery are active/);
+  assert.match(page, /role="radiogroup"/);
+  assert.match(page, /role="status"/);
+});
