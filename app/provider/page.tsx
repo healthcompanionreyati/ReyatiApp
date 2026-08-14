@@ -109,6 +109,7 @@ export default function ProviderConsole() {
       <nav className="provider-nav">
         <a className="provider-nav-link active" href="/provider"><span>◫</span>Appointments{counts.attention > 0 && <em>{counts.attention}</em>}</a>
         <a className="provider-nav-link" href="/provider/patients"><span>♙</span>Patients</a>
+        <a className="provider-nav-link" href="/provider/documents"><span>▤</span>Shared documents</a>
         <a className="provider-nav-link" href="/provider/services"><span>◇</span>Services</a>
         <a className="provider-nav-link" href="/provider/insights"><span>↗</span>Insights</a>
         <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>Settings</a>

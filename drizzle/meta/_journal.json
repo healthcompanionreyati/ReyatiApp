@@ -141,6 +141,13 @@
       "when": 1786726520950,
       "tag": "0019_brief_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1786727693592,
+      "tag": "0020_futuristic_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

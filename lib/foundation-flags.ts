@@ -3,6 +3,7 @@ export const foundationFlags = {
   outboundEmailDelivery: false,
   outboundSmsDelivery: false,
   communicationsWebhooks: false,
+  medicalDocumentUploads: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

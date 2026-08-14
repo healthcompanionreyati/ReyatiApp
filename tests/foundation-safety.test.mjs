@@ -18,7 +18,7 @@ async function routeFiles(directory) {
 test("Phase 1A external capabilities remain hard-disabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks"]) {
+  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
 });
@@ -44,6 +44,7 @@ test("capability registry declares ownership and activation boundaries", async (
   assert.match(registry, /id: "independent_authentication"[\s\S]*?status: "foundation"/);
   assert.match(registry, /id: "outbound_communications"[\s\S]*?status: "foundation"/);
   assert.match(registry, /id: "operational_observability"[\s\S]*?status: "foundation"/);
+  assert.match(registry, /id: "medical_document_foundation"[\s\S]*?status: "foundation"/);
 });
 
 test("operations health is role-scoped, privacy-minimized, and truthful about pilot blockers", async () => {
@@ -92,6 +93,35 @@ test("expand-only identity and communications tables are present", async () => {
   for (const table of ["auth_identities", "contact_methods", "contact_verification_challenges", "auth_sessions", "auth_factors", "auth_events", "notification_preferences", "outbound_messages", "message_delivery_events", "webhook_receipts", "email_delivery_suppressions", "operational_rate_limits"]) {
     assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
   }
+});
+
+test("medical documents remain metadata-only, consent-scoped, and upload-gated", async () => {
+  const schema = await source("db/schema.ts");
+  const service = await source("lib/medical-documents.ts");
+  const patientRoute = await source("app/api/patient/documents/route.ts");
+  const providerRoute = await source("app/api/provider/documents/route.ts");
+  const patientPage = await source("app/documents/page.tsx");
+  const providerPage = await source("app/provider/documents/page.tsx");
+  const hosting = await source(".openai/hosting.json");
+  assert.match(schema, /sqliteTable\("document_shares"/);
+  assert.match(service, /foundationFlags\.medicalDocumentUploads/);
+  assert.match(hosting, /"r2": null/);
+  assert.match(service, /10 \* 1024 \* 1024/);
+  assert.match(service, /maxPages: 25/);
+  assert.match(service, /MAX_SHARE_DAYS = 30/);
+  assert.match(service, /eq\(documentRecords\.ownerUserId, userId\)/);
+  assert.match(service, /eq\(documentRecords\.malwareScanStatus, "clean"\)/);
+  assert.match(service, /eq\(providerProfiles\.verificationStatus, "verified"\)/);
+  assert.match(service, /\.from\(appointments\)/);
+  assert.match(service, /db\.insert\(consents\)/);
+  assert.match(service, /db\.insert\(documentShares\)/);
+  assert.match(service, /version: share\[0\]\.version \+ 1/);
+  assert.match(service, /contentAccessEnabled: false/);
+  assert.doesNotMatch(service.match(/getProviderSharedDocuments[\s\S]*$/)?.[0] ?? "", /objectKey|checksumSha256/);
+  assert.match(patientRoute, /enforceWriteRateLimit/);
+  assert.match(providerRoute, /requireActiveProvider|getProviderSharedDocuments/);
+  assert.match(patientPage, /Document uploads are not active yet/);
+  assert.match(providerPage, /Document content is not available/);
 });
 
 test("platform identity is separated without claiming independent email verification", async () => {

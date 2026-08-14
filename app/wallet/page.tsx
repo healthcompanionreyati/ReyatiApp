@@ -68,7 +68,7 @@ export default function Wallet() {
 
   return <main className="wallet-shell wallet-live-shell" id="main-content">
     <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">Find care</a><a href="/appointments">Appointments</a><a className="active" href="/wallet">Health records</a><a href="/payments">Payments</a><a href="/support">Support</a></nav><div><a className="wallet-live-notifications" href="/notifications">Notifications</a><span className="avatar">RY</span></div></header>
-    <section className="wallet-hero"><div><p>Patient-owned visit records</p><h1>My Health Records</h1><span>Review finalized visit information released to your account by your care providers.</span></div><a href="/appointments">View appointments</a></section>
+    <section className="wallet-hero"><div><p>Patient-owned visit records</p><h1>My Health Records</h1><span>Review finalized visit information released to your account by your care providers.</span></div><div className="wallet-hero-actions"><a href="/documents">Medical documents</a><a className="secondary" href="/appointments">View appointments</a></div></section>
     <section className="wallet-notice"><span>i</span><p><b>Your records are private to your signed-in account.</b> This view includes provider identity, visit provenance, and approved patient instructions. Internal history, assessment, and plan notes are not exposed here.</p></section>
     {delegated && <section className="wallet-delegated-note">You are viewing records through an active, scoped care relationship. This access is revocable and audited.</section>}
 

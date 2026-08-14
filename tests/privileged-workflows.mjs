@@ -54,6 +54,11 @@ if (!bootstrap.data.isAdmin) {
 
 await request("/api/admin/overview", { identity: identities.patient, status: 403 });
 await request("/api/provider/appointments", { identity: identities.patient, status: 403 });
+const documentWorkspace = await request("/api/patient/documents", { identity: identities.patient });
+assert.equal(documentWorkspace.data.readiness.uploadEnabled, false, "Medical document upload must remain gated");
+assert.deepEqual(documentWorkspace.data.documents, []);
+await request("/api/patient/documents", { identity: identities.patient, method: "POST", body: { action: "request_upload" }, status: 409 });
+await request("/api/provider/documents", { identity: identities.provider, status: 403 });
 
 const initialCommunications = await request("/api/account/communications", { identity: identities.patient });
 assert.equal(initialCommunications.data.contact.independentlyVerified, false, "Platform email must not be presented as independently verified");
@@ -219,6 +224,9 @@ await request("/api/provider/appointments", {
   method: "PATCH",
   body: { action: "confirm", appointmentId: booking.appointment.id, version: booking.appointment.version },
 });
+const providerDocuments = await request("/api/provider/documents", { identity: identities.provider });
+assert.equal(providerDocuments.data.contentAccessEnabled, false, "Provider document bytes must remain disabled");
+assert.deepEqual(providerDocuments.data.documents, []);
 
 const access = await request("/api/admin/platform-access", { identity: identities.admin });
 const reviewerRole = access.data.roles.find((role) => role.email === identities.reviewer.email && role.role === "verification_reviewer");
@@ -246,6 +254,7 @@ await request("/api/organizations/members", {
 });
 await request("/api/provider/appointments", { identity: identities.provider, status: 403 });
 await request("/api/provider/patients", { identity: identities.provider, status: 403 });
+await request("/api/provider/documents", { identity: identities.provider, status: 403 });
 await request("/api/provider/insights", { identity: identities.provider, status: 403 });
 await request(`/api/provider/encounters?appointmentId=${encodeURIComponent(booking.appointment.id)}`, { identity: identities.provider, status: 403 });
 await request("/api/provider/catalog-management", {

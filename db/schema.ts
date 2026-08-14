@@ -307,10 +307,37 @@ export const documentRecords = sqliteTable("document_records", {
   contentType: text("content_type").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
   checksumSha256: text("checksum_sha256").notNull(),
+  status: text("status").notNull().default("upload_pending"),
+  pageCount: integer("page_count"),
+  capturedAt: integer("captured_at", { mode: "timestamp_ms" }),
+  malwareScanStatus: text("malware_scan_status").notNull().default("pending"),
+  quarantineReasonCode: text("quarantine_reason_code"),
+  retentionState: text("retention_state").notNull().default("active"),
+  deletionEligibleAt: integer("deletion_eligible_at", { mode: "timestamp_ms" }),
+  deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
   ...timestamps,
 }, (table) => [
-  index("idx_document_records_owner_created").on(table.ownerUserId, table.createdAt),
+  index("idx_document_records_owner_status_created").on(table.ownerUserId, table.status, table.createdAt),
   uniqueIndex("idx_document_records_object_key").on(table.objectKey),
+]);
+
+export const documentShares = sqliteTable("document_shares", {
+  id: text("id").primaryKey(),
+  documentId: text("document_id").notNull().references(() => documentRecords.id, { onDelete: "restrict" }),
+  consentId: text("consent_id").notNull().references(() => consents.id, { onDelete: "restrict" }),
+  ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  recipientProviderId: text("recipient_provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  purpose: text("purpose").notNull(),
+  status: text("status").notNull().default("active"),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  index("idx_document_shares_owner_status").on(table.ownerUserId, table.status, table.expiresAt),
+  index("idx_document_shares_provider_status").on(table.recipientProviderId, table.status, table.expiresAt),
+  index("idx_document_shares_document_status").on(table.documentId, table.status),
 ]);
 
 export const auditEvents = sqliteTable("audit_events", {

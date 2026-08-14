@@ -87,6 +87,7 @@ export default function ProviderPatients() {
       <nav>
         <a href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}</a>
         <a className="active" href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}{directory && <i>{directory.patients.length}</i>}</a>
+        <a href="/provider/documents"><span>▤</span>{ar ? "المستندات المشتركة" : "Shared documents"}</a>
         <a href="/provider/services"><span>◇</span>{ar ? "الخدمات" : "Services"}</a>
         <a href="/provider/insights"><span>↗</span>{ar ? "التقارير" : "Insights"}</a>
         <a href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>
