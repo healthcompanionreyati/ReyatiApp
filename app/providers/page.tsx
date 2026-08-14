@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Service = {
   id: string;
@@ -60,6 +60,7 @@ export default function ProviderDiscovery() {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState(false);
+  const [availabilityRefresh, setAvailabilityRefresh] = useState(0);
   const [slot, setSlot] = useState<Slot | null>(null);
   const [bookingKey, setBookingKey] = useState("");
   const [booking, setBooking] = useState<BookingState>("idle");
@@ -67,26 +68,27 @@ export default function ProviderDiscovery() {
   const [subjectUserId, setSubjectUserId] = useState<string | null>(null);
   const ar = lang === "ar";
 
+  const loadCatalog = useCallback(async (signal?: AbortSignal) => {
+    try {
+      setLoading(true); setCatalogError(false);
+      const response = await fetch("/api/providers", { cache: "no-store", signal });
+      const data = await response.json().catch(() => ({})) as { providers?: Provider[] };
+      if (!response.ok) throw new Error("catalog unavailable");
+      setProviders(Array.isArray(data.providers) ? data.providers : []);
+      setSubjectUserId(new URLSearchParams(window.location.search).get("subjectUserId"));
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setCatalogError(true);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
-    async function loadCatalog() {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/providers", { signal: controller.signal });
-        if (!response.ok) throw new Error("catalog unavailable");
-        const data = await response.json() as { providers?: Provider[] };
-        setProviders(Array.isArray(data.providers) ? data.providers : []);
-        setSubjectUserId(new URLSearchParams(window.location.search).get("subjectUserId"));
-        setCatalogError(false);
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") setCatalogError(true);
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }
-    loadCatalog();
+    queueMicrotask(() => { if (!controller.signal.aborted) void loadCatalog(controller.signal); });
     return () => controller.abort();
-  }, []);
+  }, [loadCatalog]);
 
   useEffect(() => {
     if (!selected || !serviceId) return;
@@ -101,7 +103,7 @@ export default function ProviderDiscovery() {
         const params = new URLSearchParams({ providerId: selected!.id, serviceLocationId: serviceId });
         const response = await fetch(`/api/providers?${params}`, { signal: controller.signal });
         if (!response.ok) throw new Error("availability unavailable");
-        const data = await response.json() as { slots?: Slot[] };
+        const data = await response.json().catch(() => ({})) as { slots?: Slot[] };
         setSlots(Array.isArray(data.slots) ? data.slots : []);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
@@ -115,7 +117,7 @@ export default function ProviderDiscovery() {
     }
     loadAvailability();
     return () => controller.abort();
-  }, [selected, serviceId, ar]);
+  }, [selected, serviceId, ar, availabilityRefresh]);
 
   const filtered = useMemo(() => providers
     .filter((provider) => specialty === "All" || provider.specialty === specialty)
@@ -168,7 +170,7 @@ export default function ProviderDiscovery() {
           subjectUserId,
         }),
       });
-      const data = await response.json() as { error?: string; message?: string };
+      const data = await response.json().catch(() => ({})) as { error?: string; message?: string };
       if (response.status === 401) {
         window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(`/providers${window.location.search}`)}`);
         return;
@@ -221,7 +223,7 @@ export default function ProviderDiscovery() {
 
       <div className="provider-results">
         <section className="provider-list" aria-live="polite">
-          {catalogError && <article className="catalog-state error"><span>!</span><div><h2>{ar ? "تعذر تحميل مقدمي الرعاية" : "We couldn’t load providers"}</h2><p>{ar ? "يرجى تحديث الصفحة بعد قليل." : "Please refresh the page in a moment."}</p></div></article>}
+          {catalogError && <article className="catalog-state error"><span>!</span><div><h2>{ar ? "تعذر تحميل مقدمي الرعاية" : "We couldn’t load providers"}</h2><p>{ar ? "حاول مرة أخرى لاسترداد أحدث الملفات المنشورة." : "Try again to retrieve the latest published profiles."}</p><button type="button" onClick={() => void loadCatalog()}>{ar ? "حاول مرة أخرى" : "Try again"}</button></div></article>}
           {!loading && !catalogError && filtered.length === 0 && <article className="catalog-state"><span>✓</span><div><h2>{ar ? "لا يوجد مقدمو رعاية منشورون بعد" : "No providers are published yet"}</h2><p>{ar ? "ستظهر الملفات هنا بعد إكمال التحقق ونشر جدول المواعيد من المنشأة." : "Profiles will appear here after an organization completes verification and publishes real availability."}</p><a href="/provider/services">{ar ? "إعداد خدمات مقدم الرعاية" : "Set up provider services"} →</a></div></article>}
           {filtered.map((provider) => {
             const service = provider.services[0];
@@ -243,7 +245,7 @@ export default function ProviderDiscovery() {
         <div className="verification-strip"><span>♙</span><p><b>{ar ? "تم التحقق من الترخيص والانتماء" : "Licence and affiliation verified"}</b>{ar ? "تم نشر الملف من منشأة نشطة" : "Published by an active organization"}</p></div>
         <section className="profile-about"><h3>{ar ? "عن مقدم الرعاية" : "About"}</h3><p>{ar ? selected.bioAr || selected.bioEn || "لم تُضف نبذة بعد." : selected.bioEn || "The provider has not added a public biography yet."}</p><div><article><b>{selected.yearsExperience ?? "—"}</b><small>{ar ? "سنوات خبرة" : "Years experience"}</small></article><article><b>{selected.languages.join(" · ") || "—"}</b><small>{ar ? "اللغات" : "Languages"}</small></article><article><b>✓</b><small>{ar ? "هوية موثقة" : "Verified identity"}</small></article></div></section>
         <section className="profile-location"><h3>{ar ? "الخدمة والموقع" : "Service & location"}</h3><select className="service-location-select" value={serviceId} onChange={(event) => setServiceId(event.target.value)} aria-label={ar ? "اختر الخدمة" : "Choose service"}>{selected.services.map((service) => <option value={service.id} key={service.id}>{service.mode === "video" ? (ar ? "زيارة فيديو" : "Video consultation") : service.facilityName} · {service.feeQar} QAR</option>)}</select>{activeService && <div><span>⌖</span><p><b>{activeService.facilityName ?? (ar ? "زيارة فيديو" : "Video consultation")}</b><small>{activeService.area ? `${activeService.area}, Doha · ` : ""}{activeService.slotDurationMinutes} {ar ? "دقيقة" : "minutes"}</small></p><strong>{activeService.feeQar} {ar ? "ر.ق" : "QAR"}<small>{ar ? "السعر المنشور" : "published price"}</small></strong></div>}</section>
-        <section className="profile-slots"><div><h3>{ar ? "اختر موعداً" : "Choose a time"}</h3><span>{ar ? "الأيام الـ ١٤ القادمة" : "Next 14 days"}</span></div><div>{slotsLoading ? <p className="slot-state">{ar ? "جارٍ تحميل المواعيد…" : "Loading availability…"}</p> : availabilityError ? <p className="slot-state error">{ar ? "تعذر تحميل المواعيد. حاول مرة أخرى." : "Availability could not be loaded. Please try again."}</p> : slots.length ? slots.map((item) => <button className={slot?.scheduledStart === item.scheduledStart ? "active" : ""} key={`${item.serviceLocationId}-${item.scheduledStart}`} onClick={() => chooseSlot(item)}>{item.label}</button>) : <p className="slot-state">{ar ? "لا توجد مواعيد متاحة حالياً." : "No bookable times are currently available."}</p>}</div></section>
+        <section className="profile-slots"><div><h3>{ar ? "اختر موعداً" : "Choose a time"}</h3><span>{ar ? "الأيام الـ ١٤ القادمة" : "Next 14 days"}</span></div><div>{slotsLoading ? <p className="slot-state">{ar ? "جارٍ تحميل المواعيد…" : "Loading availability…"}</p> : availabilityError ? <div className="slot-state error"><p>{ar ? "تعذر تحميل المواعيد. حاول مرة أخرى." : "Availability could not be loaded. Please try again."}</p><button type="button" onClick={() => setAvailabilityRefresh((value) => value + 1)}>{ar ? "حاول مرة أخرى" : "Try again"}</button></div> : slots.length ? slots.map((item) => <button className={slot?.scheduledStart === item.scheduledStart ? "active" : ""} key={`${item.serviceLocationId}-${item.scheduledStart}`} onClick={() => chooseSlot(item)}>{item.label}</button>) : <p className="slot-state">{ar ? "لا توجد مواعيد متاحة حالياً." : "No bookable times are currently available."}</p>}</div></section>
         {booking === "error" && <p className="booking-error" role="alert">{bookingMessage === "The requested time is no longer available" ? (ar ? "هذا الموعد لم يعد متاحاً. اختر موعداً آخر." : "That time was just booked. Please choose another slot.") : (ar ? "تعذر تأكيد الحجز. يرجى المحاولة مرة أخرى." : "We couldn’t confirm the booking. Please try again.")}</p>}
         <div className="profile-book"><div><small>{ar ? "الإجمالي" : "Total"}</small><b>{activeService?.feeQar ?? "—"} {ar ? "ر.ق" : "QAR"}</b></div><button disabled={!slot || booking === "submitting"} onClick={confirmBooking}>{booking === "submitting" ? (ar ? "جارٍ التأكيد…" : "Confirming…") : slot ? (ar ? "تأكيد الموعد" : "Confirm appointment") : (ar ? "اختر وقتاً للمتابعة" : "Select a time to continue")}</button></div>
       </>}

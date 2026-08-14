@@ -1016,6 +1016,21 @@ test("keeps the payment ledger retryable and preserves delegated return context"
   assert.match(payments, /Payment status unavailable/);
 });
 
+test("keeps provider discovery, availability, and booking responses recoverable", async () => {
+  const providers = await readFile(new URL("../app/providers/page.tsx", import.meta.url), "utf8");
+
+  assert.match(providers, /const loadCatalog = useCallback\(async \(signal\?: AbortSignal\)/);
+  assert.match(providers, /fetch\("\/api\/providers", \{ cache: "no-store", signal \}\)/);
+  assert.match(providers, /response\.json\(\)\.catch\(\(\) => \(\{\}\)\)/);
+  assert.match(providers, /error instanceof DOMException && error\.name === "AbortError"/);
+  assert.match(providers, /const controller = new AbortController\(\)/);
+  assert.match(providers, /return \(\) => controller\.abort\(\)/);
+  assert.match(providers, /onClick=\{\(\) => void loadCatalog\(\)\}/);
+  assert.match(providers, /availabilityRefresh/);
+  assert.match(providers, /setAvailabilityRefresh\(\(value\) => value \+ 1\)/);
+  assert.match(providers, /const data = await response\.json\(\)\.catch\(\(\) => \(\{\}\)\) as \{ error\?: string; message\?: string \}/);
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),
