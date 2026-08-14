@@ -6,6 +6,7 @@ import { ResendDeliveryError, sendWithResend } from "@/lib/communications/resend
 import { foundationFlags } from "@/lib/foundation-flags";
 import { reportOperationalError } from "@/lib/observability";
 import { signedVerificationPath } from "@/lib/communications/email-verification";
+import { signedFamilyInvitationPath } from "@/lib/communications/family-invitations";
 
 export async function enqueueTransactionalEmail(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string }) {
   const db = await getDb();
@@ -41,22 +42,26 @@ export async function recordTransactionalEmailIntent(input: { userId: string; te
 export async function dispatchTransactionalEmail(messageId: string) {
   if (!foundationFlags.outboundEmailDelivery) return { delivered: false, reason: "delivery_disabled" } as const;
   const db = await getDb();
-  const rows = await db.select({ message: outboundMessages, recipient: contactMethods.normalizedValue }).from(outboundMessages)
-    .innerJoin(contactMethods, eq(contactMethods.id, outboundMessages.recipientContactMethodId))
+  const rows = await db.select({ message: outboundMessages, contactRecipient: contactMethods.normalizedValue }).from(outboundMessages)
+    .leftJoin(contactMethods, eq(contactMethods.id, outboundMessages.recipientContactMethodId))
     .where(and(eq(outboundMessages.id, messageId), eq(outboundMessages.channel, "email"), inArray(outboundMessages.status, ["pending", "retry"]))).limit(1);
   const row = rows[0];
   if (!row) return { delivered: false, reason: "not_dispatchable" } as const;
   try {
-    let templateData: { actionPath?: unknown; challengeId?: unknown };
+    let templateData: { actionPath?: unknown; challengeId?: unknown; invitationId?: unknown };
     try {
-      templateData = JSON.parse(row.message.templateDataJson) as { actionPath?: unknown; challengeId?: unknown };
+      templateData = JSON.parse(row.message.templateDataJson) as { actionPath?: unknown; challengeId?: unknown; invitationId?: unknown };
     } catch {
       throw new ResendDeliveryError("invalid_template_data", false);
     }
     const actionPath = row.message.templateId === "email_verification"
       ? typeof templateData.challengeId === "string" ? await signedVerificationPath(templateData.challengeId) : null
+      : row.message.templateId === "family_invitation"
+        ? typeof templateData.invitationId === "string" ? await signedFamilyInvitationPath(templateData.invitationId) : null
       : typeof templateData.actionPath === "string" ? templateData.actionPath : null;
     if (!actionPath) throw new ResendDeliveryError("invalid_template_data", false);
+    const recipient = row.message.recipientAddress ?? row.contactRecipient;
+    if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) throw new ResendDeliveryError("invalid_recipient", false);
     const { env } = await import("cloudflare:workers");
     let rendered;
     try {
@@ -64,10 +69,10 @@ export async function dispatchTransactionalEmail(messageId: string) {
     } catch {
       throw new ResendDeliveryError("invalid_template_configuration", false);
     }
-    const delivered = await sendWithResend({ to: row.recipient, ...rendered, idempotencyKey: row.message.dedupeKey });
+    const delivered = await sendWithResend({ to: recipient, ...rendered, idempotencyKey: row.message.dedupeKey });
     const now = new Date();
     await db.batch([
-      db.update(outboundMessages).set({ status: "sent", sentAt: now, updatedAt: now, lastErrorCode: null }).where(and(eq(outboundMessages.id, messageId), inArray(outboundMessages.status, ["pending", "retry"]))),
+      db.update(outboundMessages).set({ status: "sent", providerMessageId: delivered.providerMessageId, sentAt: now, updatedAt: now, lastErrorCode: null }).where(and(eq(outboundMessages.id, messageId), inArray(outboundMessages.status, ["pending", "retry"]))),
       db.insert(messageDeliveryEvents).values({ id: crypto.randomUUID(), messageId, provider: delivered.provider, providerEventId: delivered.providerMessageId, eventType: "accepted", occurredAt: now, receivedAt: now }),
     ]);
     return { delivered: true, provider: delivered.provider } as const;

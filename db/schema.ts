@@ -471,7 +471,8 @@ export const notificationPreferences = sqliteTable("notification_preferences", {
 export const outboundMessages = sqliteTable("outbound_messages", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
-  recipientContactMethodId: text("recipient_contact_method_id").notNull().references(() => contactMethods.id, { onDelete: "restrict" }),
+  recipientContactMethodId: text("recipient_contact_method_id").references(() => contactMethods.id, { onDelete: "restrict" }),
+  recipientAddress: text("recipient_address"),
   channel: text("channel").notNull(),
   templateId: text("template_id").notNull(),
   templateVersion: integer("template_version").notNull(),
@@ -483,10 +484,12 @@ export const outboundMessages = sqliteTable("outbound_messages", {
   attemptCount: integer("attempt_count").notNull().default(0),
   nextAttemptAt: integer("next_attempt_at", { mode: "timestamp_ms" }),
   lastErrorCode: text("last_error_code"),
+  providerMessageId: text("provider_message_id"),
   sentAt: integer("sent_at", { mode: "timestamp_ms" }),
   ...timestamps,
 }, (table) => [
   uniqueIndex("idx_outbound_messages_dedupe").on(table.dedupeKey),
+  uniqueIndex("idx_outbound_messages_provider_message").on(table.providerMessageId),
   index("idx_outbound_messages_status_next_attempt").on(table.status, table.nextAttemptAt),
   index("idx_outbound_messages_user_created").on(table.userId, table.createdAt),
 ]);

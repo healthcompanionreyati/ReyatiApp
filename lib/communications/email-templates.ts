@@ -1,4 +1,4 @@
-export type TransactionalEmailTemplateId = "email_verification" | "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice";
+export type TransactionalEmailTemplateId = "email_verification" | "family_invitation" | "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice";
 export type SupportedEmailLocale = "en" | "ar";
 
 export type EmailTemplateInput = {
@@ -28,6 +28,10 @@ const copy: Record<TransactionalEmailTemplateId, Record<SupportedEmailLocale, { 
   email_verification: {
     en: { subject: "Verify your email for Reyati", heading: "Verify your email", body: "Confirm this email address for future Reyati account updates. This secure link expires shortly.", cta: "Verify email" },
     ar: { subject: "تحقق من بريدك الإلكتروني لريّاتي", heading: "تحقق من بريدك الإلكتروني", body: "أكد عنوان البريد الإلكتروني هذا لتحديثات حساب ريّاتي مستقبلاً. تنتهي صلاحية هذا الرابط الآمن قريباً.", cta: "تحقق من البريد" },
+  },
+  family_invitation: {
+    en: { subject: "You have a Reyati care-access invitation", heading: "Review a care-access invitation", body: "A Reyati account invited this email address to review specific care permissions. Sign in with this exact email to accept or decline. The invitation expires in seven days.", cta: "Review invitation" },
+    ar: { subject: "لديك دعوة وصول للرعاية في ريّاتي", heading: "راجع دعوة وصول للرعاية", body: "دعا حساب في ريّاتي عنوان البريد هذا لمراجعة صلاحيات رعاية محددة. سجّل الدخول باستخدام البريد نفسه للقبول أو الرفض. تنتهي صلاحية الدعوة خلال سبعة أيام.", cta: "مراجعة الدعوة" },
   },
   appointment_update: {
     en: { subject: "Your Reyati appointment was updated", heading: "Appointment update", body: "There is an update to an appointment in your secure Reyati account. Sign in to view the details.", cta: "View appointment" },

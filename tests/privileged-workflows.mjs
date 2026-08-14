@@ -66,6 +66,7 @@ assert.equal(updatedCommunications.data.preferences.locale, "ar");
 assert.equal(updatedCommunications.data.preferences.emailEnabled, true);
 assert.equal(updatedCommunications.data.availability.emailDelivery, false, "Preference must not bypass the delivery feature gate");
 await request("/api/account/communications/verify", { identity: identities.patient, method: "POST", body: { action: "request" }, status: 409 });
+await request("/api/webhooks/resend", { identity: identities.patient, method: "POST", body: {}, status: 404 });
 
 const organization = await request("/api/admin/organizations", {
   identity: identities.admin,

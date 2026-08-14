@@ -1,8 +1,9 @@
 import { and, asc, eq, gt, inArray, isNull, lt, or } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditEvents, careRelationshipInvitations, careRelationships, users } from "@/db/schema";
+import { auditEvents, careRelationshipInvitations, careRelationships, outboundMessages, users } from "@/db/schema";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
+import { familyInvitationDeliveryAvailable, signedFamilyInvitationToken, verifiedFamilyInvitationId } from "@/lib/communications/family-invitations";
 
 export class FamilyAccessValidationError extends Error {
   constructor(message: string) { super(message); this.name = "FamilyAccessValidationError"; }
@@ -128,7 +129,9 @@ export async function inviteAdultCareAccess(userId: string, userEmail: string, b
     .where(and(eq(careRelationshipInvitations.invitedByUserId, userId), eq(careRelationshipInvitations.email, email), eq(careRelationshipInvitations.status, "pending"))).limit(1);
   if (duplicate[0]) throw new FamilyAccessValidationError("A pending invitation already exists for this email");
   const relationshipId = crypto.randomUUID(); const invitationId = crypto.randomUUID();
-  const token = invitationToken(); const tokenHash = await sha256(token);
+  const deliveryAvailable = await familyInvitationDeliveryAvailable();
+  const token = deliveryAvailable ? await signedFamilyInvitationToken(invitationId) : invitationToken();
+  const tokenHash = await sha256(token);
   const invitationExpiresAt = new Date(now.valueOf() + 7 * 24 * 60 * 60 * 1000);
   await db.batch([
     db.insert(careRelationships).values({
@@ -140,21 +143,36 @@ export async function inviteAdultCareAccess(userId: string, userEmail: string, b
       id: invitationId, relationshipId, email, tokenHash, status: "pending", invitedByUserId: userId,
       acceptedByUserId: null, expiresAt: invitationExpiresAt, acceptedAt: null, createdAt: now, updatedAt: now,
     }),
+    ...(deliveryAvailable ? [db.insert(outboundMessages).values({
+      id: crypto.randomUUID(), userId, recipientContactMethodId: null, recipientAddress: email, channel: "email",
+      templateId: "family_invitation", templateVersion: 1, templateDataJson: JSON.stringify({ invitationId }), locale: "en",
+      contentClassification: "consent", dedupeKey: `email:family:${invitationId}:invitation`, status: "pending",
+      attemptCount: 0, nextAttemptAt: now, lastErrorCode: null, providerMessageId: null, sentAt: null, createdAt: now, updatedAt: now,
+    })] : []),
     db.insert(auditEvents).values({
       id: crypto.randomUUID(), actorUserId: userId, organizationId: null,
       action: "care_relationship.consent_invitation_created", resourceType: "care_relationship", resourceId: relationshipId,
       outcome: "success", metadataJson: JSON.stringify({ relationshipType, appointmentsAccess, recordsAccess, paymentsAccess }), createdAt: now,
     }),
   ]);
-  return { relationshipId, email, expiresAt: invitationExpiresAt, acceptPath: `/family?invitation=${encodeURIComponent(token)}` };
+  return {
+    relationshipId, email, expiresAt: invitationExpiresAt,
+    delivery: deliveryAvailable ? "queued" : "manual",
+    acceptPath: deliveryAvailable ? null : `/family?invitation=${encodeURIComponent(token)}`,
+  };
 }
 
 export async function acceptCareInvitation(userId: string, userEmail: string, displayName: string, token: string) {
   if (token.length < 32 || token.length > 128) throw new FamilyAccessValidationError("Invitation token is invalid");
   const db = await getDb(); const now = new Date(); const tokenHash = await sha256(token);
+  const signedInvitationId = await verifiedFamilyInvitationId(token);
   const invitation = await db.select({ invitation: careRelationshipInvitations, relationship: careRelationships })
     .from(careRelationshipInvitations).innerJoin(careRelationships, eq(careRelationships.id, careRelationshipInvitations.relationshipId))
-    .where(and(eq(careRelationshipInvitations.tokenHash, tokenHash), eq(careRelationshipInvitations.status, "pending"))).limit(1);
+    .where(and(
+      eq(careRelationshipInvitations.tokenHash, tokenHash),
+      ...(signedInvitationId ? [eq(careRelationshipInvitations.id, signedInvitationId)] : []),
+      eq(careRelationshipInvitations.status, "pending"),
+    )).limit(1);
   if (!invitation[0] || invitation[0].invitation.expiresAt <= now || invitation[0].invitation.email !== userEmail.toLowerCase()) {
     throw new FamilyAccessValidationError("Invitation is invalid, expired, or belongs to another account");
   }

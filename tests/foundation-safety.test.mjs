@@ -131,3 +131,32 @@ test("email verification is signed, expiring, rate-limited, and account-owned", 
   assert.match(route, /getOrCreateCurrentUser\(\)/);
   assert.match(route, /user\.status !== "active"/);
 });
+
+test("external family invitations use dispatch-time signatures when delivery activates", async () => {
+  const invitations = await source("lib/communications/family-invitations.ts");
+  const family = await source("lib/family-access.ts");
+  const outbox = await source("lib/communications/outbox.ts");
+  assert.match(invitations, /HMAC/);
+  assert.match(invitations, /SHA-256/);
+  assert.match(invitations, /FAMILY_INVITATION_SIGNING_KEY/);
+  assert.match(invitations, /foundationFlags\.outboundEmailDelivery/);
+  assert.match(family, /deliveryAvailable \? await signedFamilyInvitationToken/);
+  assert.match(family, /recipientAddress: email/);
+  assert.match(family, /deliveryAvailable \? null/);
+  assert.match(outbox, /signedFamilyInvitationPath/);
+});
+
+test("Resend webhooks are signature-verified, replay-safe, privacy-minimized, and disabled", async () => {
+  const handler = await source("lib/communications/resend-webhooks.ts");
+  const route = await source("app/api/webhooks/resend/route.ts");
+  assert.match(route, /if \(!foundationFlags\.communicationsWebhooks\)/);
+  assert.match(handler, /svix-id/);
+  assert.match(handler, /svix-timestamp/);
+  assert.match(handler, /svix-signature/);
+  assert.match(handler, /HMAC/);
+  assert.match(handler, /MAX_CLOCK_SKEW_SECONDS/);
+  assert.match(handler, /onConflictDoNothing/);
+  assert.match(handler, /payloadHash: await sha256\(rawBody\)/);
+  assert.doesNotMatch(handler, /payloadJson|payloadBody|rawBodyJson/);
+  assert.match(handler, /"unreachable" : "suppressed"/);
+});

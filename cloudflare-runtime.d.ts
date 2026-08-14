@@ -21,5 +21,7 @@ declare module "cloudflare:workers" {
     RESEND_REPLY_TO_EMAIL?: string;
     REYATI_APP_URL?: string;
     CONTACT_VERIFICATION_SIGNING_KEY?: string;
+    FAMILY_INVITATION_SIGNING_KEY?: string;
+    RESEND_WEBHOOK_SIGNING_SECRET?: string;
   };
 }

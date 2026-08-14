@@ -19,7 +19,7 @@ function initials(value: string) { return value.split(/\s+|@/).filter(Boolean).s
 
 async function request(body?: Record<string, unknown>, signal?: AbortSignal) {
   const response = await fetch("/api/family", body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal } : { cache: "no-store", signal });
-  const payload = await response.json().catch(() => ({})) as { data?: FamilyData | { acceptPath?: string }; message?: string; error?: string };
+  const payload = await response.json().catch(() => ({})) as { data?: FamilyData | { acceptPath?: string | null; delivery?: "queued" | "manual" }; message?: string; error?: string };
   if (response.status === 401) {
     window.location.assign("/signin-with-chatgpt?return_to=/family");
     throw new Error("Authentication required");
@@ -83,7 +83,9 @@ export default function Family() {
       } else {
         const result = await request({ action: "invite_adult", email, relationshipType: kind, ...permissions });
         if (result && "acceptPath" in result && result.acceptPath) setAcceptLink(`${window.location.origin}${result.acceptPath}`);
-        setNotice("Consent invitation created. Access remains inactive until the invited account accepts.");
+        setNotice(result && "delivery" in result && result.delivery === "queued"
+          ? "Consent invitation queued for email delivery. Access remains inactive until the invited account accepts."
+          : "Consent invitation created. Access remains inactive until the invited account accepts.");
       }
       setAdding(false); setSubjectLabel(""); setEmail(""); await reload();
     } catch (caught) { setError(caught instanceof Error ? caught.message : "The relationship could not be created."); }
