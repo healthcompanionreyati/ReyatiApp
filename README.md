@@ -3,6 +3,7 @@
 ## Reyati operational foundations
 
 - [Authentication architecture](docs/adr/ADR-001-authentication-architecture.md)
+- [Transactional email](docs/adr/ADR-002-transactional-email.md)
 - [Data classification and retention](docs/data-classification-and-retention.md)
 - [Incident response](docs/runbooks/incident-response.md)
 - [Backup and restore](docs/runbooks/backup-and-restore.md)

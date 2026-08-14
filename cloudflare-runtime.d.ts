@@ -16,5 +16,9 @@ declare module "cloudflare:workers" {
   export const env: {
     DB: D1Database;
     PLATFORM_BOOTSTRAP_EMAIL?: string;
+    RESEND_API_KEY?: string;
+    RESEND_FROM_EMAIL?: string;
+    RESEND_REPLY_TO_EMAIL?: string;
+    REYATI_APP_URL?: string;
   };
 }

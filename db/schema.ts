@@ -463,6 +463,8 @@ export const outboundMessages = sqliteTable("outbound_messages", {
   channel: text("channel").notNull(),
   templateId: text("template_id").notNull(),
   templateVersion: integer("template_version").notNull(),
+  templateDataJson: text("template_data_json").notNull().default("{}"),
+  locale: text("locale").notNull().default("en"),
   contentClassification: text("content_classification").notNull(),
   dedupeKey: text("dedupe_key").notNull(),
   status: text("status").notNull().default("pending"),
