@@ -1001,6 +1001,21 @@ test("keeps the health-record wallet retryable and preserves delegated return co
   assert.match(wallet, /Health records unavailable/);
 });
 
+test("keeps the payment ledger retryable and preserves delegated return context", async () => {
+  const payments = await readFile(new URL("../app/payments/page.tsx", import.meta.url), "utf8");
+
+  assert.match(payments, /const loadPayments = useCallback\(async \(signal\?: AbortSignal\)/);
+  assert.match(payments, /cache: "no-store", signal/);
+  assert.match(payments, /response\.json\(\)\.catch\(\(\) => \(\{\}\)\)/);
+  assert.match(payments, /const returnTo = `\/payments\$\{window\.location\.search\}`/);
+  assert.match(payments, /caught instanceof DOMException && caught\.name === "AbortError"/);
+  assert.match(payments, /const controller = new AbortController\(\)/);
+  assert.match(payments, /return \(\) => controller\.abort\(\)/);
+  assert.match(payments, /onClick=\{\(\) => void loadPayments\(\)\}>Try again/);
+  assert.match(payments, /error \? <div className="payments-live-state error"/);
+  assert.match(payments, /Payment status unavailable/);
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type LedgerEntry = {
   appointmentId: string;
@@ -49,23 +49,31 @@ export default function Payments() {
   const [error, setError] = useState("");
   const [delegated, setDelegated] = useState(false);
 
-  useEffect(() => {
-    let active = true;
+  const loadPayments = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true); setError("");
     const subjectUserId = new URLSearchParams(window.location.search).get("subjectUserId");
     const endpoint = subjectUserId ? `/api/patient/payments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/api/patient/payments";
-    fetch(endpoint, { cache: "no-store" }).then(async (response) => {
-      const payload = await response.json() as { entries?: LedgerEntry[]; delegated?: boolean; error?: string };
+    try {
+      const response = await fetch(endpoint, { cache: "no-store", signal });
+      const payload = await response.json().catch(() => ({})) as { entries?: LedgerEntry[]; delegated?: boolean; error?: string };
       if (response.status === 401) {
-        window.location.assign("/signin-with-chatgpt?return_to=/payments");
-        throw new Error("Authentication required");
+        const returnTo = `/payments${window.location.search}`;
+        window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(returnTo)}`);
+        return;
       }
       if (!response.ok) throw new Error(payload.error || "Payment records are temporarily unavailable.");
-      return { entries: payload.entries || [], delegated: payload.delegated === true };
-    }).then((result) => { if (active) { setEntries(result.entries); setDelegated(result.delegated); } })
-      .catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : "Payment records are temporarily unavailable."); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      setEntries(payload.entries || []); setDelegated(payload.delegated === true);
+    } catch (caught) {
+      if (caught instanceof DOMException && caught.name === "AbortError") return;
+      setError(caught instanceof Error ? caught.message : "Payment records are temporarily unavailable.");
+    } finally { if (!signal?.aborted) setLoading(false); }
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    queueMicrotask(() => { if (!controller.signal.aborted) void loadPayments(controller.signal); });
+    return () => controller.abort();
+  }, [loadPayments]);
 
   const visible = useMemo(() => entries.filter((entry) => {
     const matchesFilter = filter === "all" || entry.paymentStatus === filter || (filter === "refunds" && ["refund_pending", "refunded"].includes(entry.paymentStatus));
@@ -88,8 +96,9 @@ export default function Payments() {
 
       <section className="payment-panel payments-live-panel"><div className="panel-title"><div><h2>Appointment payment ledger</h2><p>Only appointments owned by your signed-in patient account appear here.</p></div></div>
         <div className="payments-live-toolbar"><div>{(["all", "not_charged", "paid", "refunds", "unavailable"] as Filter[]).map((item) => <button key={item} className={filter === item ? "active" : ""} onClick={() => setFilter(item)}>{item === "all" ? "All" : item === "refunds" ? "Refunds" : label(item)}</button>)}</div><label aria-label="Search payment records">⌕<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search provider or reference"/></label></div>
-        {error && <div className="payments-live-error"><span>{error}</span><button onClick={() => setError("")}>×</button></div>}
+        {error && <div className="payments-live-error"><span>{error}</span><button type="button" onClick={() => void loadPayments()}>Try again</button></div>}
         {loading ? <div className="payments-live-state"><span>◌</span><h2>Loading your payment ledger</h2><p>Checking the latest recorded status.</p></div>
+          : error ? <div className="payments-live-state error"><span>!</span><h2>Payment status unavailable</h2><p>Reyati could not confirm your latest ledger. Try again before relying on payment or refund status.</p></div>
           : visible.length === 0 ? <div className="payments-live-state"><span>Q</span><h2>{query || filter !== "all" ? "No matching entries" : "No appointment payment records yet"}</h2><p>Payment status will appear after you book with a provider that publishes a fee.</p><a href="/providers">Find care</a></div>
           : <div className="payments-live-list">{visible.map((entry) => <button key={entry.appointmentId} onClick={() => setSelected(entry)}><time>{formatDate(entry.scheduledStart)}<small>{entry.appointmentId}</small></time><div><b>{entry.providerName}</b><small>{entry.specialty} · {entry.facilityName || "Facility not recorded"}</small></div><span>Appointment: {label(entry.appointmentStatus)}</span><i className={entry.paymentStatus}>{label(entry.paymentStatus)}</i><strong>{formatMoney(entry.amountQar, entry.currency)}</strong><em>›</em></button>)}</div>}
       </section>
