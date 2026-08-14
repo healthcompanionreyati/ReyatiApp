@@ -237,16 +237,21 @@ export default function AccessibilitySync() {
       else showFieldError(control);
     };
 
-    sync();
     document.addEventListener("keydown", handleDialogKeys);
     document.addEventListener("invalid", handleInvalid, true);
     document.addEventListener("input", handleFieldInput);
     document.addEventListener("change", handleFieldInput);
-    const observer = new MutationObserver(scheduleSync);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["dir", "class", "disabled"] });
+    let observer: MutationObserver | null = null;
+    const initialSyncTimer = window.setTimeout(() => {
+      if (disposed) return;
+      sync();
+      observer = new MutationObserver(scheduleSync);
+      observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["dir", "class", "disabled"] });
+    }, 250);
     return () => {
       disposed = true;
-      observer.disconnect();
+      window.clearTimeout(initialSyncTimer);
+      observer?.disconnect();
       if (syncFrame !== null) window.cancelAnimationFrame(syncFrame);
       document.removeEventListener("keydown", handleDialogKeys);
       document.removeEventListener("invalid", handleInvalid, true);

@@ -952,7 +952,7 @@ test("coalesces shared accessibility scans during dynamic page updates", async (
   assert.match(accessibility, /if \(disposed \|\| syncFrame !== null\) return/);
   assert.match(accessibility, /syncFrame = window\.requestAnimationFrame/);
   assert.match(accessibility, /new MutationObserver\(scheduleSync\)/);
-  assert.match(accessibility, /disposed = true;[\s\S]*?observer\.disconnect\(\);[\s\S]*?window\.cancelAnimationFrame\(syncFrame\)/);
+  assert.match(accessibility, /disposed = true;[\s\S]*?observer\?\.disconnect\(\);[\s\S]*?window\.cancelAnimationFrame\(syncFrame\)/);
   assert.doesNotMatch(accessibility, /new MutationObserver\(sync\)/);
 });
 
@@ -1126,6 +1126,9 @@ test("discovers each dialog close control and lets Escape use it", async () => {
 
   assert.match(accessibility, /aside, section, form, \[class\*='dialog'\]/);
   assert.match(accessibility, /const closeButton = dialog\.querySelector<HTMLButtonElement>/);
+  assert.match(accessibility, /const initialSyncTimer = window\.setTimeout/);
+  assert.match(accessibility, /observer = new MutationObserver\(scheduleSync\)/);
+  assert.match(accessibility, /window\.clearTimeout\(initialSyncTimer\)/);
   assert.match(accessibility, /className\.endsWith\("-close"\)/);
   assert.match(accessibility, /button\.textContent\?\.trim\(\) === "×"/);
   assert.match(accessibility, /closeButton\.dataset\.dialogClose = "true"/);
