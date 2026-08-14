@@ -49,7 +49,7 @@ export default function Encounter() {
     Promise.resolve().then(async () => {
       if (!appointmentId) throw new Error("Choose an eligible appointment from the provider schedule to open an encounter.");
       const response = await fetch(`/api/provider/encounters?appointmentId=${encodeURIComponent(appointmentId)}`, { cache: "no-store" });
-      const payload = await response.json() as { data?: { appointment: Appointment; note: Note | null }; message?: string };
+      const payload = await response.json().catch(() => ({})) as { data?: { appointment: Appointment; note: Note | null }; message?: string };
       if (!response.ok || !payload.data) throw new Error(payload.message || "Unable to open this encounter.");
       if (!active) return;
       setAppointment(payload.data.appointment);
@@ -77,7 +77,7 @@ export default function Encounter() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ appointmentId: appointment.id, version, action, historyText, assessmentText, planText, patientInstructions }),
       });
-      const payload = await response.json() as { data?: { status: "draft" | "finalized"; version: number }; message?: string };
+      const payload = await response.json().catch(() => ({})) as { data?: { status: "draft" | "finalized"; version: number }; message?: string };
       if (!response.ok || !payload.data) throw new Error(payload.message || "Unable to save this encounter.");
       setVersion(payload.data.version);
       setNoteStatus(payload.data.status);

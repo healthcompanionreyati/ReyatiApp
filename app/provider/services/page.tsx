@@ -31,12 +31,12 @@ function minutesValue(value: string) {
 
 async function api(path: string, init?: RequestInit) {
   const response = await fetch(path, init);
-  const payload = await response.json() as { data?: unknown; message?: string; error?: string };
+  const payload = await response.json().catch(() => ({})) as { data?: unknown; message?: string; error?: string };
   if (response.status === 401) {
     window.location.assign("/signin-with-chatgpt?return_to=/provider/services");
     throw new Error("Authentication required");
   }
-  if (!response.ok) throw new Error(payload.message || payload.error || "Request failed");
+  if (!response.ok || payload.data === undefined) throw new Error(payload.message || payload.error || "Request failed");
   return payload.data;
 }
 

@@ -31,7 +31,8 @@ async function requestOverview() {
   if (response.status === 401) throw new Error("auth");
   if (response.status === 403) throw new Error("forbidden");
   if (!response.ok) throw new Error("unavailable");
-  const payload = await response.json() as { data: Overview };
+  const payload = await response.json().catch(() => ({})) as { data?: Overview };
+  if (!payload.data) throw new Error("unavailable");
   return payload.data;
 }
 

@@ -55,7 +55,9 @@ export default function ProviderPatients() {
         if (response.status === 401) throw new Error("auth");
         if (response.status === 403) throw new Error("forbidden");
         if (!response.ok) throw new Error("unavailable");
-        return response.json() as Promise<Directory>;
+        const data = await response.json().catch(() => null) as Directory | null;
+        if (!data || !Array.isArray(data.patients)) throw new Error("unavailable");
+        return data;
       })
       .then(setDirectory)
       .catch((reason: Error) => {

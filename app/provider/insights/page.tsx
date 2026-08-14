@@ -46,7 +46,9 @@ export default function ProviderInsights() {
         if (response.status === 401) throw new Error("auth");
         if (response.status === 403) throw new Error("forbidden");
         if (!response.ok) throw new Error("unavailable");
-        return response.json() as Promise<Insights>;
+        const data = await response.json().catch(() => null) as Insights | null;
+        if (!data || !Array.isArray(data.daily)) throw new Error("unavailable");
+        return data;
       })
       .then(setInsights)
       .catch((reason: Error) => {

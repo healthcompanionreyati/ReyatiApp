@@ -1051,6 +1051,25 @@ test("keeps family, notification, and support data failures retryable", async ()
   assert.match(support, /error\?<p>Support requests are unavailable/);
 });
 
+test("handles malformed provider and operations responses without client crashes", async () => {
+  const paths = [
+    "provider/page.tsx", "provider/encounter/page.tsx", "provider/patients/page.tsx", "provider/insights/page.tsx",
+    "provider/services/page.tsx", "provider/settings/page.tsx", "admin/page.tsx", "admin/finance/page.tsx",
+    "admin/moderation/page.tsx", "admin/verification/page.tsx", "admin/organizations/page.tsx",
+    "admin/access/page.tsx", "admin/audit/page.tsx", "admin/cases/page.tsx",
+  ];
+  const sources = await Promise.all(paths.map((path) => readFile(new URL(`../app/${path}`, import.meta.url), "utf8")));
+
+  for (const [index, source] of sources.entries()) {
+    assert.match(source, /response\.json\(\)\.catch/, `unsafe response parsing in ${paths[index]}`);
+  }
+  assert.match(sources[2], /!data \|\| !Array\.isArray\(data\.patients\)/);
+  assert.match(sources[3], /!data \|\| !Array\.isArray\(data\.daily\)/);
+  for (const source of sources.slice(4)) {
+    assert.match(source, /payload\.data\s*===\s*undefined|if \(!payload\.data\) throw new Error\("unavailable"\)/);
+  }
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),

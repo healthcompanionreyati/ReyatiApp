@@ -8,9 +8,9 @@ type Invitation = { id: string; email: string; role: string; status: string; exp
 type AccessData = { roles: RoleRow[]; invitations: Invitation[] };
 
 async function api(init?: RequestInit) {
-  const response = await fetch("/api/admin/platform-access", init); const payload = await response.json() as { data?: unknown; message?: string; error?: string };
+  const response = await fetch("/api/admin/platform-access", init); const payload = await response.json().catch(() => ({})) as { data?: unknown; message?: string; error?: string };
   if (response.status === 401) { const returnTo = `${window.location.pathname}${window.location.search}`; window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(returnTo)}`); throw new Error("Authentication required"); }
-  if (!response.ok) { const error = new Error(payload.message || payload.error || "Request failed"); (error as Error & { status?: number }).status = response.status; throw error; }
+  if (!response.ok || payload.data === undefined) { const error = new Error(payload.message || payload.error || "Request failed"); (error as Error & { status?: number }).status = response.status; throw error; }
   return payload.data;
 }
 

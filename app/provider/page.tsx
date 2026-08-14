@@ -91,7 +91,7 @@ export default function ProviderConsole() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ appointmentId: selected.id, version: selected.version, action }),
       });
-      const payload = await response.json() as { appointment?: { status: string; version: number }; message?: string };
+      const payload = await response.json().catch(() => ({})) as { appointment?: { status: string; version: number }; message?: string };
       if (!response.ok || !payload.appointment) throw new Error(payload.message || "The appointment could not be updated.");
       setAppointments((items) => items.map((item) => item.id === selected.id ? { ...item, ...payload.appointment } : item));
       setNotice(`Appointment ${payload.appointment.status}. The patient has been notified.`);
