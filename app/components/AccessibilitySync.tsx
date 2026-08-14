@@ -137,7 +137,7 @@ export default function AccessibilitySync() {
 
       const modalLayers = document.querySelectorAll<HTMLElement>('[class*="-layer"]');
       modalLayers.forEach((layer) => {
-        const dialog = layer.querySelector<HTMLElement>("aside, section, [class*='dialog']");
+        const dialog = layer.querySelector<HTMLElement>("aside, section, form, [class*='dialog']");
         if (dialog) {
           dialog.setAttribute("role", "dialog");
           dialog.setAttribute("aria-modal", "true");
@@ -165,7 +165,7 @@ export default function AccessibilitySync() {
         }
       });
 
-      const latestDialog = modalLayers.item(modalLayers.length - 1)?.querySelector<HTMLElement>("aside, section, [class*='dialog']") ?? null;
+      const latestDialog = modalLayers.item(modalLayers.length - 1)?.querySelector<HTMLElement>("aside, section, form, [class*='dialog']") ?? null;
       if (latestDialog && latestDialog !== activeDialog) {
         dialogOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         activeDialog = latestDialog;

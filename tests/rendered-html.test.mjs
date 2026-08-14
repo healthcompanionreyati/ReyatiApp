@@ -1114,12 +1114,14 @@ test("makes every button inside a form explicitly submit or non-submit", async (
 });
 
 test("discovers each dialog close control and lets Escape use it", async () => {
-  const [accessibility, organizations, settings] = await Promise.all([
+  const [accessibility, organizations, settings, support] = await Promise.all([
     readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/admin/organizations/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/provider/settings/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/support/page.tsx", import.meta.url), "utf8"),
   ]);
 
+  assert.match(accessibility, /aside, section, form, \[class\*='dialog'\]/);
   assert.match(accessibility, /const closeButton = dialog\.querySelector<HTMLButtonElement>/);
   assert.match(accessibility, /className\.endsWith\("-close"\)/);
   assert.match(accessibility, /button\.textContent\?\.trim\(\) === "×"/);
@@ -1130,6 +1132,7 @@ test("discovers each dialog close control and lets Escape use it", async () => {
   assert.match(accessibility, /if \(closeButton\) \{[\s\S]*?event\.preventDefault\(\);[\s\S]*?closeButton\.click\(\)/);
   assert.match(organizations, /<button type="button" onClick=\{\(\) => setReviewing\(null\)\}>×<\/button>/);
   assert.match(settings, /className="settings-close"/);
+  assert.match(support, /<form className=\{`support-modal/);
 });
 
 test("keeps mobile chrome and account actions at reliable touch sizes", async () => {
