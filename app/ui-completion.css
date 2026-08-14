@@ -214,6 +214,31 @@ body { min-width: 320px; }
     justify-content: center;
   }
 
+  /* Live QA guardrail: primary mobile controls must meet the design system's 44px touch target. */
+  :where(body > main > header, .auth-stage > header, [class$="-header"], [class$="-top"], [class$="-topbar"])
+    :where(a, button),
+  :where(.provider-search-hero, .filter-row, .results-head, .provider-live-error, .card-title,
+    .provider-live-tabs) :where(button, input, select),
+  :where(.home-hero-actions, .providers-heading, .home-empty-appointment, .catalog-state,
+    .provider-welcome, .admin-live-state, .partner-heading, .programme-live-state) > a,
+  body > main > footer a {
+    min-height: 44px;
+  }
+
+  :where(body > main > header, .auth-stage > header, [class$="-header"], [class$="-top"], [class$="-topbar"])
+    :where(a, button),
+  :where(.provider-live-error, .card-title, .provider-live-tabs) button {
+    min-width: 44px;
+  }
+
+  :where(.home-hero-actions, .providers-heading, .home-empty-appointment, .catalog-state,
+    .provider-welcome, .admin-live-state, .partner-heading, .programme-live-state) > a,
+  body > main > footer a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   :where(.wallet-header, .providers-header, .family-header, .payments-header, .support-header,
     .notification-header, .provider-topbar, .services-top, .insights-top, .settings-top,
     .patient-provider-top, .partner-top, .program-top, .admin-topbar, .verify-top,

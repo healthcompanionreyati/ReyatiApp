@@ -1148,6 +1148,10 @@ test("keeps mobile chrome and account actions at reliable touch sizes", async ()
   assert.match(completion, /\.auth-actions/);
   assert.match(completion, /\.auth-stage > footer a/);
   assert.match(completion, /min-height: 44px/);
+  assert.match(completion, /Live QA guardrail/);
+  assert.match(completion, /\.provider-search-hero, \.filter-row, \.results-head/);
+  assert.match(completion, /\.home-hero-actions, \.providers-heading, \.home-empty-appointment, \.catalog-state/);
+  assert.match(completion, /min-width: 44px/);
   assert.match(quality, /\.mobile-dock a \{[\s\S]*?min-height: 50px/);
   assert.match(auth, /@media\(max-width:560px\)/);
 });
