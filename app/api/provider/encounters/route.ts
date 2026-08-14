@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AppointmentConflictError, AppointmentValidationError } from "@/lib/appointments";
 import { getEncounter, saveEncounter } from "@/lib/encounters";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
@@ -26,7 +27,7 @@ async function handle(operation: (userId: string) => Promise<unknown>) {
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof AppointmentValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
     if (error instanceof AppointmentConflictError) return Response.json({ error: "encounter_conflict", message: error.message }, { status: 409, headers: noStore });
-    console.error("Unable to manage encounter", error);
+    reportOperationalError("provider_encounter.failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

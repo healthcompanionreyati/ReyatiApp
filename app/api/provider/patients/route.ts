@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import { getProviderPatientDirectory } from "@/lib/provider-patients";
@@ -17,7 +18,7 @@ export async function GET() {
     if (error instanceof AuthorizationDeniedError) {
       return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     }
-    console.error("Unable to load provider patient directory", error);
+    reportOperationalError("provider_patients.read_failed", error);
     return Response.json({ error: "service_unavailable" }, {
       status: 503,
       headers: { ...noStore, "Retry-After": "30" },

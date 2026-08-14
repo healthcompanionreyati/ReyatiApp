@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import { getNotifications, NotificationValidationError, updateNotifications } from "@/lib/notification-center";
 
@@ -21,7 +22,7 @@ async function handle(operation: (userId: string) => Promise<unknown>) {
   } catch (error) {
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof NotificationValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
-    console.error("Unable to manage notifications", error);
+    reportOperationalError("notifications.failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

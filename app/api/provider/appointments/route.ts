@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { and, asc, eq, gt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, patientProfiles, providerProfiles, users } from "@/db/schema";
@@ -53,7 +54,7 @@ export async function GET(request: Request) {
     if (error instanceof AuthorizationDeniedError) {
       return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     }
-    console.error("Unable to load provider appointments", error);
+    reportOperationalError("provider_appointments.read_failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }
@@ -70,7 +71,7 @@ export async function PATCH(request: Request) {
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof AppointmentValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
     if (error instanceof AppointmentConflictError) return Response.json({ error: "appointment_conflict", message: error.message }, { status: 409, headers: noStore });
-    console.error("Unable to update provider appointment", error);
+    reportOperationalError("provider_appointments.update_failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

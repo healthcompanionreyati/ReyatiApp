@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getCapability, type CapabilityStatus } from "@/lib/capability-registry";
 
 type Group = "all" | "patient" | "provider" | "partner" | "operations";
 type Tone = "live" | "readonly" | "restricted" | "inactive";
@@ -32,6 +33,25 @@ const journeys: Journey[] = [
   { group: "all", href: "/auth", icon: "✓", title: "Secure account", titleAr: "الحساب الآمن", text: "ChatGPT identity and role-aware workspace entry", textAr: "هوية ChatGPT والدخول إلى المساحات حسب الدور", status: "Live", statusAr: "نشط", tone: "live" },
 ];
 
+const capabilityByHref: Record<string, string> = {
+  "/": "patient_home", "/providers": "provider_discovery", "/appointments": "appointment_booking",
+  "/wallet": "health_records", "/family": "family_access", "/payments": "payment_records",
+  "/notifications": "in_app_notifications", "/support": "support_cases", "/provider": "provider_schedule",
+  "/provider/patients": "provider_patients", "/provider/services": "provider_catalog", "/provider/insights": "provider_insights",
+  "/provider/settings": "organization_access", "/provider/encounter": "encounter_notes", "/partner": "partner_workspace",
+  "/partner/program": "partner_program", "/admin": "platform_overview", "/admin/verification": "provider_verification",
+  "/admin/finance": "finance_ledger", "/admin/cases": "support_operations", "/admin/moderation": "review_moderation",
+  "/admin/audit": "audit_ledger", "/auth": "platform_identity",
+};
+
+const capabilityPresentation: Record<CapabilityStatus, { en: string; ar: string; tone: Tone }> = {
+  live: { en: "Live", ar: "نشط", tone: "live" },
+  read_only: { en: "Read only", ar: "للقراءة فقط", tone: "readonly" },
+  role_gated: { en: "Role gated", ar: "حسب الدور", tone: "restricted" },
+  inactive: { en: "Not active", ar: "غير نشط", tone: "inactive" },
+  foundation: { en: "Foundation", ar: "تأسيسي", tone: "restricted" },
+};
+
 const groups: Group[] = ["all", "patient", "provider", "partner", "operations"];
 
 export default function Journeys() {
@@ -45,7 +65,11 @@ export default function Journeys() {
     <header className="journey-header"><a href="/"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/></a><div><span>{ar ? "دليل مساحات ريّاتي" : "Reyati workspace directory"}</span><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button></div></header>
     <section className="journey-hero"><div><p>{ar ? "دليل القدرات" : "CAPABILITY DIRECTORY"}</p><h1>{ar ? "كل مساحة. حالة واضحة." : "Every workspace. An honest status."}</h1><span>{ar ? "استكشف قدرات ريّاتي المباشرة وحدود القراءة والمساحات المقيدة والميزات التي لم تُفعّل بعد." : "Explore Reyati’s live capabilities, read-only boundaries, restricted workspaces, and features that are not active yet."}</span></div><aside><b>{journeys.length}</b><p>{ar ? "وجهة موثقة" : "mapped destinations"}</p><i><span/></i><small>{ar ? "تمت مراجعة حالة القدرات" : "Capability status reviewed"} · 100%</small></aside></section>
     <section className="journey-workspace"><div className="journey-intro"><div><h2>{ar ? "اختر مساحة عمل" : "Choose a workspace"}</h2><p>{ar ? "تستخدم المساحات بيانات مملوكة للحساب أو تعرض بوضوح أن القدرة غير متاحة. تُفرض الصلاحيات على الخادم." : "Workspaces use account-owned data or clearly state when a capability is unavailable. Authorization is enforced server-side."}</p></div><div className="journey-filters">{groups.map((item) => <button className={group === item ? "active" : ""} onClick={() => setGroup(item)} key={item}>{groupLabel(item)}</button>)}</div></div>
-      <div className="journey-grid">{shown.map((journey) => <a href={journey.href} className={`journey-card ${journey.group}`} key={journey.href}><div className="journey-card-top"><span>{journey.icon}</span><i className={`journey-status ${journey.tone}`}>{ar ? journey.statusAr : journey.status}</i></div><p>{journey.group === "all" ? (ar ? "مشترك" : "SHARED") : groupLabel(journey.group as Group).toUpperCase()}</p><h2>{ar ? journey.titleAr : journey.title}</h2><small>{ar ? journey.textAr : journey.text}</small><div><b>{ar ? "فتح المساحة" : "Open workspace"}</b><span>→</span></div></a>)}</div>
+      <div className="journey-grid">{shown.map((journey) => {
+        const capability = getCapability(capabilityByHref[journey.href]);
+        const presentation = capabilityPresentation[capability?.status ?? "inactive"];
+        return <a href={journey.href} className={`journey-card ${journey.group}`} key={journey.href}><div className="journey-card-top"><span>{journey.icon}</span><i className={`journey-status ${presentation.tone}`}>{ar ? presentation.ar : presentation.en}</i></div><p>{journey.group === "all" ? (ar ? "مشترك" : "SHARED") : groupLabel(journey.group as Group).toUpperCase()}</p><h2>{ar ? journey.titleAr : journey.title}</h2><small>{ar ? journey.textAr : journey.text}</small><div><b>{ar ? "فتح المساحة" : "Open workspace"}</b><span>→</span></div></a>;
+      })}</div>
       <section className="journey-foundations"><div><p>{ar ? "أسس مشتركة" : "SHARED FOUNDATIONS"}</p><h2>{ar ? "قواعد واحدة في كل مساحة" : "One set of rules across every workspace"}</h2></div>{[["♙", ar ? "الخصوصية حسب التصميم" : "Privacy by design", ar ? "الحد الأدنى من البيانات والوصول المحدد" : "Minimum data and scoped access"], ["✓", ar ? "الثقة القابلة للتحقق" : "Verifiable trust", ar ? "مصدر وحالة لكل معلومة مهمة" : "Source and status for important facts"], ["◉", ar ? "الموافقة والتحكم" : "Consent and control", ar ? "خيارات واضحة وقابلة للإلغاء" : "Clear, revocable choices"], ["◇", ar ? "المساءلة" : "Accountability", ar ? "قرارات وأحداث قابلة للتدقيق" : "Auditable decisions and events"]].map((item) => <article key={item[1]}><span>{item[0]}</span><div><b>{item[1]}</b><small>{item[2]}</small></div></article>)}</section>
     </section>
     <footer className="journey-footer"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><p>{ar ? "مساحة إنتاج خاصة · بيانات مملوكة للحساب وصلاحيات محددة" : "Private production workspace · Account-owned data and scoped authorization"}</p><a href="/auth">{ar ? "فتح الحساب الآمن" : "Open secure account"} →</a></footer>

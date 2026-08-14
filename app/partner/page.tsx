@@ -34,9 +34,9 @@ export default function PartnerPortal() {
         if (!response.ok) throw new Error("unavailable");
         const payload = await response.json().catch(() => ({})) as { data?: PartnerBoundary };
         if (!payload.data || !Array.isArray(payload.data.sources)) throw new Error("unavailable");
-        return payload;
+        return payload.data;
       })
-      .then((payload) => active && setData(payload.data))
+      .then((payload) => active && setData(payload))
       .catch((reason) => { if (active && !(reason instanceof DOMException && reason.name === "AbortError")) setError(reason.message === "forbidden" ? "forbidden" : "unavailable"); });
     return () => { active = false; controller.abort(); };
   }, [refresh]);

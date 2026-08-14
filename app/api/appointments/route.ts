@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, facilities, patientProfiles, providerProfiles, users } from "@/db/schema";
@@ -47,7 +48,7 @@ export async function GET(request: Request) {
       .orderBy(desc(appointments.scheduledStart));
     return Response.json({ appointments: rows, delegated: subjectUserId !== user.id }, { headers: noStore });
   } catch (error) {
-    return apiError(error, "Unable to load patient appointments");
+    return apiError(error, "appointments.read_failed");
   }
 }
 
@@ -85,7 +86,7 @@ export async function POST(request: Request) {
       { status: result.replayed ? 200 : 201, headers: noStore },
     );
   } catch (error) {
-    return apiError(error, "Unable to book appointment");
+    return apiError(error, "appointments.booking_failed");
   }
 }
 
@@ -99,11 +100,11 @@ export async function PATCH(request: Request) {
     const subjectUserId = await resolveCareSubject(user.id, typeof body.subjectUserId === "string" ? body.subjectUserId : null, "appointments");
     return Response.json({ appointment: await cancelPatientAppointment(user.id, subjectUserId, body) }, { headers: noStore });
   } catch (error) {
-    return apiError(error, "Unable to cancel appointment");
+    return apiError(error, "appointments.cancellation_failed");
   }
 }
 
-function apiError(error: unknown, message: string) {
+function apiError(error: unknown, event: string) {
   if (error instanceof AuthenticationRequiredError) {
     return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
   }
@@ -116,6 +117,6 @@ function apiError(error: unknown, message: string) {
   if (error instanceof AppointmentConflictError) {
     return Response.json({ error: "appointment_conflict", message: error.message }, { status: 409, headers: noStore });
   }
-  console.error(message, error);
+  reportOperationalError(event, error);
   return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
 }

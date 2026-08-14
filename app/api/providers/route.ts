@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { getPublishedProviderCatalog, getProviderAvailability } from "@/lib/provider-catalog";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     const providers = await getPublishedProviderCatalog();
     return Response.json({ providers }, { headers: cacheHeaders });
   } catch (error) {
-    console.error("Unable to load provider catalog", error);
+    reportOperationalError("provider_catalog.read_failed", error);
     return Response.json(
       { error: "catalog_unavailable" },
       { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "30" } },

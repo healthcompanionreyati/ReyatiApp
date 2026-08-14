@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import {
   ProviderManagementValidationError,
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof ProviderManagementValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
-    console.error("Unable to manage provider catalog", error);
+    reportOperationalError("provider_catalog.failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

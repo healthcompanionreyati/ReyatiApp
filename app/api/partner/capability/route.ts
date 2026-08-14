@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import { getPartnerCapabilityBoundary } from "@/lib/partner-capability";
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
   } catch (error) {
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
-    console.error("Unable to load partner capability boundary", error);
+    reportOperationalError("partner.capability_read_failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

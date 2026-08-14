@@ -97,11 +97,16 @@ export async function updateAdminSupportCase(userId: string, body: Record<string
   const updated = await db.update(supportCases).set({ assignedToUserId: current[0].assignedToUserId || userId, status: nextStatus, version: Number(expectedVersion) + 1, updatedAt: now })
     .where(and(eq(supportCases.id, caseId), eq(supportCases.version, Number(expectedVersion)))).returning({ version: supportCases.version });
   if (!updated[0]) throw new SupportCaseConflictError();
-  const statements = [
-    db.insert(notifications).values(notificationRecord({ userId: current[0].requesterUserId, type: "support", title: nextStatus === "resolved" ? "Support request resolved" : "Support request updated", body: `${current[0].reference} is now ${nextStatus.replaceAll("_", " ")}.`, actionPath: "/support", resourceType: "support_case", resourceId: caseId, dedupeKey: `support:${caseId}:${updated[0].version}`, createdAt: now })),
-    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: `support.${action}`, resourceType: "support_case", resourceId: caseId, outcome: "success", metadataJson: JSON.stringify({ previousStatus: current[0].status, nextStatus }), createdAt: now }),
-    ...(message ? [db.insert(supportCaseMessages).values({ id: crypto.randomUUID(), caseId, authorUserId: userId, authorKind: "agent", body: message, createdAt: now })] : []),
-  ];
-  await db.batch(statements);
+  const notificationStatement = db.insert(notifications).values(notificationRecord({ userId: current[0].requesterUserId, type: "support", title: nextStatus === "resolved" ? "Support request resolved" : "Support request updated", body: `${current[0].reference} is now ${nextStatus.replaceAll("_", " ")}.`, actionPath: "/support", resourceType: "support_case", resourceId: caseId, dedupeKey: `support:${caseId}:${updated[0].version}`, createdAt: now }));
+  const auditStatement = db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: `support.${action}`, resourceType: "support_case", resourceId: caseId, outcome: "success", metadataJson: JSON.stringify({ previousStatus: current[0].status, nextStatus }), createdAt: now });
+  if (message) {
+    await db.batch([
+      notificationStatement,
+      auditStatement,
+      db.insert(supportCaseMessages).values({ id: crypto.randomUUID(), caseId, authorUserId: userId, authorKind: "agent", body: message, createdAt: now }),
+    ]);
+  } else {
+    await db.batch([notificationStatement, auditStatement]);
+  }
   return { caseId, status: nextStatus, version: updated[0].version };
 }

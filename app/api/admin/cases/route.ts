@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import { SupportCaseConflictError, SupportCaseValidationError, getAdminSupportCases, updateAdminSupportCase } from "@/lib/support-cases";
@@ -21,6 +22,6 @@ async function handle(operation: (userId: string) => Promise<unknown>) {
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof SupportCaseValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
     if (error instanceof SupportCaseConflictError) return Response.json({ error: "conflict", message: error.message }, { status: 409, headers: noStore });
-    console.error("Unable to manage support queue", error); return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
+    reportOperationalError("admin.support_queue.failed", error); return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuditLogValidationError, getAuditLog } from "@/lib/audit-log";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
@@ -14,7 +15,7 @@ export async function GET(request: Request) {
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof AuditLogValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
-    console.error("Unable to read audit log", error);
+    reportOperationalError("admin.audit.read_failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

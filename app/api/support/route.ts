@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import { SupportCaseConflictError, SupportCaseValidationError, createSupportCase, getUserSupportCases, replyToOwnSupportCase } from "@/lib/support-cases";
 
@@ -21,7 +22,7 @@ async function handle(operation: (userId: string) => Promise<unknown>, successSt
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof SupportCaseValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
     if (error instanceof SupportCaseConflictError) return Response.json({ error: "conflict", message: error.message }, { status: 409, headers: noStore });
-    console.error("Unable to manage support request", error);
+    reportOperationalError("support_cases.failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

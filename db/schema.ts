@@ -377,3 +377,125 @@ export const supportCaseMessages = sqliteTable("support_case_messages", {
   body: text("body").notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_support_case_messages_case_created").on(table.caseId, table.createdAt)]);
+
+// Phase 1A foundations are expand-only and are not used by the current login or notification flows.
+export const authIdentities = sqliteTable("auth_identities", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(),
+  providerSubject: text("provider_subject").notNull(),
+  status: text("status").notNull().default("active"),
+  linkedAt: integer("linked_at", { mode: "timestamp_ms" }).notNull(),
+  lastAuthenticatedAt: integer("last_authenticated_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_auth_identities_provider_subject").on(table.provider, table.providerSubject),
+  index("idx_auth_identities_user_status").on(table.userId, table.status),
+]);
+
+export const contactMethods = sqliteTable("contact_methods", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  normalizedValue: text("normalized_value").notNull(),
+  displayValue: text("display_value").notNull(),
+  status: text("status").notNull().default("unverified"),
+  isPrimary: integer("is_primary", { mode: "boolean" }).notNull().default(false),
+  verifiedAt: integer("verified_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_contact_methods_kind_value").on(table.kind, table.normalizedValue),
+  index("idx_contact_methods_user_status").on(table.userId, table.status),
+]);
+
+export const authSessions = sqliteTable("auth_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull(),
+  assuranceLevel: text("assurance_level").notNull().default("aal1"),
+  status: text("status").notNull().default("active"),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+  lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_auth_sessions_token_hash").on(table.tokenHash),
+  index("idx_auth_sessions_user_status_expires").on(table.userId, table.status, table.expiresAt),
+]);
+
+export const authFactors = sqliteTable("auth_factors", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  status: text("status").notNull().default("pending"),
+  credentialReference: text("credential_reference"),
+  enrolledAt: integer("enrolled_at", { mode: "timestamp_ms" }).notNull(),
+  verifiedAt: integer("verified_at", { mode: "timestamp_ms" }),
+  revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [index("idx_auth_factors_user_status").on(table.userId, table.status)]);
+
+export const authEvents = sqliteTable("auth_events", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").references(() => users.id, { onDelete: "restrict" }),
+  eventType: text("event_type").notNull(),
+  outcome: text("outcome").notNull(),
+  channel: text("channel").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_auth_events_user_created").on(table.userId, table.createdAt),
+  index("idx_auth_events_type_created").on(table.eventType, table.createdAt),
+]);
+
+export const notificationPreferences = sqliteTable("notification_preferences", {
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  channel: text("channel").notNull(),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(false),
+  locale: text("locale").notNull().default("en"),
+  ...timestamps,
+}, (table) => [primaryKey({ columns: [table.userId, table.channel] })]);
+
+export const outboundMessages = sqliteTable("outbound_messages", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  recipientContactMethodId: text("recipient_contact_method_id").notNull().references(() => contactMethods.id, { onDelete: "restrict" }),
+  channel: text("channel").notNull(),
+  templateId: text("template_id").notNull(),
+  templateVersion: integer("template_version").notNull(),
+  contentClassification: text("content_classification").notNull(),
+  dedupeKey: text("dedupe_key").notNull(),
+  status: text("status").notNull().default("pending"),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  nextAttemptAt: integer("next_attempt_at", { mode: "timestamp_ms" }),
+  lastErrorCode: text("last_error_code"),
+  sentAt: integer("sent_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_outbound_messages_dedupe").on(table.dedupeKey),
+  index("idx_outbound_messages_status_next_attempt").on(table.status, table.nextAttemptAt),
+  index("idx_outbound_messages_user_created").on(table.userId, table.createdAt),
+]);
+
+export const messageDeliveryEvents = sqliteTable("message_delivery_events", {
+  id: text("id").primaryKey(),
+  messageId: text("message_id").notNull().references(() => outboundMessages.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(),
+  providerEventId: text("provider_event_id"),
+  eventType: text("event_type").notNull(),
+  occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(),
+  receivedAt: integer("received_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_message_delivery_provider_event").on(table.provider, table.providerEventId),
+  index("idx_message_delivery_message_occurred").on(table.messageId, table.occurredAt),
+]);
+
+export const webhookReceipts = sqliteTable("webhook_receipts", {
+  id: text("id").primaryKey(),
+  provider: text("provider").notNull(),
+  providerEventId: text("provider_event_id").notNull(),
+  payloadHash: text("payload_hash").notNull(),
+  status: text("status").notNull().default("received"),
+  receivedAt: integer("received_at", { mode: "timestamp_ms" }).notNull(),
+  processedAt: integer("processed_at", { mode: "timestamp_ms" }),
+}, (table) => [uniqueIndex("idx_webhook_receipts_provider_event").on(table.provider, table.providerEventId)]);

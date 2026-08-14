@@ -1,5 +1,14 @@
 # vinext-starter
 
+## Reyati operational foundations
+
+- [Authentication architecture](docs/adr/ADR-001-authentication-architecture.md)
+- [Data classification and retention](docs/data-classification-and-retention.md)
+- [Incident response](docs/runbooks/incident-response.md)
+- [Backup and restore](docs/runbooks/backup-and-restore.md)
+- [Pilot operations](docs/runbooks/pilot-operations.md)
+- [Investor demo synchronization](docs/investor-demo-sync-policy.md)
+
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
 Drizzle support.

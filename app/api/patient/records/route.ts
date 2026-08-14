@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { getOrCreateCurrentUser, AuthenticationRequiredError } from "@/lib/identity";
 import { getPatientVisitRecords } from "@/lib/patient-records";
 import { resolveCareSubject } from "@/lib/family-access";
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
   } catch (error) {
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
-    console.error("Unable to load patient visit records", error);
+    reportOperationalError("patient_records.read_failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

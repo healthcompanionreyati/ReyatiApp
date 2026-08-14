@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { getAdminOverview } from "@/lib/admin-overview";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
@@ -13,7 +14,7 @@ export async function GET() {
   } catch (error) {
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
-    console.error("Unable to load platform overview", error);
+    reportOperationalError("admin.overview.read_failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

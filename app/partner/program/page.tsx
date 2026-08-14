@@ -32,9 +32,9 @@ export default function PartnerProgramme() {
         if (!response.ok) throw new Error("unavailable");
         const payload = await response.json().catch(() => ({})) as { data?: ProgrammeBoundary };
         if (!payload.data || !Array.isArray(payload.data.sources)) throw new Error("unavailable");
-        return payload;
+        return payload.data;
       })
-      .then((payload) => active && setData(payload.data))
+      .then((payload) => active && setData(payload))
       .catch((reason) => { if (active && !(reason instanceof DOMException && reason.name === "AbortError")) setError(true); });
     return () => { active = false; controller.abort(); };
   }, [refresh]);

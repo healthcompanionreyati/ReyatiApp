@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthenticationRequiredError, getOrCreateCurrentUser, publicUser } from "@/lib/identity";
 import { getActiveMemberships } from "@/lib/authorization";
 
@@ -12,7 +13,7 @@ export async function GET() {
     if (error instanceof AuthenticationRequiredError) {
       return Response.json({ error: "authentication_required" }, { status: 401, headers: { "Cache-Control": "no-store" } });
     }
-    console.error("Unable to provision current Reyati user", error);
+    reportOperationalError("identity.provision_failed", error);
     return Response.json({ error: "identity_unavailable" }, { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "30" } });
   }
 }

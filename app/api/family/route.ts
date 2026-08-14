@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { acceptCareInvitation, createDependentRequest, FamilyAccessValidationError, getFamilyAccess, inviteAdultCareAccess, revokeCareRelationship } from "@/lib/family-access";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 
@@ -26,7 +27,7 @@ async function handle(operation: (user: Awaited<ReturnType<typeof getOrCreateCur
   } catch (error) {
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof FamilyAccessValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
-    console.error("Unable to manage family access", error);
+    reportOperationalError("family_access.failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

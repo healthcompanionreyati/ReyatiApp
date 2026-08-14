@@ -1,3 +1,4 @@
+import { reportOperationalError } from "@/lib/observability";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import {
@@ -30,7 +31,7 @@ async function handle(operation: (user: Awaited<ReturnType<typeof getOrCreateCur
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof PlatformAccessValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
-    console.error("Unable to manage platform access", error);
+    reportOperationalError("admin.platform_access.failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }
 }

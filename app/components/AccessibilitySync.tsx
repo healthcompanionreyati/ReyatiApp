@@ -29,8 +29,8 @@ export default function AccessibilitySync() {
       const validity = control.validity;
       if (validity.valueMissing) return "This field is required.";
       if (validity.typeMismatch && control instanceof HTMLInputElement && control.type === "email") return "Enter a valid email address.";
-      if (validity.tooShort) return `Enter at least ${control.minLength} characters.`;
-      if (validity.tooLong) return `Use no more than ${control.maxLength} characters.`;
+      if (validity.tooShort && (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement)) return `Enter at least ${control.minLength} characters.`;
+      if (validity.tooLong && (control instanceof HTMLInputElement || control instanceof HTMLTextAreaElement)) return `Use no more than ${control.maxLength} characters.`;
       if (validity.rangeUnderflow && control instanceof HTMLInputElement) return `Enter ${control.min} or more.`;
       if (validity.rangeOverflow && control instanceof HTMLInputElement) return `Enter ${control.max} or less.`;
       if (validity.patternMismatch) return control.title || "Use the requested format.";
