@@ -21,6 +21,10 @@ Adult-family and caregiver invitations retain the existing manual-link fallback 
 
 The Resend webhook adapter verifies Svix HMAC signatures against the unmodified request body, rejects stale timestamps, deduplicates provider event IDs, and stores only a payload hash. Delivered, delayed, bounced, failed, and complaint outcomes update the outbox ledger. Bounces and complaints suppress the associated account contact. The route remains hidden behind the compiled `communicationsWebhooks` gate.
 
+The bounded outbox processor claims due messages with a 15-minute processing lease, recovers abandoned leases, caps each run at 25 records, and preserves exponential retry limits. A role-scoped communications operations workspace reports only aggregate and operational metadata. Platform administrators may request a bounded run, but the processor exits without sending while delivery is disabled. Sites does not currently expose a scheduled-trigger declaration in this project's hosting metadata, so scheduled processing is truthfully reported as unconfigured rather than implied.
+
+External invitation addresses that bounce or complain are stored only as SHA-256 suppression hashes. Future activated invitation delivery checks the hash before creating an email intent.
+
 ## Activation requirements
 
 - Custom domain and sending subdomain selected.

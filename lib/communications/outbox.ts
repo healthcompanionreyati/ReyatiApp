@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, lt, lte } from "drizzle-orm";
 import { getDb } from "@/db";
 import { contactMethods, messageDeliveryEvents, notificationPreferences, outboundMessages } from "@/db/schema";
 import { renderTransactionalEmail, type SupportedEmailLocale, type TransactionalEmailTemplateId, validateEmailTemplateInput } from "@/lib/communications/email-templates";
@@ -42,9 +42,9 @@ export async function recordTransactionalEmailIntent(input: { userId: string; te
 export async function dispatchTransactionalEmail(messageId: string) {
   if (!foundationFlags.outboundEmailDelivery) return { delivered: false, reason: "delivery_disabled" } as const;
   const db = await getDb();
-  const rows = await db.select({ message: outboundMessages, contactRecipient: contactMethods.normalizedValue }).from(outboundMessages)
+  const rows = await db.select({ message: outboundMessages, contactRecipient: contactMethods.normalizedValue, contactStatus: contactMethods.status }).from(outboundMessages)
     .leftJoin(contactMethods, eq(contactMethods.id, outboundMessages.recipientContactMethodId))
-    .where(and(eq(outboundMessages.id, messageId), eq(outboundMessages.channel, "email"), inArray(outboundMessages.status, ["pending", "retry"]))).limit(1);
+    .where(and(eq(outboundMessages.id, messageId), eq(outboundMessages.channel, "email"), inArray(outboundMessages.status, ["pending", "retry", "processing"]))).limit(1);
   const row = rows[0];
   if (!row) return { delivered: false, reason: "not_dispatchable" } as const;
   try {
@@ -62,6 +62,7 @@ export async function dispatchTransactionalEmail(messageId: string) {
     if (!actionPath) throw new ResendDeliveryError("invalid_template_data", false);
     const recipient = row.message.recipientAddress ?? row.contactRecipient;
     if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) throw new ResendDeliveryError("invalid_recipient", false);
+    if (row.message.recipientContactMethodId && row.message.templateId !== "email_verification" && row.contactStatus !== "verified") throw new ResendDeliveryError("recipient_suppressed", false);
     const { env } = await import("cloudflare:workers");
     let rendered;
     try {
@@ -72,7 +73,7 @@ export async function dispatchTransactionalEmail(messageId: string) {
     const delivered = await sendWithResend({ to: recipient, ...rendered, idempotencyKey: row.message.dedupeKey });
     const now = new Date();
     await db.batch([
-      db.update(outboundMessages).set({ status: "sent", providerMessageId: delivered.providerMessageId, sentAt: now, updatedAt: now, lastErrorCode: null }).where(and(eq(outboundMessages.id, messageId), inArray(outboundMessages.status, ["pending", "retry"]))),
+      db.update(outboundMessages).set({ status: "sent", providerMessageId: delivered.providerMessageId, sentAt: now, updatedAt: now, lastErrorCode: null }).where(and(eq(outboundMessages.id, messageId), inArray(outboundMessages.status, ["pending", "retry", "processing"]))),
       db.insert(messageDeliveryEvents).values({ id: crypto.randomUUID(), messageId, provider: delivered.provider, providerEventId: delivered.providerMessageId, eventType: "accepted", occurredAt: now, receivedAt: now }),
     ]);
     return { delivered: true, provider: delivered.provider } as const;
@@ -83,4 +84,29 @@ export async function dispatchTransactionalEmail(messageId: string) {
     await db.update(outboundMessages).set({ status: retry ? "retry" : "failed", attemptCount, nextAttemptAt: retry ? new Date(now.valueOf() + Math.min(30, 2 ** attemptCount) * 60_000) : null, lastErrorCode: deliveryError.code, updatedAt: now }).where(eq(outboundMessages.id, messageId));
     return { delivered: false, reason: deliveryError.code, retry } as const;
   }
+}
+
+export async function processDueTransactionalEmails(requestedLimit = 10) {
+  if (!foundationFlags.outboundEmailDelivery) return { enabled: false, claimed: 0, delivered: 0, retrying: 0, failed: 0 } as const;
+  const limit = Number.isInteger(requestedLimit) ? Math.min(25, Math.max(1, requestedLimit)) : 10;
+  const db = await getDb(); const now = new Date();
+  await db.update(outboundMessages).set({ status: "retry", nextAttemptAt: now, lastErrorCode: "processing_lease_expired", updatedAt: now }).where(and(
+    eq(outboundMessages.status, "processing"), lt(outboundMessages.updatedAt, new Date(now.valueOf() - 15 * 60 * 1000)),
+  ));
+  const due = await db.select({ id: outboundMessages.id }).from(outboundMessages).where(and(
+    inArray(outboundMessages.status, ["pending", "retry"]), lte(outboundMessages.nextAttemptAt, now),
+  )).orderBy(asc(outboundMessages.nextAttemptAt), asc(outboundMessages.createdAt)).limit(limit);
+  let claimed = 0; let delivered = 0; let retrying = 0; let failed = 0;
+  for (const candidate of due) {
+    const lease = await db.update(outboundMessages).set({ status: "processing", updatedAt: now }).where(and(
+      eq(outboundMessages.id, candidate.id), inArray(outboundMessages.status, ["pending", "retry"]), lte(outboundMessages.nextAttemptAt, now),
+    )).returning({ id: outboundMessages.id });
+    if (!lease[0]) continue;
+    claimed += 1;
+    const result = await dispatchTransactionalEmail(candidate.id);
+    if (result.delivered) delivered += 1;
+    else if (result.retry) retrying += 1;
+    else failed += 1;
+  }
+  return { enabled: true, claimed, delivered, retrying, failed } as const;
 }

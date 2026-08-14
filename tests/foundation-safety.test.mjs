@@ -47,7 +47,7 @@ test("capability registry declares ownership and activation boundaries", async (
 
 test("expand-only identity and communications tables are present", async () => {
   const schema = await source("db/schema.ts");
-  for (const table of ["auth_identities", "contact_methods", "contact_verification_challenges", "auth_sessions", "auth_factors", "auth_events", "notification_preferences", "outbound_messages", "message_delivery_events", "webhook_receipts"]) {
+  for (const table of ["auth_identities", "contact_methods", "contact_verification_challenges", "auth_sessions", "auth_factors", "auth_events", "notification_preferences", "outbound_messages", "message_delivery_events", "webhook_receipts", "email_delivery_suppressions"]) {
     assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
   }
 });
@@ -159,4 +159,21 @@ test("Resend webhooks are signature-verified, replay-safe, privacy-minimized, an
   assert.match(handler, /payloadHash: await sha256\(rawBody\)/);
   assert.doesNotMatch(handler, /payloadJson|payloadBody|rawBodyJson/);
   assert.match(handler, /"unreachable" : "suppressed"/);
+  assert.match(handler, /emailDeliverySuppressions/);
+});
+
+test("the outbox processor leases bounded due work and remains unreachable while disabled", async () => {
+  const outbox = await source("lib/communications/outbox.ts");
+  const operations = await source("lib/communications/operations.ts");
+  const route = await source("app/api/admin/communications/route.ts");
+  const page = await source("app/admin/communications/page.tsx");
+  assert.match(outbox, /processDueTransactionalEmails/);
+  assert.match(outbox, /processing_lease_expired/);
+  assert.match(outbox, /Math\.min\(25/);
+  assert.match(outbox, /status: "processing"/);
+  assert.match(outbox, /lte\(outboundMessages\.nextAttemptAt, now\)/);
+  assert.match(operations, /requirePlatformRole\(userId, \["platform_admin"\]\)/);
+  assert.match(operations, /scheduledTriggerConfigured: false/);
+  assert.match(route, /getOrCreateCurrentUser\(\)/);
+  assert.match(page, /No recipient address, message body, invitation token, or webhook payload/);
 });

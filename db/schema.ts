@@ -516,3 +516,11 @@ export const webhookReceipts = sqliteTable("webhook_receipts", {
   receivedAt: integer("received_at", { mode: "timestamp_ms" }).notNull(),
   processedAt: integer("processed_at", { mode: "timestamp_ms" }),
 }, (table) => [uniqueIndex("idx_webhook_receipts_provider_event").on(table.provider, table.providerEventId)]);
+
+export const emailDeliverySuppressions = sqliteTable("email_delivery_suppressions", {
+  addressHash: text("address_hash").primaryKey(),
+  reason: text("reason").notNull(),
+  sourceProvider: text("source_provider").notNull(),
+  sourceMessageId: text("source_message_id"),
+  ...timestamps,
+});

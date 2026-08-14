@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { contactMethods, messageDeliveryEvents, outboundMessages, webhookReceipts } from "@/db/schema";
+import { contactMethods, emailDeliverySuppressions, messageDeliveryEvents, outboundMessages, webhookReceipts } from "@/db/schema";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 const MAX_CLOCK_SKEW_SECONDS = 5 * 60;
@@ -67,7 +67,7 @@ export async function processResendWebhook(rawBody: string, headers: Headers) {
   }).onConflictDoNothing().returning({ id: webhookReceipts.id });
   if (!inserted[0]) return { accepted: true, duplicate: true } as const;
 
-  const message = await db.select({ id: outboundMessages.id, status: outboundMessages.status, recipientContactMethodId: outboundMessages.recipientContactMethodId })
+  const message = await db.select({ id: outboundMessages.id, status: outboundMessages.status, recipientContactMethodId: outboundMessages.recipientContactMethodId, recipientAddress: outboundMessages.recipientAddress })
     .from(outboundMessages).where(eq(outboundMessages.providerMessageId, providerMessageId)).limit(1);
   if (!message[0]) {
     await db.update(webhookReceipts).set({ status: "ignored", processedAt: now }).where(eq(webhookReceipts.id, receiptId));
@@ -88,6 +88,12 @@ export async function processResendWebhook(rawBody: string, headers: Headers) {
     ...(message[0].recipientContactMethodId && (eventType === "bounced" || eventType === "complained") ? [
       db.update(contactMethods).set({ status: eventType === "bounced" ? "unreachable" : "suppressed", updatedAt: now })
         .where(eq(contactMethods.id, message[0].recipientContactMethodId)),
+    ] : []),
+    ...(message[0].recipientAddress && (eventType === "bounced" || eventType === "complained") ? [
+      db.insert(emailDeliverySuppressions).values({
+        addressHash: await sha256(message[0].recipientAddress.trim().toLowerCase()), reason: terminalError ?? "provider_suppressed",
+        sourceProvider: "resend", sourceMessageId: message[0].id, createdAt: now, updatedAt: now,
+      }).onConflictDoUpdate({ target: emailDeliverySuppressions.addressHash, set: { reason: terminalError ?? "provider_suppressed", sourceProvider: "resend", sourceMessageId: message[0].id, updatedAt: now } }),
     ] : []),
   ]);
   return { accepted: true, matched: true } as const;

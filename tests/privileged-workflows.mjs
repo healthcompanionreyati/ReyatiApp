@@ -67,6 +67,12 @@ assert.equal(updatedCommunications.data.preferences.emailEnabled, true);
 assert.equal(updatedCommunications.data.availability.emailDelivery, false, "Preference must not bypass the delivery feature gate");
 await request("/api/account/communications/verify", { identity: identities.patient, method: "POST", body: { action: "request" }, status: 409 });
 await request("/api/webhooks/resend", { identity: identities.patient, method: "POST", body: {}, status: 404 });
+await request("/api/admin/communications", { identity: identities.patient, status: 403 });
+const communicationOperations = await request("/api/admin/communications", { identity: identities.admin });
+assert.equal(communicationOperations.data.activation.deliveryEnabled, false);
+const queueRun = await request("/api/admin/communications", { identity: identities.admin, method: "POST", body: { limit: 10 } });
+assert.equal(queueRun.data.enabled, false);
+assert.equal(queueRun.data.claimed, 0);
 
 const organization = await request("/api/admin/organizations", {
   identity: identities.admin,

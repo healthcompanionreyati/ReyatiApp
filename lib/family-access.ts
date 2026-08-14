@@ -1,6 +1,6 @@
 import { and, asc, eq, gt, inArray, isNull, lt, or } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditEvents, careRelationshipInvitations, careRelationships, outboundMessages, users } from "@/db/schema";
+import { auditEvents, careRelationshipInvitations, careRelationships, emailDeliverySuppressions, outboundMessages, users } from "@/db/schema";
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 import { familyInvitationDeliveryAvailable, signedFamilyInvitationToken, verifiedFamilyInvitationId } from "@/lib/communications/family-invitations";
@@ -122,6 +122,12 @@ export async function inviteAdultCareAccess(userId: string, userEmail: string, b
   const paymentsAccess = permission(body.paymentsAccess);
   if (!appointmentsAccess && !recordsAccess && !paymentsAccess) throw new FamilyAccessValidationError("Select at least one permission");
   const db = await getDb(); const now = new Date();
+  const deliveryAvailable = await familyInvitationDeliveryAvailable();
+  if (deliveryAvailable) {
+    const suppression = await db.select({ addressHash: emailDeliverySuppressions.addressHash }).from(emailDeliverySuppressions)
+      .where(eq(emailDeliverySuppressions.addressHash, await sha256(email))).limit(1);
+    if (suppression[0]) throw new FamilyAccessValidationError("This email address cannot receive Reyati invitations");
+  }
   await db.update(careRelationshipInvitations).set({ status: "expired", updatedAt: now }).where(and(
     eq(careRelationshipInvitations.status, "pending"), lt(careRelationshipInvitations.expiresAt, now),
   ));
@@ -129,7 +135,6 @@ export async function inviteAdultCareAccess(userId: string, userEmail: string, b
     .where(and(eq(careRelationshipInvitations.invitedByUserId, userId), eq(careRelationshipInvitations.email, email), eq(careRelationshipInvitations.status, "pending"))).limit(1);
   if (duplicate[0]) throw new FamilyAccessValidationError("A pending invitation already exists for this email");
   const relationshipId = crypto.randomUUID(); const invitationId = crypto.randomUUID();
-  const deliveryAvailable = await familyInvitationDeliveryAvailable();
   const token = deliveryAvailable ? await signedFamilyInvitationToken(invitationId) : invitationToken();
   const tokenHash = await sha256(token);
   const invitationExpiresAt = new Date(now.valueOf() + 7 * 24 * 60 * 60 * 1000);
