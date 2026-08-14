@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type VisitRecord = {
   appointmentId: string;
@@ -31,28 +31,34 @@ export default function Wallet() {
   const [error, setError] = useState("");
   const [delegated, setDelegated] = useState(false);
 
-  useEffect(() => {
-    let active = true;
+  const loadRecords = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true); setError("");
     const subjectUserId = new URLSearchParams(window.location.search).get("subjectUserId");
     const endpoint = subjectUserId ? `/api/patient/records?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/api/patient/records";
-    fetch(endpoint, { cache: "no-store" }).then(async (response) => {
-      const payload = await response.json() as { records?: VisitRecord[]; delegated?: boolean; error?: string };
+    try {
+      const response = await fetch(endpoint, { cache: "no-store", signal });
+      const payload = await response.json().catch(() => ({})) as { records?: VisitRecord[]; delegated?: boolean; error?: string };
       if (response.status === 401) {
-        window.location.assign("/signin-with-chatgpt?return_to=/wallet");
-        throw new Error("Authentication required");
+        const returnTo = `/wallet${window.location.search}`;
+        window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(returnTo)}`);
+        return;
       }
       if (!response.ok) throw new Error(payload.error || "Health records are temporarily unavailable.");
-      return { records: payload.records || [], delegated: payload.delegated === true };
-    }).then((result) => {
-      if (!active) return;
-      setRecords(result.records); setDelegated(result.delegated);
+      const nextRecords = payload.records || [];
+      setRecords(nextRecords); setDelegated(payload.delegated === true);
       const appointmentId = new URLSearchParams(window.location.search).get("appointmentId");
-      if (appointmentId) setSelected(result.records.find((item) => item.appointmentId === appointmentId) || null);
-    }).catch((caught: unknown) => {
-      if (active) setError(caught instanceof Error ? caught.message : "Health records are temporarily unavailable.");
-    }).finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      if (appointmentId) setSelected(nextRecords.find((item) => item.appointmentId === appointmentId) || null);
+    } catch (caught) {
+      if (caught instanceof DOMException && caught.name === "AbortError") return;
+      setError(caught instanceof Error ? caught.message : "Health records are temporarily unavailable.");
+    } finally { if (!signal?.aborted) setLoading(false); }
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    queueMicrotask(() => { if (!controller.signal.aborted) void loadRecords(controller.signal); });
+    return () => controller.abort();
+  }, [loadRecords]);
 
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -68,8 +74,9 @@ export default function Wallet() {
 
     <section className="wallet-content">
       <div className="wallet-live-heading"><div><p>FINALIZED VISITS</p><h2>Visit record timeline</h2><span>{records.length} {records.length === 1 ? "record" : "records"}</span></div><label aria-label="Search records">⌕<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search provider or specialty"/></label></div>
-      {error && <div className="wallet-live-error"><span>{error}</span><button onClick={() => setError("")}>×</button></div>}
+      {error && <div className="wallet-live-error"><span>{error}</span><button type="button" onClick={() => void loadRecords()}>Try again</button></div>}
       {loading ? <div className="wallet-live-state"><span>◌</span><h2>Loading your records</h2><p>Checking finalized visits owned by your account.</p></div>
+        : error ? <div className="wallet-live-state error"><span>!</span><h2>Health records unavailable</h2><p>Reyati could not confirm your latest finalized records. Try again before relying on this timeline.</p></div>
         : visible.length === 0 ? <div className="wallet-live-state"><span>▤</span><h2>{query ? "No matching records" : "No finalized visit records yet"}</h2><p>{query ? "Try a different provider or specialty." : "A record will appear after your provider finalizes an eligible encounter."}</p><a href="/appointments">Review appointments</a></div>
         : <div className="wallet-live-list">{visible.map((record) => <article key={record.appointmentId}><div className="wallet-record-date"><b>{new Date(record.scheduledStart).toLocaleDateString([], { day: "2-digit" })}</b><span>{new Date(record.scheduledStart).toLocaleDateString([], { month: "short", year: "numeric" })}</span></div><span className="wallet-record-avatar">{initials(record.providerName)}</span><div className="wallet-record-main"><p>FINALIZED VISIT RECORD</p><h2>{record.providerName}</h2><span>{record.specialty} · {record.facilityName || (record.mode === "video" ? "Video consultation" : "Facility not recorded")}</span><small>Finalized {formatDate(record.finalizedAt)} · Version {record.noteVersion}</small></div><button onClick={() => setSelected(record)}>View record</button></article>)}</div>}
     </section>
