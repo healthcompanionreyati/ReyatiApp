@@ -17,9 +17,9 @@ type FamilyData = { managed: Managed[]; delegated: Delegated[]; invitations: Inv
 function label(value: string) { return value.replaceAll("_", " ").replace(/^./, (character) => character.toUpperCase()); }
 function initials(value: string) { return value.split(/\s+|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "FM"; }
 
-async function request(body?: Record<string, unknown>) {
-  const response = await fetch("/api/family", body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : { cache: "no-store" });
-  const payload = await response.json() as { data?: FamilyData | { acceptPath?: string }; message?: string; error?: string };
+async function request(body?: Record<string, unknown>, signal?: AbortSignal) {
+  const response = await fetch("/api/family", body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal } : { cache: "no-store", signal });
+  const payload = await response.json().catch(() => ({})) as { data?: FamilyData | { acceptPath?: string }; message?: string; error?: string };
   if (response.status === 401) {
     window.location.assign("/signin-with-chatgpt?return_to=/family");
     throw new Error("Authentication required");
@@ -45,25 +45,33 @@ export default function Family() {
 
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     const token = new URLSearchParams(window.location.search).get("invitation");
     Promise.resolve().then(async () => {
       if (token) {
-        await request({ action: "accept", token });
+        await request({ action: "accept", token }, controller.signal);
         window.history.replaceState({}, "", "/family");
       }
-      return request();
+      return request(undefined, controller.signal);
     }).then((result) => {
       if (active && result && "managed" in result) {
         setData(result); if (token) { setTab("delegated"); setNotice("Care access invitation accepted."); }
       }
     }).catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : "Family access is unavailable."); })
       .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    return () => { active = false; controller.abort(); };
   }, []);
 
   async function reload() {
     const result = await request();
     if (result && "managed" in result) setData(result);
+  }
+
+  async function retry() {
+    setLoading(true); setError("");
+    try { await reload(); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "Family access is unavailable."); }
+    finally { setLoading(false); }
   }
 
   async function submitRelationship() {
@@ -93,13 +101,13 @@ export default function Family() {
     <header className="family-header"><a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">Find care</a><a href="/appointments">Appointments</a><a href="/wallet">Health records</a><a className="active" href="/family">Family access</a><a href="/support">Support</a></nav><div><a href="/notifications">Notifications</a><span>RY</span></div></header>
     <section className="family-hero"><div><p>CARE TOGETHER, WITH CONSENT</p><h1>Family & delegated care</h1><span>Create verified relationship requests and explicit, revocable permission grants without merging anyone’s account or health record.</span></div><button onClick={() => setAdding(true)}>＋ Add relationship</button></section>
     <section className="family-workspace"><div className="family-note"><span>i</span><p><b>A family name never grants automatic access.</b> Dependents remain locked pending verification. Adults and caregivers must accept an email-bound invitation before any selected permission becomes active.</p></div>
-      {error && <div className="family-live-alert error"><span>{error}</span><button onClick={() => setError("")}>×</button></div>}
+      {error && <div className="family-live-alert error"><span>{error}</span><button type="button" onClick={() => void retry()}>Try again</button></div>}
       {notice && <div className="family-live-alert success"><span>{notice}</span><button onClick={() => setNotice("")}>×</button></div>}
       {acceptLink && <div className="family-invite-link"><div><b>Consent invitation link</b><p>Share this link only with the invited email owner. It expires in seven days and can be used once.</p><code>{acceptLink}</code></div><button onClick={() => void navigator.clipboard.writeText(acceptLink)}>Copy link</button></div>}
       <div className="family-live-tabs"><button className={tab === "managed" ? "active" : ""} onClick={() => setTab("managed")}>Relationships I manage <span>{data.managed.length}</span></button><button className={tab === "delegated" ? "active" : ""} onClick={() => setTab("delegated")}>Access to my care <span>{data.delegated.length}</span></button></div>
       {tab === "managed" && data.managed.some((item) => item.status === "active" && item.subjectUserId && item.appointmentsAccess) && <div className="family-scope-links">{data.managed.filter((item) => item.status === "active" && item.subjectUserId && item.appointmentsAccess).map((item) => <span key={`${item.id}-appointments`}><b>{item.subjectName || item.subjectLabel}</b><a href={`/providers?subjectUserId=${encodeURIComponent(item.subjectUserId!)}`}>Book care</a><a href={`/appointments?subjectUserId=${encodeURIComponent(item.subjectUserId!)}`}>Appointments</a></span>)}</div>}
 
-      {loading ? <div className="family-live-state"><span>◌</span><h2>Loading care relationships</h2><p>Checking current consent and verification state.</p></div> : tab === "managed" ? <div className="family-live-grid">
+      {loading ? <div className="family-live-state"><span>◌</span><h2>Loading care relationships</h2><p>Checking current consent and verification state.</p></div> : error ? <div className="family-live-state error"><span>!</span><h2>Family access unavailable</h2><p>Reyati could not confirm the latest relationship and consent state.</p></div> : tab === "managed" ? <div className="family-live-grid">
         {data.managed.length === 0 && <div className="family-live-state"><span>♧</span><h2>No care relationships yet</h2><p>Add a dependent verification request or invite an adult to consent to scoped access.</p><button onClick={() => setAdding(true)}>Add relationship</button></div>}
         {data.managed.map((item) => <article key={item.id}><header><span>{initials(item.subjectName || item.subjectLabel)}</span><div><p>{label(item.relationshipType)}</p><h2>{item.subjectName || item.subjectLabel}</h2></div><i className={item.status}>{label(item.status)}</i></header><div className="family-permission-summary"><b>Recorded permissions</b><span className={item.appointmentsAccess ? "on" : "off"}>Appointments</span><span className={item.recordsAccess ? "on" : "off"}>Health records</span><span className={item.paymentsAccess ? "on" : "off"}>Payments</span></div>{item.status === "pending_verification" && <p className="family-boundary">No permissions are active until guardianship or dependency evidence is verified.</p>}{item.status === "pending_consent" && <p className="family-boundary">Requested permissions remain inactive until the invited email owner accepts.</p>}{item.status === "active" && <><p className="family-boundary">Permission changes require fresh consent. Revoke and create a new invitation to change scope.</p><div className="family-scope-links">{item.subjectUserId && item.recordsAccess && <a href={`/wallet?subjectUserId=${encodeURIComponent(item.subjectUserId)}`}>View records</a>}{item.subjectUserId && item.paymentsAccess && <a href={`/payments?subjectUserId=${encodeURIComponent(item.subjectUserId)}`}>View payments</a>}</div></>}{item.status !== "revoked" && <button disabled={saving} onClick={() => setRevoking({ id: item.id, label: item.subjectName || item.subjectLabel, consent: false })}>Revoke relationship</button>}</article>)}
       </div> : <div className="family-live-grid">

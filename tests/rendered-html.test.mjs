@@ -1031,6 +1031,26 @@ test("keeps provider discovery, availability, and booking responses recoverable"
   assert.match(providers, /const data = await response\.json\(\)\.catch\(\(\) => \(\{\}\)\) as \{ error\?: string; message\?: string \}/);
 });
 
+test("keeps family, notification, and support data failures retryable", async () => {
+  const [family, notifications, support] = await Promise.all([
+    readFile(new URL("../app/family/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/notifications/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/support/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  for (const source of [family, notifications, support]) assert.match(source, /response\.json\(\)\.catch/);
+  assert.match(family, /controller\.abort\(\)/);
+  assert.match(family, /onClick=\{\(\) => void retry\(\)\}>Try again/);
+  assert.match(family, /error \? <div className="family-live-state error"/);
+  assert.match(notifications, /api\("\/api\/notifications", \{ signal: controller\.signal \}\)/);
+  assert.match(notifications, /onClick=\{\(\) => void load\(\)\}>Try again/);
+  assert.match(notifications, /error \? <div className="empty-inbox error"/);
+  assert.match(support, /api\(\{signal:controller\.signal\}\)/);
+  assert.match(support, /async function retry\(\)/);
+  assert.match(support, /onClick=\{\(\)=>void retry\(\)\}>Try again/);
+  assert.match(support, /error\?<p>Support requests are unavailable/);
+});
+
 test("protects meaningful unfinished forms before navigation or tab close", async () => {
   const [guard, layout] = await Promise.all([
     readFile(new URL("../app/components/UnsavedChangesGuard.tsx", import.meta.url), "utf8"),
