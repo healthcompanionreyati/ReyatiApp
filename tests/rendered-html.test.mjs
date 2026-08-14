@@ -1185,6 +1185,9 @@ test("keeps notification and authentication text readable without compressing he
   assert.match(readability, /\.notification-privacy p \{[\s\S]*?font-size: 11px !important/);
   assert.match(readability, /\.auth-success > small \{[\s\S]*?font-size: 11px !important/);
   assert.match(readability, /\.role-picker\.detailed a small \{[\s\S]*?font-size: 10px !important/);
+  assert.match(readability, /body > main#main-content > footer :where\(a, p, small\) \{ font-size: 11px !important/);
+  assert.match(readability, /\.trust-panel > p,[\s\S]*?font-size: 10px !important/);
+  assert.match(readability, /\.admin-heading, \.orgops-title\) > div > p \{[\s\S]*?font-size: 11px !important/);
   assert.doesNotMatch(navigation, /\.notification-header\) > div > a:first-child/);
   assert.match(notifications, /className="notification-header-actions"/);
   assert.match(notifications, /aria-label="Patient navigation"/);

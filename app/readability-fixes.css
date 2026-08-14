@@ -102,6 +102,21 @@
 .auth-stage > footer { min-height: 62px; height: auto; padding: 14px; font-size: 10px !important; }
 .auth-stage > footer a { font-size: 10px !important; }
 
+/* Final acceptance fixes for small secondary labels found in live route testing. */
+body > main#main-content > footer :where(a, p, small) { font-size: 11px !important; line-height: 1.45; }
+.auth-legal { font-size: 10px !important; }
+.trust-panel > p,
+.trust-panel li small,
+.trust-panel a { font-size: 10px !important; color: rgba(255, 255, 255, .76) !important; }
+.encounter-live-shell .encounter-top > div:last-child a { font-size: 10px !important; }
+
+:where(.provider-welcome, .settings-heading, .program-heading, .finance-heading, .audit-heading,
+  .verify-heading, .cases-heading, .moderation-heading, .patient-workspace-heading,
+  .services-heading, .insights-heading, .admin-heading, .orgops-title) > div > p {
+  font-size: 11px !important;
+  line-height: 1.4;
+}
+
 /* Product-wide safety net for dense operational views. */
 :where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
   .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
