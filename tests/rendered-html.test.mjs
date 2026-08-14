@@ -162,7 +162,9 @@ test("ships concurrency-safe, authorized appointment APIs", async () => {
   assert.match(patientRoute, /getOrCreateCurrentUser/);
   assert.match(patientRoute, /status: result\.replayed \? 200 : 201/);
   assert.match(providerRoute, /requireOrganizationRole/);
-  assert.match(providerRoute, /verificationStatus, "verified"/);
+  assert.match(providerRoute, /requireActiveProvider/);
+  assert.match(authorization, /verificationStatus, "verified"/);
+  assert.match(authorization, /requireOrganizationRole\(userId, provider\[0\]\.organizationId/);
   assert.match(authorization, /organization_owner/);
   assert.match(authorization, /organization_admin/);
   assert.match(authorization, /scheduler/);
@@ -355,8 +357,8 @@ test("connects provider-owned appointments to audited lifecycle actions", async 
     readFile(new URL("../app/provider/page.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(service, /updateProviderAppointment/);
-  assert.match(service, /eq\(providerProfiles\.userId, userId\)/);
-  assert.match(service, /eq\(providerProfiles\.verificationStatus, "verified"\)/);
+  assert.match(service, /requireActiveProvider\(userId\)/);
+  assert.match(service, /eq\(appointments\.providerId, activeProvider\.id\)/);
   assert.match(service, /eq\(appointments\.version, Number\(expectedVersion\)\)/);
   assert.match(service, /appointment\.\$\{nextStatus\}_by_provider/);
   assert.match(service, /The reserved time has been released/);
@@ -385,7 +387,8 @@ test("ships provider-owned, immutable clinical encounter records", async () => {
   assert.match(migration, /validate_encounter_finalization_on_update/);
   assert.match(migration, /complete_appointment_on_encounter_update/);
   assert.match(migration, /PRAGMA optimize/);
-  assert.match(service, /eq\(providerProfiles\.userId, userId\)/);
+  assert.match(service, /requireActiveProvider\(userId\)/);
+  assert.match(service, /eq\(appointments\.providerId, activeProvider\.id\)/);
   assert.match(service, /A finalized encounter cannot be edited/);
   assert.match(service, /eq\(encounterNotes\.version, value\.version\)/);
   assert.match(service, /Clinical content remains protected and is not included/);

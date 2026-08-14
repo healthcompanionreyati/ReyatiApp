@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
-import { organizationMembers, organizations, platformRoles } from "@/db/schema";
+import { organizationMembers, organizations, platformRoles, providerProfiles } from "@/db/schema";
 
 export const organizationRoles = [
   "organization_owner",
@@ -69,4 +69,23 @@ export async function requireOrganizationRole(
 
   if (!membership[0]) throw new AuthorizationDeniedError();
   return membership[0];
+}
+
+export async function requireActiveProvider(userId: string) {
+  const db = await getDb();
+  const provider = await db.select({
+    id: providerProfiles.id,
+    organizationId: providerProfiles.organizationId,
+  }).from(providerProfiles).where(and(
+    eq(providerProfiles.userId, userId),
+    eq(providerProfiles.verificationStatus, "verified"),
+  )).limit(1);
+
+  if (!provider[0]?.organizationId) throw new AuthorizationDeniedError();
+  await requireOrganizationRole(userId, provider[0].organizationId, [
+    "practitioner",
+    "organization_admin",
+    "organization_owner",
+  ]);
+  return { id: provider[0].id, organizationId: provider[0].organizationId };
 }

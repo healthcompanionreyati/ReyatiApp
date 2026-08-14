@@ -1,7 +1,7 @@
 import { and, asc, eq, gt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, patientProfiles, providerProfiles, users } from "@/db/schema";
-import { AuthorizationDeniedError, requireOrganizationRole } from "@/lib/authorization";
+import { AuthorizationDeniedError, requireActiveProvider, requireOrganizationRole } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import { AppointmentConflictError, AppointmentValidationError, updateProviderAppointment } from "@/lib/appointments";
 
@@ -13,11 +13,6 @@ export async function GET(request: Request) {
     const currentUser = await getOrCreateCurrentUser();
     if (currentUser.status !== "active") throw new AuthorizationDeniedError();
     const db = await getDb();
-    const ownProvider = await db.select({ id: providerProfiles.id }).from(providerProfiles).where(and(
-      eq(providerProfiles.userId, currentUser.id),
-      eq(providerProfiles.verificationStatus, "verified"),
-    )).limit(1);
-
     const organizationId = new URL(request.url).searchParams.get("organizationId");
     let scope;
     if (organizationId) {
@@ -27,10 +22,9 @@ export async function GET(request: Request) {
         "scheduler",
       ]);
       scope = eq(providerProfiles.organizationId, organizationId);
-    } else if (ownProvider[0]) {
-      scope = eq(appointments.providerId, ownProvider[0].id);
     } else {
-      throw new AuthorizationDeniedError();
+      const ownProvider = await requireActiveProvider(currentUser.id);
+      scope = eq(appointments.providerId, ownProvider.id);
     }
 
     const rows = await db.select({

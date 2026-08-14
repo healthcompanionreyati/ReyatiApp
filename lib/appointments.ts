@@ -16,6 +16,7 @@ import {
   users,
 } from "@/db/schema";
 import { notificationRecord } from "@/lib/notification-center";
+import { requireActiveProvider } from "@/lib/authorization";
 
 const SLOT_MS = 15 * 60 * 1000;
 const MAX_ADVANCE_MS = 60 * 24 * 60 * 60 * 1000;
@@ -308,6 +309,7 @@ export async function cancelPatientAppointment(actorUserId: string, subjectUserI
 type ProviderAppointmentAction = "confirm" | "decline" | "complete";
 
 export async function updateProviderAppointment(userId: string, body: Record<string, unknown>) {
+  const activeProvider = await requireActiveProvider(userId);
   const appointmentId = requiredString(body.appointmentId, "appointmentId");
   const expectedVersion = body.version;
   const action = body.action;
@@ -322,7 +324,7 @@ export async function updateProviderAppointment(userId: string, body: Record<str
   }).from(appointments)
     .innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
     .innerJoin(patientProfiles, eq(patientProfiles.id, appointments.patientId))
-    .where(and(eq(appointments.id, appointmentId), eq(providerProfiles.userId, userId)))
+    .where(and(eq(appointments.id, appointmentId), eq(appointments.providerId, activeProvider.id)))
     .limit(1);
   if (!owned[0]) throw new AppointmentValidationError("Appointment was not found");
 

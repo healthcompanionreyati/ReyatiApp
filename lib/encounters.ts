@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { appointments, auditEvents, encounterNotes, notifications, patientProfiles, providerProfiles, users } from "@/db/schema";
 import { AppointmentConflictError, AppointmentValidationError } from "@/lib/appointments";
 import { notificationRecord } from "@/lib/notification-center";
+import { requireActiveProvider } from "@/lib/authorization";
 
 type NoteInput = {
   appointmentId: string;
@@ -39,6 +40,7 @@ function input(body: unknown): NoteInput {
 }
 
 async function ownedAppointment(userId: string, appointmentId: string) {
+  const activeProvider = await requireActiveProvider(userId);
   const db = await getDb();
   const rows = await db.select({
     appointment: appointments,
@@ -51,7 +53,7 @@ async function ownedAppointment(userId: string, appointmentId: string) {
     .innerJoin(users, eq(users.id, patientProfiles.userId))
     .where(and(
       eq(appointments.id, appointmentId),
-      eq(providerProfiles.userId, userId),
+      eq(appointments.providerId, activeProvider.id),
       eq(providerProfiles.verificationStatus, "verified"),
     ))
     .limit(1);

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, like, lt, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, like, lt, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, organizationMembers, organizations, platformRoles, users } from "@/db/schema";
 import { AuthorizationDeniedError } from "@/lib/authorization";
@@ -68,7 +68,7 @@ export async function getAuditLog(userId: string, searchParams: URLSearchParams)
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const [totalResult, recentResult, organizationOptions] = await Promise.all([
     db.select({ value: count() }).from(auditEvents).where(metricPredicate),
-    db.select({ value: count() }).from(auditEvents).where(and(metricPredicate, lt(since, auditEvents.createdAt))),
+    db.select({ value: count() }).from(auditEvents).where(and(metricPredicate, gt(auditEvents.createdAt, since))),
     scope.organizationIds === null
       ? db.select({ id: organizations.id, name: organizations.name }).from(organizations).orderBy(organizations.name)
       : db.select({ id: organizations.id, name: organizations.name }).from(organizations).where(inArray(organizations.id, scope.organizationIds)).orderBy(organizations.name),

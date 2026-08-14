@@ -94,6 +94,17 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 - `npm test`: build the starter and verify its rendered loading skeleton
 - `npm run db:generate`: generate Drizzle migrations after schema changes
 
+## Isolated privileged workflow UAT
+
+The role-based integration harness is deliberately restricted to `localhost` and synthetic identities. It never runs against a hosted Site.
+
+1. Create an ignored `.dev.vars` file containing `PLATFORM_BOOTSTRAP_EMAIL=admin.test@reyati.local`.
+2. Initialize the project-local D1 database by applying the SQL files in `drizzle/`, in filename order, with `wrangler d1 execute DB --config wrangler.uat.jsonc --local --file <migration>`.
+3. Start the app with `npm run dev`.
+4. Set `REYATI_UAT_BASE_URL` to the printed local URL and run `npm run test:privileged`.
+
+The harness covers administrator bootstrap, organization and facility provisioning, owner/practitioner invitations, reviewer access, provider verification and publication, appointment booking and confirmation, idempotent retries, suspension enforcement, and audit retrieval.
+
 ## Learn More
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
