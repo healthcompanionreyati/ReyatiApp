@@ -1,0 +1,136 @@
+/* Final readability guardrails. These override legacy prototype type that was below usable UI sizes. */
+
+.header-actions .bell svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Notifications: stable header actions, stronger hierarchy and comfortable reading density. */
+.notification-header-actions {
+  flex: 0 0 auto;
+  margin-inline-start: 18px;
+  gap: 10px !important;
+}
+
+.notification-back {
+  width: auto !important;
+  min-width: max-content !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center;
+  padding: 0 16px !important;
+  border: 1px solid rgba(8, 42, 67, 0.1) !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #006a8e !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+.notification-back:hover { background: #e9f6fa !important; border-color: rgba(0, 106, 142, .24) !important; }
+.notification-avatar { width: 38px !important; height: 38px !important; border-radius: 12px !important; font-size: 11px !important; }
+
+.notification-hero { min-height: 170px; padding-block: 34px !important; }
+.notification-hero p { font-size: 11px !important; line-height: 1.4; letter-spacing: .14em !important; }
+.notification-hero h1 { font-size: clamp(34px, 3vw, 44px) !important; line-height: 1.08; letter-spacing: -.035em; }
+.notification-hero > div > span { display: block; color: #c9dde4 !important; font-size: 13px !important; line-height: 1.6; }
+.notification-hero > button { min-height: 42px; font-size: 11px !important; }
+.notification-content { padding: 24px 20px 56px !important; }
+.notification-privacy { align-items: center; padding: 14px 16px !important; }
+.notification-privacy p { color: #496b78 !important; font-size: 11px !important; line-height: 1.55 !important; }
+.notification-privacy b { margin-bottom: 2px; font-size: 11px !important; }
+.notification-inbox.live { max-width: 1040px; min-height: 320px; }
+.notification-inbox.live .inbox-head { padding: 20px 22px; }
+.notification-inbox.live .inbox-head h2 { font-size: 22px !important; line-height: 1.2; }
+.notification-inbox.live .inbox-head p,
+.notification-inbox.live .inbox-head button,
+.notification-inbox.live .inbox-tabs button { font-size: 12px !important; }
+.notification-inbox.live .inbox-tabs { padding-inline: 22px; }
+.notification-inbox.live .notice-copy i,
+.notification-inbox.live .notice-copy time { font-size: 10px !important; }
+.notification-inbox.live .notice-copy h3 { font-size: 15px !important; }
+.notification-inbox.live .notice-copy p,
+.notification-inbox.live .notice-copy a { font-size: 12px !important; line-height: 1.55; }
+.notification-inbox.live .empty-inbox { padding: 54px 20px 64px; }
+.notification-inbox.live .empty-inbox h3 { font-size: 14px !important; }
+.notification-inbox.live .empty-inbox p { color: #607b86; font-size: 11px !important; }
+
+/* Authentication: readable security language and clear, non-cramped choices. */
+.auth-story { padding-block: 38px !important; }
+.auth-story-copy > p { font-size: 11px !important; line-height: 1.4; letter-spacing: .13em !important; }
+.auth-story-copy h1 { font-size: clamp(42px, 4.5vw, 64px) !important; line-height: 1.06 !important; }
+.auth-story-copy > span { color: #d2e2e7 !important; font-size: 14px !important; line-height: 1.65 !important; }
+.auth-principles { gap: 16px !important; margin-top: 34px !important; }
+.auth-principles i { width: 36px; height: 36px; flex: 0 0 36px; }
+.auth-principles b { font-size: 11px !important; line-height: 1.35; }
+.auth-principles small { color: #bdd1d9 !important; font-size: 10px !important; line-height: 1.45; }
+.auth-legal { color: #b0c8d1 !important; font-size: 9px !important; line-height: 1.5; }
+.auth-stage > header { min-height: 72px; }
+.auth-stage > header a,
+.auth-stage > header button { font-size: 11px !important; }
+.auth-card { width: min(610px, calc(100% - 40px)); padding: 30px 34px !important; }
+.auth-success > span { width: 56px; height: 56px; }
+.auth-success > p { font-size: 10px !important; line-height: 1.4; letter-spacing: .12em !important; }
+.auth-success h2 { font-size: clamp(27px, 2.4vw, 32px) !important; line-height: 1.2; }
+.auth-success > small { max-width: 470px; color: #526f7b !important; font-size: 11px !important; line-height: 1.6 !important; }
+.identity-card { margin-top: 2px; padding: 14px 16px !important; }
+.identity-card b { font-size: 13px !important; line-height: 1.35; }
+.identity-card small { color: #557184 !important; font-size: 10px !important; line-height: 1.4; }
+.identity-card > i { font-size: 10px !important; }
+.auth-security-note { padding: 12px !important; gap: 11px !important; }
+.auth-security-note > span { width: 26px; height: 26px; flex: 0 0 26px; }
+.auth-security-note p { color: #496b78 !important; font-size: 10px !important; line-height: 1.55 !important; }
+.auth-security-note b { margin-bottom: 1px; font-size: 10px !important; }
+.role-picker.detailed { gap: 8px !important; margin: 18px 0 !important; }
+.role-picker.detailed a { min-height: 58px; padding: 11px 13px !important; gap: 11px !important; }
+.role-picker.detailed a > span { width: 34px; height: 34px; flex-basis: 34px; }
+.role-picker.detailed a b { font-size: 11px !important; line-height: 1.35; }
+.role-picker.detailed a small { color: #557184 !important; font-size: 10px !important; line-height: 1.4; }
+.auth-actions { gap: 9px !important; margin-top: 18px !important; padding-top: 16px !important; }
+.auth-actions > a { min-height: 42px; padding: 0 15px !important; font-size: 11px !important; white-space: nowrap; }
+.auth-primary { font-size: 11px !important; }
+.auth-heading > p { font-size: 10px !important; }
+.auth-heading h2 { font-size: 28px !important; }
+.auth-heading > span,
+.auth-switch { color: #526f7b !important; font-size: 11px !important; line-height: 1.6; }
+.auth-stage > footer { min-height: 62px; height: auto; padding: 14px; font-size: 10px !important; }
+.auth-stage > footer a { font-size: 10px !important; }
+
+/* Product-wide safety net for dense operational views. */
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) :where(a, button, b, p, small) {
+  font-size: 11px !important;
+  line-height: 1.4;
+}
+:where(.provider-topbar, .services-top, .insights-top, .settings-top, .patient-provider-top,
+  .partner-top, .program-top, .admin-topbar, .verify-top, .finance-top, .cases-top,
+  .moderation-top, .audit-top, .orgops-main > header) :where(a, button, b, p, small) {
+  font-size: 11px !important;
+  line-height: 1.35;
+}
+
+@media (max-width: 1160px) {
+  .notification-header > nav { display: none !important; }
+  .notification-header-actions { margin-inline-start: auto; }
+}
+
+@media (max-width: 900px) {
+  .auth-story-copy > span { font-size: 13px !important; }
+  .auth-card { margin-block: 30px !important; }
+}
+
+@media (max-width: 560px) {
+  .notification-back { padding-inline: 12px !important; }
+  .notification-hero { min-height: 154px; }
+  .notification-content { padding-inline: 13px !important; }
+  .auth-card { width: calc(100% - 24px); padding: 24px 19px !important; }
+  .auth-actions { display: grid; grid-template-columns: 1fr; }
+  .auth-actions > a { width: 100% !important; }
+}

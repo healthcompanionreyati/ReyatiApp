@@ -1169,3 +1169,24 @@ test("keeps premium navigation and mobile account actions reliable", async () =>
   assert.match(layout, /premium-navigation\.css/);
   assert.match(layout, /premium-ui\.css/);
 });
+
+test("keeps notification and authentication text readable without compressing header actions", async () => {
+  const [layout, readability, navigation, notifications, home] = await Promise.all([
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/readability-fixes.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/premium-navigation.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/notifications/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(layout, /readability-fixes\.css/);
+  assert.match(readability, /\.notification-back \{[\s\S]*?width: auto !important/);
+  assert.match(readability, /\.notification-back \{[\s\S]*?white-space: nowrap/);
+  assert.match(readability, /\.notification-privacy p \{[\s\S]*?font-size: 11px !important/);
+  assert.match(readability, /\.auth-success > small \{[\s\S]*?font-size: 11px !important/);
+  assert.match(readability, /\.role-picker\.detailed a small \{[\s\S]*?font-size: 10px !important/);
+  assert.doesNotMatch(navigation, /\.notification-header\) > div > a:first-child/);
+  assert.match(notifications, /className="notification-header-actions"/);
+  assert.match(notifications, /aria-label="Patient navigation"/);
+  assert.match(home, /className="bell"[\s\S]*?<svg aria-hidden="true"/);
+});
