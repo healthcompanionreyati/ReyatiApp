@@ -4,26 +4,37 @@ import { contactMethods, messageDeliveryEvents, notificationPreferences, outboun
 import { renderTransactionalEmail, type SupportedEmailLocale, type TransactionalEmailTemplateId, validateEmailTemplateInput } from "@/lib/communications/email-templates";
 import { ResendDeliveryError, sendWithResend } from "@/lib/communications/resend";
 import { foundationFlags } from "@/lib/foundation-flags";
+import { reportOperationalError } from "@/lib/observability";
 
 export async function enqueueTransactionalEmail(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string }) {
-  if (!foundationFlags.outboundEmailDelivery) return { queued: false, reason: "delivery_disabled" } as const;
   const db = await getDb();
   const [contact, preference] = await Promise.all([
-    db.select({ id: contactMethods.id }).from(contactMethods).where(and(eq(contactMethods.userId, input.userId), eq(contactMethods.kind, "email"), eq(contactMethods.status, "verified"), eq(contactMethods.isPrimary, true))).limit(1),
+    db.select({ id: contactMethods.id, status: contactMethods.status }).from(contactMethods).where(and(eq(contactMethods.userId, input.userId), eq(contactMethods.kind, "email"), eq(contactMethods.isPrimary, true))).limit(1),
     db.select({ enabled: notificationPreferences.enabled, locale: notificationPreferences.locale }).from(notificationPreferences).where(and(eq(notificationPreferences.userId, input.userId), eq(notificationPreferences.channel, "email"))).limit(1),
   ]);
-  if (!contact[0]) return { queued: false, reason: "verified_contact_required" } as const;
+  if (!contact[0]) return { queued: false, reason: "contact_required" } as const;
   if (!preference[0]?.enabled) return { queued: false, reason: "preference_disabled" } as const;
   const locale: SupportedEmailLocale = preference[0].locale === "ar" ? "ar" : "en";
   const templateData = validateEmailTemplateInput({ actionPath: input.actionPath });
   const now = new Date(); const id = crypto.randomUUID();
+  const suppressionReason = contact[0].status !== "verified" ? "independent_verification_required" : !foundationFlags.outboundEmailDelivery ? "delivery_disabled" : null;
   const inserted = await db.insert(outboundMessages).values({
     id, userId: input.userId, recipientContactMethodId: contact[0].id, channel: "email", templateId: input.templateId,
     templateVersion: 1, templateDataJson: JSON.stringify(templateData), locale, contentClassification: "account",
-    dedupeKey: input.dedupeKey, status: "pending", attemptCount: 0, nextAttemptAt: now, lastErrorCode: null,
+    dedupeKey: input.dedupeKey, status: suppressionReason ? "suppressed" : "pending", attemptCount: 0,
+    nextAttemptAt: suppressionReason ? null : now, lastErrorCode: suppressionReason,
     sentAt: null, createdAt: now, updatedAt: now,
   }).onConflictDoNothing().returning({ id: outboundMessages.id });
-  return { queued: Boolean(inserted[0]), messageId: inserted[0]?.id ?? null, reason: inserted[0] ? null : "duplicate" } as const;
+  return { queued: Boolean(inserted[0]), messageId: inserted[0]?.id ?? null, status: suppressionReason ? "suppressed" : "pending", reason: inserted[0] ? suppressionReason : "duplicate" } as const;
+}
+
+export async function recordTransactionalEmailIntent(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string }) {
+  try {
+    return await enqueueTransactionalEmail(input);
+  } catch (error) {
+    reportOperationalError("communications.intent_record_failed", error);
+    return { queued: false, reason: "recording_failed" } as const;
+  }
 }
 
 export async function dispatchTransactionalEmail(messageId: string) {

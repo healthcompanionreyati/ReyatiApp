@@ -102,3 +102,17 @@ test("communication preferences are account-owned, audited, and do not bypass de
   assert.match(page, /role="radiogroup"/);
   assert.match(page, /role="status"/);
 });
+
+test("real workflow events record suppressed email intents without calling delivery", async () => {
+  const outbox = await source("lib/communications/outbox.ts");
+  assert.match(outbox, /status: suppressionReason \? "suppressed" : "pending"/);
+  assert.match(outbox, /nextAttemptAt: suppressionReason \? null : now/);
+  assert.match(outbox, /recordTransactionalEmailIntent/);
+  for (const file of ["lib/appointments.ts", "lib/encounters.ts", "lib/verification-management.ts", "lib/family-access.ts", "lib/support-cases.ts"]) {
+    const workflow = await source(file);
+    assert.match(workflow, /recordTransactionalEmailIntent/);
+    assert.doesNotMatch(workflow, /dispatchTransactionalEmail|sendWithResend/);
+  }
+  const preferences = await source("lib/communications/preferences.ts");
+  assert.match(preferences, /eq\(outboundMessages\.userId, userId\)/);
+});

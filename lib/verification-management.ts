@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { auditEvents, notifications, organizationMembers, organizations, providerProfiles, providerServiceLocations, providerVerificationReviews, users } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 import { notificationRecord } from "@/lib/notification-center";
+import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 
 export class VerificationValidationError extends Error {
   constructor(message: string) { super(message); this.name = "VerificationValidationError"; }
@@ -60,5 +61,6 @@ export async function decideProviderVerification(userId: string, body: Record<st
     })),
     db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: provider[0].organizationId, action: `provider.verification_${decision}`, resourceType: "provider_profile", resourceId: providerId, outcome: "success", metadataJson: JSON.stringify({ reviewId }), createdAt: now }),
   ]);
+  await recordTransactionalEmailIntent({ userId: provider[0].userId, templateId: "provider_verification", actionPath: "/provider/services", dedupeKey: `email:provider-verification:${providerId}:${provider[0].verificationVersion}` });
   return { providerId, decision };
 }

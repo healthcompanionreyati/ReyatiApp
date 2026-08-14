@@ -6,6 +6,7 @@ type Settings = {
   contact: { email: string; status: string; independentlyVerified: boolean } | null;
   preferences: { locale: "en" | "ar"; inAppEnabled: true; emailEnabled: boolean };
   availability: { emailDelivery: boolean; emailVerification: boolean; reason: string | null };
+  activity: { templateId: string; status: string; reason: string | null; createdAt: string }[];
 };
 
 async function request(init?: RequestInit) {
@@ -65,6 +66,9 @@ export default function CommunicationSettingsPage() {
       <section className="communication-panel"><div className="panel-heading"><div><p>{ar ? "القنوات" : "CHANNELS"}</p><h2>{ar ? "طريقة تلقي التحديثات" : "How you receive updates"}</h2></div></div>
         <div className="channel-row"><span className="channel-icon">●</span><div><b>{ar ? "إشعارات داخل التطبيق" : "In-app notifications"}</b><small>{ar ? "القناة الأساسية للتحديثات المتعلقة بالحساب والرعاية." : "The authoritative channel for account and care-related updates."}</small></div><span className="always-on">{ar ? "نشط دائماً" : "Always on"}</span></div>
         <label className="channel-row selectable"><span className="channel-icon">@</span><div><b>{ar ? "البريد الإلكتروني" : "Email updates"}</b><small>{data?.availability.emailDelivery ? (ar ? "ستُرسل التحديثات المؤهلة إلى بريدك المتحقق منه." : "Eligible updates will be sent to your verified email.") : (ar ? "احفظ اختيارك الآن. لن تُرسل رسائل حتى اكتمال التحقق وتفعيل الخدمة." : "Save your choice now. Nothing will be sent until verification and delivery are active.")}</small></div><input type="checkbox" checked={emailEnabled} onChange={(event) => setEmailEnabled(event.target.checked)} aria-label={ar ? "تفضيل تحديثات البريد الإلكتروني" : "Email update preference"}/></label>
+      </section>
+      <section className="communication-panel"><div className="panel-heading"><div><p>{ar ? "سجل التسليم" : "DELIVERY ACTIVITY"}</p><h2>{ar ? "آخر تحديثات البريد" : "Recent email updates"}</h2></div></div>
+        {data?.activity.length ? <div className="communication-activity">{data.activity.map((item, index) => <article key={`${item.templateId}:${item.createdAt}:${index}`}><span>@</span><div><b>{item.templateId.replaceAll("_", " ")}</b><small>{new Date(item.createdAt).toLocaleString(locale === "ar" ? "ar-QA" : "en-QA", { dateStyle: "medium", timeStyle: "short" })}</small></div><i className={item.status}>{item.status === "suppressed" ? (ar ? "لم يُرسل" : "Not sent") : item.status}</i></article>)}</div> : <div className="communication-empty-activity"><span>◇</span><div><b>{ar ? "لا يوجد نشاط بريد بعد" : "No email activity yet"}</b><small>{ar ? "ستظهر هنا تحديثات التسليم المؤهلة من نشاط حسابك." : "Eligible delivery updates from your account activity will appear here."}</small></div></div>}
       </section>
       <div className="communication-actions"><a href="/notifications">{ar ? "عرض الإشعارات" : "View notifications"}</a><button type="submit" disabled={saving || loading}>{saving ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "حفظ التفضيلات" : "Save preferences")}</button></div>
     </form>

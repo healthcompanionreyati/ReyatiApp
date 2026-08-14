@@ -1,4 +1,4 @@
-export type TransactionalEmailTemplateId = "appointment_update" | "support_update" | "security_notice";
+export type TransactionalEmailTemplateId = "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice";
 export type SupportedEmailLocale = "en" | "ar";
 
 export type EmailTemplateInput = {
@@ -28,6 +28,18 @@ const copy: Record<TransactionalEmailTemplateId, Record<SupportedEmailLocale, { 
   appointment_update: {
     en: { subject: "Your Reyati appointment was updated", heading: "Appointment update", body: "There is an update to an appointment in your secure Reyati account. Sign in to view the details.", cta: "View appointment" },
     ar: { subject: "تم تحديث موعدك في ريّاتي", heading: "تحديث الموعد", body: "يوجد تحديث لموعد في حسابك الآمن في ريّاتي. سجّل الدخول لعرض التفاصيل.", cta: "عرض الموعد" },
+  },
+  provider_verification: {
+    en: { subject: "Your Reyati provider status was updated", heading: "Provider status update", body: "There is an update to your provider status in Reyati. Sign in to review the decision and next steps.", cta: "Review provider status" },
+    ar: { subject: "تم تحديث حالة مقدم الرعاية في ريّاتي", heading: "تحديث حالة مقدم الرعاية", body: "يوجد تحديث لحالة مقدم الرعاية في ريّاتي. سجّل الدخول لمراجعة القرار والخطوات التالية.", cta: "مراجعة حالة مقدم الرعاية" },
+  },
+  record_finalized: {
+    en: { subject: "A Reyati visit record is ready", heading: "Visit record ready", body: "A protected record for a completed visit is now available in your Reyati account. Sign in to view it securely.", cta: "View visit record" },
+    ar: { subject: "سجل زيارة جاهز في ريّاتي", heading: "سجل الزيارة جاهز", body: "أصبح سجل محمي لزيارة مكتملة متاحاً في حسابك في ريّاتي. سجّل الدخول لعرضه بأمان.", cta: "عرض سجل الزيارة" },
+  },
+  family_access: {
+    en: { subject: "Your Reyati family access was updated", heading: "Family access update", body: "There is an update to family access in your Reyati account. Sign in to review the active permissions.", cta: "Review family access" },
+    ar: { subject: "تم تحديث وصول العائلة في ريّاتي", heading: "تحديث وصول العائلة", body: "يوجد تحديث لوصول العائلة في حسابك في ريّاتي. سجّل الدخول لمراجعة الصلاحيات النشطة.", cta: "مراجعة وصول العائلة" },
   },
   support_update: {
     en: { subject: "Your Reyati support request was updated", heading: "Support update", body: "There is an update to your secure Reyati support request. Sign in to view the response.", cta: "View support request" },

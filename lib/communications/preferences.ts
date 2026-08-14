@@ -1,6 +1,6 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditEvents, contactMethods, notificationPreferences, users } from "@/db/schema";
+import { auditEvents, contactMethods, notificationPreferences, outboundMessages, users } from "@/db/schema";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 export class CommunicationPreferenceValidationError extends Error {
@@ -19,7 +19,7 @@ function locale(value: unknown): Locale {
 
 export async function getCommunicationSettings(userId: string) {
   const db = await getDb();
-  const [userRows, contacts, preferences] = await Promise.all([
+  const [userRows, contacts, preferences, activity] = await Promise.all([
     db.select({ preferredLanguage: users.preferredLanguage }).from(users).where(eq(users.id, userId)).limit(1),
     db.select({ displayValue: contactMethods.displayValue, status: contactMethods.status, verifiedAt: contactMethods.verifiedAt })
       .from(contactMethods)
@@ -28,6 +28,8 @@ export async function getCommunicationSettings(userId: string) {
     db.select({ channel: notificationPreferences.channel, enabled: notificationPreferences.enabled, locale: notificationPreferences.locale })
       .from(notificationPreferences)
       .where(eq(notificationPreferences.userId, userId)),
+    db.select({ templateId: outboundMessages.templateId, status: outboundMessages.status, reason: outboundMessages.lastErrorCode, createdAt: outboundMessages.createdAt })
+      .from(outboundMessages).where(eq(outboundMessages.userId, userId)).orderBy(desc(outboundMessages.createdAt)).limit(5),
   ]);
   const emailPreference = preferences.find((item) => item.channel === "email");
   const contact = contacts[0] ?? null;
@@ -48,6 +50,7 @@ export async function getCommunicationSettings(userId: string) {
       emailVerification: false,
       reason: !contact ? "contact_unavailable" : contact.status !== "verified" ? "independent_verification_required" : !foundationFlags.outboundEmailDelivery ? "delivery_not_active" : null,
     },
+    activity,
   };
 }
 

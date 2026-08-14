@@ -2,6 +2,7 @@ import { and, asc, eq, gt, inArray, isNull, lt, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, careRelationshipInvitations, careRelationships, users } from "@/db/schema";
 import { AuthorizationDeniedError } from "@/lib/authorization";
+import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 
 export class FamilyAccessValidationError extends Error {
   constructor(message: string) { super(message); this.name = "FamilyAccessValidationError"; }
@@ -184,6 +185,10 @@ export async function acceptCareInvitation(userId: string, userEmail: string, di
       outcome: "success", metadataJson: JSON.stringify({ relationshipType: invitation[0].relationship.relationshipType }), createdAt: now,
     }),
   ]);
+  await Promise.all([
+    recordTransactionalEmailIntent({ userId, templateId: "family_access", actionPath: "/family", dedupeKey: `email:family:${invitation[0].relationship.id}:accepted:subject` }),
+    recordTransactionalEmailIntent({ userId: invitation[0].relationship.managerUserId, templateId: "family_access", actionPath: "/family", dedupeKey: `email:family:${invitation[0].relationship.id}:accepted:manager` }),
+  ]);
   return { relationshipId: invitation[0].relationship.id, status: "active" };
 }
 
@@ -206,6 +211,10 @@ export async function revokeCareRelationship(userId: string, body: Record<string
       action: "care_relationship.revoked", resourceType: "care_relationship", resourceId: relationshipId,
       outcome: "success", metadataJson: JSON.stringify({ actorWasSubject: relationship[0].subjectUserId === userId }), createdAt: now,
     }),
+  ]);
+  await Promise.all([
+    recordTransactionalEmailIntent({ userId: relationship[0].managerUserId, templateId: "family_access", actionPath: "/family", dedupeKey: `email:family:${relationshipId}:revoked:manager` }),
+    ...(relationship[0].subjectUserId ? [recordTransactionalEmailIntent({ userId: relationship[0].subjectUserId, templateId: "family_access", actionPath: "/family", dedupeKey: `email:family:${relationshipId}:revoked:subject` })] : []),
   ]);
   return { relationshipId, status: "revoked" };
 }

@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { auditEvents, notifications, supportCaseMessages, supportCases, users } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 import { notificationRecord } from "@/lib/notification-center";
+import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 
 export class SupportCaseValidationError extends Error {
   constructor(message: string) { super(message); this.name = "SupportCaseValidationError"; }
@@ -59,6 +60,7 @@ export async function createSupportCase(userId: string, body: Record<string, unk
     db.insert(notifications).values(notificationRecord({ userId, type: "support", title: "Support request created", body: `${reference} was securely routed to the appropriate team.`, actionPath: "/support", resourceType: "support_case", resourceId: id, dedupeKey: `support:${id}:created`, createdAt: now })),
     db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: "support.case_created", resourceType: "support_case", resourceId: id, outcome: "success", metadataJson: JSON.stringify({ category, priority }), createdAt: now }),
   ]);
+  await recordTransactionalEmailIntent({ userId, templateId: "support_update", actionPath: "/support", dedupeKey: `email:support:${id}:created` });
   return value;
 }
 
@@ -108,5 +110,6 @@ export async function updateAdminSupportCase(userId: string, body: Record<string
   } else {
     await db.batch([notificationStatement, auditStatement]);
   }
+  await recordTransactionalEmailIntent({ userId: current[0].requesterUserId, templateId: "support_update", actionPath: "/support", dedupeKey: `email:support:${caseId}:${updated[0].version}` });
   return { caseId, status: nextStatus, version: updated[0].version };
 }

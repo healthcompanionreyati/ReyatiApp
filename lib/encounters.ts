@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { appointments, auditEvents, encounterNotes, notifications, patientProfiles, providerProfiles, users } from "@/db/schema";
 import { AppointmentConflictError, AppointmentValidationError } from "@/lib/appointments";
 import { notificationRecord } from "@/lib/notification-center";
+import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 import { requireActiveProvider } from "@/lib/authorization";
 
 type NoteInput = {
@@ -156,6 +157,7 @@ export async function saveEncounter(userId: string, body: unknown) {
         outcome: "success", metadataJson: JSON.stringify({ noteVersion: nextVersion }), createdAt: now,
       }),
     ]);
+    await recordTransactionalEmailIntent({ userId: owned.patientUserId, templateId: "record_finalized", actionPath: "/wallet", dedupeKey: `email:encounter:${value.appointmentId}:finalized:patient` });
   } else {
     await db.insert(auditEvents).values({
       id: crypto.randomUUID(), actorUserId: userId, organizationId: owned.organizationId,

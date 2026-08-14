@@ -17,6 +17,7 @@ import {
 } from "@/db/schema";
 import { notificationRecord } from "@/lib/notification-center";
 import { requireActiveProvider } from "@/lib/authorization";
+import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 
 const SLOT_MS = 15 * 60 * 1000;
 const MAX_ADVANCE_MS = 60 * 24 * 60 * 60 * 1000;
@@ -268,6 +269,10 @@ export async function bookAppointment(actorUserId: string, subjectUserId: string
         dedupeKey: `appointment:${appointment.id}:manager`, createdAt: now,
       }))] : []),
     ]);
+    await Promise.all([
+      recordTransactionalEmailIntent({ userId: subjectUserId, templateId: "appointment_update", actionPath: "/appointments", dedupeKey: `email:appointment:${appointment.id}:requested:patient` }),
+      recordTransactionalEmailIntent({ userId: provider[0].profile.userId, templateId: "appointment_update", actionPath: "/provider", dedupeKey: `email:appointment:${appointment.id}:requested:provider` }),
+    ]);
   } catch (error) {
     if (error instanceof Error && /unique|constraint/i.test(error.message)) {
       const racedReplay = await db.select().from(appointments).where(and(
@@ -302,6 +307,10 @@ export async function cancelPatientAppointment(actorUserId: string, subjectUserI
     db.insert(notifications).values(notificationRecord({ userId: owned[0].providerUserId, type: "appointment", title: "Appointment cancelled by patient", body: "A future appointment was cancelled and removed from your active schedule.", actionPath: "/provider", resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:provider`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] }),
     db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId, organizationId: owned[0].providerOrganizationId, action: "appointment.cancelled_by_patient", resourceType: "appointment", resourceId: appointmentId, outcome: "success", metadataJson: JSON.stringify({ previousStatus: owned[0].appointment.status, delegated: actorUserId !== subjectUserId }), createdAt: now }),
     ...(actorUserId !== subjectUserId ? [db.insert(notifications).values(notificationRecord({ userId: actorUserId, type: "appointment", title: "Delegated appointment cancelled", body: "The appointment was cancelled for the person who granted you access. The patient and provider were notified.", actionPath: `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}`, resourceType: "appointment", resourceId: appointmentId, dedupeKey: `appointment:${appointmentId}:cancelled:manager`, createdAt: now })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] })] : []),
+  ]);
+  await Promise.all([
+    recordTransactionalEmailIntent({ userId: subjectUserId, templateId: "appointment_update", actionPath: "/appointments", dedupeKey: `email:appointment:${appointmentId}:cancelled:patient` }),
+    recordTransactionalEmailIntent({ userId: owned[0].providerUserId, templateId: "appointment_update", actionPath: "/provider", dedupeKey: `email:appointment:${appointmentId}:cancelled:provider` }),
   ]);
   return { appointmentId, status: "cancelled", version: updated[0].version };
 }
@@ -380,5 +389,6 @@ export async function updateProviderAppointment(userId: string, body: Record<str
       createdAt: now,
     }),
   ]);
+  await recordTransactionalEmailIntent({ userId: owned[0].patientUserId, templateId: "appointment_update", actionPath: "/appointments", dedupeKey: `email:appointment:${appointmentId}:${nextStatus}:patient` });
   return { appointmentId, status: nextStatus, version: updated[0].version };
 }

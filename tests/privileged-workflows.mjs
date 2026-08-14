@@ -179,6 +179,8 @@ const booking = await request("/api/appointments", {
   headers: { "Idempotency-Key": idempotencyKey },
   body: bookingBody,
 });
+const communicationActivity = await request("/api/account/communications", { identity: identities.patient });
+assert.ok(communicationActivity.data.activity.some((item) => item.templateId === "appointment_update" && item.status === "suppressed"), "Opted-in workflow should record a non-sendable email intent while delivery is gated");
 const replay = await request("/api/appointments", {
   identity: identities.patient,
   method: "POST",

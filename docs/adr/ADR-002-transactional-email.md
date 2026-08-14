@@ -13,6 +13,8 @@ No application route or Worker schedule invokes delivery in this milestone. The 
 
 The account communication settings screen is live. It stores the user's English or Arabic preference and prospective email opt-in, keeps essential in-app notifications authoritative, and displays the platform-provided email as `provider_asserted`. Saving an opt-in never marks a contact verified and never bypasses the delivery gate.
 
+Appointment lifecycle, provider-verification decisions, finalized visit records, family-access changes, and support-case events now record account-owned transactional email intents. If the user opted in but the contact is not independently verified or delivery is disabled, the intent is stored as `suppressed` with no retry time. Suppressed events are evidence of workflow coverage and are never released later as stale messages.
+
 ## Activation requirements
 
 - Custom domain and sending subdomain selected.
