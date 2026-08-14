@@ -408,6 +408,18 @@ export const contactMethods = sqliteTable("contact_methods", {
   index("idx_contact_methods_user_status").on(table.userId, table.status),
 ]);
 
+export const contactVerificationChallenges = sqliteTable("contact_verification_challenges", {
+  id: text("id").primaryKey(),
+  contactMethodId: text("contact_method_id").notNull().references(() => contactMethods.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  consumedAt: integer("consumed_at", { mode: "timestamp_ms" }),
+  ...timestamps,
+}, (table) => [
+  index("idx_contact_verification_contact_status_created").on(table.contactMethodId, table.status, table.createdAt),
+  index("idx_contact_verification_status_expires").on(table.status, table.expiresAt),
+]);
+
 export const authSessions = sqliteTable("auth_sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),

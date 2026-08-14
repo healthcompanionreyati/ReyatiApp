@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, contactMethods, notificationPreferences, outboundMessages, users } from "@/db/schema";
 import { foundationFlags } from "@/lib/foundation-flags";
+import { emailVerificationAvailable } from "@/lib/communications/email-verification";
 
 export class CommunicationPreferenceValidationError extends Error {
   constructor(message: string) {
@@ -19,6 +20,7 @@ function locale(value: unknown): Locale {
 
 export async function getCommunicationSettings(userId: string) {
   const db = await getDb();
+  const verificationAvailable = await emailVerificationAvailable();
   const [userRows, contacts, preferences, activity] = await Promise.all([
     db.select({ preferredLanguage: users.preferredLanguage }).from(users).where(eq(users.id, userId)).limit(1),
     db.select({ displayValue: contactMethods.displayValue, status: contactMethods.status, verifiedAt: contactMethods.verifiedAt })
@@ -47,7 +49,7 @@ export async function getCommunicationSettings(userId: string) {
     },
     availability: {
       emailDelivery: foundationFlags.outboundEmailDelivery,
-      emailVerification: false,
+      emailVerification: verificationAvailable,
       reason: !contact ? "contact_unavailable" : contact.status !== "verified" ? "independent_verification_required" : !foundationFlags.outboundEmailDelivery ? "delivery_not_active" : null,
     },
     activity,

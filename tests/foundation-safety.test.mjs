@@ -47,7 +47,7 @@ test("capability registry declares ownership and activation boundaries", async (
 
 test("expand-only identity and communications tables are present", async () => {
   const schema = await source("db/schema.ts");
-  for (const table of ["auth_identities", "contact_methods", "auth_sessions", "auth_factors", "auth_events", "notification_preferences", "outbound_messages", "message_delivery_events", "webhook_receipts"]) {
+  for (const table of ["auth_identities", "contact_methods", "contact_verification_challenges", "auth_sessions", "auth_factors", "auth_events", "notification_preferences", "outbound_messages", "message_delivery_events", "webhook_receipts"]) {
     assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
   }
 });
@@ -115,4 +115,19 @@ test("real workflow events record suppressed email intents without calling deliv
   }
   const preferences = await source("lib/communications/preferences.ts");
   assert.match(preferences, /eq\(outboundMessages\.userId, userId\)/);
+});
+
+test("email verification is signed, expiring, rate-limited, and account-owned", async () => {
+  const verification = await source("lib/communications/email-verification.ts");
+  const route = await source("app/api/account/communications/verify/route.ts");
+  assert.match(verification, /HMAC/);
+  assert.match(verification, /SHA-256/);
+  assert.match(verification, /REQUEST_INTERVAL_MS/);
+  assert.match(verification, /CHALLENGE_LIFETIME_MS/);
+  assert.match(verification, /eq\(contactMethods\.userId, userId\)/);
+  assert.match(verification, /eq\(contactVerificationChallenges\.status, "pending"\)/);
+  assert.match(verification, /foundationFlags\.outboundEmailDelivery/);
+  assert.doesNotMatch(verification, /tokenHash|verificationToken:/);
+  assert.match(route, /getOrCreateCurrentUser\(\)/);
+  assert.match(route, /user\.status !== "active"/);
 });

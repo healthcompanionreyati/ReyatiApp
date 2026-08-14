@@ -1,4 +1,4 @@
-export type TransactionalEmailTemplateId = "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice";
+export type TransactionalEmailTemplateId = "email_verification" | "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice";
 export type SupportedEmailLocale = "en" | "ar";
 
 export type EmailTemplateInput = {
@@ -25,6 +25,10 @@ function escapeHtml(value: string) {
 }
 
 const copy: Record<TransactionalEmailTemplateId, Record<SupportedEmailLocale, { subject: string; heading: string; body: string; cta: string }>> = {
+  email_verification: {
+    en: { subject: "Verify your email for Reyati", heading: "Verify your email", body: "Confirm this email address for future Reyati account updates. This secure link expires shortly.", cta: "Verify email" },
+    ar: { subject: "تحقق من بريدك الإلكتروني لريّاتي", heading: "تحقق من بريدك الإلكتروني", body: "أكد عنوان البريد الإلكتروني هذا لتحديثات حساب ريّاتي مستقبلاً. تنتهي صلاحية هذا الرابط الآمن قريباً.", cta: "تحقق من البريد" },
+  },
   appointment_update: {
     en: { subject: "Your Reyati appointment was updated", heading: "Appointment update", body: "There is an update to an appointment in your secure Reyati account. Sign in to view the details.", cta: "View appointment" },
     ar: { subject: "تم تحديث موعدك في ريّاتي", heading: "تحديث الموعد", body: "يوجد تحديث لموعد في حسابك الآمن في ريّاتي. سجّل الدخول لعرض التفاصيل.", cta: "عرض الموعد" },

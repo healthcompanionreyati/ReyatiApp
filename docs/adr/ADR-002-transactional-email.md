@@ -15,6 +15,8 @@ The account communication settings screen is live. It stores the user's English 
 
 Appointment lifecycle, provider-verification decisions, finalized visit records, family-access changes, and support-case events now record account-owned transactional email intents. If the user opted in but the contact is not independently verified or delivery is disabled, the intent is stored as `suppressed` with no retry time. Suppressed events are evidence of workflow coverage and are never released later as stale messages.
 
+Email verification uses an account-owned, expiring D1 challenge and an HMAC-signed link generated only at dispatch time. No reusable verification token is stored in plaintext. Requests are rate-limited per contact and remain unavailable until both outbound delivery and a dedicated signing secret are configured.
+
 ## Activation requirements
 
 - Custom domain and sending subdomain selected.

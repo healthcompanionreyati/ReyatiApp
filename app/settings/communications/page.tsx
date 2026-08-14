@@ -20,6 +20,13 @@ async function request(init?: RequestInit) {
   return payload.data;
 }
 
+async function verifyEmail(action: "request" | "confirm", token?: string) {
+  const response = await fetch("/api/account/communications/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, token }) });
+  const payload = await response.json().catch(() => ({})) as { data?: { status: string }; error?: string };
+  if (!response.ok || !payload.data) throw new Error(payload.error || "Email verification is unavailable");
+  return payload.data;
+}
+
 export default function CommunicationSettingsPage() {
   const [data, setData] = useState<Settings | null>(null);
   const [locale, setLocale] = useState<"en" | "ar">("en");
@@ -32,7 +39,12 @@ export default function CommunicationSettingsPage() {
 
   useEffect(() => {
     let active = true;
-    request().then((next) => {
+    const verificationToken = new URLSearchParams(window.location.search).get("verify");
+    const verification = verificationToken ? verifyEmail("confirm", verificationToken).then(() => {
+      window.history.replaceState({}, "", "/settings/communications");
+      if (active) setNotice("Email verified successfully");
+    }) : Promise.resolve();
+    verification.then(() => request()).then((next) => {
       if (!active) return;
       setData(next); setLocale(next.preferences.locale); setEmailEnabled(next.preferences.emailEnabled);
     }).catch((caught) => { if (active) setError(caught instanceof Error ? caught.message : "Communication settings are unavailable"); })
@@ -49,6 +61,13 @@ export default function CommunicationSettingsPage() {
     finally { setSaving(false); }
   }
 
+  async function startVerification() {
+    setSaving(true); setError(""); setNotice("");
+    try { await verifyEmail("request"); setNotice(ar ? "تم إرسال رابط التحقق" : "Verification link sent"); await request().then(setData); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "Verification could not be started"); }
+    finally { setSaving(false); }
+  }
+
   return <main className={`communication-settings-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"} id="main-content">
     <header className="communication-settings-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav aria-label={ar ? "تنقل المريض" : "Patient navigation"}><a href="/">{ar ? "الرئيسية" : "Home"}</a><a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a><a href="/notifications">{ar ? "الإشعارات" : "Notifications"}</a></nav><a className="communication-back" href="/auth">{ar ? "الحساب الآمن" : "Secure account"}</a></header>
     <section className="communication-settings-hero"><div><p>{ar ? "إعدادات الحساب" : "ACCOUNT SETTINGS"}</p><h1>{ar ? "الاتصال واللغة" : "Communication & language"}</h1><span>{ar ? "اختر لغة تحديثات الحساب وسجّل تفضيل البريد الإلكتروني للمستقبل." : "Choose the language for account updates and record your email preference for future delivery."}</span></div><span className="communication-shield">✓</span></section>
@@ -58,6 +77,7 @@ export default function CommunicationSettingsPage() {
       <section className="communication-panel identity-panel"><div className="panel-heading"><div><p>{ar ? "جهة الاتصال" : "CONTACT"}</p><h2>{ar ? "البريد الإلكتروني الأساسي" : "Primary email"}</h2></div><span className={`contact-status ${data?.contact?.independentlyVerified ? "verified" : "pending"}`}>{data?.contact?.independentlyVerified ? (ar ? "تم التحقق" : "Verified") : (ar ? "مقدم من خدمة الدخول" : "Sign-in provided")}</span></div>
         {loading ? <div className="communication-loading">{ar ? "جارٍ تحميل جهة الاتصال…" : "Loading your contact…"}</div> : <div className="contact-card"><span>@</span><div><b>{data?.contact?.email ?? (ar ? "لا يتوفر بريد إلكتروني" : "No email available")}</b><small>{data?.contact?.independentlyVerified ? (ar ? "تم التحقق بشكل مستقل" : "Independently verified") : (ar ? "لم يتحقق ريّاتي من هذا العنوان بشكل مستقل بعد" : "Reyati has not independently verified this address yet")}</small></div></div>}
         <p className="contact-explanation">{ar ? "سيصبح تغيير البريد والتحقق منه متاحاً عند تفعيل خدمة البريد. لن نعرض زر تحقق غير فعّال." : "Email change and verification will become available when delivery is activated. Reyati will not show a verification control that cannot complete."}</p>
+        {!data?.contact?.independentlyVerified && data?.availability.emailVerification && <button className="verification-button primary" type="button" disabled={saving} onClick={() => void startVerification()}>{ar ? "تحقق من البريد" : "Verify email"}</button>}
       </section>
       <section className="communication-panel"><div className="panel-heading"><div><p>{ar ? "اللغة" : "LANGUAGE"}</p><h2>{ar ? "لغة الاتصال المفضلة" : "Preferred communication language"}</h2></div></div><div className="language-options" role="radiogroup" aria-label={ar ? "لغة الاتصال" : "Communication language"}>
         <label className={locale === "en" ? "selected" : ""}><input type="radio" name="locale" value="en" checked={locale === "en"} onChange={() => setLocale("en")}/><span>EN</span><div><b>English</b><small>Account and service updates in English</small></div></label>

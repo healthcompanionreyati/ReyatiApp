@@ -5,6 +5,7 @@ import { renderTransactionalEmail, type SupportedEmailLocale, type Transactional
 import { ResendDeliveryError, sendWithResend } from "@/lib/communications/resend";
 import { foundationFlags } from "@/lib/foundation-flags";
 import { reportOperationalError } from "@/lib/observability";
+import { signedVerificationPath } from "@/lib/communications/email-verification";
 
 export async function enqueueTransactionalEmail(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string }) {
   const db = await getDb();
@@ -46,17 +47,20 @@ export async function dispatchTransactionalEmail(messageId: string) {
   const row = rows[0];
   if (!row) return { delivered: false, reason: "not_dispatchable" } as const;
   try {
-    let templateData: { actionPath?: unknown };
+    let templateData: { actionPath?: unknown; challengeId?: unknown };
     try {
-      templateData = JSON.parse(row.message.templateDataJson) as { actionPath?: unknown };
+      templateData = JSON.parse(row.message.templateDataJson) as { actionPath?: unknown; challengeId?: unknown };
     } catch {
       throw new ResendDeliveryError("invalid_template_data", false);
     }
-    if (typeof templateData.actionPath !== "string") throw new ResendDeliveryError("invalid_template_data", false);
+    const actionPath = row.message.templateId === "email_verification"
+      ? typeof templateData.challengeId === "string" ? await signedVerificationPath(templateData.challengeId) : null
+      : typeof templateData.actionPath === "string" ? templateData.actionPath : null;
+    if (!actionPath) throw new ResendDeliveryError("invalid_template_data", false);
     const { env } = await import("cloudflare:workers");
     let rendered;
     try {
-      rendered = renderTransactionalEmail(row.message.templateId as TransactionalEmailTemplateId, row.message.locale === "ar" ? "ar" : "en", { actionPath: templateData.actionPath }, env.REYATI_APP_URL ?? "");
+      rendered = renderTransactionalEmail(row.message.templateId as TransactionalEmailTemplateId, row.message.locale === "ar" ? "ar" : "en", { actionPath }, env.REYATI_APP_URL ?? "");
     } catch {
       throw new ResendDeliveryError("invalid_template_configuration", false);
     }

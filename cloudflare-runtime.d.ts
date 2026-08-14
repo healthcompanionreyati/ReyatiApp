@@ -20,5 +20,6 @@ declare module "cloudflare:workers" {
     RESEND_FROM_EMAIL?: string;
     RESEND_REPLY_TO_EMAIL?: string;
     REYATI_APP_URL?: string;
+    CONTACT_VERIFICATION_SIGNING_KEY?: string;
   };
 }
