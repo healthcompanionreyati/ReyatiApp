@@ -21,19 +21,23 @@ export default function PartnerProgramme() {
   const [lang, setLang] = useState<"en" | "ar">("en");
   const [data, setData] = useState<ProgrammeBoundary | null>(null);
   const [error, setError] = useState(false);
+  const [refresh, setRefresh] = useState(0);
   const ar = lang === "ar";
 
   useEffect(() => {
     let active = true;
-    fetch("/api/partner/capability?surface=programme", { credentials: "same-origin", cache: "no-store" })
+    const controller = new AbortController();
+    fetch("/api/partner/capability?surface=programme", { credentials: "same-origin", cache: "no-store", signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error("unavailable");
-        return response.json();
+        const payload = await response.json().catch(() => ({})) as { data?: ProgrammeBoundary };
+        if (!payload.data || !Array.isArray(payload.data.sources)) throw new Error("unavailable");
+        return payload;
       })
       .then((payload) => active && setData(payload.data))
-      .catch(() => active && setError(true));
-    return () => { active = false; };
-  }, []);
+      .catch((reason) => { if (active && !(reason instanceof DOMException && reason.name === "AbortError")) setError(true); });
+    return () => { active = false; controller.abort(); };
+  }, [refresh]);
 
   return <main className={`program-shell live-program-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="program-sidebar">
@@ -50,7 +54,7 @@ export default function PartnerProgramme() {
         <div className="program-heading"><div><p>{ar ? "تصميم البرنامج وضوابطه" : "PROGRAMME DESIGN & CONTROL"}</p><h1>{ar ? "إعداد البرنامج غير متاح" : "Programme setup is not available"}</h1><span>{ar ? "لم تُنفّذ بعد مصادر البيانات والموافقات اللازمة لإنشاء خطة مزايا حقيقية أو نشرها." : "The data sources and approvals required to create or publish a real benefit programme are not implemented yet."}</span></div><a href="/partner">{ar ? "عرض حالة المساحة" : "View workspace status"}</a></div>
 
         {!data && !error && <div className="programme-live-state"><span/><p>{ar ? "جارٍ التحقق من القدرة…" : "Checking capability…"}</p></div>}
-        {error && <div className="programme-live-state error"><h2>{ar ? "تعذر تحميل حالة الإعداد" : "Unable to load setup status"}</h2><p>{ar ? "لم يتم عرض أو تعديل أي برنامج. حاول مرة أخرى أو تواصل مع الدعم." : "No programme was shown or changed. Try again or contact support."}</p><a href="/support">{ar ? "طلب الدعم" : "Request support"}</a></div>}
+        {error && <div className="programme-live-state error"><h2>{ar ? "تعذر تحميل حالة الإعداد" : "Unable to load setup status"}</h2><p>{ar ? "لم يتم عرض أو تعديل أي برنامج. حاول مرة أخرى أو تواصل مع الدعم." : "No programme was shown or changed. Try again or contact support."}</p><button type="button" onClick={() => { setData(null); setError(false); setRefresh((value) => value + 1); }}>{ar ? "حاول مرة أخرى" : "Try again"}</button><a href="/support">{ar ? "طلب الدعم" : "Request support"}</a></div>}
         {data && <>
           <section className="programme-boundary-banner"><span>!</span><div><b>{ar ? "الإنشاء والتعديل والنشر معطّلة" : "Create, edit, and publish are disabled"}</b><p>{ar ? "لا تعرض هذه الصفحة خططاً أو قواعد أو موظفين افتراضيين. لن تُفعّل إجراءات البرنامج حتى توجد سجلات دائمة وصلاحيات وموافقات قابلة للتدقيق." : "This page does not show placeholder plans, rules, or employees. Programme actions will remain unavailable until durable records, permissions, and auditable approvals exist."}</p></div><i>{ar ? "غير نشط" : "NOT ACTIVE"}</i></section>
 

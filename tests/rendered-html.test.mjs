@@ -709,12 +709,19 @@ test("replaces fabricated employer and programme surfaces with audited activatio
   assert.match(page, /Requirements before activation/);
   assert.match(page, /an employer must never see appointments, services, providers, diagnoses, clinical notes/);
   assert.match(page, /\/support/);
+  assert.match(page, /response\.json\(\)\.catch/);
+  assert.match(page, /controller\.abort\(\)/);
+  assert.match(page, /setRefresh\(\(value\) => value \+ 1\)/);
+  assert.match(page, /sourceCopy\[source\.id\] \?\?/);
   assert.doesNotMatch(page, /Atlas Consulting|EMP-1048|Maha A\.|Khalid R\.|QAR 612|QAR 900|INV-2026|248|August invoice|Benefits utilization|HR roster sync|Secure benefits link sent|Prototype change saved/i);
   assert.match(programmePage, /fetch\("\/api\/partner\/capability\?surface=programme"/);
   assert.match(programmePage, /Create, edit, and publish are disabled/);
   assert.match(programmePage, /Required publication workflow/);
   assert.match(programmePage, /Data that must never be used/);
   assert.match(programmePage, /Appointments, providers, services, diagnoses, clinical notes, medications, claims/);
+  assert.match(programmePage, /response\.json\(\)\.catch/);
+  assert.match(programmePage, /controller\.abort\(\)/);
+  assert.match(programmePage, /setRefresh\(\(value\) => value \+ 1\)/);
   assert.doesNotMatch(programmePage, /Atlas Consulting|Reyati Plus|Reyati Essential|Executive Care|Aisha M\.|Fahad K\.|EMP-1058|QAR 612|248|73%|Prototype change saved|All changes are safely simulated/i);
 });
 

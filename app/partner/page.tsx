@@ -22,20 +22,24 @@ export default function PartnerPortal() {
   const [lang, setLang] = useState<"en" | "ar">("en");
   const [data, setData] = useState<PartnerBoundary | null>(null);
   const [error, setError] = useState<"forbidden" | "unavailable" | null>(null);
+  const [refresh, setRefresh] = useState(0);
   const ar = lang === "ar";
 
   useEffect(() => {
     let active = true;
-    fetch("/api/partner/capability", { credentials: "same-origin", cache: "no-store" })
+    const controller = new AbortController();
+    fetch("/api/partner/capability", { credentials: "same-origin", cache: "no-store", signal: controller.signal })
       .then(async (response) => {
         if (response.status === 401 || response.status === 403) throw new Error("forbidden");
         if (!response.ok) throw new Error("unavailable");
-        return response.json();
+        const payload = await response.json().catch(() => ({})) as { data?: PartnerBoundary };
+        if (!payload.data || !Array.isArray(payload.data.sources)) throw new Error("unavailable");
+        return payload;
       })
       .then((payload) => active && setData(payload.data))
-      .catch((reason) => active && setError(reason.message === "forbidden" ? "forbidden" : "unavailable"));
-    return () => { active = false; };
-  }, []);
+      .catch((reason) => { if (active && !(reason instanceof DOMException && reason.name === "AbortError")) setError(reason.message === "forbidden" ? "forbidden" : "unavailable"); });
+    return () => { active = false; controller.abort(); };
+  }, [refresh]);
 
   return <main className={`partner-shell live-partner-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="partner-sidebar">
@@ -57,7 +61,7 @@ export default function PartnerPortal() {
         <div className="partner-heading"><div><p>{ar ? "بوابة صاحب العمل" : "EMPLOYER PORTAL"}</p><h1>{ar ? "مساحة الشركاء غير مفعّلة" : "Partner workspace is not active"}</h1><span>{ar ? "لا يوجد حالياً مصدر موثوق لبيانات أصحاب العمل أو الموظفين أو المزايا أو التمويل في ريّاتي." : "Reyati currently has no authoritative employer, employee, benefits, or funding source."}</span></div><a href="/support">{ar ? "ناقش التفعيل" : "Discuss activation"}</a></div>
 
         {!data && !error && <div className="partner-live-state"><span/><p>{ar ? "جارٍ التحقق من الوصول…" : "Checking access…"}</p></div>}
-        {error && <div className="partner-live-state error"><h2>{error === "forbidden" ? (ar ? "تسجيل الدخول مطلوب" : "Sign-in required") : (ar ? "تعذر تحميل الحالة" : "Unable to load status")}</h2><p>{ar ? "لم يتم عرض أي بيانات شريك. حاول مرة أخرى أو تواصل مع الدعم." : "No partner data was shown. Try again or contact support."}</p><a href="/auth">{ar ? "فتح الحساب" : "Open account"}</a></div>}
+        {error && <div className="partner-live-state error"><h2>{error === "forbidden" ? (ar ? "تسجيل الدخول مطلوب" : "Sign-in required") : (ar ? "تعذر تحميل الحالة" : "Unable to load status")}</h2><p>{ar ? "لم يتم عرض أي بيانات شريك. حاول مرة أخرى أو تواصل مع الدعم." : "No partner data was shown. Try again or contact support."}</p>{error === "forbidden" ? <a href="/auth">{ar ? "فتح الحساب" : "Open account"}</a> : <button type="button" onClick={() => { setData(null); setError(null); setRefresh((value) => value + 1); }}>{ar ? "حاول مرة أخرى" : "Try again"}</button>}</div>}
         {data && <>
           <section className="partner-boundary-banner"><span>!</span><div><b>{ar ? "لا توجد بيانات تشغيلية لعرضها" : "There is no operational partner data to display"}</b><p>{ar ? "أزلنا الأعضاء والأرصدة والفواتير ومقاييس الاستخدام التجريبية. لن تصبح الإجراءات متاحة حتى تُنفّذ مصادر بيانات موثوقة وتفويضات على الخادم." : "Placeholder members, balances, invoices, and utilization metrics have been removed. Actions remain unavailable until authoritative sources and server-side authorization exist."}</p></div><i>{ar ? "غير نشط" : "NOT ACTIVE"}</i></section>
 
@@ -67,7 +71,7 @@ export default function PartnerPortal() {
             <article><span>{ar ? "بيانات الموظفين" : "Employee data"}</span><b>{ar ? "غير محمّلة" : "Not loaded"}</b><small>{ar ? "الخصوصية حسب التصميم" : "Private by design"}</small></article>
           </section>
 
-          <section className="partner-source-panel"><div className="partner-panel-heading"><div><h2>{ar ? "جاهزية مصادر البيانات" : "Data-source readiness"}</h2><p>{ar ? "كل قدرة أدناه غير متصلة عن قصد." : "Every capability below is intentionally disconnected."}</p></div><span>{data.sources.filter((source) => source.connected).length} / {data.sources.length} {ar ? "متصلة" : "connected"}</span></div><div className="partner-source-grid">{data.sources.map((source) => { const copy = sourceCopy[source.id]; return <article key={source.id}><span>{copy.mark}</span><div><b>{ar ? copy.ar : copy.en}</b><small>{ar ? copy.detailAr : copy.detailEn}</small></div><i>{ar ? "غير متصل" : "NOT CONNECTED"}</i></article>; })}</div></section>
+          <section className="partner-source-panel"><div className="partner-panel-heading"><div><h2>{ar ? "جاهزية مصادر البيانات" : "Data-source readiness"}</h2><p>{ar ? "كل قدرة أدناه غير متصلة عن قصد." : "Every capability below is intentionally disconnected."}</p></div><span>{data.sources.filter((source) => source.connected).length} / {data.sources.length} {ar ? "متصلة" : "connected"}</span></div><div className="partner-source-grid">{data.sources.map((source) => { const copy = sourceCopy[source.id] ?? { en: "Unrecognized source", ar: "مصدر غير معروف", detailEn: "This source is not available in the current client.", detailAr: "هذا المصدر غير متاح في الإصدار الحالي.", mark: "—" }; return <article key={source.id}><span>{copy.mark}</span><div><b>{ar ? copy.ar : copy.en}</b><small>{ar ? copy.detailAr : copy.detailEn}</small></div><i>{ar ? "غير متصل" : "NOT CONNECTED"}</i></article>; })}</div></section>
 
           <section className="partner-activation"><h2>{ar ? "المتطلبات قبل التفعيل" : "Requirements before activation"}</h2><p>{ar ? "يجب تنفيذ هذه الضوابط والتحقق منها قبل عرض أي مساحة لصاحب عمل." : "These controls must be implemented and verified before any employer workspace is shown."}</p><ol>
             <li>{ar ? "نوع مؤسسة مخصص لأصحاب العمل مع تحقق ومالك مسؤول." : "A dedicated employer organization type with verification and an accountable owner."}</li>
