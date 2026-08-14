@@ -1,0 +1,300 @@
+/* Premium navigation system - calm, precise and distinctly Reyati. */
+:root {
+  --chrome-border: rgba(8, 42, 67, 0.09);
+  --chrome-surface: rgba(255, 255, 255, 0.88);
+  --chrome-shadow: 0 12px 36px rgba(8, 42, 67, 0.08);
+  --chrome-ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Patient-facing top navigation */
+:where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+  .payments-header, .support-header, .notification-header) {
+  height: 76px !important;
+  min-height: 76px !important;
+  padding-inline: clamp(22px, 4vw, 64px) !important;
+  background: var(--chrome-surface) !important;
+  border-bottom: 1px solid var(--chrome-border) !important;
+  box-shadow: 0 8px 28px rgba(8, 42, 67, 0.045) !important;
+  backdrop-filter: blur(24px) saturate(145%) !important;
+}
+
+:where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+  .payments-header, .support-header, .notification-header) .brand {
+  flex: 0 0 auto;
+  height: 44px;
+  padding: 0;
+}
+
+:where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+  .payments-header, .support-header, .notification-header) .brand img {
+  width: 112px !important;
+  max-height: 40px;
+  display: block;
+}
+
+:where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+  .payments-header, .support-header, .notification-header) > nav {
+  height: 46px !important;
+  margin-inline: auto;
+  padding: 5px;
+  gap: 2px !important;
+  border: 1px solid rgba(8, 42, 67, 0.055);
+  border-radius: 999px;
+  background: rgba(229, 243, 247, 0.58);
+}
+
+:where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+  .payments-header, .support-header, .notification-header) > nav a {
+  height: 34px !important;
+  padding-inline: clamp(12px, 1.35vw, 20px);
+  border: 0 !important;
+  border-radius: 999px;
+  color: #557184;
+  font: 650 12px/1 Manrope, sans-serif !important;
+  white-space: nowrap;
+}
+
+:where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+  .payments-header, .support-header, .notification-header) > nav a:hover {
+  color: #082a43;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+:where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+  .payments-header, .support-header, .notification-header) > nav a.active {
+  color: #082a43 !important;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(8, 42, 67, 0.1);
+}
+
+.header-actions { gap: 8px !important; }
+.header-actions .bell,
+:where(.wallet-header, .providers-header, .family-header, .payments-header, .support-header,
+  .notification-header) > div > a:first-child {
+  width: 42px;
+  min-width: 42px;
+  height: 42px !important;
+  min-height: 42px;
+  display: grid !important;
+  place-items: center;
+  padding: 0 !important;
+  border: 1px solid var(--chrome-border) !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #08a8d8 !important;
+  text-decoration: none;
+}
+
+.header-actions .bell:hover,
+:where(.wallet-header, .providers-header, .family-header, .payments-header, .support-header,
+  .notification-header) > div > a:first-child:hover {
+  background: #e5f3f7 !important;
+  border-color: rgba(8, 168, 216, 0.28) !important;
+  transform: translateY(-1px);
+}
+
+.account-trigger {
+  min-height: 44px;
+  padding: 4px 11px 4px 5px !important;
+  gap: 9px !important;
+  border: 1px solid var(--chrome-border) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+}
+.account-trigger:hover { background: #fff !important; box-shadow: 0 6px 18px rgba(8, 42, 67, 0.08); }
+.account-trigger .avatar { width: 34px; height: 34px; border-radius: 50%; background: #082a43; color: #fff; }
+.account-trigger .profile { color: #082a43; font: 700 11px Manrope, sans-serif; }
+
+/* Provider, administration and partner workspaces */
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) {
+  width: 260px !important;
+  padding: 28px 18px 22px !important;
+  background: linear-gradient(180deg, #082a43 0%, #092f48 56%, #073b53 100%) !important;
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.07) !important;
+  box-shadow: none !important;
+}
+
+.orgops-shell { display: block !important; }
+.orgops-sidebar { position: fixed; inset-block: 0; inset-inline-start: 0; z-index: 10; }
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar)::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, #08a8d8 0 68%, #18bfa0 68% 84%, #d4af67 84%);
+}
+
+:where(.provider-logo) {
+  min-height: 66px;
+  padding: 4px 10px 14px !important;
+  gap: 9px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+.provider-logo img { width: 116px !important; filter: none !important; }
+.provider-logo span { color: rgba(255, 255, 255, 0.52) !important; font-size: 9px !important; letter-spacing: 0.12em !important; text-transform: uppercase; }
+
+:where(.facility-chip, .admin-role, .verify-role, .settings-profile, .patient-provider-role) {
+  margin: 18px 0 20px !important;
+  padding: 11px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.035);
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav {
+  display: flex !important;
+  flex-direction: column;
+  gap: 5px !important;
+  height: auto !important;
+  align-items: stretch !important;
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav :where(a, button) {
+  position: relative;
+  width: 100%;
+  min-height: 46px !important;
+  height: 46px !important;
+  padding: 0 12px !important;
+  gap: 11px !important;
+  border: 0 !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  color: rgba(224, 239, 245, 0.68) !important;
+  font: 650 11px/1 Manrope, sans-serif !important;
+  letter-spacing: 0 !important;
+  text-decoration: none;
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav :where(a, button) > span {
+  width: 29px !important;
+  height: 29px;
+  flex: 0 0 29px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #a9c9d7;
+  font-size: 14px !important;
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav :where(a, button):hover {
+  background: rgba(255, 255, 255, 0.065) !important;
+  color: #fff !important;
+  transform: none !important;
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav :where(a.active, button.active) {
+  color: #fff !important;
+  background: rgba(8, 168, 216, 0.16) !important;
+  box-shadow: inset 0 0 0 1px rgba(73, 200, 237, 0.15);
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav :where(a.active, button.active)::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -1px;
+  width: 3px;
+  height: 22px;
+  border-radius: 0 4px 4px 0;
+  background: #08a8d8;
+}
+
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav :where(a.active, button.active) > span {
+  color: #082a43;
+  background: #08a8d8;
+}
+
+@media (min-width: 1001px) {
+  :where(.provider-main, .services-main, .insights-main, .settings-main, .patient-provider-main,
+    .program-main, .verify-main, .finance-main, .cases-main, .moderation-main, .audit-main,
+    .admin-main, .partner-main, .orgops-main) {
+    width: calc(100% - 260px) !important;
+    margin-inline-start: 260px !important;
+  }
+}
+
+:where(.provider-topbar, .services-top, .insights-top, .settings-top, .patient-provider-top,
+  .partner-top, .program-top, .admin-topbar, .verify-top, .finance-top, .cases-top,
+  .moderation-top, .audit-top, .orgops-main > header) {
+  height: 72px !important;
+  min-height: 72px !important;
+  padding-inline: 28px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid var(--chrome-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+}
+
+:where(.provider-topbar, .services-top, .insights-top, .settings-top, .patient-provider-top,
+  .partner-top, .program-top, .admin-topbar, .verify-top, .finance-top, .cases-top,
+  .moderation-top, .audit-top) > div:last-child :where(button, a) {
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 999px !important;
+}
+
+@media (max-width: 900px) {
+  :where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+    .payments-header, .support-header, .notification-header) > nav { display: none !important; }
+}
+
+@media (max-width: 720px) {
+  body:has(.mobile-dock) { padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
+
+  :where(body > main#main-content > header, .wallet-header, .providers-header, .family-header,
+    .payments-header, .support-header, .notification-header,
+    .provider-topbar, .services-top, .insights-top, .settings-top, .patient-provider-top,
+    .partner-top, .program-top, .admin-topbar, .verify-top, .finance-top, .cases-top,
+    .moderation-top, .audit-top) {
+    height: 64px !important;
+    min-height: 64px !important;
+    padding-inline: 14px !important;
+  }
+
+  .mobile-dock {
+    inset: auto 10px calc(8px + env(safe-area-inset-bottom)) !important;
+    width: auto;
+    height: 68px !important;
+    padding: 7px !important;
+    gap: 3px !important;
+    border: 1px solid rgba(8, 42, 67, 0.1) !important;
+    border-radius: 22px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    box-shadow: 0 18px 48px rgba(8, 42, 67, 0.18) !important;
+    backdrop-filter: blur(24px) saturate(155%) !important;
+  }
+
+  .mobile-dock a {
+    min-height: 52px !important;
+    border-radius: 16px !important;
+    gap: 3px !important;
+  }
+  .mobile-dock a span { font-size: 17px !important; }
+  .mobile-dock a b { font-size: 9px !important; font-weight: 700; }
+  .mobile-dock a.active { color: #082a43 !important; background: #e5f3f7 !important; }
+  .mobile-dock a.active::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.mobile-dock, header, aside, nav a, nav button) { transition: none !important; }
+}

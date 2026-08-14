@@ -1138,11 +1138,14 @@ test("discovers each dialog close control and lets Escape use it", async () => {
   assert.match(support, /<form className=\{`support-modal/);
 });
 
-test("keeps mobile chrome and account actions at reliable touch sizes", async () => {
-  const [completion, quality, auth] = await Promise.all([
+test("keeps premium navigation and mobile account actions reliable", async () => {
+  const [completion, quality, auth, navigation, premium, layout] = await Promise.all([
     readFile(new URL("../app/ui-completion.css", import.meta.url), "utf8"),
     readFile(new URL("../app/quality.css", import.meta.url), "utf8"),
     readFile(new URL("../app/auth.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/premium-navigation.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/premium-ui.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(completion, /@media \(max-width: 760px\)/);
@@ -1157,4 +1160,12 @@ test("keeps mobile chrome and account actions at reliable touch sizes", async ()
   assert.match(completion, /min-width: 44px/);
   assert.match(quality, /\.mobile-dock a \{[\s\S]*?min-height: 50px/);
   assert.match(auth, /@media\(max-width:560px\)/);
+  assert.match(navigation, /backdrop-filter: blur\(24px\) saturate\(145%\)/);
+  assert.match(navigation, /\.mobile-dock \{[\s\S]*?border-radius: 22px/);
+  assert.match(navigation, /\.orgops-sidebar \{ position: fixed/);
+  assert.match(premium, /\.home-live-actions \{[\s\S]*?repeat\(3/);
+  assert.match(premium, /\.provider-name \{ font-size: 17px/);
+  assert.match(premium, /prefers-reduced-motion: reduce/);
+  assert.match(layout, /premium-navigation\.css/);
+  assert.match(layout, /premium-ui\.css/);
 });

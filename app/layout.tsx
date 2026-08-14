@@ -38,6 +38,8 @@ import "./system-states.css";
 import "./recovery.css";
 import "./network-status.css";
 import "./route-loading.css";
+import "./premium-navigation.css";
+import "./premium-ui.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";
