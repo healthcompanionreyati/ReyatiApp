@@ -134,6 +134,13 @@
       "when": 1786724700897,
       "tag": "0018_third_magik",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1786726520950,
+      "tag": "0019_brief_stark_industries",
+      "breakpoints": true
     }
   ]
 }

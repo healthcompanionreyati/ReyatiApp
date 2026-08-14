@@ -7,24 +7,27 @@ import {
   updateProviderProfile,
 } from "@/lib/provider-management";
 import { AuthorizationDeniedError } from "@/lib/authorization";
+import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 
 export const dynamic = "force-dynamic";
 const noStore = { "Cache-Control": "private, no-store" };
 
 export async function GET() { return handle(async (userId) => getProviderSetup(userId)); }
-export async function POST(request: Request) { return handle(async (userId) => createProviderProfile(userId, await json(request)), 201); }
-export async function PATCH(request: Request) { return handle(async (userId) => updateProviderProfile(userId, await json(request))); }
+export async function POST(request: Request) { return handle(async (userId) => createProviderProfile(userId, await json(request)), 201, "provider.setup"); }
+export async function PATCH(request: Request) { return handle(async (userId) => updateProviderProfile(userId, await json(request)), 200, "provider.setup"); }
 
 async function json(request: Request) {
   try { return await request.json(); } catch { throw new ProviderManagementValidationError("A valid JSON body is required"); }
 }
 
-async function handle(operation: (userId: string) => Promise<unknown>, successStatus = 200) {
+async function handle(operation: (userId: string) => Promise<unknown>, successStatus = 200, rateLimitScope?: string) {
   try {
     const user = await getOrCreateCurrentUser();
     if (user.status !== "active") return Response.json({ error: "account_inactive" }, { status: 403, headers: noStore });
+    if (rateLimitScope) await enforceWriteRateLimit(user.id, rateLimitScope, { limit: 30 });
     return Response.json({ data: await operation(user.id) }, { status: successStatus, headers: noStore });
   } catch (error) {
+    const limited = rateLimitResponse(error, noStore); if (limited) return limited;
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof ProviderManagementValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });

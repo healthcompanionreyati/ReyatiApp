@@ -12,3 +12,5 @@ Status: Pilot foundation; accountable names and rota are still required.
 Emergency care must never be routed through Reyati support. User-facing surfaces continue to direct life-threatening emergencies in Qatar to 999.
 
 The protected `/admin/operations` workspace provides bounded operational and security signals without patient identity, clinical content, support descriptions, or event payloads. It is an internal triage aid, not a substitute for external monitoring or the approved incident process.
+
+Authenticated write routes use durable account-wide and operation-specific rate-limit buckets. Bucket identities are SHA-256 hashes, expire from operational storage after seven days, and never contain email addresses, names, request bodies, or clinical data. A rejected request returns HTTP 429 with a bounded `Retry-After` value. Resend webhooks remain separately protected by their disabled activation gate, signature verification, replay prevention, and timestamp window.

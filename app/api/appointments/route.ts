@@ -13,6 +13,7 @@ import {
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { resolveCareSubject } from "@/lib/family-access";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
+import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 
 export const dynamic = "force-dynamic";
 const noStore = { "Cache-Control": "private, no-store" };
@@ -55,6 +56,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const user = await getOrCreateCurrentUser();
+    await enforceWriteRateLimit(user.id, "appointments.book", { limit: 30 });
     const idempotencyKey = validateIdempotencyKey(request.headers.get("Idempotency-Key"));
     let body: unknown;
     try {
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const user = await getOrCreateCurrentUser();
+    await enforceWriteRateLimit(user.id, "appointments.cancel", { limit: 30 });
     if (user.status !== "active") return Response.json({ error: "account_inactive" }, { status: 403, headers: noStore });
     let body: Record<string, unknown>;
     try { body = await request.json() as Record<string, unknown>; } catch { throw new AppointmentValidationError("A valid JSON body is required"); }
@@ -105,6 +108,8 @@ export async function PATCH(request: Request) {
 }
 
 function apiError(error: unknown, event: string) {
+  const limited = rateLimitResponse(error, noStore);
+  if (limited) return limited;
   if (error instanceof AuthenticationRequiredError) {
     return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
   }

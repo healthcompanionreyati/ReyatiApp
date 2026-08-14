@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import { appointments, patientProfiles, providerProfiles, users } from "@/db/schema";
 import { AuthorizationDeniedError, requireActiveProvider, requireOrganizationRole } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
+import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 import { AppointmentConflictError, AppointmentValidationError, updateProviderAppointment } from "@/lib/appointments";
 
 export const dynamic = "force-dynamic";
@@ -62,11 +63,13 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const currentUser = await getOrCreateCurrentUser();
+    await enforceWriteRateLimit(currentUser.id, "provider.appointments", { limit: 60 });
     if (currentUser.status !== "active") throw new AuthorizationDeniedError();
     let body: Record<string, unknown>;
     try { body = await request.json() as Record<string, unknown>; } catch { throw new AppointmentValidationError("A valid JSON body is required"); }
     return Response.json({ appointment: await updateProviderAppointment(currentUser.id, body) }, { headers: noStore });
   } catch (error) {
+    const limited = rateLimitResponse(error, noStore); if (limited) return limited;
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof AppointmentValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });

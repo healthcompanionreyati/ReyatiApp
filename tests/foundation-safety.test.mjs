@@ -53,7 +53,7 @@ test("operations health is role-scoped, privacy-minimized, and truthful about pi
   assert.match(service, /requirePlatformRole\(userId, \["platform_admin", "security_auditor"\]\)/);
   assert.match(service, /external_error_tracking[\s\S]*?status: "blocked"/);
   assert.match(service, /backup_rehearsal[\s\S]*?status: "blocked"/);
-  assert.match(service, /platform_rate_limiting[\s\S]*?status: "partial"/);
+  assert.match(service, /platform_rate_limiting[\s\S]*?status: "implemented"/);
   assert.doesNotMatch(service, /supportCases\.description|supportCases\.subject|users\.email/);
   assert.match(route, /getOrCreateCurrentUser\(\)/);
   assert.match(route, /reportOperationalError/);
@@ -61,9 +61,35 @@ test("operations health is role-scoped, privacy-minimized, and truthful about pi
   assert.match(page, /not a claim of full monitoring coverage or pilot readiness/);
 });
 
+test("all authenticated write APIs use durable privacy-safe rate limits", async () => {
+  const schema = await source("db/schema.ts");
+  const limiter = await source("lib/rate-limits.ts");
+  assert.match(schema, /sqliteTable\("operational_rate_limits"/);
+  const migration = await source("drizzle/0019_brief_stark_industries.sql");
+  assert.match(migration, /idx_operational_rate_limits_window_end/);
+  assert.match(migration, /PRAGMA optimize/);
+  assert.match(limiter, /crypto\.subtle\.digest\("SHA-256"/);
+  assert.match(limiter, /account\.write/);
+  assert.match(limiter, /status: 429/);
+  assert.match(limiter, /"Retry-After"/);
+  const limiterTable = schema.match(/export const operationalRateLimits[\s\S]*?\n\}\);/)?.[0] ?? "";
+  assert.doesNotMatch(limiterTable, /user_id|email|address/);
+  const files = await routeFiles(path.join(root, "app", "api"));
+  for (const file of files) {
+    const contents = await readFile(file, "utf8");
+    if (!/export async function (POST|PATCH|PUT|DELETE)/.test(contents)) continue;
+    if (file.endsWith(path.join("webhooks", "resend", "route.ts"))) {
+      assert.match(contents, /communicationsWebhooks/);
+      continue;
+    }
+    assert.match(contents, /@\/lib\/rate-limits/, `${path.relative(root, file)} lacks the shared limiter`);
+    assert.match(contents, /rateLimitResponse/, `${path.relative(root, file)} lacks a 429 response path`);
+  }
+});
+
 test("expand-only identity and communications tables are present", async () => {
   const schema = await source("db/schema.ts");
-  for (const table of ["auth_identities", "contact_methods", "contact_verification_challenges", "auth_sessions", "auth_factors", "auth_events", "notification_preferences", "outbound_messages", "message_delivery_events", "webhook_receipts", "email_delivery_suppressions"]) {
+  for (const table of ["auth_identities", "contact_methods", "contact_verification_challenges", "auth_sessions", "auth_factors", "auth_events", "notification_preferences", "outbound_messages", "message_delivery_events", "webhook_receipts", "email_delivery_suppressions", "operational_rate_limits"]) {
     assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
   }
 });

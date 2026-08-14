@@ -1,5 +1,6 @@
 import { reportOperationalError } from "@/lib/observability";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
+import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 import {
   ProviderManagementValidationError,
   publishProviderService,
@@ -14,6 +15,7 @@ const noStore = { "Cache-Control": "private, no-store" };
 export async function POST(request: Request) {
   try {
     const user = await getOrCreateCurrentUser();
+    await enforceWriteRateLimit(user.id, "provider.catalog", { limit: 60 });
     if (user.status !== "active") return Response.json({ error: "account_inactive" }, { status: 403, headers: noStore });
     let body: Record<string, unknown>;
     try { body = await request.json() as Record<string, unknown>; } catch { throw new ProviderManagementValidationError("A valid JSON body is required"); }
@@ -25,6 +27,7 @@ export async function POST(request: Request) {
     }
     throw new ProviderManagementValidationError("action is invalid");
   } catch (error) {
+    const limited = rateLimitResponse(error, noStore); if (limited) return limited;
     if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore });
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof ProviderManagementValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });

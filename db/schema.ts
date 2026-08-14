@@ -524,3 +524,16 @@ export const emailDeliverySuppressions = sqliteTable("email_delivery_suppression
   sourceMessageId: text("source_message_id"),
   ...timestamps,
 });
+
+export const operationalRateLimits = sqliteTable("operational_rate_limits", {
+  bucketKey: text("bucket_key").primaryKey(),
+  scope: text("scope").notNull(),
+  requestCount: integer("request_count").notNull().default(1),
+  requestLimit: integer("request_limit").notNull(),
+  windowStartedAt: integer("window_started_at", { mode: "timestamp_ms" }).notNull(),
+  windowEndsAt: integer("window_ends_at", { mode: "timestamp_ms" }).notNull(),
+  ...timestamps,
+}, (table) => [
+  index("idx_operational_rate_limits_window_end").on(table.windowEndsAt),
+  index("idx_operational_rate_limits_scope_updated").on(table.scope, table.updatedAt),
+]);

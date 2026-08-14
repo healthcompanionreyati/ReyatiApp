@@ -12,6 +12,7 @@ const identities = {
   reviewer: { id: `uat-reviewer-${runId}`, email: `reviewer.${runId}@reyati.local`, name: "UAT Verification Reviewer" },
   provider: { id: `uat-provider-${runId}`, email: `provider.${runId}@reyati.local`, name: "Dr UAT Provider" },
   patient: { id: `uat-patient-${runId}`, email: `patient.${runId}@reyati.local`, name: "UAT Patient" },
+  rateLimited: { id: `uat-rate-${runId}`, email: `rate.${runId}@reyati.local`, name: "UAT Rate Limit" },
 };
 
 function authHeaders(identity) {
@@ -66,6 +67,16 @@ assert.equal(updatedCommunications.data.preferences.locale, "ar");
 assert.equal(updatedCommunications.data.preferences.emailEnabled, true);
 assert.equal(updatedCommunications.data.availability.emailDelivery, false, "Preference must not bypass the delivery feature gate");
 await request("/api/account/communications/verify", { identity: identities.patient, method: "POST", body: { action: "request" }, status: 409 });
+for (let attempt = 0; attempt < 5; attempt += 1) {
+  await request("/api/account/communications/verify", { identity: identities.rateLimited, method: "POST", body: { action: "request" }, status: 409 });
+}
+const limitedResponse = await fetch(new URL("/api/account/communications/verify", baseUrl), {
+  method: "POST", headers: { ...authHeaders(identities.rateLimited), "content-type": "application/json" }, body: JSON.stringify({ action: "request" }),
+});
+assert.equal(limitedResponse.status, 429);
+assert.ok(Number(limitedResponse.headers.get("retry-after")) > 0);
+const limitedPayload = await limitedResponse.json();
+assert.equal(limitedPayload.error, "rate_limited");
 await request("/api/webhooks/resend", { identity: identities.patient, method: "POST", body: {}, status: 404 });
 await request("/api/admin/communications", { identity: identities.patient, status: 403 });
 await request("/api/admin/operations", { identity: identities.patient, status: 403 });
@@ -76,6 +87,7 @@ assert.equal(queueRun.data.enabled, false);
 assert.equal(queueRun.data.claimed, 0);
 const operationsHealth = await request("/api/admin/operations", { identity: identities.admin });
 assert.equal(operationsHealth.data.databaseReachable, true);
+assert.ok(operationsHealth.data.metrics.activeRateLimitedBuckets >= 1);
 assert.ok(operationsHealth.data.controls.some((control) => control.id === "external_error_tracking" && control.status === "blocked"));
 assert.equal(operationsHealth.data.recentSignals.every((signal) => !("userId" in signal) && !("resourceId" in signal)), true);
 
