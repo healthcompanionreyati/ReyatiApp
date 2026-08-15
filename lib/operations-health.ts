@@ -76,6 +76,17 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 
+  const pilotReadiness = {
+    decision: "not_ready" as const,
+    gates: [
+      { id: "application_safety", name: "Application safety baseline", status: "cleared" as const, evidence: "Privacy-safe logging, scoped audit events, and durable write limits are implemented.", ownerNeeded: false },
+      { id: "incident_ownership", name: "Incident ownership and escalation", status: "blocked" as const, evidence: "The response procedure exists, but named accountable people, recipients, and an on-call rota are not configured.", ownerNeeded: true },
+      { id: "monitoring_coverage", name: "Monitoring and security alerting", status: "blocked" as const, evidence: "No approved monitoring destination, alert thresholds, or security-alert transport is connected.", ownerNeeded: true },
+      { id: "recovery_evidence", name: "Hosted recovery evidence", status: "blocked" as const, evidence: "A backup procedure exists, but no hosted restore rehearsal or measured recovery result is recorded.", ownerNeeded: true },
+      { id: "data_lifecycle", name: "Clinical data lifecycle", status: "blocked" as const, evidence: "Retention periods, legal-hold operations, scanner activation, and scheduled cleanup remain unapproved.", ownerNeeded: true },
+    ],
+  };
+
   await db.insert(auditEvents).values({
     id: crypto.randomUUID(), actorUserId: userId, organizationId: null,
     action: "operations.health_viewed", resourceType: "operations_health", resourceId: "platform",
@@ -84,6 +95,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
 
   return {
     operatorName, role: role.role, generatedAt: now.toISOString(), databaseReachable: true, metrics, controls,
+    pilotReadiness: { ...pilotReadiness, cleared: pilotReadiness.gates.filter((gate) => gate.status === "cleared").length, total: pilotReadiness.gates.length },
     communicationStatuses: messageAttentionRows.map((row) => ({ status: row.status, count: Number(row.value) })),
     recentSignals: [
       ...recentAuthSignals.map((event) => ({ source: "authentication", event: event.eventType, context: event.channel, outcome: event.outcome, createdAt: event.createdAt.toISOString() })),

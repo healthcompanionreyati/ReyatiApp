@@ -1,0 +1,15 @@
+.pilot-readiness{margin:22px 0;background:#fff;border:1px solid #e5c986;border-radius:18px;overflow:hidden;box-shadow:0 16px 40px rgba(25,59,64,.06)}
+.pilot-readiness-head{display:flex;justify-content:space-between;gap:24px;padding:26px;background:linear-gradient(125deg,#fffaf0,#fff)}
+.pilot-readiness-head p{margin:0 0 7px;color:#9c7228;font-size:11px;font-weight:800;letter-spacing:.13em}
+.pilot-readiness-head h2{margin:0 0 8px;font:700 24px Sora,sans-serif;color:#173c41}
+.pilot-readiness-head span{color:#627f81;line-height:1.55}
+.pilot-readiness-head>strong{min-width:126px;display:grid;align-content:center;text-align:center;color:#806020;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.pilot-readiness-head>strong b{font:700 30px Sora,sans-serif;color:#9c3f32}
+.pilot-readiness-gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:#e3ebea;border-block:1px solid #e3ebea}
+.pilot-readiness-gates article{background:#fff;display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:start;padding:20px}
+.pilot-readiness-gates article>span{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:900}
+.pilot-readiness-gates article>span.cleared{background:#ddf3e9;color:#16744a}.pilot-readiness-gates article>span.blocked{background:#fde9e5;color:#983f33}
+.pilot-readiness-gates b{color:#193b40}.pilot-readiness-gates p{margin:5px 0 0;color:#667f81;font-size:12px;line-height:1.5}
+.pilot-readiness-gates i{font-style:normal;font-size:10px;font-weight:900;letter-spacing:.08em}.pilot-readiness-gates i.cleared{color:#16744a}.pilot-readiness-gates i.blocked{color:#983f33}
+.pilot-readiness footer{display:flex;gap:10px;padding:15px 22px;background:#f7faf9;color:#5d7779;font-size:12px}.pilot-readiness footer p{margin:0;line-height:1.5}.pilot-readiness footer span{font-weight:900;color:#176e70}
+@media(max-width:700px){.pilot-readiness-head{display:grid}.pilot-readiness-head>strong{text-align:start}.pilot-readiness-gates{grid-template-columns:1fr}.pilot-readiness-gates article{grid-template-columns:36px 1fr}.pilot-readiness-gates i{grid-column:2}}

@@ -44,6 +44,7 @@ import "./premium-ui.css";
 import "./readability-fixes.css";
 import "./communications-settings.css";
 import "./operations-health.css";
+import "./pilot-readiness.css";
 import "./documents.css";
 import "./rtl.css";
 import MobileDock from "./components/MobileDock";
