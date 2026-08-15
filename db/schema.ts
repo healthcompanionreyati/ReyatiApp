@@ -409,6 +409,36 @@ export const pilotReadinessReviewEvents = sqliteTable("pilot_readiness_review_ev
   previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_pilot_readiness_review_events_review_created").on(table.reviewId, table.createdAt)]);
 
+export const controlledPilotPlans = sqliteTable("controlled_pilot_plans", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id").notNull().references(() => organizations.id, { onDelete: "restrict" }),
+  clinicLabel: text("clinic_label").notNull(),
+  plannedStartAt: integer("planned_start_at", { mode: "timestamp_ms" }).notNull(),
+  plannedEndAt: integer("planned_end_at", { mode: "timestamp_ms" }).notNull(),
+  providerTarget: integer("provider_target").notNull(),
+  patientTarget: integer("patient_target").notNull(),
+  invitationOnly: integer("invitation_only", { mode: "boolean" }).notNull().default(true),
+  publicRegistrationEnabled: integer("public_registration_enabled", { mode: "boolean" }).notNull().default(false),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("draft"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  activatedAt: integer("activated_at", { mode: "timestamp_ms" }),
+  readinessReviewId: text("readiness_review_id").references(() => pilotReadinessReviews.id, { onDelete: "restrict" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_controlled_pilot_plans_organization").on(table.organizationId),
+  index("idx_controlled_pilot_plans_status_updated").on(table.status, table.updatedAt),
+]);
+
+export const controlledPilotPlanEvents = sqliteTable("controlled_pilot_plan_events", {
+  id: text("id").primaryKey(), planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_controlled_pilot_plan_events_plan_created").on(table.planId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

@@ -464,6 +464,15 @@ await request("/api/admin/pilot-review", { identity: identities.reviewer, method
 const noGoReadiness = await request("/api/admin/pilot-review", { identity: identities.reviewer, method: "POST", body: { operation: "transition", reviewId: readinessSnapshot.data.id, version: submittedReadiness.data.version, action: "record_no_go", note: "Independent reviewer recorded no-go because required external controls remain unavailable." } });
 assert.equal(noGoReadiness.data.decision, "no_go"); assert.equal(noGoReadiness.data.status, "not_approved");
 
+await request("/api/admin/pilot-scope", { identity: identities.patient, status: 403 });
+const scopeBefore = await request("/api/admin/pilot-scope", { identity: identities.admin });
+let pilotPlan = scopeBefore.data.plans.find((item) => item.organizationId === organizationId);
+if (!pilotPlan || ["draft", "rejected"].includes(pilotPlan.status)) { const start = new Date(Date.now() + 14 * 86400000); const end = new Date(start.valueOf() + 49 * 86400000); const savedScope = await request("/api/admin/pilot-scope", { identity: identities.admin, method: "POST", body: { operation: "save", organizationId, version: pilotPlan?.version, clinicLabel: "UAT Pilot Clinic", plannedStartAt: start.toISOString(), plannedEndAt: end.toISOString(), providerTarget: 3, patientTarget: 50 } }); pilotPlan = { id: savedScope.data.id, version: savedScope.data.version, status: savedScope.data.status, preparedByUserId: adminRole.userId }; }
+if (pilotPlan.status === "draft") { const submittedScope = await request("/api/admin/pilot-scope", { identity: identities.admin, method: "POST", body: { operation: "transition", planId: pilotPlan.id, version: pilotPlan.version, action: "submit", note: "Synthetic bounded pilot plan submitted for independent review." } }); pilotPlan = { ...pilotPlan, version: submittedScope.data.version, status: submittedScope.data.status }; }
+if (pilotPlan.status === "pending_review") { const approvedScope = await request("/api/admin/pilot-scope", { identity: identities.reviewer, method: "POST", body: { operation: "transition", planId: pilotPlan.id, version: pilotPlan.version, action: "approve", note: "Independent reviewer approved the invitation-only cohort and duration limits." } }); pilotPlan = { ...pilotPlan, version: approvedScope.data.version, status: approvedScope.data.status }; }
+assert.equal(pilotPlan.status, "approved");
+await request("/api/admin/pilot-scope", { identity: identities.admin, method: "POST", status: 400, body: { operation: "transition", planId: pilotPlan.id, version: pilotPlan.version, action: "activate", note: "Activation must remain blocked because the latest readiness decision is no-go." } });
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,
