@@ -141,6 +141,16 @@ await request("/api/admin/platform-access", {
   method: "POST",
   body: { action: "accept", token: invitationToken(reviewerInvitation.data.acceptPath) },
 });
+const securityInvitation = await request("/api/admin/platform-access", {
+  identity: identities.admin,
+  method: "POST",
+  body: { action: "invite", email: identities.reviewer.email, role: "security_auditor" },
+});
+await request("/api/admin/platform-access", {
+  identity: identities.reviewer,
+  method: "POST",
+  body: { action: "accept", token: invitationToken(securityInvitation.data.acceptPath) },
+});
 
 const profile = await request("/api/provider/setup", {
   identity: identities.provider,
@@ -347,7 +357,32 @@ const ownership = await request("/api/admin/ownership", { identity: identities.a
 assert.equal(ownership.data.assignments.filter((item) => item.evidenceStatus === "verified").length, 3);
 const readiness = await request("/api/admin/operations", { identity: identities.admin });
 assert.equal(readiness.data.pilotReadiness.gates.find((gate) => gate.id === "incident_ownership").status, "cleared");
-assert.equal(readiness.data.pilotReadiness.gates.find((gate) => gate.id === "recovery_evidence").status, "cleared");
+assert.ok(["blocked", "cleared"].includes(readiness.data.pilotReadiness.gates.find((gate) => gate.id === "recovery_evidence").status), "Recovery gate must remain server-derived when prior rehearsal evidence persists");
+
+await request("/api/admin/recovery", { identity: identities.patient, status: 403 });
+const plannedRecovery = await request("/api/admin/recovery", {
+  identity: identities.admin,
+  method: "POST",
+  body: { operation: "create", scope: "full_platform", ownerUserId: adminRole.userId, targetRtoMinutes: 60, targetRpoMinutes: 15, plannedAt: new Date().toISOString() },
+});
+const startedRecovery = await request("/api/admin/recovery", {
+  identity: identities.admin,
+  method: "POST",
+  body: { operation: "update", rehearsalId: plannedRecovery.data.id, version: plannedRecovery.data.version, action: "start", note: "Synthetic isolated hosted recovery rehearsal started for privileged workflow validation." },
+});
+const completedRecovery = await request("/api/admin/recovery", {
+  identity: identities.admin,
+  method: "POST",
+  body: { operation: "update", rehearsalId: plannedRecovery.data.id, version: startedRecovery.data.version, action: "complete", note: "Synthetic database and document checks completed without patient information.", measuredRtoMinutes: 40, recoveryPointAgeMinutes: 10, integrityStatus: "passed", evidenceReference: `UAT-RECOVERY-${runId}` },
+});
+const verifiedRecovery = await request("/api/admin/recovery", {
+  identity: identities.reviewer,
+  method: "POST",
+  body: { operation: "update", rehearsalId: plannedRecovery.data.id, version: completedRecovery.data.version, action: "verify", note: "Independent synthetic evidence review confirmed both targets and integrity checks." },
+});
+assert.equal(verifiedRecovery.data.reviewStatus, "verified");
+const recoveryReadiness = await request("/api/admin/operations", { identity: identities.admin });
+assert.equal(recoveryReadiness.data.pilotReadiness.gates.find((gate) => gate.id === "recovery_evidence").status, "cleared");
 
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {

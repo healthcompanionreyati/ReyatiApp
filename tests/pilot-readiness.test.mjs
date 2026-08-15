@@ -10,7 +10,7 @@ test("pilot readiness is server-derived and fails closed on external and human b
   for (const gate of ["application_safety", "incident_ownership", "monitoring_coverage", "recovery_evidence", "data_lifecycle"]) assert.match(service, new RegExp(`id: "${gate}"`));
   assert.match(service, /gates\.filter\(\(gate\) => gate\.status === "cleared"\)/);
   assert.match(service, /primary and backup owners/);
-  assert.match(service, /verified hosted rehearsal evidence/);
+  assert.match(service, /independently verified full-platform hosted rehearsal/);
   assert.match(service, /legal-hold operations/);
 });
 

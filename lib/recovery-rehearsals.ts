@@ -1,0 +1,56 @@
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { getDb } from "@/db";
+import { auditEvents, notifications, pilotControlAssignments, platformRoles, recoveryRehearsalEvents, recoveryRehearsals, users } from "@/db/schema";
+import { requirePlatformRole } from "@/lib/authorization";
+import { notificationRecord } from "@/lib/notification-center";
+
+export class RecoveryValidationError extends Error { constructor(message: string) { super(message); this.name = "RecoveryValidationError"; } }
+export class RecoveryConflictError extends Error { constructor() { super("This rehearsal changed. Refresh and try again."); this.name = "RecoveryConflictError"; } }
+export const recoveryScopes = ["database", "documents", "full_platform"] as const;
+
+function text(value: unknown, name: string, min: number, max: number) { if (typeof value !== "string" || value.trim().length < min || value.trim().length > max) throw new RecoveryValidationError(`${name} is invalid`); return value.trim(); }
+function minutes(value: unknown, name: string, min = 1, max = 10080) { const result = Number(value); if (!Number.isSafeInteger(result) || result < min || result > max) throw new RecoveryValidationError(`${name} is invalid`); return result; }
+
+async function operators() { const db = await getDb(); return db.select({ userId: users.id, displayName: users.displayName, role: platformRoles.role }).from(platformRoles).innerJoin(users, eq(users.id, platformRoles.userId)).where(and(eq(platformRoles.status, "active"), inArray(platformRoles.role, ["platform_admin", "security_auditor"]))).orderBy(asc(users.displayName)); }
+
+export async function getRecoveryCentre(userId: string) {
+  const access = await requirePlatformRole(userId, ["platform_admin", "security_auditor"]); const db = await getDb();
+  const [rows, activeOperators, events] = await Promise.all([
+    db.select().from(recoveryRehearsals).orderBy(desc(recoveryRehearsals.updatedAt)).limit(100), operators(),
+    db.select({ id: recoveryRehearsalEvents.id, rehearsalId: recoveryRehearsalEvents.rehearsalId, action: recoveryRehearsalEvents.action, previousStatus: recoveryRehearsalEvents.previousStatus, nextStatus: recoveryRehearsalEvents.nextStatus, note: recoveryRehearsalEvents.note, createdAt: recoveryRehearsalEvents.createdAt, actorName: users.displayName }).from(recoveryRehearsalEvents).innerJoin(users, eq(users.id, recoveryRehearsalEvents.actorUserId)).orderBy(desc(recoveryRehearsalEvents.createdAt)).limit(300),
+  ]);
+  const names = new Map(activeOperators.map((item) => [item.userId, item.displayName]));
+  return { role: access.role, currentUserId: userId, operators: activeOperators, scopes: recoveryScopes, rehearsals: rows.map((row) => ({ ...row, ownerName: names.get(row.ownerUserId) ?? "Unavailable owner", reviewerName: row.reviewerUserId ? names.get(row.reviewerUserId) ?? "Unavailable reviewer" : null, withinTargets: Boolean(row.measuredRtoMinutes != null && row.recoveryPointAgeMinutes != null && row.measuredRtoMinutes <= row.targetRtoMinutes && row.recoveryPointAgeMinutes <= row.targetRpoMinutes), events: events.filter((event) => event.rehearsalId === row.id) })) };
+}
+
+export async function createRecoveryRehearsal(userId: string, body: Record<string, unknown>) {
+  await requirePlatformRole(userId, ["platform_admin"]); const scope = text(body.scope, "scope", 1, 40); if (!recoveryScopes.includes(scope as typeof recoveryScopes[number])) throw new RecoveryValidationError("scope is invalid");
+  const targetRtoMinutes = minutes(body.targetRtoMinutes, "targetRtoMinutes"); const targetRpoMinutes = minutes(body.targetRpoMinutes, "targetRpoMinutes"); const plannedAt = new Date(text(body.plannedAt, "plannedAt", 8, 40));
+  if (Number.isNaN(plannedAt.valueOf()) || plannedAt.valueOf() > Date.now() + 366 * 24 * 60 * 60 * 1000) throw new RecoveryValidationError("plannedAt is invalid");
+  const db = await getDb(); const assignment = await db.select().from(pilotControlAssignments).where(eq(pilotControlAssignments.controlId, "backup_restore")).limit(1); const ownerUserId = typeof body.ownerUserId === "string" && body.ownerUserId ? body.ownerUserId : assignment[0]?.ownerUserId ?? userId;
+  const validOwner = await db.select({ id: platformRoles.userId }).from(platformRoles).where(and(eq(platformRoles.userId, ownerUserId), eq(platformRoles.status, "active"), inArray(platformRoles.role, ["platform_admin", "security_auditor"]))).limit(1); if (!validOwner[0]) throw new RecoveryValidationError("ownerUserId is invalid");
+  const now = new Date(); const id = crypto.randomUUID(); const reference = `DR-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${id.slice(0, 6).toUpperCase()}`;
+  await db.batch([
+    db.insert(recoveryRehearsals).values({ id, reference, scope, ownerUserId, status: "planned", targetRtoMinutes, targetRpoMinutes, plannedAt, version: 1, createdAt: now, updatedAt: now }),
+    db.insert(recoveryRehearsalEvents).values({ id: crypto.randomUUID(), rehearsalId: id, actorUserId: userId, action: "plan", previousStatus: null, nextStatus: "planned", note: "Isolated hosted recovery rehearsal planned with synthetic data only.", createdAt: now }),
+    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: "recovery.rehearsal_planned", resourceType: "recovery_rehearsal", resourceId: id, outcome: "success", metadataJson: JSON.stringify({ scope, targetRtoMinutes, targetRpoMinutes, environment: "isolated_hosted_recovery", dataClassification: "synthetic_only" }), createdAt: now }),
+    db.insert(notifications).values(notificationRecord({ userId: ownerUserId, type: "operations", title: "Recovery rehearsal assigned", body: `${reference} is planned in the isolated hosted recovery environment. Open recovery rehearsals to review the targets.`, actionPath: "/admin/recovery", resourceType: "recovery_rehearsal", resourceId: id, dedupeKey: `recovery:${id}:1:owner`, createdAt: now })),
+  ]); return { id, reference, status: "planned", version: 1 };
+}
+
+export async function updateRecoveryRehearsal(userId: string, body: Record<string, unknown>) {
+  const access = await requirePlatformRole(userId, ["platform_admin", "security_auditor"]); const rehearsalId = text(body.rehearsalId, "rehearsalId", 1, 128); const action = text(body.action, "action", 1, 30); const note = text(body.note, "note", 10, 1200);
+  if (!Number.isSafeInteger(body.version) || Number(body.version) < 1) throw new RecoveryValidationError("version is invalid"); const db = await getDb(); const rows = await db.select().from(recoveryRehearsals).where(eq(recoveryRehearsals.id, rehearsalId)).limit(1); const current = rows[0]; if (!current) throw new RecoveryValidationError("Rehearsal was not found"); const now = new Date();
+  let nextStatus = current.status; let reviewStatus = current.reviewStatus; let reviewerUserId = current.reviewerUserId; let reviewedAt = current.reviewedAt; let reviewNote = current.reviewNote; let startedAt = current.startedAt; let completedAt = current.completedAt; let measuredRtoMinutes = current.measuredRtoMinutes; let recoveryPointAgeMinutes = current.recoveryPointAgeMinutes; let integrityStatus = current.integrityStatus; let evidenceReference = current.evidenceReference;
+  if (action === "start") { if (access.role !== "platform_admin" || current.status !== "planned") throw new RecoveryValidationError("This rehearsal cannot be started"); nextStatus = "in_progress"; startedAt = now; }
+  else if (action === "complete") { if (access.role !== "platform_admin" || current.status !== "in_progress") throw new RecoveryValidationError("This rehearsal cannot be completed"); measuredRtoMinutes = minutes(body.measuredRtoMinutes, "measuredRtoMinutes"); recoveryPointAgeMinutes = minutes(body.recoveryPointAgeMinutes, "recoveryPointAgeMinutes", 0); integrityStatus = text(body.integrityStatus, "integrityStatus", 1, 20); if (!["passed", "failed"].includes(integrityStatus)) throw new RecoveryValidationError("integrityStatus is invalid"); evidenceReference = text(body.evidenceReference, "evidenceReference", 6, 240); nextStatus = integrityStatus === "passed" ? "completed" : "failed"; completedAt = now; reviewStatus = "pending"; }
+  else if (action === "cancel") { if (access.role !== "platform_admin" || !["planned", "in_progress"].includes(current.status)) throw new RecoveryValidationError("This rehearsal cannot be cancelled"); nextStatus = "cancelled"; completedAt = now; }
+  else if (["verify", "reject"].includes(action)) { if (!["completed", "failed"].includes(current.status) || current.reviewStatus !== "pending") throw new RecoveryValidationError("This rehearsal cannot be reviewed"); if (current.ownerUserId === userId) throw new RecoveryValidationError("The rehearsal owner cannot independently review their own evidence"); if (action === "verify" && (current.status !== "completed" || current.integrityStatus !== "passed" || current.measuredRtoMinutes == null || current.recoveryPointAgeMinutes == null || current.measuredRtoMinutes > current.targetRtoMinutes || current.recoveryPointAgeMinutes > current.targetRpoMinutes || !current.evidenceReference)) throw new RecoveryValidationError("Only successful evidence within both recovery targets can be verified"); reviewStatus = action === "verify" ? "verified" : "rejected"; reviewerUserId = userId; reviewedAt = now; reviewNote = note; }
+  else throw new RecoveryValidationError("action is invalid");
+  const updated = await db.update(recoveryRehearsals).set({ status: nextStatus, reviewStatus, reviewerUserId, reviewedAt, reviewNote, startedAt, completedAt, measuredRtoMinutes, recoveryPointAgeMinutes, integrityStatus, evidenceReference, version: current.version + 1, updatedAt: now }).where(and(eq(recoveryRehearsals.id, rehearsalId), eq(recoveryRehearsals.version, Number(body.version)), eq(recoveryRehearsals.status, current.status), eq(recoveryRehearsals.reviewStatus, current.reviewStatus))).returning({ version: recoveryRehearsals.version }); if (!updated[0]) throw new RecoveryConflictError();
+  await db.batch([
+    db.insert(recoveryRehearsalEvents).values({ id: crypto.randomUUID(), rehearsalId, actorUserId: userId, action, previousStatus: current.status, nextStatus, note, createdAt: now }),
+    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: `recovery.${action}`, resourceType: "recovery_rehearsal", resourceId: rehearsalId, outcome: "success", metadataJson: JSON.stringify({ previousStatus: current.status, nextStatus, reviewStatus, integrityStatus, withinTargets: Boolean(measuredRtoMinutes != null && recoveryPointAgeMinutes != null && measuredRtoMinutes <= current.targetRtoMinutes && recoveryPointAgeMinutes <= current.targetRpoMinutes) }), createdAt: now }),
+    db.insert(notifications).values(notificationRecord({ userId: current.ownerUserId, type: "operations", title: `${current.reference} updated`, body: `The recovery rehearsal moved to ${nextStatus}${reviewStatus !== current.reviewStatus ? ` with review status ${reviewStatus}` : ""}.`, actionPath: "/admin/recovery", resourceType: "recovery_rehearsal", resourceId: rehearsalId, dedupeKey: `recovery:${rehearsalId}:${updated[0].version}:status`, createdAt: now })),
+  ]); return { rehearsalId, status: nextStatus, reviewStatus, version: updated[0].version };
+}

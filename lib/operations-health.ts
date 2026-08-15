@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gt, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { appointments, auditEvents, authEvents, documentDeletionJobs, documentRecords, documentUploadSessions, operationalRateLimits, outboundMessages, pilotControlAssignments, supportCases, webhookReceipts } from "@/db/schema";
+import { appointments, auditEvents, authEvents, documentDeletionJobs, documentRecords, documentUploadSessions, operationalRateLimits, outboundMessages, pilotControlAssignments, recoveryRehearsals, supportCases, webhookReceipts } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 
 const OPEN_SUPPORT_STATUSES = ["open", "in_progress", "waiting_requester", "waiting_support"];
@@ -65,22 +65,23 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "privacy_safe_logging", name: "Privacy-safe structured logging", status: "implemented", note: "Operational errors exclude messages, bodies, tokens, and identifiers." },
     { id: "security_audit_ledger", name: "Security audit ledger", status: "implemented", note: "Material privileged actions are recorded and role scoped." },
     { id: "incident_runbook", name: "Incident-response workflow", status: "implemented", note: "Authorized operators can declare, acknowledge, contain, monitor, resolve, close, and reopen durable incidents with audited evidence." },
-    { id: "backup_runbook", name: "Backup and restore procedure", status: "documented", note: "Procedure exists; a hosted restoration rehearsal remains outstanding." },
+    { id: "backup_runbook", name: "Backup and restore procedure", status: "implemented", note: "A protected rehearsal register, measured targets, immutable evidence trail, and independent review workflow are implemented." },
     { id: "external_error_tracking", name: "External error tracking", status: "blocked", note: "Monitoring vendor and data-processing controls are not selected." },
     { id: "performance_monitoring", name: "Performance monitoring", status: "blocked", note: "No approved external telemetry destination is connected." },
     { id: "security_alerting", name: "Security alerting and escalation", status: "blocked", note: "Alert transport, thresholds, recipients, and on-call rota are not configured." },
-    { id: "backup_rehearsal", name: "Hosted backup restoration rehearsal", status: "blocked", note: "No completed rehearsal evidence or recovery-time result is recorded." },
+    { id: "backup_rehearsal", name: "Hosted backup restoration rehearsal", status: "partial", note: "The evidence workflow is implemented; readiness still requires a recent independently verified full-platform rehearsal within both recovery targets." },
     { id: "retention_enforcement", name: "Automated retention enforcement", status: "blocked", note: "A gated deletion processor exists, but approved retention periods and legal-hold operations remain undecided." },
     { id: "document_upload_cleanup", name: "Expired document-upload cleanup", status: "partial", note: "Signed bounded cleanup and privacy-safe backlog counts are implemented; scheduled activation and alert thresholds remain outstanding." },
     { id: "document_scan_recovery", name: "Stalled document-scan recovery", status: "partial", note: "Signed leased timeout quarantine and privacy-safe stalled counts are implemented; scanner dispatch, scheduling, and alert thresholds remain outstanding." },
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 
-  const ownershipAssignments = await db.select().from(pilotControlAssignments);
+  const [ownershipAssignments, rehearsals] = await Promise.all([db.select().from(pilotControlAssignments), db.select().from(recoveryRehearsals)]);
   const rehearsalBoundary = new Date(now.valueOf() - 90 * 24 * 60 * 60 * 1000);
   const verifiedControl = (controlId: string) => ownershipAssignments.some((assignment) => assignment.controlId === controlId && assignment.evidenceStatus === "verified" && Boolean(assignment.backupOwnerUserId) && Boolean(assignment.evidenceReference) && Boolean(assignment.lastRehearsedAt && assignment.lastRehearsedAt >= rehearsalBoundary));
   const incidentOwnershipReady = verifiedControl("incident_response") && verifiedControl("security_alerting");
-  const recoveryEvidenceReady = verifiedControl("backup_restore");
+  const recoveryOwnershipReady = verifiedControl("backup_restore");
+  const recoveryEvidenceReady = recoveryOwnershipReady && rehearsals.some((rehearsal) => rehearsal.scope === "full_platform" && rehearsal.environment === "isolated_hosted_recovery" && rehearsal.dataClassification === "synthetic_only" && rehearsal.status === "completed" && rehearsal.integrityStatus === "passed" && rehearsal.reviewStatus === "verified" && Boolean(rehearsal.completedAt && rehearsal.completedAt >= rehearsalBoundary) && rehearsal.measuredRtoMinutes != null && rehearsal.recoveryPointAgeMinutes != null && rehearsal.measuredRtoMinutes <= rehearsal.targetRtoMinutes && rehearsal.recoveryPointAgeMinutes <= rehearsal.targetRpoMinutes);
 
   const pilotReadiness = {
     decision: "not_ready" as const,
@@ -88,7 +89,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
       { id: "application_safety", name: "Application safety baseline", status: "cleared" as const, evidence: "Privacy-safe logging, scoped audit events, and durable write limits are implemented.", ownerNeeded: false },
       { id: "incident_ownership", name: "Incident ownership and escalation", status: incidentOwnershipReady ? "cleared" as const : "blocked" as const, evidence: incidentOwnershipReady ? "Incident response and security alerting have primary and backup owners, response targets, and verified rehearsal evidence from the last 90 days." : "Incident response and security alerting both require primary and backup owners plus verified rehearsal evidence from the last 90 days.", ownerNeeded: !incidentOwnershipReady },
       { id: "monitoring_coverage", name: "Monitoring and security alerting", status: "blocked" as const, evidence: "No approved monitoring destination, alert thresholds, or security-alert transport is connected.", ownerNeeded: true },
-      { id: "recovery_evidence", name: "Hosted recovery evidence", status: recoveryEvidenceReady ? "cleared" as const : "blocked" as const, evidence: recoveryEvidenceReady ? "Backup and restore has primary and backup ownership with verified rehearsal evidence from the last 90 days." : "Backup and restore requires primary and backup owners plus verified hosted rehearsal evidence from the last 90 days.", ownerNeeded: !recoveryEvidenceReady },
+      { id: "recovery_evidence", name: "Hosted recovery evidence", status: recoveryEvidenceReady ? "cleared" as const : "blocked" as const, evidence: recoveryEvidenceReady ? "Backup and restore has fresh ownership evidence plus an independently verified full-platform rehearsal within both recovery targets from the last 90 days." : "Recovery requires fresh primary and backup ownership plus an independently verified full-platform hosted rehearsal within RTO and RPO targets from the last 90 days.", ownerNeeded: !recoveryOwnershipReady },
       { id: "data_lifecycle", name: "Clinical data lifecycle", status: "blocked" as const, evidence: "Retention periods, legal-hold operations, scanner activation, and scheduled cleanup remain unapproved.", ownerNeeded: true },
     ],
   };

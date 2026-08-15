@@ -153,6 +153,49 @@ export const operationalIncidentUpdates = sqliteTable("operational_incident_upda
   index("idx_operational_incident_updates_actor_created").on(table.actorUserId, table.createdAt),
 ]);
 
+export const recoveryRehearsals = sqliteTable("recovery_rehearsals", {
+  id: text("id").primaryKey(),
+  reference: text("reference").notNull(),
+  scope: text("scope").notNull(),
+  environment: text("environment").notNull().default("isolated_hosted_recovery"),
+  dataClassification: text("data_classification").notNull().default("synthetic_only"),
+  ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("planned"),
+  targetRtoMinutes: integer("target_rto_minutes").notNull(),
+  targetRpoMinutes: integer("target_rpo_minutes").notNull(),
+  plannedAt: integer("planned_at", { mode: "timestamp_ms" }).notNull(),
+  startedAt: integer("started_at", { mode: "timestamp_ms" }),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+  measuredRtoMinutes: integer("measured_rto_minutes"),
+  recoveryPointAgeMinutes: integer("recovery_point_age_minutes"),
+  integrityStatus: text("integrity_status").notNull().default("pending"),
+  evidenceReference: text("evidence_reference"),
+  reviewStatus: text("review_status").notNull().default("pending"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_recovery_rehearsals_reference").on(table.reference),
+  index("idx_recovery_rehearsals_status_planned").on(table.status, table.plannedAt),
+  index("idx_recovery_rehearsals_review_completed").on(table.reviewStatus, table.completedAt),
+  index("idx_recovery_rehearsals_owner_status").on(table.ownerUserId, table.status),
+]);
+
+export const recoveryRehearsalEvents = sqliteTable("recovery_rehearsal_events", {
+  id: text("id").primaryKey(),
+  rehearsalId: text("rehearsal_id").notNull().references(() => recoveryRehearsals.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_recovery_rehearsal_events_rehearsal_created").on(table.rehearsalId, table.createdAt),
+]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
