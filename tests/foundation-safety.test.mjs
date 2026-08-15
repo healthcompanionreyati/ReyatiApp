@@ -18,7 +18,7 @@ async function routeFiles(directory) {
 test("Phase 1A external capabilities remain hard-disabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads"]) {
+  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
 });
@@ -81,6 +81,15 @@ test("all authenticated write APIs use durable privacy-safe rate limits", async 
     if (!/export async function (POST|PATCH|PUT|DELETE)/.test(contents)) continue;
     if (file.endsWith(path.join("webhooks", "resend", "route.ts"))) {
       assert.match(contents, /communicationsWebhooks/);
+      continue;
+    }
+    if (file.endsWith(path.join("webhooks", "document-scan", "route.ts"))) {
+      assert.match(contents, /documentScanCallbacks/);
+      const scanning = await source("lib/document-scanning.ts");
+      assert.match(scanning, /x-reyati-scan-signature/);
+      assert.match(scanning, /x-reyati-scan-timestamp/);
+      assert.match(scanning, /x-reyati-scan-event-id/);
+      assert.match(scanning, /dedupeKey/);
       continue;
     }
     assert.match(contents, /@\/lib\/rate-limits/, `${path.relative(root, file)} lacks the shared limiter`);

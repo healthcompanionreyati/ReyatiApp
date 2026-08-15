@@ -57,12 +57,13 @@ export async function stagePrivateDocumentObject(input: { objectKey: string; bod
 export async function quarantinePrivateDocumentObject(objectKey: string) {
   const storage = await storageBinding();
   const key = assertPrivateDocumentObjectKey(objectKey);
+  const quarantineKey = `quarantine/${key}`;
+  if (await storage.head(quarantineKey)) return { quarantined: true, duplicate: true };
   const object = await storage.get(key);
   if (!object) return { quarantined: false };
-  const quarantineKey = `quarantine/${key}`;
   await storage.put(quarantineKey, object.body, { httpMetadata: object.httpMetadata, customMetadata: { classification: "clinical", quarantine: "true" } });
   await storage.delete(key);
-  return { quarantined: true };
+  return { quarantined: true, duplicate: false };
 }
 
 export async function deletePrivateDocumentObject(objectKey: string) {

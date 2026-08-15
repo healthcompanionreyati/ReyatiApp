@@ -36,6 +36,7 @@ declare module "cloudflare:workers" {
     DB: D1Database;
     DOCUMENTS?: R2Bucket;
     DOCUMENT_SCAN_PROVIDER?: string;
+    DOCUMENT_SCAN_SIGNING_SECRET?: string;
     PLATFORM_BOOTSTRAP_EMAIL?: string;
     RESEND_API_KEY?: string;
     RESEND_FROM_EMAIL?: string;

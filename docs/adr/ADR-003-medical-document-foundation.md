@@ -24,7 +24,7 @@ Only documents that are patient-owned, `ready`, `clean`, and `active` may be sha
 
 ## Activation gates
 
-The Sites project now declares a private `DOCUMENTS` R2 binding and uses a server-only adapter for bounded staging, inspection, quarantine, and deletion. No public object URL or byte-delivery route exists. Activation still requires a malware-scanning provider, authenticated scanner workflow, private signed-delivery design, upload size and page enforcement, content-type verification, quarantine operations, retention and deletion automation, incident procedures, access logging, and end-to-end security testing. Changing the feature flag or provisioning R2 alone is insufficient.
+The Sites project now declares a private `DOCUMENTS` R2 binding and uses a server-only adapter for bounded staging, inspection, quarantine, and deletion. No public object URL or byte-delivery route exists. A vendor-neutral scanner callback boundary now verifies a raw-body HMAC, rejects stale timestamps, deduplicates provider events, accepts no object key from the caller, checks stored object size and content type, and moves every infected, failed, missing, or mismatched object into the quarantined state. The route remains hidden behind a compiled false gate. Activation still requires selecting a scanning provider, configuring its signing secret, running callback/replay/quarantine tests against that provider, private signed-delivery design, upload size and page enforcement, content-type verification, retention and deletion automation, incident procedures, access logging, and end-to-end security testing. Changing a feature flag or provisioning R2 alone is insufficient.
 
 ## Consequences
 

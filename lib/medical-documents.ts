@@ -49,7 +49,7 @@ function documentCategory(value: unknown) {
 async function uploadReadiness() {
   const { env } = await import("cloudflare:workers");
   const storageConfigured = await protectedDocumentStorageConfigured();
-  const malwareScannerConfigured = typeof env.DOCUMENT_SCAN_PROVIDER === "string" && Boolean(env.DOCUMENT_SCAN_PROVIDER.trim());
+  const malwareScannerConfigured = Boolean(env.DOCUMENT_SCAN_PROVIDER?.trim() && env.DOCUMENT_SCAN_SIGNING_SECRET?.trim() && env.DOCUMENT_SCAN_SIGNING_SECRET.trim().length >= 32);
   return { uploadEnabled: foundationFlags.medicalDocumentUploads && storageConfigured && malwareScannerConfigured, storageConfigured, malwareScannerConfigured };
 }
 
