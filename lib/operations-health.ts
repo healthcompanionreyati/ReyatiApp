@@ -17,8 +17,10 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
   const last24Hours = new Date(now.valueOf() - 24 * 60 * 60 * 1000);
   const staleSupportBoundary = new Date(now.valueOf() - 48 * 60 * 60 * 1000);
   const uploadCleanupBoundary = new Date(now.valueOf() - 20 * 60 * 1000);
+  const stalledScanBoundary = new Date(now.valueOf() - 30 * 60 * 1000);
+  const scanRecoveryLeaseBoundary = new Date(now.valueOf() - 5 * 60 * 1000);
 
-  const [authFailureRows, auditFailureRows, openSupportRows, staleSupportRows, pendingAppointmentRows, messageAttentionRows, webhookFailureRows, activeLimitedRows, uploadCleanupRows, scanBacklogRows, deletionAttentionRows, recentAuthSignals, recentAuditSignals] = await Promise.all([
+  const [authFailureRows, auditFailureRows, openSupportRows, staleSupportRows, pendingAppointmentRows, messageAttentionRows, webhookFailureRows, activeLimitedRows, uploadCleanupRows, scanBacklogRows, stalledScanRows, deletionAttentionRows, recentAuthSignals, recentAuditSignals] = await Promise.all([
     db.select({ value: count() }).from(authEvents).where(and(gt(authEvents.createdAt, last24Hours), ne(authEvents.outcome, "success"))),
     db.select({ value: count() }).from(auditEvents).where(and(gt(auditEvents.createdAt, last24Hours), ne(auditEvents.outcome, "success"))),
     db.select({ priority: supportCases.priority, value: count() }).from(supportCases).where(inArray(supportCases.status, OPEN_SUPPORT_STATUSES)).groupBy(supportCases.priority),
@@ -31,7 +33,11 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
       and(inArray(documentUploadSessions.status, ["created", "uploading"]), lt(documentUploadSessions.expiresAt, uploadCleanupBoundary)),
       and(eq(documentUploadSessions.status, "failed"), lt(documentUploadSessions.updatedAt, uploadCleanupBoundary)),
     )),
-    db.select({ value: count() }).from(documentRecords).where(eq(documentRecords.status, "scanning")),
+    db.select({ value: count() }).from(documentRecords).where(inArray(documentRecords.status, ["scanning", "recovering"])),
+    db.select({ value: count() }).from(documentRecords).where(or(
+      and(eq(documentRecords.status, "scanning"), lt(documentRecords.updatedAt, stalledScanBoundary)),
+      and(eq(documentRecords.status, "recovering"), lt(documentRecords.updatedAt, scanRecoveryLeaseBoundary)),
+    )),
     db.select({ value: count() }).from(documentDeletionJobs).where(inArray(documentDeletionJobs.status, ["retrying", "failed", "blocked"])),
     db.select({ eventType: authEvents.eventType, outcome: authEvents.outcome, channel: authEvents.channel, createdAt: authEvents.createdAt })
       .from(authEvents).where(ne(authEvents.outcome, "success")).orderBy(desc(authEvents.createdAt)).limit(12),
@@ -51,6 +57,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     activeRateLimitedBuckets: total(activeLimitedRows),
     documentUploadCleanupBacklog: total(uploadCleanupRows),
     documentScanBacklog: total(scanBacklogRows),
+    documentScanStalled: total(stalledScanRows),
     documentDeletionAttention: total(deletionAttentionRows),
   };
 
@@ -65,6 +72,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "backup_rehearsal", name: "Hosted backup restoration rehearsal", status: "blocked", note: "No completed rehearsal evidence or recovery-time result is recorded." },
     { id: "retention_enforcement", name: "Automated retention enforcement", status: "blocked", note: "A gated deletion processor exists, but approved retention periods and legal-hold operations remain undecided." },
     { id: "document_upload_cleanup", name: "Expired document-upload cleanup", status: "partial", note: "Signed bounded cleanup and privacy-safe backlog counts are implemented; scheduled activation and alert thresholds remain outstanding." },
+    { id: "document_scan_recovery", name: "Stalled document-scan recovery", status: "partial", note: "Signed leased timeout quarantine and privacy-safe stalled counts are implemented; scanner dispatch, scheduling, and alert thresholds remain outstanding." },
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 

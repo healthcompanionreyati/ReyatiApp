@@ -319,6 +319,7 @@ export const documentRecords = sqliteTable("document_records", {
   ...timestamps,
 }, (table) => [
   index("idx_document_records_owner_status_created").on(table.ownerUserId, table.status, table.createdAt),
+  index("idx_document_records_status_updated").on(table.status, table.updatedAt),
   uniqueIndex("idx_document_records_object_key").on(table.objectKey),
 ]);
 

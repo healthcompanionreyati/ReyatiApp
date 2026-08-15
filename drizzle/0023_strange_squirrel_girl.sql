@@ -1,0 +1,1 @@
+CREATE INDEX `idx_document_records_status_updated` ON `document_records` (`status`,`updated_at`);

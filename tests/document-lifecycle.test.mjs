@@ -6,12 +6,14 @@ const lifecycle = await readFile(new URL("../lib/document-lifecycle.ts", import.
 const schema = await readFile(new URL("../db/schema.ts", import.meta.url), "utf8");
 const service = await readFile(new URL("../lib/medical-documents.ts", import.meta.url), "utf8");
 const route = await readFile(new URL("../app/api/patient/documents/route.ts", import.meta.url), "utf8");
+const recoveryIndexMigration = await readFile(new URL("../drizzle/0023_strange_squirrel_girl.sql", import.meta.url), "utf8");
 
 test("document lifecycle uses explicit fail-closed transitions", () => {
   assert.match(lifecycle, /created: \["uploading", "cancelled", "expired", "failed"\]/);
   assert.match(lifecycle, /uploading: \["uploaded", "cancelled", "expired", "failed"\]/);
   assert.match(lifecycle, /upload_pending: \["scanning", "rejected"\]/);
-  assert.match(lifecycle, /scanning: \["ready", "quarantined", "rejected"\]/);
+  assert.match(lifecycle, /scanning: \["recovering", "ready", "quarantined", "rejected"\]/);
+  assert.match(lifecycle, /recovering: \["scanning", "quarantined", "rejected"\]/);
   assert.match(lifecycle, /quarantined: \["scanning", "rejected"\]/);
   assert.match(lifecycle, /failed: \["cleaned"\]/);
   assert.match(lifecycle, /cleaned: \[\]/);
@@ -26,6 +28,8 @@ test("document lifecycle schema is owner-bound, idempotent, replay-safe, and rec
   }
   assert.match(schema, /idx_document_upload_sessions_owner_idempotency/);
   assert.match(schema, /idx_document_processing_events_dedupe/);
+  assert.match(schema, /idx_document_records_status_updated/);
+  assert.match(recoveryIndexMigration, /idx_document_records_status_updated/);
   assert.match(schema, /idx_document_access_grants_token_hash/);
   assert.match(schema, /idx_document_deletion_jobs_document/);
   assert.match(schema, /legalHold: integer\("legal_hold"/);

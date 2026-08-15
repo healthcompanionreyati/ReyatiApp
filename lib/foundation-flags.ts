@@ -8,6 +8,7 @@ export const foundationFlags = {
   documentDeletionProcessor: false,
   privateDocumentDelivery: false,
   documentUploadCleanup: false,
+  documentScanRecovery: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

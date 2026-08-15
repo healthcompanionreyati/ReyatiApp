@@ -39,6 +39,7 @@ declare module "cloudflare:workers" {
     DOCUMENT_SCAN_SIGNING_SECRET?: string;
     DOCUMENT_DELETION_SIGNING_SECRET?: string;
     DOCUMENT_CLEANUP_SIGNING_SECRET?: string;
+    DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET?: string;
     PLATFORM_BOOTSTRAP_EMAIL?: string;
     RESEND_API_KEY?: string;
     RESEND_FROM_EMAIL?: string;

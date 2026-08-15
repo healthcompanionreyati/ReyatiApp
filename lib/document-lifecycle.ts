@@ -1,5 +1,5 @@
 export const DOCUMENT_UPLOAD_STATES = ["created", "uploading", "uploaded", "cancelled", "expired", "failed", "cleaned"] as const;
-export const DOCUMENT_PROCESSING_STATES = ["upload_pending", "scanning", "ready", "quarantined", "rejected"] as const;
+export const DOCUMENT_PROCESSING_STATES = ["upload_pending", "scanning", "recovering", "ready", "quarantined", "rejected"] as const;
 export const DOCUMENT_DELETION_STATES = ["pending", "processing", "retrying", "completed", "failed", "blocked"] as const;
 
 export type DocumentUploadState = typeof DOCUMENT_UPLOAD_STATES[number];
@@ -18,7 +18,8 @@ const uploadTransitions: Record<DocumentUploadState, readonly DocumentUploadStat
 
 const processingTransitions: Record<DocumentProcessingState, readonly DocumentProcessingState[]> = {
   upload_pending: ["scanning", "rejected"],
-  scanning: ["ready", "quarantined", "rejected"],
+  scanning: ["recovering", "ready", "quarantined", "rejected"],
+  recovering: ["scanning", "quarantined", "rejected"],
   ready: [],
   quarantined: ["scanning", "rejected"],
   rejected: [],
