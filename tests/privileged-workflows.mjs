@@ -487,6 +487,31 @@ const cohort = await request("/api/admin/pilot-cohort", { identity: identities.a
 const cohortPlan = cohort.data.plans.find((item) => item.id === pilotPlan.id);
 assert.equal(cohortPlan.providerCount, 1); assert.equal(cohortPlan.patientCount, 1); assert.equal(cohortPlan.invitationDispatchAllowed, false);
 
+await request("/api/admin/pilot-enrollment", { identity: identities.patient, status: 403 });
+let enrollmentCentre = await request("/api/admin/pilot-enrollment", { identity: identities.admin });
+for (const requirement of [
+  { documentType: "patient_consent", title: "Synthetic controlled pilot patient consent", summary: "Synthetic UAT reference covering the bounded pilot purpose, participation limits, withdrawal, support, and data handling.", artifactReference: `UAT-CONSENT-${runId}` },
+  { documentType: "provider_agreement", title: "Synthetic controlled pilot provider agreement", summary: "Synthetic UAT reference covering provider responsibilities, verification, scheduling, record finalization, escalation, and suspension.", artifactReference: `UAT-PROVIDER-AGREEMENT-${runId}` },
+]) {
+  let planEvidence = enrollmentCentre.data.plans.find((item) => item.id === pilotPlan.id);
+  let artifact = planEvidence.documents.find((item) => item.documentType === requirement.documentType && item.status === "approved") ?? planEvidence.documents.find((item) => item.documentType === requirement.documentType && ["draft", "pending_review"].includes(item.status));
+  if (!artifact) {
+    const saved = await request("/api/admin/pilot-enrollment", { identity: identities.admin, method: "POST", body: { operation: "save", planId: pilotPlan.id, documentType: requirement.documentType, title: requirement.title, summary: requirement.summary, policyVersion: `UAT-${runId}`, artifactReference: requirement.artifactReference } });
+    artifact = { id: saved.data.id, status: saved.data.status, version: saved.data.version, preparedByUserId: adminRole.userId };
+  }
+  if (artifact.status === "draft") {
+    const submitted = await request("/api/admin/pilot-enrollment", { identity: identities.admin, method: "POST", body: { operation: "transition", documentId: artifact.id, version: artifact.version, action: "submit", note: "Synthetic enrollment artifact submitted for independent UAT review." } });
+    artifact = { ...artifact, status: submitted.data.status, version: submitted.data.version };
+  }
+  if (artifact.status === "pending_review") {
+    const approved = await request("/api/admin/pilot-enrollment", { identity: identities.reviewer, method: "POST", body: { operation: "transition", documentId: artifact.id, version: artifact.version, action: "approve", note: "Independent reviewer approved the synthetic bounded artifact reference only." } });
+    assert.equal(approved.data.participantAcceptanceEnabled, false);
+  }
+  enrollmentCentre = await request("/api/admin/pilot-enrollment", { identity: identities.admin });
+}
+const enrollmentPlan = enrollmentCentre.data.plans.find((item) => item.id === pilotPlan.id);
+assert.equal(enrollmentPlan.enrollmentEvidenceReady, true); assert.equal(enrollmentPlan.approvedRequirementCount, 2); assert.equal(enrollmentCentre.data.participantAcceptanceEnabled, false);
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,

@@ -13,6 +13,7 @@ export const foundationFlags = {
   externalSecurityAlertDelivery: false,
   externalObservabilityExport: false,
   pilotInvitationDelivery: false,
+  pilotParticipantAcceptance: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

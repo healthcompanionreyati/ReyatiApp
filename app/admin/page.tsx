@@ -92,6 +92,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/pilot-review"><span>◆</span>{ar ? "قرار الإطلاق" : "Go / No-Go review"}</a>
         <a className="admin-verification-link" href="/admin/pilot-scope"><span>◫</span>{ar ? "نطاق البرنامج" : "Pilot scope"}</a>
         <a className="admin-verification-link" href="/admin/pilot-cohort"><span>◎</span>{ar ? "مجموعة البرنامج" : "Pilot cohort"}</a>
+        <a className="admin-verification-link" href="/admin/pilot-enrollment"><span>◇</span>{ar ? "أدلة التسجيل" : "Enrollment evidence"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>

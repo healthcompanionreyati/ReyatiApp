@@ -462,6 +462,38 @@ export const controlledPilotCohortEvents = sqliteTable("controlled_pilot_cohort_
   previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_controlled_pilot_cohort_events_member_created").on(table.memberId, table.createdAt)]);
 
+export const pilotEnrollmentDocuments = sqliteTable("pilot_enrollment_documents", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
+  documentType: text("document_type").notNull(),
+  audience: text("audience").notNull(),
+  title: text("title").notNull(),
+  summary: text("summary").notNull(),
+  policyVersion: text("policy_version").notNull(),
+  artifactReference: text("artifact_reference").notNull(),
+  status: text("status").notNull().default("draft"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_enrollment_document_plan_type_version").on(table.planId, table.documentType, table.policyVersion),
+  index("idx_pilot_enrollment_document_plan_status").on(table.planId, table.status),
+]);
+
+export const pilotEnrollmentDocumentEvents = sqliteTable("pilot_enrollment_document_events", {
+  id: text("id").primaryKey(),
+  documentId: text("document_id").notNull().references(() => pilotEnrollmentDocuments.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_enrollment_document_events_document_created").on(table.documentId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
