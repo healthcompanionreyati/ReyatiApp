@@ -64,7 +64,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
   const controls = [
     { id: "privacy_safe_logging", name: "Privacy-safe structured logging", status: "implemented", note: "Operational errors exclude messages, bodies, tokens, and identifiers." },
     { id: "security_audit_ledger", name: "Security audit ledger", status: "implemented", note: "Material privileged actions are recorded and role scoped." },
-    { id: "incident_runbook", name: "Incident-response procedure", status: "documented", note: "Procedure exists; accountable people and escalation rota are still required." },
+    { id: "incident_runbook", name: "Incident-response workflow", status: "implemented", note: "Authorized operators can declare, acknowledge, contain, monitor, resolve, close, and reopen durable incidents with audited evidence." },
     { id: "backup_runbook", name: "Backup and restore procedure", status: "documented", note: "Procedure exists; a hosted restoration rehearsal remains outstanding." },
     { id: "external_error_tracking", name: "External error tracking", status: "blocked", note: "Monitoring vendor and data-processing controls are not selected." },
     { id: "performance_monitoring", name: "Performance monitoring", status: "blocked", note: "No approved external telemetry destination is connected." },

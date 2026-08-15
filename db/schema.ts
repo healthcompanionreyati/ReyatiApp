@@ -114,6 +114,45 @@ export const pilotControlAssignments = sqliteTable("pilot_control_assignments", 
   index("idx_pilot_control_assignments_evidence_rehearsed").on(table.evidenceStatus, table.lastRehearsedAt),
 ]);
 
+export const operationalIncidents = sqliteTable("operational_incidents", {
+  id: text("id").primaryKey(),
+  reference: text("reference").notNull(),
+  title: text("title").notNull(),
+  summary: text("summary").notNull(),
+  category: text("category").notNull(),
+  severity: text("severity").notNull(),
+  status: text("status").notNull().default("open"),
+  source: text("source").notNull().default("manual"),
+  declaredByUserId: text("declared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  assignedToUserId: text("assigned_to_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  responseDueAt: integer("response_due_at", { mode: "timestamp_ms" }).notNull(),
+  acknowledgedAt: integer("acknowledged_at", { mode: "timestamp_ms" }),
+  containedAt: integer("contained_at", { mode: "timestamp_ms" }),
+  resolvedAt: integer("resolved_at", { mode: "timestamp_ms" }),
+  closedAt: integer("closed_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_operational_incidents_reference").on(table.reference),
+  index("idx_operational_incidents_status_severity_updated").on(table.status, table.severity, table.updatedAt),
+  index("idx_operational_incidents_assignee_status").on(table.assignedToUserId, table.status),
+  index("idx_operational_incidents_response_due").on(table.status, table.responseDueAt),
+]);
+
+export const operationalIncidentUpdates = sqliteTable("operational_incident_updates", {
+  id: text("id").primaryKey(),
+  incidentId: text("incident_id").notNull().references(() => operationalIncidents.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_operational_incident_updates_incident_created").on(table.incidentId, table.createdAt),
+  index("idx_operational_incident_updates_actor_created").on(table.actorUserId, table.createdAt),
+]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

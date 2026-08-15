@@ -349,6 +349,26 @@ const readiness = await request("/api/admin/operations", { identity: identities.
 assert.equal(readiness.data.pilotReadiness.gates.find((gate) => gate.id === "incident_ownership").status, "cleared");
 assert.equal(readiness.data.pilotReadiness.gates.find((gate) => gate.id === "recovery_evidence").status, "cleared");
 
+await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
+const declaredIncident = await request("/api/admin/incidents", {
+  identity: identities.admin,
+  method: "POST",
+  body: { operation: "create", title: "UAT availability signal", summary: "Synthetic availability degradation observed during the isolated privileged workflow test.", category: "availability", severity: "P2", assignedToUserId: adminRole.userId },
+});
+let incidentVersion = declaredIncident.data.version;
+for (const action of ["acknowledge", "contain", "resolve", "close"]) {
+  const changed = await request("/api/admin/incidents", {
+    identity: identities.admin,
+    method: "POST",
+    body: { operation: "update", incidentId: declaredIncident.data.id, version: incidentVersion, action, note: `Synthetic UAT evidence recorded for the ${action} transition without health information.` },
+  });
+  incidentVersion = changed.data.version;
+}
+const incidentCentre = await request("/api/admin/incidents", { identity: identities.admin });
+const completedIncident = incidentCentre.data.incidents.find((item) => item.id === declaredIncident.data.id);
+assert.equal(completedIncident.status, "closed");
+assert.equal(completedIncident.updates.length, 5);
+
 const audit = await request("/api/admin/audit?limit=100", { identity: identities.admin });
 assert.ok(audit.data.events.length >= 12, "Privileged workflow should produce auditable events");
 
