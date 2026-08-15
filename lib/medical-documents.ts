@@ -50,7 +50,7 @@ async function uploadReadiness() {
   const { env } = await import("cloudflare:workers");
   const storageConfigured = await protectedDocumentStorageConfigured();
   const malwareScannerConfigured = Boolean(env.DOCUMENT_SCAN_PROVIDER?.trim() && env.DOCUMENT_SCAN_SIGNING_SECRET?.trim() && env.DOCUMENT_SCAN_SIGNING_SECRET.trim().length >= 32);
-  return { uploadEnabled: foundationFlags.medicalDocumentUploads && storageConfigured && malwareScannerConfigured, storageConfigured, malwareScannerConfigured };
+  return { uploadEnabled: foundationFlags.medicalDocumentUploads && foundationFlags.documentScanCallbacks && storageConfigured && malwareScannerConfigured, storageConfigured, malwareScannerConfigured };
 }
 
 async function expireShares() {
@@ -99,18 +99,18 @@ export async function getPatientDocumentWorkspace(userId: string) {
 export async function requestDocumentUpload(userId: string, body: Record<string, unknown>) {
   const idempotencyKey = identifier(body.idempotencyKey, "idempotencyKey");
   const expectedContentType = uploadContentType(body.contentType); const expectedSizeBytes = uploadSize(body.sizeBytes);
-  documentCategory(body.category);
+  const category = documentCategory(body.category);
   const readiness = await uploadReadiness();
   const db = await getDb(); const now = new Date();
   await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: "documents.upload_requested", resourceType: "document_upload", resourceId: "unavailable", outcome: readiness.uploadEnabled ? "success" : "blocked", metadataJson: null, createdAt: now });
   if (!readiness.uploadEnabled) throw new MedicalDocumentError("integration_required", 409, "Protected storage and malware scanning must be active before upload");
-  const existing = await db.select({ id: documentUploadSessions.id, expectedContentType: documentUploadSessions.expectedContentType, expectedSizeBytes: documentUploadSessions.expectedSizeBytes, status: documentUploadSessions.status, expiresAt: documentUploadSessions.expiresAt, version: documentUploadSessions.version })
+  const existing = await db.select({ id: documentUploadSessions.id, category: documentUploadSessions.category, expectedContentType: documentUploadSessions.expectedContentType, expectedSizeBytes: documentUploadSessions.expectedSizeBytes, status: documentUploadSessions.status, expiresAt: documentUploadSessions.expiresAt, version: documentUploadSessions.version })
     .from(documentUploadSessions).where(and(eq(documentUploadSessions.ownerUserId, userId), eq(documentUploadSessions.idempotencyKey, idempotencyKey))).limit(1);
   if (existing[0]) {
-    if (existing[0].expectedContentType !== expectedContentType || existing[0].expectedSizeBytes !== expectedSizeBytes) throw new MedicalDocumentError("idempotency_conflict", 409, "Idempotency key was already used for different upload metadata");
+    if (existing[0].category !== category || existing[0].expectedContentType !== expectedContentType || existing[0].expectedSizeBytes !== expectedSizeBytes) throw new MedicalDocumentError("idempotency_conflict", 409, "Idempotency key was already used for different upload metadata");
     return publicUploadSession(existing[0]);
   }
-  const session = { id: crypto.randomUUID(), ownerUserId: userId, documentId: null, objectKey: createPrivateDocumentObjectKey(now), expectedContentType, expectedSizeBytes, idempotencyKey, status: "created", expiresAt: new Date(now.valueOf() + 15 * 60 * 1000), cancelledAt: null, completedAt: null, version: 1, createdAt: now, updatedAt: now };
+  const session = { id: crypto.randomUUID(), ownerUserId: userId, documentId: null, objectKey: createPrivateDocumentObjectKey(now), category, expectedContentType, expectedSizeBytes, idempotencyKey, status: "created", expiresAt: new Date(now.valueOf() + 15 * 60 * 1000), cancelledAt: null, completedAt: null, version: 1, createdAt: now, updatedAt: now };
   await db.insert(documentUploadSessions).values(session);
   return publicUploadSession(session);
 }
@@ -122,7 +122,7 @@ export async function cancelDocumentUpload(userId: string, body: Record<string, 
   const row = await db.select({ id: documentUploadSessions.id, expectedContentType: documentUploadSessions.expectedContentType, expectedSizeBytes: documentUploadSessions.expectedSizeBytes, status: documentUploadSessions.status, expiresAt: documentUploadSessions.expiresAt, version: documentUploadSessions.version })
     .from(documentUploadSessions).where(and(eq(documentUploadSessions.id, uploadSessionId), eq(documentUploadSessions.ownerUserId, userId))).limit(1);
   if (!row[0]) throw new MedicalDocumentError("upload_unavailable", 404, "Upload session was not found");
-  try { assertExpectedDocumentVersion(row[0].version, body.expectedVersion); transitionDocumentUpload(row[0].status as "created" | "uploading", "cancelled"); }
+  try { assertExpectedDocumentVersion(row[0].version, body.expectedVersion); if (row[0].status !== "created") throw new Error(); transitionDocumentUpload("created", "cancelled"); }
   catch { throw new MedicalDocumentError("upload_changed", 409, "Upload session cannot be cancelled from its current state"); }
   const changed = await db.update(documentUploadSessions).set({ status: "cancelled", cancelledAt: now, version: row[0].version + 1, updatedAt: now })
     .where(and(eq(documentUploadSessions.id, uploadSessionId), eq(documentUploadSessions.ownerUserId, userId), eq(documentUploadSessions.status, row[0].status), eq(documentUploadSessions.version, row[0].version))).returning({ id: documentUploadSessions.id });

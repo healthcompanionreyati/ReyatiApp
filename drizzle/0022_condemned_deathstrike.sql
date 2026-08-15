@@ -1,0 +1,1 @@
+ALTER TABLE `document_upload_sessions` ADD `category` text DEFAULT 'other' NOT NULL;

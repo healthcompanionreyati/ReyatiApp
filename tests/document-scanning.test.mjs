@@ -28,6 +28,8 @@ test("scanner payload never supplies object keys and only scanning documents can
   assert.match(scanner, /document\[0\]\.status !== "scanning"/);
   assert.match(scanner, /eq\(documentRecords\.version, document\[0\]\.version\)/);
   assert.match(scanner, /inspectPrivateDocumentObject\(document\[0\]\.objectKey\)/);
+  assert.match(scanner, /Object\.keys\(payload\)/);
+  assert.doesNotMatch(scanner.match(/\["documentId"[\s\S]*?\]\.includes\(key\)/)?.[0] ?? "", /objectKey/);
 });
 
 test("infected, failed, missing, and integrity-mismatched objects fail closed", () => {
@@ -36,6 +38,9 @@ test("infected, failed, missing, and integrity-mismatched objects fail closed", 
   assert.match(scanner, /object_missing_during_quarantine/);
   assert.match(scanner, /finalStatus === "clean" \? "ready" : "quarantined"/);
   assert.match(scanner, /malwareScanStatus/);
+  assert.match(scanner, /page_count_invalid/);
+  assert.match(scanner, /reportedChecksum !== document\[0\]\.checksumSha256\.toLowerCase\(\)/);
+  assert.match(scanner, /reportedPageCount <= 25/);
 });
 
 test("scanner route bounds raw payload and uses privacy-safe operational reporting", () => {

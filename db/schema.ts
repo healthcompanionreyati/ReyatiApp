@@ -345,6 +345,7 @@ export const documentUploadSessions = sqliteTable("document_upload_sessions", {
   ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
   documentId: text("document_id").references(() => documentRecords.id, { onDelete: "restrict" }),
   objectKey: text("object_key").notNull(),
+  category: text("category").notNull().default("other"),
   expectedContentType: text("expected_content_type").notNull(),
   expectedSizeBytes: integer("expected_size_bytes").notNull(),
   idempotencyKey: text("idempotency_key").notNull(),

@@ -53,11 +53,12 @@ export async function readPrivateDocumentObject(objectKey: string) {
   return { body: object.body, size: object.size, etag: object.etag, contentType: object.httpMetadata?.contentType ?? null };
 }
 
-export async function stagePrivateDocumentObject(input: { objectKey: string; body: ReadableStream<Uint8Array>; contentType: string; ownerReference: string; expectedSizeBytes: number }) {
+export async function stagePrivateDocumentObject(input: { objectKey: string; body: ReadableStream<Uint8Array> | ArrayBuffer | Uint8Array; contentType: string; ownerReference: string; expectedSizeBytes: number; checksumSha256: string }) {
   const storage = await storageBinding();
   const objectKey = assertPrivateDocumentObjectKey(input.objectKey);
   if (!Number.isSafeInteger(input.expectedSizeBytes) || input.expectedSizeBytes < 1 || input.expectedSizeBytes > 10 * 1024 * 1024) throw new RangeError("Document size is outside the approved limit");
-  const stored = await storage.put(objectKey, input.body, { httpMetadata: { contentType: input.contentType }, customMetadata: { ownerReferenceHash: await sha256(input.ownerReference), expectedSizeBytes: String(input.expectedSizeBytes), classification: "clinical" } });
+  if (!/^[a-f0-9]{64}$/.test(input.checksumSha256)) throw new TypeError("Document checksum is invalid");
+  const stored = await storage.put(objectKey, input.body, { httpMetadata: { contentType: input.contentType }, customMetadata: { ownerReferenceHash: await sha256(input.ownerReference), expectedSizeBytes: String(input.expectedSizeBytes), checksumSha256: input.checksumSha256, classification: "clinical" } });
   return { size: stored.size, etag: stored.etag };
 }
 

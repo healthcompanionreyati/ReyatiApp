@@ -124,7 +124,7 @@ test("medical documents remain metadata-only, consent-scoped, and upload-gated",
   for (const table of ["document_upload_sessions", "document_processing_events", "document_access_grants", "document_deletion_jobs"]) assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
   assert.match(service, /foundationFlags\.medicalDocumentUploads/);
   assert.match(hosting, /"r2": "DOCUMENTS"/);
-  assert.match(service, /foundationFlags\.medicalDocumentUploads && storageConfigured && malwareScannerConfigured/);
+  assert.match(service, /foundationFlags\.medicalDocumentUploads && foundationFlags\.documentScanCallbacks && storageConfigured && malwareScannerConfigured/);
   assert.match(service, /10 \* 1024 \* 1024/);
   assert.match(service, /maxPages: 25/);
   assert.match(service, /MAX_SHARE_DAYS = 30/);
