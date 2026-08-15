@@ -211,6 +211,13 @@
       "when": 1786802312646,
       "tag": "0029_flat_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1786803367274,
+      "tag": "0030_round_giant_man",
+      "breakpoints": true
     }
   ]
 }

@@ -266,6 +266,49 @@ export const legalHoldOrderEvents = sqliteTable("legal_hold_order_events", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_legal_hold_order_events_hold_created").on(table.holdId, table.createdAt)]);
 
+export const retentionAutomationPlans = sqliteTable("retention_automation_plans", {
+  id: text("id").primaryKey(),
+  recordClass: text("record_class").notNull(),
+  policyId: text("policy_id").notNull().references(() => dataLifecyclePolicies.id, { onDelete: "restrict" }),
+  cadence: text("cadence").notNull(),
+  batchLimit: integer("batch_limit").notNull(),
+  scheduleReference: text("schedule_reference").notNull(),
+  ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("draft"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_retention_automation_plans_record_class").on(table.recordClass),
+  index("idx_retention_automation_plans_status_updated").on(table.status, table.updatedAt),
+  index("idx_retention_automation_plans_owner_status").on(table.ownerUserId, table.status),
+]);
+
+export const retentionPreviewRuns = sqliteTable("retention_preview_runs", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => retentionAutomationPlans.id, { onDelete: "restrict" }),
+  requestedByUserId: text("requested_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  policyVersion: integer("policy_version").notNull(),
+  candidates: integer("candidates").notNull(),
+  excludedByHold: integer("excluded_by_hold").notNull(),
+  examined: integer("examined").notNull(),
+  mode: text("mode").notNull().default("preview_only"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_retention_preview_runs_plan_created").on(table.planId, table.createdAt)]);
+
+export const retentionAutomationPlanEvents = sqliteTable("retention_automation_plan_events", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => retentionAutomationPlans.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_retention_automation_plan_events_plan_created").on(table.planId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

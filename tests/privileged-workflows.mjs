@@ -422,6 +422,20 @@ const holdCentre = await request("/api/admin/legal-holds", { identity: identitie
 const completedHold = holdCentre.data.holds.find((item) => item.id === placedHold.data.id);
 assert.equal(completedHold.events.length, 3);
 
+await request("/api/admin/retention-automation", { identity: identities.patient, status: 403 });
+const automationBefore = await request("/api/admin/retention-automation", { identity: identities.admin });
+let automationPlan = automationBefore.data.plans[0];
+if (!automationPlan || ["draft", "rejected"].includes(automationPlan.status)) {
+  const savedPlan = await request("/api/admin/retention-automation", { identity: identities.admin, method: "POST", body: { operation: "save", version: automationPlan?.version, cadence: "daily", batchLimit: 25, scheduleReference: `UAT-SCHEDULE-${runId}`, ownerUserId: adminRole.userId } });
+  automationPlan = { id: savedPlan.data.id, version: savedPlan.data.version, status: savedPlan.data.status, ownerUserId: adminRole.userId };
+}
+if (automationPlan.status === "draft") { const submittedPlan = await request("/api/admin/retention-automation", { identity: identities.admin, method: "POST", body: { operation: "transition", planId: automationPlan.id, version: automationPlan.version, action: "submit", note: "Synthetic retention plan submitted for independent review." } }); automationPlan = { ...automationPlan, version: submittedPlan.data.version, status: submittedPlan.data.status }; }
+if (automationPlan.status === "pending_review") { const approvedPlan = await request("/api/admin/retention-automation", { identity: identities.reviewer, method: "POST", body: { operation: "transition", planId: automationPlan.id, version: automationPlan.version, action: "approve", note: "Independent reviewer approved preview-only retention automation evidence." } }); automationPlan = { ...automationPlan, version: approvedPlan.data.version, status: approvedPlan.data.status }; }
+assert.equal(automationPlan.status, "approved");
+const previewRun = await request("/api/admin/retention-automation", { identity: identities.admin, method: "POST", body: { operation: "preview", planId: automationPlan.id } });
+assert.equal(previewRun.data.mode, "preview_only");
+assert.equal(previewRun.data.executionEnabled, false);
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,
