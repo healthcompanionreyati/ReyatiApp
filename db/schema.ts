@@ -345,6 +345,43 @@ export const securityAlertDrills = sqliteTable("security_alert_drills", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_security_alert_drills_policy_created").on(table.policyId, table.createdAt)]);
 
+export const observabilityPolicies = sqliteTable("observability_policies", {
+  id: text("id").primaryKey(),
+  telemetryType: text("telemetry_type").notNull(),
+  vendorAlias: text("vendor_alias").notNull(),
+  dataRegion: text("data_region").notNull(),
+  retentionDays: integer("retention_days").notNull(),
+  sampleRateBasisPoints: integer("sample_rate_basis_points").notNull(),
+  primaryOwnerUserId: text("primary_owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  backupOwnerUserId: text("backup_owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  sensitiveDataPermitted: integer("sensitive_data_permitted", { mode: "boolean" }).notNull().default(false),
+  externalExportEnabled: integer("external_export_enabled", { mode: "boolean" }).notNull().default(false),
+  status: text("status").notNull().default("draft"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_observability_policies_telemetry_type").on(table.telemetryType),
+  index("idx_observability_policies_status_updated").on(table.status, table.updatedAt),
+  index("idx_observability_policies_owner_status").on(table.primaryOwnerUserId, table.status),
+]);
+
+export const observabilityPolicyEvents = sqliteTable("observability_policy_events", {
+  id: text("id").primaryKey(), policyId: text("policy_id").notNull().references(() => observabilityPolicies.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_observability_policy_events_policy_created").on(table.policyId, table.createdAt)]);
+
+export const observabilityValidationRuns = sqliteTable("observability_validation_runs", {
+  id: text("id").primaryKey(), policyId: text("policy_id").notNull().references(() => observabilityPolicies.id, { onDelete: "restrict" }),
+  initiatedByUserId: text("initiated_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  fixturesChecked: integer("fixtures_checked").notNull(), fixturesPassed: integer("fixtures_passed").notNull(),
+  prohibitedFieldsDetected: integer("prohibited_fields_detected").notNull(), externalExported: integer("external_exported", { mode: "boolean" }).notNull().default(false),
+  mode: text("mode").notNull().default("local_redaction_test"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_observability_validation_runs_policy_created").on(table.policyId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

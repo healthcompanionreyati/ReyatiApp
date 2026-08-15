@@ -93,7 +93,7 @@ assert.equal(queueRun.data.claimed, 0);
 const operationsHealth = await request("/api/admin/operations", { identity: identities.admin });
 assert.equal(operationsHealth.data.databaseReachable, true);
 assert.ok(operationsHealth.data.metrics.activeRateLimitedBuckets >= 1);
-assert.ok(operationsHealth.data.controls.some((control) => control.id === "external_error_tracking" && control.status === "blocked"));
+assert.ok(operationsHealth.data.controls.some((control) => control.id === "external_error_tracking" && control.status === "partial"));
 assert.equal(operationsHealth.data.recentSignals.every((signal) => !("userId" in signal) && !("resourceId" in signal)), true);
 
 const organization = await request("/api/admin/organizations", {
@@ -445,6 +445,16 @@ if (alertPolicy.status === "pending_review") { const approvedAlert = await reque
 assert.equal(alertPolicy.status, "approved");
 const alertDrill = await request("/api/admin/security-alerts", { identity: identities.admin, method: "POST", body: { operation: "drill", policyId: alertPolicy.id, severity: "P2" } });
 assert.equal(alertDrill.data.inAppDelivered, true); assert.equal(alertDrill.data.externalDelivered, false);
+
+await request("/api/admin/observability", { identity: identities.patient, status: 403 });
+const observabilityBefore = await request("/api/admin/observability", { identity: identities.admin });
+let observabilityPolicy = observabilityBefore.data.policies.find((item) => item.telemetryType === "application_errors");
+if (!observabilityPolicy || ["draft", "rejected"].includes(observabilityPolicy.status)) { const savedPolicy = await request("/api/admin/observability", { identity: identities.admin, method: "POST", body: { operation: "save", telemetryType: "application_errors", version: observabilityPolicy?.version, vendorAlias: "Vendor pending", dataRegion: "Region pending", retentionDays: 30, sampleRateBasisPoints: 1000, primaryOwnerUserId: adminRole.userId, backupOwnerUserId: reviewerRole.userId } }); observabilityPolicy = { id: savedPolicy.data.id, version: savedPolicy.data.version, status: savedPolicy.data.status, primaryOwnerUserId: adminRole.userId }; }
+if (observabilityPolicy.status === "draft") { const submittedPolicy = await request("/api/admin/observability", { identity: identities.admin, method: "POST", body: { operation: "transition", policyId: observabilityPolicy.id, version: observabilityPolicy.version, action: "submit", note: "Synthetic telemetry policy submitted for independent privacy review." } }); observabilityPolicy = { ...observabilityPolicy, version: submittedPolicy.data.version, status: submittedPolicy.data.status }; }
+if (observabilityPolicy.status === "pending_review") { const approvedPolicy = await request("/api/admin/observability", { identity: identities.reviewer, method: "POST", body: { operation: "transition", policyId: observabilityPolicy.id, version: observabilityPolicy.version, action: "approve", note: "Independent reviewer approved the local-only observability governance controls." } }); observabilityPolicy = { ...observabilityPolicy, version: approvedPolicy.data.version, status: approvedPolicy.data.status }; }
+assert.equal(observabilityPolicy.status, "approved");
+const redactionValidation = await request("/api/admin/observability", { identity: identities.admin, method: "POST", body: { operation: "validate", policyId: observabilityPolicy.id } });
+assert.equal(redactionValidation.data.fixturesPassed, 8); assert.equal(redactionValidation.data.prohibitedFieldsDetected, 0); assert.equal(redactionValidation.data.externalExported, false);
 
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {

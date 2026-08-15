@@ -225,6 +225,13 @@
       "when": 1786805788245,
       "tag": "0031_flawless_mockingbird",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1786806367064,
+      "tag": "0032_wide_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

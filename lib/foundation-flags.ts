@@ -11,6 +11,7 @@ export const foundationFlags = {
   documentScanRecovery: false,
   retentionAutomationExecution: false,
   externalSecurityAlertDelivery: false,
+  externalObservabilityExport: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {
