@@ -585,6 +585,11 @@ assert.equal(closedFeedback.data.status, "closed");
 learningCentre = await request("/api/admin/pilot-learning", { identity: identities.admin });
 learningPlan = learningCentre.data.plans.find((item) => item.id === pilotPlan.id);
 assert.ok(learningPlan.approvedMetricCount >= 1); assert.equal(learningCentre.data.realFeedbackEnabled, false);
+const integratedReadiness = await request("/api/admin/operations", { identity: identities.admin });
+for (const [gateId, href] of [["pilot_enrollment", "/admin/pilot-enrollment"], ["pilot_invitations", "/admin/pilot-invitations"], ["pilot_participation", "/admin/pilot-participation"], ["pilot_measurement", "/admin/pilot-learning"]]) {
+  const gate = integratedReadiness.data.pilotReadiness.gates.find((item) => item.id === gateId); assert.ok(gate, `${gateId} readiness gate must exist`); assert.equal(gate.href, href);
+}
+assert.equal(integratedReadiness.data.pilotReadiness.gates.find((item) => item.id === "pilot_measurement").status, "blocked");
 
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {

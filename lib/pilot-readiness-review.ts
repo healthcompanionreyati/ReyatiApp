@@ -9,7 +9,7 @@ export class PilotReviewValidationError extends Error { constructor(message: str
 export class PilotReviewConflictError extends Error { constructor() { super("This pilot review changed. Refresh and try again."); this.name = "PilotReviewConflictError"; } }
 function text(value: unknown, name: string, min: number, max: number) { if (typeof value !== "string" || value.trim().length < min || value.trim().length > max) throw new PilotReviewValidationError(`${name} is invalid`); return value.trim(); }
 function version(value: unknown) { const result = Number(value); if (!Number.isSafeInteger(result) || result < 1) throw new PilotReviewValidationError("version is invalid"); return result; }
-function safeSnapshot(gates: Awaited<ReturnType<typeof getOperationsHealth>>["pilotReadiness"]["gates"]) { return gates.map((gate) => ({ id: gate.id, name: gate.name, status: gate.status, evidence: gate.evidence, ownerNeeded: gate.ownerNeeded })); }
+function safeSnapshot(gates: Awaited<ReturnType<typeof getOperationsHealth>>["pilotReadiness"]["gates"]) { return gates.map((gate) => ({ id: gate.id, name: gate.name, status: gate.status, evidence: gate.evidence, ownerNeeded: gate.ownerNeeded, href: gate.href })); }
 
 export async function getPilotReadinessReviewCentre(userId: string) {
   const access = await requirePlatformRole(userId, ["platform_admin", "security_auditor"]); const health = await getOperationsHealth(userId, "Pilot review operator"); const db = await getDb();

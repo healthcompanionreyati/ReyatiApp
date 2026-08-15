@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gt, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { appointments, auditEvents, authEvents, dataLifecyclePolicies, documentDeletionJobs, documentRecords, documentUploadSessions, observabilityPolicies, operationalRateLimits, outboundMessages, pilotControlAssignments, recoveryRehearsals, supportCases, webhookReceipts } from "@/db/schema";
+import { appointments, auditEvents, authEvents, controlledPilotPlans, dataLifecyclePolicies, documentDeletionJobs, documentRecords, documentUploadSessions, observabilityPolicies, operationalRateLimits, outboundMessages, pilotControlAssignments, pilotEnrollmentDocuments, pilotInvitationPolicies, pilotParticipationPolicies, pilotSuccessMetrics, pilotWithdrawalDrills, recoveryRehearsals, supportCases, webhookReceipts } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 
 const OPEN_SUPPORT_STATUSES = ["open", "in_progress", "waiting_requester", "waiting_support"];
@@ -76,7 +76,11 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 
-  const [ownershipAssignments, rehearsals, lifecyclePolicies, telemetryPolicies] = await Promise.all([db.select().from(pilotControlAssignments), db.select().from(recoveryRehearsals), db.select().from(dataLifecyclePolicies), db.select().from(observabilityPolicies)]);
+  const [ownershipAssignments, rehearsals, lifecyclePolicies, telemetryPolicies, pilotPlans, enrollmentDocuments, invitationPolicies, participationPolicies, withdrawalDrills, successMetrics] = await Promise.all([
+    db.select().from(pilotControlAssignments), db.select().from(recoveryRehearsals), db.select().from(dataLifecyclePolicies), db.select().from(observabilityPolicies),
+    db.select().from(controlledPilotPlans).where(inArray(controlledPilotPlans.status, ["approved", "active", "suspended"])),
+    db.select().from(pilotEnrollmentDocuments), db.select().from(pilotInvitationPolicies), db.select().from(pilotParticipationPolicies), db.select().from(pilotWithdrawalDrills), db.select().from(pilotSuccessMetrics),
+  ]);
   const rehearsalBoundary = new Date(now.valueOf() - 90 * 24 * 60 * 60 * 1000);
   const verifiedControl = (controlId: string) => ownershipAssignments.some((assignment) => assignment.controlId === controlId && assignment.evidenceStatus === "verified" && Boolean(assignment.backupOwnerUserId) && Boolean(assignment.evidenceReference) && Boolean(assignment.lastRehearsedAt && assignment.lastRehearsedAt >= rehearsalBoundary));
   const incidentOwnershipReady = verifiedControl("incident_response") && verifiedControl("security_alerting");
@@ -85,15 +89,32 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
   const lifecycleOwnershipReady = verifiedControl("data_lifecycle");
   const approvedLifecyclePolicies = lifecyclePolicies.filter((policy) => policy.status === "approved").length;
   const approvedTelemetryPolicies = telemetryPolicies.filter((policy) => policy.status === "approved").length;
+  const participantTypes = ["patient", "provider"] as const;
+  const requiredDocumentType = (type: (typeof participantTypes)[number]) => type === "patient" ? "patient_consent" : "provider_agreement";
+  const requiredMetricKeys = ["booking_journey_completion", "provider_response_minutes", "record_finalization_hours", "support_resolution_hours", "participant_experience_score", "safety_incident_count"] as const;
+  const enrollmentReadyPlans = pilotPlans.filter((plan) => participantTypes.every((type) => enrollmentDocuments.some((document) => document.planId === plan.id && document.documentType === requiredDocumentType(type) && document.status === "approved")));
+  const approvedInvitationFor = (planId: string, type: (typeof participantTypes)[number]) => invitationPolicies.find((policy) => policy.planId === planId && policy.participantType === type && policy.status === "approved" && enrollmentDocuments.some((document) => document.id === policy.enrollmentDocumentId && document.planId === planId && document.documentType === requiredDocumentType(type) && document.status === "approved"));
+  const invitationReadyPlans = pilotPlans.filter((plan) => participantTypes.every((type) => Boolean(approvedInvitationFor(plan.id, type))));
+  const participationReadyPlans = pilotPlans.filter((plan) => participantTypes.every((type) => {
+    const invitation = approvedInvitationFor(plan.id, type); if (!invitation) return false;
+    const policy = participationPolicies.find((item) => item.planId === plan.id && item.participantType === type && item.invitationPolicyId === invitation.id && item.status === "approved");
+    return Boolean(policy && withdrawalDrills.some((drill) => drill.policyId === policy.id && drill.status === "verified" && drill.result === "pass" && drill.reviewedAt && drill.reviewedAt >= rehearsalBoundary));
+  }));
+  const measurementReadyPlans = pilotPlans.filter((plan) => requiredMetricKeys.every((metricKey) => successMetrics.some((metric) => metric.planId === plan.id && metric.metricKey === metricKey && metric.status === "approved")));
+  const planCount = pilotPlans.length;
 
   const pilotReadiness = {
     decision: "not_ready" as const,
     gates: [
-      { id: "application_safety", name: "Application safety baseline", status: "cleared" as const, evidence: "Privacy-safe logging, scoped audit events, and durable write limits are implemented.", ownerNeeded: false },
-      { id: "incident_ownership", name: "Incident ownership and escalation", status: incidentOwnershipReady ? "cleared" as const : "blocked" as const, evidence: incidentOwnershipReady ? "Incident response and security alerting have primary and backup owners, response targets, and verified rehearsal evidence from the last 90 days." : "Incident response and security alerting both require primary and backup owners plus verified rehearsal evidence from the last 90 days.", ownerNeeded: !incidentOwnershipReady },
-      { id: "monitoring_coverage", name: "Monitoring and security alerting", status: "blocked" as const, evidence: `${approvedTelemetryPolicies}/3 telemetry policies are independently approved. Privacy-safe configuration and local redaction validation are available, but external monitoring and security-alert transports remain disconnected.`, ownerNeeded: approvedTelemetryPolicies < 3 },
-      { id: "recovery_evidence", name: "Hosted recovery evidence", status: recoveryEvidenceReady ? "cleared" as const : "blocked" as const, evidence: recoveryEvidenceReady ? "Backup and restore has fresh ownership evidence plus an independently verified full-platform rehearsal within both recovery targets from the last 90 days." : "Recovery requires fresh primary and backup ownership plus an independently verified full-platform hosted rehearsal within RTO and RPO targets from the last 90 days.", ownerNeeded: !recoveryOwnershipReady },
-      { id: "data_lifecycle", name: "Clinical data lifecycle", status: "blocked" as const, evidence: `${approvedLifecyclePolicies}/5 required record-class policies are independently approved. Legal-hold placement and independently reviewed release are implemented; scanner activation, scheduled cleanup, retention enforcement, and formal legal review remain launch blockers.`, ownerNeeded: !lifecycleOwnershipReady },
+      { id: "application_safety", name: "Application safety baseline", status: "cleared" as const, evidence: "Privacy-safe logging, scoped audit events, and durable write limits are implemented.", ownerNeeded: false, href: "/admin/audit" },
+      { id: "pilot_enrollment", name: "Enrollment evidence", status: planCount > 0 && enrollmentReadyPlans.length === planCount ? "cleared" as const : "blocked" as const, evidence: `${enrollmentReadyPlans.length}/${planCount || 1} controlled-pilot plans have current independently approved patient-consent and provider-agreement artifacts.`, ownerNeeded: false, href: "/admin/pilot-enrollment" },
+      { id: "pilot_invitations", name: "Invitation safeguards", status: planCount > 0 && invitationReadyPlans.length === planCount ? "cleared" as const : "blocked" as const, evidence: `${invitationReadyPlans.length}/${planCount || 1} plans have approved patient and provider safeguards bound to currently approved enrollment artifacts. Delivery and acceptance remain disabled.`, ownerNeeded: false, href: "/admin/pilot-invitations" },
+      { id: "pilot_participation", name: "Participation and withdrawal", status: planCount > 0 && participationReadyPlans.length === planCount ? "cleared" as const : "blocked" as const, evidence: `${participationReadyPlans.length}/${planCount || 1} plans have approved patient and provider lifecycle policies plus independently verified passing withdrawal rehearsals from the last 90 days.`, ownerNeeded: false, href: "/admin/pilot-participation" },
+      { id: "pilot_measurement", name: "Pilot success measurement", status: planCount > 0 && measurementReadyPlans.length === planCount ? "cleared" as const : "blocked" as const, evidence: `${measurementReadyPlans.length}/${planCount || 1} plans have all ${requiredMetricKeys.length} independently approved success-metric definitions. No outcome data is required or claimed at readiness.`, ownerNeeded: false, href: "/admin/pilot-learning" },
+      { id: "incident_ownership", name: "Incident ownership and escalation", status: incidentOwnershipReady ? "cleared" as const : "blocked" as const, evidence: incidentOwnershipReady ? "Incident response and security alerting have primary and backup owners, response targets, and verified rehearsal evidence from the last 90 days." : "Incident response and security alerting both require primary and backup owners plus verified rehearsal evidence from the last 90 days.", ownerNeeded: !incidentOwnershipReady, href: "/admin/ownership" },
+      { id: "monitoring_coverage", name: "Monitoring and security alerting", status: "blocked" as const, evidence: `${approvedTelemetryPolicies}/3 telemetry policies are independently approved. Privacy-safe configuration and local redaction validation are available, but external monitoring and security-alert transports remain disconnected.`, ownerNeeded: approvedTelemetryPolicies < 3, href: "/admin/observability" },
+      { id: "recovery_evidence", name: "Hosted recovery evidence", status: recoveryEvidenceReady ? "cleared" as const : "blocked" as const, evidence: recoveryEvidenceReady ? "Backup and restore has fresh ownership evidence plus an independently verified full-platform rehearsal within both recovery targets from the last 90 days." : "Recovery requires fresh primary and backup ownership plus an independently verified full-platform hosted rehearsal within RTO and RPO targets from the last 90 days.", ownerNeeded: !recoveryOwnershipReady, href: "/admin/recovery" },
+      { id: "data_lifecycle", name: "Clinical data lifecycle", status: "blocked" as const, evidence: `${approvedLifecyclePolicies}/5 required record-class policies are independently approved. Legal-hold placement and independently reviewed release are implemented; scanner activation, scheduled cleanup, retention enforcement, and formal legal review remain launch blockers.`, ownerNeeded: !lifecycleOwnershipReady, href: "/admin/data-lifecycle" },
     ],
   };
 
