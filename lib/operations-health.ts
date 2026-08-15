@@ -53,7 +53,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "performance_monitoring", name: "Performance monitoring", status: "blocked", note: "No approved external telemetry destination is connected." },
     { id: "security_alerting", name: "Security alerting and escalation", status: "blocked", note: "Alert transport, thresholds, recipients, and on-call rota are not configured." },
     { id: "backup_rehearsal", name: "Hosted backup restoration rehearsal", status: "blocked", note: "No completed rehearsal evidence or recovery-time result is recorded." },
-    { id: "retention_enforcement", name: "Automated retention enforcement", status: "blocked", note: "Approved retention periods and legal-hold rules remain undecided." },
+    { id: "retention_enforcement", name: "Automated retention enforcement", status: "blocked", note: "A gated deletion processor exists, but approved retention periods and legal-hold operations remain undecided." },
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 

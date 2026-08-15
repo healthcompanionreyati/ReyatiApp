@@ -68,5 +68,11 @@ export async function quarantinePrivateDocumentObject(objectKey: string) {
 
 export async function deletePrivateDocumentObject(objectKey: string) {
   const storage = await storageBinding();
-  await storage.delete(assertPrivateDocumentObjectKey(objectKey));
+  const key = assertPrivateDocumentObjectKey(objectKey);
+  const quarantineKey = `quarantine/${key}`;
+  await storage.delete(key);
+  await storage.delete(quarantineKey);
+  const [active, quarantined] = await Promise.all([storage.head(key), storage.head(quarantineKey)]);
+  if (active || quarantined) throw new Error("Document object deletion could not be verified");
+  return { deleted: true } as const;
 }

@@ -18,7 +18,7 @@ async function routeFiles(directory) {
 test("Phase 1A external capabilities remain hard-disabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks"]) {
+  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
 });
@@ -90,6 +90,14 @@ test("all authenticated write APIs use durable privacy-safe rate limits", async 
       assert.match(scanning, /x-reyati-scan-timestamp/);
       assert.match(scanning, /x-reyati-scan-event-id/);
       assert.match(scanning, /dedupeKey/);
+      continue;
+    }
+    if (file.endsWith(path.join("internal", "document-deletion", "route.ts"))) {
+      assert.match(contents, /documentDeletionProcessor/);
+      const deletion = await source("lib/document-deletion.ts");
+      assert.match(deletion, /x-reyati-deletion-signature/);
+      assert.match(deletion, /x-reyati-deletion-timestamp/);
+      assert.match(deletion, /eq\(documentDeletionJobs\.legalHold, false\)/);
       continue;
     }
     assert.match(contents, /@\/lib\/rate-limits/, `${path.relative(root, file)} lacks the shared limiter`);
