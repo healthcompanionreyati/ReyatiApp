@@ -384,6 +384,31 @@ assert.equal(verifiedRecovery.data.reviewStatus, "verified");
 const recoveryReadiness = await request("/api/admin/operations", { identity: identities.admin });
 assert.equal(recoveryReadiness.data.pilotReadiness.gates.find((gate) => gate.id === "recovery_evidence").status, "cleared");
 
+await request("/api/admin/data-lifecycle", { identity: identities.patient, status: 403 });
+const lifecycleBefore = await request("/api/admin/data-lifecycle", { identity: identities.admin });
+for (const recordClass of lifecycleBefore.data.recordClasses) {
+  let policy = lifecycleBefore.data.policies.find((item) => item.recordClass === recordClass);
+  if (!policy || ["draft", "rejected"].includes(policy.status)) {
+    const saved = await request("/api/admin/data-lifecycle", {
+      identity: identities.admin, method: "POST",
+      body: { operation: "save", recordClass, version: policy?.version, retentionMonths: 12, retentionTrigger: "record_created", disposition: "review_then_delete", legalBasisReference: `UAT-LEGAL-${recordClass}`, evidenceReference: `UAT-POLICY-${recordClass}-${runId}`, ownerUserId: adminRole.userId },
+    });
+    policy = { id: saved.data.id, version: saved.data.version, status: saved.data.status };
+  }
+  if (policy.status === "draft") {
+    const submitted = await request("/api/admin/data-lifecycle", { identity: identities.admin, method: "POST", body: { operation: "transition", policyId: policy.id, version: policy.version, action: "submit", note: "Synthetic policy submitted for independent privileged workflow review." } });
+    policy = { ...policy, version: submitted.data.version, status: submitted.data.status };
+  }
+  if (policy.status === "pending_review") {
+    const approvedPolicy = await request("/api/admin/data-lifecycle", { identity: identities.reviewer, method: "POST", body: { operation: "transition", policyId: policy.id, version: policy.version, action: "approve", note: "Independent synthetic review confirmed the bounded retention policy references." } });
+    assert.equal(approvedPolicy.data.status, "approved");
+  }
+}
+const lifecycleReadiness = await request("/api/admin/operations", { identity: identities.admin });
+const lifecycleGate = lifecycleReadiness.data.pilotReadiness.gates.find((gate) => gate.id === "data_lifecycle");
+assert.equal(lifecycleGate.status, "blocked", "Policy approval must not bypass remaining lifecycle controls");
+assert.match(lifecycleGate.evidence, /5\/5 required record-class policies/);
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,

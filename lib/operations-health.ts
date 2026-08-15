@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gt, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { appointments, auditEvents, authEvents, documentDeletionJobs, documentRecords, documentUploadSessions, operationalRateLimits, outboundMessages, pilotControlAssignments, recoveryRehearsals, supportCases, webhookReceipts } from "@/db/schema";
+import { appointments, auditEvents, authEvents, dataLifecyclePolicies, documentDeletionJobs, documentRecords, documentUploadSessions, operationalRateLimits, outboundMessages, pilotControlAssignments, recoveryRehearsals, supportCases, webhookReceipts } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 
 const OPEN_SUPPORT_STATUSES = ["open", "in_progress", "waiting_requester", "waiting_support"];
@@ -76,12 +76,14 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 
-  const [ownershipAssignments, rehearsals] = await Promise.all([db.select().from(pilotControlAssignments), db.select().from(recoveryRehearsals)]);
+  const [ownershipAssignments, rehearsals, lifecyclePolicies] = await Promise.all([db.select().from(pilotControlAssignments), db.select().from(recoveryRehearsals), db.select().from(dataLifecyclePolicies)]);
   const rehearsalBoundary = new Date(now.valueOf() - 90 * 24 * 60 * 60 * 1000);
   const verifiedControl = (controlId: string) => ownershipAssignments.some((assignment) => assignment.controlId === controlId && assignment.evidenceStatus === "verified" && Boolean(assignment.backupOwnerUserId) && Boolean(assignment.evidenceReference) && Boolean(assignment.lastRehearsedAt && assignment.lastRehearsedAt >= rehearsalBoundary));
   const incidentOwnershipReady = verifiedControl("incident_response") && verifiedControl("security_alerting");
   const recoveryOwnershipReady = verifiedControl("backup_restore");
   const recoveryEvidenceReady = recoveryOwnershipReady && rehearsals.some((rehearsal) => rehearsal.scope === "full_platform" && rehearsal.environment === "isolated_hosted_recovery" && rehearsal.dataClassification === "synthetic_only" && rehearsal.status === "completed" && rehearsal.integrityStatus === "passed" && rehearsal.reviewStatus === "verified" && Boolean(rehearsal.completedAt && rehearsal.completedAt >= rehearsalBoundary) && rehearsal.measuredRtoMinutes != null && rehearsal.recoveryPointAgeMinutes != null && rehearsal.measuredRtoMinutes <= rehearsal.targetRtoMinutes && rehearsal.recoveryPointAgeMinutes <= rehearsal.targetRpoMinutes);
+  const lifecycleOwnershipReady = verifiedControl("data_lifecycle");
+  const approvedLifecyclePolicies = lifecyclePolicies.filter((policy) => policy.status === "approved").length;
 
   const pilotReadiness = {
     decision: "not_ready" as const,
@@ -90,7 +92,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
       { id: "incident_ownership", name: "Incident ownership and escalation", status: incidentOwnershipReady ? "cleared" as const : "blocked" as const, evidence: incidentOwnershipReady ? "Incident response and security alerting have primary and backup owners, response targets, and verified rehearsal evidence from the last 90 days." : "Incident response and security alerting both require primary and backup owners plus verified rehearsal evidence from the last 90 days.", ownerNeeded: !incidentOwnershipReady },
       { id: "monitoring_coverage", name: "Monitoring and security alerting", status: "blocked" as const, evidence: "No approved monitoring destination, alert thresholds, or security-alert transport is connected.", ownerNeeded: true },
       { id: "recovery_evidence", name: "Hosted recovery evidence", status: recoveryEvidenceReady ? "cleared" as const : "blocked" as const, evidence: recoveryEvidenceReady ? "Backup and restore has fresh ownership evidence plus an independently verified full-platform rehearsal within both recovery targets from the last 90 days." : "Recovery requires fresh primary and backup ownership plus an independently verified full-platform hosted rehearsal within RTO and RPO targets from the last 90 days.", ownerNeeded: !recoveryOwnershipReady },
-      { id: "data_lifecycle", name: "Clinical data lifecycle", status: "blocked" as const, evidence: "Retention periods, legal-hold operations, scanner activation, and scheduled cleanup remain unapproved.", ownerNeeded: true },
+      { id: "data_lifecycle", name: "Clinical data lifecycle", status: "blocked" as const, evidence: `${approvedLifecyclePolicies}/5 required record-class policies are independently approved. Legal-hold operations, scanner activation, scheduled cleanup, retention enforcement, and formal legal review remain launch blockers.`, ownerNeeded: !lifecycleOwnershipReady },
     ],
   };
 

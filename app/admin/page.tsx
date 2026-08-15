@@ -84,6 +84,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/ownership"><span>◎</span>{ar ? "الملكية والتصعيد" : "Ownership & escalation"}</a>
         <a className="admin-verification-link" href="/admin/incidents"><span>!</span>{ar ? "الاستجابة للحوادث" : "Incident response"}</a>
         <a className="admin-verification-link" href="/admin/recovery"><span>↻</span>{ar ? "تجارب الاستعادة" : "Recovery rehearsals"}</a>
+        <a className="admin-verification-link" href="/admin/data-lifecycle"><span>⌛</span>{ar ? "دورة حياة البيانات" : "Data lifecycle"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>
