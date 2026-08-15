@@ -1,8 +1,8 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, gt, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
-  auditEvents, facilities, organizationInvitations, organizationVerificationReviews,
-  organizations, platformRoles,
+  appointments, auditEvents, careContinuityCases, facilities, organizationInvitations, organizationVerificationReviews,
+  organizations, platformRoles, providerProfiles,
 } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 
@@ -154,6 +154,13 @@ export async function setOrganizationOperationalStatus(userId: string, body: Rec
     eq(organizations.id, organizationId), eq(organizations.status, previousStatus), eq(organizations.verificationVersion, expectedVersion),
   )).returning({ id: organizations.id });
   if (!changed[0]) throw new PlatformAdministrationError("Organization status changed; refresh before trying again");
-  await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId, action: `organization.operational_${nextStatus}`, resourceType: "organization", resourceId: organizationId, outcome: "success", metadataJson: JSON.stringify({ previousStatus, nextStatus, reason }), createdAt: now });
-  return { organizationId, status: nextStatus, verificationVersion: expectedVersion + 1 };
+  const affectedAppointments = action === "suspend" ? await db.select({ appointmentId: appointments.id }).from(appointments)
+    .innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId)).where(and(
+      eq(providerProfiles.organizationId, organizationId), inArray(appointments.status, ["pending", "confirmed"]), gt(appointments.scheduledStart, now),
+    )) : [];
+  await db.batch([
+    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId, action: `organization.operational_${nextStatus}`, resourceType: "organization", resourceId: organizationId, outcome: "success", metadataJson: JSON.stringify({ previousStatus, nextStatus, reason, continuityCasesCreated: affectedAppointments.length }), createdAt: now }),
+    ...affectedAppointments.map((appointment) => db.insert(careContinuityCases).values({ id: crypto.randomUUID(), appointmentId: appointment.appointmentId, organizationId, assignedToUserId: null, status: "needs_review", resolutionNote: null, version: 1, createdAt: now, updatedAt: now }).onConflictDoNothing({ target: careContinuityCases.appointmentId })),
+  ]);
+  return { organizationId, status: nextStatus, verificationVersion: expectedVersion + 1, continuityCasesCreated: affectedAppointments.length };
 }

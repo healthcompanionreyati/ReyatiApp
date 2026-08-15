@@ -198,6 +198,21 @@ export const appointments = sqliteTable("appointments", {
   index("idx_appointments_facility_start").on(table.facilityId, table.scheduledStart),
 ]);
 
+export const careContinuityCases = sqliteTable("care_continuity_cases", {
+  id: text("id").primaryKey(),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  organizationId: text("organization_id").notNull().references(() => organizations.id, { onDelete: "restrict" }),
+  assignedToUserId: text("assigned_to_user_id").references(() => users.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("needs_review"),
+  resolutionNote: text("resolution_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_care_continuity_appointment").on(table.appointmentId),
+  index("idx_care_continuity_status_updated").on(table.status, table.updatedAt),
+  index("idx_care_continuity_org_status").on(table.organizationId, table.status),
+]);
+
 export const appointmentSlotLocks = sqliteTable("appointment_slot_locks", {
   id: text("id").primaryKey(),
   appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "cascade" }),

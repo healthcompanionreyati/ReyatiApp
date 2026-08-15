@@ -7,6 +7,7 @@ const arabicTerms: Record<string, string> = {
   revoked: "ملغى الوصول", scanning: "قيد الفحص", second_opinion: "رأي ثانٍ", uploaded: "تم الرفع", uploading: "جارٍ الرفع",
   unverified: "غير موثّق", verified: "موثّق", video: "فيديو", cleaned: "تم التنظيف", recovering: "قيد الاسترداد",
   lab_report: "تقرير مختبر", prescription: "وصفة طبية", radiology: "أشعة", referral: "إحالة", discharge_summary: "ملخص خروج", other: "مستند آخر",
+  needs_review: "تحتاج مراجعة", contacted: "تم التواصل", rebooking_required: "إعادة حجز مطلوبة", appointment_cancelled: "أُلغي الموعد",
 };
 
 export function reyatiLabel(value: string, locale: ReyatiLocale) {

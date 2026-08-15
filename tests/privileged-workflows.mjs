@@ -285,6 +285,21 @@ const suspendedOrganization = await request("/api/admin/organizations", {
   },
 });
 assert.equal(suspendedOrganization.data.status, "suspended");
+const continuityQueue = await request("/api/admin/continuity", { identity: identities.admin });
+const continuityCase = continuityQueue.data.cases.find((item) => item.appointmentId === booking.appointment.id);
+assert.ok(continuityCase, "Suspension should create a durable case for the affected future appointment");
+const contactedContinuity = await request("/api/admin/continuity", {
+  identity: identities.admin,
+  method: "POST",
+  body: { action: "record_contact", caseId: continuityCase.id, version: continuityCase.version, note: "Patient contact attempt recorded during the UAT continuity exercise" },
+});
+assert.equal(contactedContinuity.data.status, "contacted");
+const rebookingContinuity = await request("/api/admin/continuity", {
+  identity: identities.admin,
+  method: "POST",
+  body: { action: "request_rebooking", caseId: continuityCase.id, version: contactedContinuity.data.version, note: "Patient was asked to choose another verified provider and suitable time" },
+});
+assert.equal(rebookingContinuity.data.status, "rebooking_required");
 await request("/api/provider/appointments", { identity: identities.provider, status: 403 });
 await request("/api/provider/catalog-management", {
   identity: identities.provider,
