@@ -1021,7 +1021,7 @@ test("keeps the payment ledger retryable and preserves delegated return context"
   assert.match(payments, /caught instanceof DOMException && caught\.name === "AbortError"/);
   assert.match(payments, /const controller = new AbortController\(\)/);
   assert.match(payments, /return \(\) => controller\.abort\(\)/);
-  assert.match(payments, /onClick=\{\(\) => void loadPayments\(\)\}>Try again/);
+  assert.match(payments, /onClick=\{\(\) => void loadPayments\(\)\}>\{ar \? "حاول مرة أخرى" : "Try again"\}/);
   assert.match(payments, /error \? <div className="payments-live-state error"/);
   assert.match(payments, /Payment status unavailable/);
 });
@@ -1050,15 +1050,15 @@ test("keeps family, notification, and support data failures retryable", async ()
 
   for (const source of [family, notifications, support]) assert.match(source, /response\.json\(\)\.catch/);
   assert.match(family, /controller\.abort\(\)/);
-  assert.match(family, /onClick=\{\(\) => void retry\(\)\}>Try again/);
+  assert.match(family, /onClick=\{\(\) => void retry\(\)\}>\{ar \? "حاول مرة أخرى" : "Try again"\}/);
   assert.match(family, /error \? <div className="family-live-state error"/);
   assert.match(notifications, /api\("\/api\/notifications", \{ signal: controller\.signal \}\)/);
-  assert.match(notifications, /onClick=\{\(\) => void load\(\)\}>Try again/);
+  assert.match(notifications, /onClick=\{\(\) => void load\(\)\}>\{ar \? "حاول مرة أخرى" : "Try again"\}/);
   assert.match(notifications, /error \? <div className="empty-inbox error"/);
   assert.match(support, /api\(\{signal:controller\.signal\}\)/);
   assert.match(support, /async function retry\(\)/);
-  assert.match(support, /onClick=\{\(\)=>void retry\(\)\}>Try again/);
-  assert.match(support, /error\?<p>Support requests are unavailable/);
+  assert.match(support, /onClick=\{\(\)=>void retry\(\)\}>\{ar\?"حاول مرة أخرى":"Try again"\}/);
+  assert.match(support, /error\?<p>\{ar\?"طلبات الدعم غير متاحة.*?:"Support requests are unavailable/);
 });
 
 test("handles malformed provider and operations responses without client crashes", async () => {
@@ -1193,6 +1193,6 @@ test("keeps notification and authentication text readable without compressing he
   assert.match(readability, /\.admin-heading, \.orgops-title\) > div > p \{[\s\S]*?font-size: 11px !important/);
   assert.doesNotMatch(navigation, /\.notification-header\) > div > a:first-child/);
   assert.match(notifications, /className="notification-header-actions"/);
-  assert.match(notifications, /aria-label="Patient navigation"/);
+  assert.match(notifications, /aria-label=\{ar \? "تنقل المريض" : "Patient navigation"\}/);
   assert.match(home, /className="bell"[\s\S]*?<svg aria-hidden="true"/);
 });
