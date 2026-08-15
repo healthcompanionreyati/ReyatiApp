@@ -12,9 +12,30 @@ interface Fetcher {
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 }
 
+interface R2Object {
+  readonly key: string;
+  readonly size: number;
+  readonly etag: string;
+  readonly uploaded: Date;
+  readonly httpMetadata?: { contentType?: string };
+}
+
+interface R2ObjectBody extends R2Object {
+  readonly body: ReadableStream<Uint8Array>;
+}
+
+interface R2Bucket {
+  head(key: string): Promise<R2Object | null>;
+  get(key: string): Promise<R2ObjectBody | null>;
+  put(key: string, value: ReadableStream<Uint8Array> | ArrayBuffer | Uint8Array, options?: { httpMetadata?: { contentType?: string }; customMetadata?: Record<string, string> }): Promise<R2Object>;
+  delete(key: string): Promise<void>;
+}
+
 declare module "cloudflare:workers" {
   export const env: {
     DB: D1Database;
+    DOCUMENTS?: R2Bucket;
+    DOCUMENT_SCAN_PROVIDER?: string;
     PLATFORM_BOOTSTRAP_EMAIL?: string;
     RESEND_API_KEY?: string;
     RESEND_FROM_EMAIL?: string;

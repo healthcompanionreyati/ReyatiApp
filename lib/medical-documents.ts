@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { appointments, auditEvents, consents, documentRecords, documentShares, documentUploadSessions, organizations, patientProfiles, providerProfiles, users } from "@/db/schema";
 import { AuthorizationDeniedError, requireActiveProvider } from "@/lib/authorization";
 import { assertExpectedDocumentVersion, publicUploadSession, transitionDocumentUpload } from "@/lib/document-lifecycle";
+import { createPrivateDocumentObjectKey, protectedDocumentStorageConfigured } from "@/lib/document-storage";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 const SHARE_PURPOSES = ["continuity_of_care", "follow_up", "second_opinion"] as const;
@@ -47,9 +48,8 @@ function documentCategory(value: unknown) {
 
 async function uploadReadiness() {
   const { env } = await import("cloudflare:workers");
-  const runtime = env as unknown as Record<string, unknown>;
-  const storageConfigured = Boolean(runtime.DOCUMENTS);
-  const malwareScannerConfigured = typeof runtime.DOCUMENT_SCAN_PROVIDER === "string" && Boolean(runtime.DOCUMENT_SCAN_PROVIDER.trim());
+  const storageConfigured = await protectedDocumentStorageConfigured();
+  const malwareScannerConfigured = typeof env.DOCUMENT_SCAN_PROVIDER === "string" && Boolean(env.DOCUMENT_SCAN_PROVIDER.trim());
   return { uploadEnabled: foundationFlags.medicalDocumentUploads && storageConfigured && malwareScannerConfigured, storageConfigured, malwareScannerConfigured };
 }
 
@@ -110,7 +110,7 @@ export async function requestDocumentUpload(userId: string, body: Record<string,
     if (existing[0].expectedContentType !== expectedContentType || existing[0].expectedSizeBytes !== expectedSizeBytes) throw new MedicalDocumentError("idempotency_conflict", 409, "Idempotency key was already used for different upload metadata");
     return publicUploadSession(existing[0]);
   }
-  const session = { id: crypto.randomUUID(), ownerUserId: userId, documentId: null, objectKey: `documents/${now.getUTCFullYear()}/${crypto.randomUUID()}`, expectedContentType, expectedSizeBytes, idempotencyKey, status: "created", expiresAt: new Date(now.valueOf() + 15 * 60 * 1000), cancelledAt: null, completedAt: null, version: 1, createdAt: now, updatedAt: now };
+  const session = { id: crypto.randomUUID(), ownerUserId: userId, documentId: null, objectKey: createPrivateDocumentObjectKey(now), expectedContentType, expectedSizeBytes, idempotencyKey, status: "created", expiresAt: new Date(now.valueOf() + 15 * 60 * 1000), cancelledAt: null, completedAt: null, version: 1, createdAt: now, updatedAt: now };
   await db.insert(documentUploadSessions).values(session);
   return publicUploadSession(session);
 }

@@ -24,7 +24,7 @@ Only documents that are patient-owned, `ready`, `clean`, and `active` may be sha
 
 ## Activation gates
 
-Activation requires an approved R2 binding, a malware-scanning provider, private object access, presigned-delivery design, upload size and page enforcement, content-type verification, quarantine operations, retention and deletion automation, incident procedures, access logging, and end-to-end security testing. Changing the feature flag alone is insufficient.
+The Sites project now declares a private `DOCUMENTS` R2 binding and uses a server-only adapter for bounded staging, inspection, quarantine, and deletion. No public object URL or byte-delivery route exists. Activation still requires a malware-scanning provider, authenticated scanner workflow, private signed-delivery design, upload size and page enforcement, content-type verification, quarantine operations, retention and deletion automation, incident procedures, access logging, and end-to-end security testing. Changing the feature flag or provisioning R2 alone is insufficient.
 
 ## Consequences
 
