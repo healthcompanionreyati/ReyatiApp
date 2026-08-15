@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useState } from "react";
 
 type ModerationBoundary = {
@@ -41,7 +43,7 @@ async function requestBoundary() {
 }
 
 export default function ModerationWorkspace() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [boundary, setBoundary] = useState<ModerationBoundary | null>(null);
   const [error, setError] = useState<"auth" | "forbidden" | "unavailable" | null>(null);
   const ar = lang === "ar";

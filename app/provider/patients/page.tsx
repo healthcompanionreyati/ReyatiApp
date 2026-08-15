@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useMemo, useState } from "react";
 
 type AppointmentSummary = {
@@ -41,7 +43,7 @@ function formatDate(value: string, lang: "en" | "ar") {
 }
 
 export default function ProviderPatients() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [directory, setDirectory] = useState<Directory | null>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");

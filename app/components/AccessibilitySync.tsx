@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
   "/": "Home", "/providers": "Find care", "/appointments": "Appointments", "/wallet": "Health records",
+  "/documents": "Medical documents", "/provider/documents": "Shared documents",
   "/payments": "Payments", "/family": "Family access", "/support": "Support", "/notifications": "Notifications",
   "/auth": "Secure account", "/journeys": "Care journeys", "/provider": "Provider dashboard",
   "/provider/services": "Provider services", "/provider/settings": "Provider settings", "/provider/patients": "Provider patients",
@@ -11,6 +12,14 @@ const routeTitles: Record<string, string> = {
   "/partner/program": "Partner programme", "/admin": "Operations overview", "/admin/access": "Platform access",
   "/admin/audit": "Audit ledger", "/admin/cases": "Support operations", "/admin/finance": "Finance operations",
   "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification",
+};
+
+const arabicRouteTitles: Record<string, string> = {
+  "/": "الرئيسية", "/providers": "ابحث عن رعاية", "/appointments": "المواعيد", "/wallet": "السجلات الصحية",
+  "/documents": "المستندات الطبية", "/payments": "المدفوعات", "/family": "وصول العائلة", "/support": "الدعم",
+  "/notifications": "الإشعارات", "/auth": "الحساب الآمن", "/journeys": "رحلات الرعاية", "/provider": "لوحة مقدم الرعاية",
+  "/provider/services": "خدمات مقدم الرعاية", "/provider/settings": "إعدادات مقدم الرعاية", "/provider/patients": "المرضى",
+  "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/admin": "نظرة العمليات العامة",
 };
 
 export default function AccessibilitySync() {
@@ -77,7 +86,7 @@ export default function AccessibilitySync() {
 
       document.documentElement.dir = direction;
       document.documentElement.lang = arabic ? "ar" : "en";
-      const routeTitle = routeTitles[window.location.pathname] ?? "Page not found";
+      const routeTitle = (arabic ? arabicRouteTitles : routeTitles)[window.location.pathname] ?? (arabic ? "الصفحة غير موجودة" : "Page not found");
       document.title = `${routeTitle} · Reyati`;
 
       const skipLink = document.querySelector<HTMLAnchorElement>(".skip-link");

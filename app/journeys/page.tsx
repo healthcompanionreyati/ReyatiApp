@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useState } from "react";
 import { getCapability, type CapabilityStatus } from "@/lib/capability-registry";
 
@@ -56,7 +58,7 @@ const capabilityPresentation: Record<CapabilityStatus, { en: string; ar: string;
 const groups: Group[] = ["all", "patient", "provider", "partner", "operations"];
 
 export default function Journeys() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [group, setGroup] = useState<Group>("all");
   const ar = lang === "ar";
   const shown = journeys.filter((journey) => group === "all" || journey.group === group || journey.group === "all");

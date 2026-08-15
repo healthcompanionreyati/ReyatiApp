@@ -175,6 +175,28 @@ test("communication preferences are account-owned, audited, and do not bypass de
   assert.match(page, /role="status"/);
 });
 
+test("Arabic and RTL preferences persist across critical journeys", async () => {
+  const hook = await source("app/components/useReyatiLocale.ts");
+  const rtl = await source("app/rtl.css");
+  const accessibility = await source("app/components/AccessibilitySync.tsx");
+  assert.match(hook, /reyati\.locale/);
+  assert.match(hook, /reyati:locale-change/);
+  assert.match(hook, /fetch\("\/api\/account\/communications"/);
+  assert.match(hook, /method: "POST"/);
+  assert.match(hook, /document\.documentElement\.lang = locale/);
+  assert.match(hook, /locale === "ar" \? "rtl" : "ltr"/);
+  assert.match(rtl, /IBM Plex Sans Arabic/);
+  assert.match(rtl, /main\[dir="rtl"\] \.provider-sidebar/);
+  assert.match(rtl, /margin-right:250px/);
+  assert.match(accessibility, /arabicRouteTitles/);
+  for (const page of ["app/page.tsx", "app/providers/page.tsx", "app/appointments/page.tsx", "app/wallet/page.tsx", "app/documents/page.tsx", "app/provider/page.tsx", "app/provider/documents/page.tsx"]) {
+    const contents = await source(page);
+    assert.match(contents, /useReyatiLocale/);
+    assert.match(contents, /dir=\{ar \? "rtl" : "ltr"\}|dir=\{ar\?"rtl":"ltr"\}/);
+    assert.match(contents, /العربية/);
+  }
+});
+
 test("real workflow events record suppressed email intents without calling delivery", async () => {
   const outbox = await source("lib/communications/outbox.ts");
   assert.match(outbox, /status: suppressionReason \? "suppressed" : "pending"/);

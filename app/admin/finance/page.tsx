@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useState } from "react";
 
 type StatusRow = {
@@ -56,7 +58,7 @@ async function requestFinance() {
 }
 
 export default function FinanceOperations() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [data, setData] = useState<FinanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"auth" | "forbidden" | "unavailable" | null>(null);

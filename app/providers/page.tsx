@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Service = {
@@ -47,7 +49,7 @@ function colorFor(id: string) {
 }
 
 export default function ProviderDiscovery() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [catalogError, setCatalogError] = useState(false);

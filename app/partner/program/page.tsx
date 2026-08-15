@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useState } from "react";
 
 type ProgrammeBoundary = {
@@ -18,7 +20,7 @@ const foundations = [
 ];
 
 export default function PartnerProgramme() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [data, setData] = useState<ProgrammeBoundary | null>(null);
   const [error, setError] = useState(false);
   const [refresh, setRefresh] = useState(0);

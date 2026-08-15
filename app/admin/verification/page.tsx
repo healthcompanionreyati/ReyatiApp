@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useState } from "react";
 import ConfirmActionDialog from "@/app/components/ConfirmActionDialog";
 
@@ -17,7 +19,7 @@ async function request(path: string, init?: RequestInit) {
 }
 
 export default function VerificationWorkspace() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [cases, setCases] = useState<VerificationCase[]>([]);
   const [selected, setSelected] = useState<VerificationCase | null>(null);
   const [role, setRole] = useState("");

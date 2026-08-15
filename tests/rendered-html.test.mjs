@@ -963,7 +963,7 @@ test("keeps homepage API failures retryable and distinct from confirmed empty da
   assert.match(home, /new AbortController\(\)/);
   assert.match(home, /identityResponse\.json\(\)\.catch\(\(\)=>\(\{\}\)\)/);
   assert.match(home, /appointmentResponse\.json\(\)\.catch\(\(\)=>\(\{\}\)\)/);
-  assert.match(home, /onClick=\{\(\)=>void loadWorkspace\(\)\}>Try again/);
+  assert.match(home, /onClick=\{\(\)=>void loadWorkspace\(\)\}>\{ar\?.*?:"Try again"\}/);
   assert.match(home, /error\?<div className="appointment-live-state error"/);
   assert.match(home, /Appointment status unavailable/);
   assert.match(home, /:nextAppointment\?<section className="next-appt"/);
@@ -991,7 +991,7 @@ test("keeps patient appointments retryable and distinct from confirmed empty dat
   assert.match(appointments, /caught instanceof DOMException && caught\.name === "AbortError"/);
   assert.match(appointments, /const controller = new AbortController\(\)/);
   assert.match(appointments, /return \(\) => controller\.abort\(\)/);
-  assert.match(appointments, /onClick=\{\(\) => void load\(\)\}>Try again/);
+  assert.match(appointments, /onClick=\{\(\) => void load\(\)\}>\{ar \?.*?: "Try again"\}/);
   assert.match(appointments, /error \? <div className="appointment-live-state error"/);
   assert.match(appointments, /Appointment status unavailable/);
 });
@@ -1006,7 +1006,7 @@ test("keeps the health-record wallet retryable and preserves delegated return co
   assert.match(wallet, /caught instanceof DOMException && caught\.name === "AbortError"/);
   assert.match(wallet, /const controller = new AbortController\(\)/);
   assert.match(wallet, /return \(\) => controller\.abort\(\)/);
-  assert.match(wallet, /onClick=\{\(\) => void loadRecords\(\)\}>Try again/);
+  assert.match(wallet, /onClick=\{\(\) => void loadRecords\(\)\}>\{ar \?.*?: "Try again"\}/);
   assert.match(wallet, /error \? <div className="wallet-live-state error"/);
   assert.match(wallet, /Health records unavailable/);
 });

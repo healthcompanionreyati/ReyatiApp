@@ -1,0 +1,16 @@
+html[dir="rtl"] body,.reyati-arabic,main[dir="rtl"],main.arabic{font-family:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",Arial,sans-serif}
+main[dir="rtl"] h1,main[dir="rtl"] h2,main[dir="rtl"] h3,main.arabic h1,main.arabic h2,main.arabic h3{font-family:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",Arial,sans-serif;letter-spacing:0}
+main[dir="rtl"] .hero-inner{padding-inline-start:42%;padding-inline-end:0}
+main[dir="rtl"] .hero-art{inset:0 auto 0 0;border-radius:0 0 28px 0;transform:scaleX(-1)}
+main[dir="rtl"] .hero-art:after{background:linear-gradient(270deg,var(--cream) 0%,transparent 24%,transparent 100%)}
+main[dir="rtl"] .weave-path{right:auto;left:-55px;transform-origin:left center}
+main[dir="rtl"] .weave-cyan{transform:rotate(30deg)}main[dir="rtl"] .weave-white{left:-30px;right:auto;transform:rotate(42deg)}
+main[dir="rtl"] .provider-sidebar{left:auto;right:0;border-right:0;border-left:1px solid #214a61}
+main[dir="rtl"] .provider-main{margin-left:0;margin-right:250px}
+main[dir="rtl"] .provider-nav-link em{margin-left:0;margin-right:auto}
+main[dir="rtl"] .drawer-close,main[dir="rtl"] .documents-dialog-close{right:auto;left:20px}
+main[dir="rtl"] .documents-hero:after{right:auto;left:-60px;transform:rotate(27deg)}
+main[dir="rtl"] input,main[dir="rtl"] textarea,main[dir="rtl"] select{text-align:right}
+.documents-header-actions{display:flex;align-items:center;gap:14px}.documents-header-actions .lang{font-size:12px}
+@media(max-width:900px){main[dir="rtl"] .hero-inner{padding-inline:0}main[dir="rtl"] .provider-main{margin-right:210px}}
+@media(max-width:720px){main[dir="rtl"] .provider-main{margin:0}}

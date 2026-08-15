@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useState } from "react";
 
 type Overview = {
@@ -37,7 +39,7 @@ async function requestOverview() {
 }
 
 export default function Admin() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<"auth" | "forbidden" | "unavailable" | null>(null);

@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useMemo, useState } from "react";
 
 type Range = 7 | 30 | 90;
@@ -33,7 +35,7 @@ function label(value: string) {
 }
 
 export default function ProviderInsights() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [range, setRange] = useState<Range>(30);
   const [insights, setInsights] = useState<Insights | null>(null);
   const [error, setError] = useState<"auth" | "forbidden" | "unavailable" | null>(null);

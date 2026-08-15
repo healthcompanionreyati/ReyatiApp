@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { useEffect, useState } from "react";
 
 type PartnerBoundary = {
@@ -19,7 +21,7 @@ const sourceCopy: Record<string, { en: string; ar: string; detailEn: string; det
 };
 
 export default function PartnerPortal() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [data, setData] = useState<PartnerBoundary | null>(null);
   const [error, setError] = useState<"forbidden" | "unavailable" | null>(null);
   const [refresh, setRefresh] = useState(0);

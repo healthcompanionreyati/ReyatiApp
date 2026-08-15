@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ConfirmActionDialog from "@/app/components/ConfirmActionDialog";
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 
 type Appointment = {
   id: string;
@@ -39,6 +40,8 @@ function time(value: string) {
 }
 
 export default function ProviderConsole() {
+  const [lang, setLang] = useReyatiLocale();
+  const ar = lang === "ar";
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("attention");
@@ -102,26 +105,26 @@ export default function ProviderConsole() {
     } finally { setSaving(null); }
   }
 
-  return <main className="provider-shell provider-live-shell">
+  return <main className={`provider-shell provider-live-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="provider-sidebar">
-      <a href="/provider" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>Provider console</span></a>
-      <div className="facility-chip"><span>RC</span><div><b>Provider workspace</b><small>Authenticated practitioner view</small></div></div>
+      <a href="/provider" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
+      <div className="facility-chip"><span>RC</span><div><b>{ar ? "مساحة مقدم الرعاية" : "Provider workspace"}</b><small>{ar ? "عرض ممارس موثّق" : "Authenticated practitioner view"}</small></div></div>
       <nav className="provider-nav">
-        <a className="provider-nav-link active" href="/provider"><span>◫</span>Appointments{counts.attention > 0 && <em>{counts.attention}</em>}</a>
-        <a className="provider-nav-link" href="/provider/patients"><span>♙</span>Patients</a>
-        <a className="provider-nav-link" href="/provider/documents"><span>▤</span>Shared documents</a>
-        <a className="provider-nav-link" href="/provider/services"><span>◇</span>Services</a>
-        <a className="provider-nav-link" href="/provider/insights"><span>↗</span>Insights</a>
-        <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>Settings</a>
+        <a className="provider-nav-link active" href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}{counts.attention > 0 && <em>{counts.attention}</em>}</a>
+        <a className="provider-nav-link" href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}</a>
+        <a className="provider-nav-link" href="/provider/documents"><span>▤</span>{ar ? "المستندات المشتركة" : "Shared documents"}</a>
+        <a className="provider-nav-link" href="/provider/services"><span>◇</span>{ar ? "الخدمات" : "Services"}</a>
+        <a className="provider-nav-link" href="/provider/insights"><span>↗</span>{ar ? "الإحصاءات" : "Insights"}</a>
+        <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>
       </nav>
       <div className="sidebar-bottom"><a href="/">← Patient experience</a><a href="/notifications">Notifications</a><p>Real account-scoped provider operations</p></div>
     </aside>
 
     <section className="provider-main">
-      <header className="provider-topbar"><div className="provider-context"><span>⌖</span><div><b>Clinical schedule</b><small>Qatar time · Asia/Qatar</small></div></div><div className="provider-actions"><a href="/notifications" className="provider-live-notifications">Notifications</a><span className="provider-avatar">PR</span><div><b>Provider account</b><small>Verified access required</small></div></div></header>
+      <header className="provider-topbar"><div className="provider-context"><span>⌖</span><div><b>{ar ? "الجدول السريري" : "Clinical schedule"}</b><small>{ar ? "توقيت قطر" : "Qatar time"} · Asia/Qatar</small></div></div><div className="provider-actions"><button className="lang" type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" className="provider-live-notifications">{ar ? "الإشعارات" : "Notifications"}</a><span className="provider-avatar">PR</span><div><b>{ar ? "حساب مقدم الرعاية" : "Provider account"}</b><small>{ar ? "يتطلب وصولاً موثّقاً" : "Verified access required"}</small></div></div></header>
 
       <div className="provider-workspace">
-        <div className="provider-welcome"><div><p>Appointment operations</p><h1>Your clinical schedule</h1><span>Review real patient requests and move each booking through an auditable lifecycle.</span></div><a href="/provider/services" className="provider-live-primary">Manage availability</a></div>
+        <div className="provider-welcome"><div><p>{ar ? "عمليات المواعيد" : "Appointment operations"}</p><h1>{ar ? "جدولك السريري" : "Your clinical schedule"}</h1><span>{ar ? "راجع طلبات المرضى الحقيقية وانقل كل حجز عبر دورة حياة قابلة للتدقيق." : "Review real patient requests and move each booking through an auditable lifecycle."}</span></div><a href="/provider/services" className="provider-live-primary">{ar ? "إدارة التوفر" : "Manage availability"}</a></div>
 
         <div className="metric-grid">
           <article><span className="metric-icon sand">!</span><div><small>Needs a decision</small><b>{counts.attention}</b><p>pending requests</p></div></article>

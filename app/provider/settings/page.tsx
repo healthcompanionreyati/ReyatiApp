@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { FormEvent, useEffect, useState } from "react";
 
 type ManagedOrganization = { organizationId: string; organizationName: string; role: string };
@@ -20,7 +22,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export default function ProviderSettings() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [data, setData] = useState<AccessData | null>(null);
   const [organizationId, setOrganizationId] = useState("");
   const [selected, setSelected] = useState<Member | null>(null);

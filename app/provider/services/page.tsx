@@ -1,5 +1,7 @@
 "use client";
 
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type Membership = { organizationId: string; organizationName: string; role: string };
@@ -41,7 +43,7 @@ async function api(path: string, init?: RequestInit) {
 }
 
 export default function ProviderServices() {
-  const [lang, setLang] = useState<"en" | "ar">("en");
+  const [lang, setLang] = useReyatiLocale();
   const [setup, setSetup] = useState<Setup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

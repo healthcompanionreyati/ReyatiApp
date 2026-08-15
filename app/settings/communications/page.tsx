@@ -56,7 +56,7 @@ export default function CommunicationSettingsPage() {
     event.preventDefault(); setSaving(true); setError(""); setNotice("");
     try {
       const next = await request({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ locale, emailEnabled }) });
-      setData(next); setNotice(ar ? "تم حفظ تفضيلات الاتصال" : "Communication preferences saved");
+      setData(next); window.localStorage.setItem("reyati.locale", locale); window.dispatchEvent(new CustomEvent("reyati:locale-change", { detail: locale })); setNotice(ar ? "تم حفظ تفضيلات الاتصال" : "Communication preferences saved");
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Preferences could not be saved"); }
     finally { setSaving(false); }
   }
