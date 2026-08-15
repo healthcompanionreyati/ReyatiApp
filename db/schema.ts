@@ -96,6 +96,24 @@ export const platformRoleInvitations = sqliteTable("platform_role_invitations", 
   index("idx_platform_role_invitations_role_status").on(table.role, table.status),
 ]);
 
+export const pilotControlAssignments = sqliteTable("pilot_control_assignments", {
+  id: text("id").primaryKey(),
+  controlId: text("control_id").notNull(),
+  ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  backupOwnerUserId: text("backup_owner_user_id").references(() => users.id, { onDelete: "restrict" }),
+  responseTargetMinutes: integer("response_target_minutes").notNull(),
+  escalationPath: text("escalation_path").notNull(),
+  evidenceReference: text("evidence_reference"),
+  evidenceStatus: text("evidence_status").notNull().default("draft"),
+  lastRehearsedAt: integer("last_rehearsed_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_control_assignments_control").on(table.controlId),
+  index("idx_pilot_control_assignments_owner_status").on(table.ownerUserId, table.evidenceStatus),
+  index("idx_pilot_control_assignments_evidence_rehearsed").on(table.evidenceStatus, table.lastRehearsedAt),
+]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

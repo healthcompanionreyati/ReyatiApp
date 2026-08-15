@@ -1,6 +1,6 @@
 import { and, count, desc, eq, gt, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { appointments, auditEvents, authEvents, documentDeletionJobs, documentRecords, documentUploadSessions, operationalRateLimits, outboundMessages, supportCases, webhookReceipts } from "@/db/schema";
+import { appointments, auditEvents, authEvents, documentDeletionJobs, documentRecords, documentUploadSessions, operationalRateLimits, outboundMessages, pilotControlAssignments, supportCases, webhookReceipts } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 
 const OPEN_SUPPORT_STATUSES = ["open", "in_progress", "waiting_requester", "waiting_support"];
@@ -76,13 +76,19 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 
+  const ownershipAssignments = await db.select().from(pilotControlAssignments);
+  const rehearsalBoundary = new Date(now.valueOf() - 90 * 24 * 60 * 60 * 1000);
+  const verifiedControl = (controlId: string) => ownershipAssignments.some((assignment) => assignment.controlId === controlId && assignment.evidenceStatus === "verified" && Boolean(assignment.backupOwnerUserId) && Boolean(assignment.evidenceReference) && Boolean(assignment.lastRehearsedAt && assignment.lastRehearsedAt >= rehearsalBoundary));
+  const incidentOwnershipReady = verifiedControl("incident_response") && verifiedControl("security_alerting");
+  const recoveryEvidenceReady = verifiedControl("backup_restore");
+
   const pilotReadiness = {
     decision: "not_ready" as const,
     gates: [
       { id: "application_safety", name: "Application safety baseline", status: "cleared" as const, evidence: "Privacy-safe logging, scoped audit events, and durable write limits are implemented.", ownerNeeded: false },
-      { id: "incident_ownership", name: "Incident ownership and escalation", status: "blocked" as const, evidence: "The response procedure exists, but named accountable people, recipients, and an on-call rota are not configured.", ownerNeeded: true },
+      { id: "incident_ownership", name: "Incident ownership and escalation", status: incidentOwnershipReady ? "cleared" as const : "blocked" as const, evidence: incidentOwnershipReady ? "Incident response and security alerting have primary and backup owners, response targets, and verified rehearsal evidence from the last 90 days." : "Incident response and security alerting both require primary and backup owners plus verified rehearsal evidence from the last 90 days.", ownerNeeded: !incidentOwnershipReady },
       { id: "monitoring_coverage", name: "Monitoring and security alerting", status: "blocked" as const, evidence: "No approved monitoring destination, alert thresholds, or security-alert transport is connected.", ownerNeeded: true },
-      { id: "recovery_evidence", name: "Hosted recovery evidence", status: "blocked" as const, evidence: "A backup procedure exists, but no hosted restore rehearsal or measured recovery result is recorded.", ownerNeeded: true },
+      { id: "recovery_evidence", name: "Hosted recovery evidence", status: recoveryEvidenceReady ? "cleared" as const : "blocked" as const, evidence: recoveryEvidenceReady ? "Backup and restore has primary and backup ownership with verified rehearsal evidence from the last 90 days." : "Backup and restore requires primary and backup owners plus verified hosted rehearsal evidence from the last 90 days.", ownerNeeded: !recoveryEvidenceReady },
       { id: "data_lifecycle", name: "Clinical data lifecycle", status: "blocked" as const, evidence: "Retention periods, legal-hold operations, scanner activation, and scheduled cleanup remain unapproved.", ownerNeeded: true },
     ],
   };
@@ -95,7 +101,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
 
   return {
     operatorName, role: role.role, generatedAt: now.toISOString(), databaseReachable: true, metrics, controls,
-    pilotReadiness: { ...pilotReadiness, cleared: pilotReadiness.gates.filter((gate) => gate.status === "cleared").length, total: pilotReadiness.gates.length },
+    pilotReadiness: { ...pilotReadiness, cleared: pilotReadiness.gates.filter((gate) => gate.status === "cleared").length, total: pilotReadiness.gates.length, ownershipAssigned: ownershipAssignments.length, ownershipTotal: 5 },
     communicationStatuses: messageAttentionRows.map((row) => ({ status: row.status, count: Number(row.value) })),
     recentSignals: [
       ...recentAuthSignals.map((event) => ({ source: "authentication", event: event.eventType, context: event.channel, outcome: event.outcome, createdAt: event.createdAt.toISOString() })),

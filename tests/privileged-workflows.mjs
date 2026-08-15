@@ -230,7 +230,9 @@ assert.deepEqual(providerDocuments.data.documents, []);
 
 const access = await request("/api/admin/platform-access", { identity: identities.admin });
 const reviewerRole = access.data.roles.find((role) => role.email === identities.reviewer.email && role.role === "verification_reviewer");
+const adminRole = access.data.roles.find((role) => role.email === identities.admin.email && role.role === "platform_admin");
 assert.ok(reviewerRole, "Accepted reviewer role should be listed");
+assert.ok(adminRole, "Active administrator role should be listed");
 await request("/api/admin/platform-access", {
   identity: identities.admin,
   method: "POST",
@@ -320,6 +322,32 @@ const reactivatedOrganization = await request("/api/admin/organizations", {
 });
 assert.equal(reactivatedOrganization.data.status, "active");
 await request("/api/provider/appointments", { identity: identities.provider });
+
+const ownershipBefore = await request("/api/admin/ownership", { identity: identities.admin });
+for (const controlId of ["incident_response", "security_alerting", "backup_restore"]) {
+  const existingAssignment = ownershipBefore.data.assignments.find((item) => item.controlId === controlId);
+  const assignment = await request("/api/admin/ownership", {
+    identity: identities.admin,
+    method: "POST",
+    body: {
+      controlId,
+      version: existingAssignment?.version,
+      ownerUserId: adminRole.userId,
+      backupOwnerUserId: reviewerRole.userId,
+      responseTargetMinutes: 30,
+      escalationPath: "Primary owner responds first; backup owner escalates to platform operations after thirty minutes.",
+      evidenceReference: `UAT-${controlId}-${runId}`,
+      evidenceStatus: "verified",
+      lastRehearsedAt: new Date().toISOString(),
+    },
+  });
+  assert.equal(assignment.data.evidenceStatus, "verified");
+}
+const ownership = await request("/api/admin/ownership", { identity: identities.admin });
+assert.equal(ownership.data.assignments.filter((item) => item.evidenceStatus === "verified").length, 3);
+const readiness = await request("/api/admin/operations", { identity: identities.admin });
+assert.equal(readiness.data.pilotReadiness.gates.find((gate) => gate.id === "incident_ownership").status, "cleared");
+assert.equal(readiness.data.pilotReadiness.gates.find((gate) => gate.id === "recovery_evidence").status, "cleared");
 
 const audit = await request("/api/admin/audit?limit=100", { identity: identities.admin });
 assert.ok(audit.data.events.length >= 12, "Privileged workflow should produce auditable events");
