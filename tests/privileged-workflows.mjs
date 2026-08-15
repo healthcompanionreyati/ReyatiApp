@@ -436,6 +436,16 @@ const previewRun = await request("/api/admin/retention-automation", { identity: 
 assert.equal(previewRun.data.mode, "preview_only");
 assert.equal(previewRun.data.executionEnabled, false);
 
+await request("/api/admin/security-alerts", { identity: identities.patient, status: 403 });
+const alertsBefore = await request("/api/admin/security-alerts", { identity: identities.admin });
+let alertPolicy = alertsBefore.data.policies.find((item) => item.signalType === "authentication_abuse");
+if (!alertPolicy || ["draft", "rejected"].includes(alertPolicy.status)) { const savedAlert = await request("/api/admin/security-alerts", { identity: identities.admin, method: "POST", body: { operation: "save", signalType: "authentication_abuse", version: alertPolicy?.version, minimumSeverity: "P2", responseTargetMinutes: 15, escalationAfterMinutes: 30, channelType: "internal_only", destinationAlias: "Security Operations", primaryOwnerUserId: adminRole.userId, backupOwnerUserId: reviewerRole.userId } }); alertPolicy = { id: savedAlert.data.id, version: savedAlert.data.version, status: savedAlert.data.status, primaryOwnerUserId: adminRole.userId }; }
+if (alertPolicy.status === "draft") { const submittedAlert = await request("/api/admin/security-alerts", { identity: identities.admin, method: "POST", body: { operation: "transition", policyId: alertPolicy.id, version: alertPolicy.version, action: "submit", note: "Synthetic alert route submitted for independent review." } }); alertPolicy = { ...alertPolicy, version: submittedAlert.data.version, status: submittedAlert.data.status }; }
+if (alertPolicy.status === "pending_review") { const approvedAlert = await request("/api/admin/security-alerts", { identity: identities.reviewer, method: "POST", body: { operation: "transition", policyId: alertPolicy.id, version: alertPolicy.version, action: "approve", note: "Independent reviewer approved the bounded in-app alert route." } }); alertPolicy = { ...alertPolicy, version: approvedAlert.data.version, status: approvedAlert.data.status }; }
+assert.equal(alertPolicy.status, "approved");
+const alertDrill = await request("/api/admin/security-alerts", { identity: identities.admin, method: "POST", body: { operation: "drill", policyId: alertPolicy.id, severity: "P2" } });
+assert.equal(alertDrill.data.inAppDelivered, true); assert.equal(alertDrill.data.externalDelivered, false);
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,

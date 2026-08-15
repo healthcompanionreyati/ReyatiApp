@@ -309,6 +309,42 @@ export const retentionAutomationPlanEvents = sqliteTable("retention_automation_p
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_retention_automation_plan_events_plan_created").on(table.planId, table.createdAt)]);
 
+export const securityAlertPolicies = sqliteTable("security_alert_policies", {
+  id: text("id").primaryKey(),
+  signalType: text("signal_type").notNull(),
+  minimumSeverity: text("minimum_severity").notNull(),
+  responseTargetMinutes: integer("response_target_minutes").notNull(),
+  escalationAfterMinutes: integer("escalation_after_minutes").notNull(),
+  channelType: text("channel_type").notNull(),
+  destinationAlias: text("destination_alias").notNull(),
+  primaryOwnerUserId: text("primary_owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  backupOwnerUserId: text("backup_owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("draft"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_security_alert_policies_signal_type").on(table.signalType),
+  index("idx_security_alert_policies_status_updated").on(table.status, table.updatedAt),
+  index("idx_security_alert_policies_owner_status").on(table.primaryOwnerUserId, table.status),
+]);
+
+export const securityAlertPolicyEvents = sqliteTable("security_alert_policy_events", {
+  id: text("id").primaryKey(), policyId: text("policy_id").notNull().references(() => securityAlertPolicies.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_security_alert_policy_events_policy_created").on(table.policyId, table.createdAt)]);
+
+export const securityAlertDrills = sqliteTable("security_alert_drills", {
+  id: text("id").primaryKey(), policyId: text("policy_id").notNull().references(() => securityAlertPolicies.id, { onDelete: "restrict" }),
+  initiatedByUserId: text("initiated_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), severity: text("severity").notNull(),
+  inAppDelivered: integer("in_app_delivered", { mode: "boolean" }).notNull().default(true), externalDelivered: integer("external_delivered", { mode: "boolean" }).notNull().default(false),
+  primaryNotified: integer("primary_notified", { mode: "boolean" }).notNull().default(true), backupNotified: integer("backup_notified", { mode: "boolean" }).notNull().default(true),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_security_alert_drills_policy_created").on(table.policyId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
