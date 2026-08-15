@@ -490,6 +490,33 @@ export const pilotRollbackDrillEvents = sqliteTable("pilot_rollback_drill_events
   previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_pilot_rollback_drill_events_drill_created").on(table.drillId, table.createdAt)]);
 
+export const pilotCommandSessions = sqliteTable("pilot_command_sessions", {
+  id: text("id").primaryKey(), packageId: text("package_id").notNull().references(() => pilotLaunchPackages.id, { onDelete: "restrict" }),
+  sessionReference: text("session_reference").notNull(), shiftLabel: text("shift_label").notNull(),
+  shiftStartAt: integer("shift_start_at", { mode: "timestamp_ms" }).notNull(), shiftEndAt: integer("shift_end_at", { mode: "timestamp_ms" }).notNull(),
+  commanderUserId: text("commander_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), stopAuthorityUserId: text("stop_authority_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  readinessSnapshotJson: text("readiness_snapshot_json").notNull(), blockedGateCount: integer("blocked_gate_count").notNull(),
+  verifiedCheckCount: integer("verified_check_count").notNull().default(0), totalCheckCount: integer("total_check_count").notNull(),
+  mode: text("mode").notNull().default("synthetic_rehearsal"), status: text("status").notNull().default("draft"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }), reviewNote: text("review_note"), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_command_sessions_package_reference").on(table.packageId, table.sessionReference),
+  index("idx_pilot_command_sessions_package_status").on(table.packageId, table.status),
+  index("idx_pilot_command_sessions_status_shift").on(table.status, table.shiftStartAt, table.shiftEndAt),
+]);
+
+export const pilotCommandChecks = sqliteTable("pilot_command_checks", {
+  id: text("id").primaryKey(), sessionId: text("session_id").notNull().references(() => pilotCommandSessions.id, { onDelete: "restrict" }),
+  checkKey: text("check_key").notNull(), status: text("status").notNull().default("pending"), evidenceReference: text("evidence_reference"), note: text("note"),
+  recordedByUserId: text("recorded_by_user_id").references(() => users.id, { onDelete: "restrict" }), recordedAt: integer("recorded_at", { mode: "timestamp_ms" }), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [uniqueIndex("idx_pilot_command_checks_session_key").on(table.sessionId, table.checkKey), index("idx_pilot_command_checks_session_status").on(table.sessionId, table.status)]);
+
+export const pilotCommandSessionEvents = sqliteTable("pilot_command_session_events", {
+  id: text("id").primaryKey(), sessionId: text("session_id").notNull().references(() => pilotCommandSessions.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_command_session_events_session_created").on(table.sessionId, table.createdAt)]);
+
 export const controlledPilotCohortMembers = sqliteTable("controlled_pilot_cohort_members", {
   id: text("id").primaryKey(),
   planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),

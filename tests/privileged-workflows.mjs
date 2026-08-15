@@ -600,6 +600,16 @@ await request("/api/admin/pilot-launch", { identity: identities.admin, method: "
 const launchCentre = await request("/api/admin/pilot-launch", { identity: identities.admin });
 assert.equal(launchCentre.data.activationEnabled, false); assert.ok(launchCentre.data.plans.find((item) => item.id === pilotPlan.id).packages.some((item) => item.id === launchPackage.data.id));
 
+await request("/api/admin/pilot-command", { identity: identities.patient, status: 403 });
+const commandShiftStart = new Date(launchPlan.plannedStartAt); const commandShiftEnd = new Date(commandShiftStart.valueOf() + 8 * 3600000);
+const commandSession = await request("/api/admin/pilot-command", { identity: identities.admin, method: "POST", body: { operation: "create_session", packageId: launchPackage.data.id, sessionReference: `UAT-COMMAND-${runId}`, shiftLabel: "Synthetic day zero", shiftStartAt: commandShiftStart.toISOString(), shiftEndAt: commandShiftEnd.toISOString() } });
+assert.ok(commandSession.data.blockedGateCount > 0); assert.equal(commandSession.data.runtimeEnabled, false);
+let commandCentre = await request("/api/admin/pilot-command", { identity: identities.admin });
+let dayZero = commandCentre.data.plans.flatMap((item) => item.packages).flatMap((item) => item.sessions).find((item) => item.id === commandSession.data.id); assert.equal(dayZero.checks.length, 10);
+const firstCheck = dayZero.checks[0]; const checked = await request("/api/admin/pilot-command", { identity: identities.admin, method: "POST", body: { operation: "update_check", checkId: firstCheck.id, version: firstCheck.version, status: "verified", evidenceReference: `UAT-CHECK-${runId}`, note: "Synthetic day-zero evidence reference verified without patient or clinical information." } }); assert.equal(checked.data.runtimeEnabled, false);
+commandCentre = await request("/api/admin/pilot-command", { identity: identities.admin }); dayZero = commandCentre.data.plans.flatMap((item) => item.packages).flatMap((item) => item.sessions).find((item) => item.id === commandSession.data.id);
+await request("/api/admin/pilot-command", { identity: identities.admin, method: "POST", status: 400, body: { operation: "transition_session", sessionId: dayZero.id, version: dayZero.version, action: "submit", note: "Submission must fail with a draft package, blocked readiness, and incomplete day-zero evidence." } });
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,
