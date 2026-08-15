@@ -439,6 +439,29 @@ export const controlledPilotPlanEvents = sqliteTable("controlled_pilot_plan_even
   previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_controlled_pilot_plan_events_plan_created").on(table.planId, table.createdAt)]);
 
+export const controlledPilotCohortMembers = sqliteTable("controlled_pilot_cohort_members", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  participantType: text("participant_type").notNull(),
+  status: text("status").notNull().default("nominated"),
+  nominatedByUserId: text("nominated_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  acceptedAt: integer("accepted_at", { mode: "timestamp_ms" }),
+  removedAt: integer("removed_at", { mode: "timestamp_ms" }),
+  note: text("note").notNull(),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_controlled_pilot_cohort_plan_user").on(table.planId, table.userId),
+  index("idx_controlled_pilot_cohort_plan_type_status").on(table.planId, table.participantType, table.status),
+]);
+
+export const controlledPilotCohortEvents = sqliteTable("controlled_pilot_cohort_events", {
+  id: text("id").primaryKey(), memberId: text("member_id").notNull().references(() => controlledPilotCohortMembers.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_controlled_pilot_cohort_events_member_created").on(table.memberId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

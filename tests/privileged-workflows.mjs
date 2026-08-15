@@ -473,6 +473,20 @@ if (pilotPlan.status === "pending_review") { const approvedScope = await request
 assert.equal(pilotPlan.status, "approved");
 await request("/api/admin/pilot-scope", { identity: identities.admin, method: "POST", status: 400, body: { operation: "transition", planId: pilotPlan.id, version: pilotPlan.version, action: "activate", note: "Activation must remain blocked because the latest readiness decision is no-go." } });
 
+await request("/api/admin/pilot-cohort", { identity: identities.patient, status: 403 });
+const cohortBefore = await request("/api/admin/pilot-cohort", { identity: identities.admin });
+const cohortBeforePlan = cohortBefore.data.plans.find((item) => item.id === pilotPlan.id);
+const providerCandidate = cohortBeforePlan.providerCandidates.find((item) => item.displayName === identities.provider.name);
+const patientCandidate = cohortBeforePlan.patientCandidates.find((item) => item.displayName === identities.patient.name);
+assert.ok(providerCandidate); assert.ok(patientCandidate);
+const providerNomination = await request("/api/admin/pilot-cohort", { identity: identities.admin, method: "POST", body: { operation: "nominate", planId: pilotPlan.id, participantType: "provider", userId: providerCandidate.userId, note: "Verified organization provider nominated for the synthetic controlled pilot cohort." } });
+assert.equal(providerNomination.data.invitationDelivered, false);
+const patientNomination = await request("/api/admin/pilot-cohort", { identity: identities.admin, method: "POST", body: { operation: "nominate", planId: pilotPlan.id, participantType: "patient", userId: patientCandidate.userId, note: "Existing synthetic patient account nominated within the controlled cohort capacity." } });
+assert.equal(patientNomination.data.invitationDelivered, false);
+const cohort = await request("/api/admin/pilot-cohort", { identity: identities.admin });
+const cohortPlan = cohort.data.plans.find((item) => item.id === pilotPlan.id);
+assert.equal(cohortPlan.providerCount, 1); assert.equal(cohortPlan.patientCount, 1); assert.equal(cohortPlan.invitationDispatchAllowed, false);
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,
