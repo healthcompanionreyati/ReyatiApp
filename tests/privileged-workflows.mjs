@@ -538,6 +538,29 @@ for (const type of ["patient", "provider"]) {
 const invitationPlan = invitationCentre.data.plans.find((item) => item.id === pilotPlan.id);
 assert.equal(invitationPlan.invitationSafeguardsReady, true); assert.equal(invitationPlan.approvedSafeguardCount, 2);
 
+await request("/api/admin/pilot-participation", { identity: identities.patient, status: 403 });
+let participationCentre = await request("/api/admin/pilot-participation", { identity: identities.admin });
+for (const type of ["patient", "provider"]) {
+  let participationPlan = participationCentre.data.plans.find((item) => item.id === pilotPlan.id);
+  const approvedInvitation = invitationPlan.policies.find((item) => item.participantType === type && item.status === "approved");
+  assert.ok(approvedInvitation, `Approved ${type} invitation policy is required`);
+  let policy = participationPlan.policies.find((item) => item.participantType === type && item.status === "approved") ?? participationPlan.policies.find((item) => item.participantType === type && ["draft", "pending_review"].includes(item.status));
+  if (!policy) {
+    const saved = await request("/api/admin/pilot-participation", { identity: identities.admin, method: "POST", body: { operation: "save_policy", planId: pilotPlan.id, participantType: type, invitationPolicyId: approvedInvitation.id, policyVersion: `UAT-${runId}`, accessRevocationTargetMinutes: 5, acknowledgementTargetHours: 4, supportFollowupHours: 24 } });
+    policy = { id: saved.data.id, status: saved.data.status, version: saved.data.version, preparedByUserId: adminRole.userId, drills: [] };
+    assert.equal(saved.data.participantLifecycleEnabled, false);
+  }
+  if (policy.status === "draft") { const submitted = await request("/api/admin/pilot-participation", { identity: identities.admin, method: "POST", body: { operation: "transition_policy", policyId: policy.id, version: policy.version, action: "submit", note: "Synthetic withdrawal policy submitted for independent UAT review." } }); policy = { ...policy, status: submitted.data.status, version: submitted.data.version }; }
+  if (policy.status === "pending_review") { const approved = await request("/api/admin/pilot-participation", { identity: identities.reviewer, method: "POST", body: { operation: "transition_policy", policyId: policy.id, version: policy.version, action: "approve", note: "Independent reviewer approved the synthetic withdrawal targets and reactivation prohibition." } }); assert.equal(approved.data.accessRevocationRuntimeEnabled, false); }
+  participationCentre = await request("/api/admin/pilot-participation", { identity: identities.admin }); participationPlan = participationCentre.data.plans.find((item) => item.id === pilotPlan.id); policy = participationPlan.policies.find((item) => item.participantType === type && item.status === "approved");
+  let drill = policy.drills.find((item) => item.status === "verified" && item.result === "pass") ?? policy.drills.find((item) => item.status === "pending_review" && item.result === "pass");
+  if (!drill) { const recorded = await request("/api/admin/pilot-participation", { identity: identities.admin, method: "POST", body: { operation: "record_drill", policyId: policy.id, scenario: "self_service", syntheticReference: `UAT-WITHDRAW-${type}-${runId}`, revocationMinutes: 3, acknowledgementMinutes: 30, openActionCount: 0 } }); drill = { id: recorded.data.id, status: recorded.data.status, result: recorded.data.result, version: recorded.data.version, runByUserId: adminRole.userId }; assert.equal(recorded.data.reactivationEnabled, false); }
+  if (drill.status === "pending_review") { const verified = await request("/api/admin/pilot-participation", { identity: identities.reviewer, method: "POST", body: { operation: "review_drill", drillId: drill.id, version: drill.version, action: "verify", note: "Independent reviewer verified the synthetic revocation and acknowledgement measurements." } }); assert.equal(verified.data.status, "verified"); }
+  participationCentre = await request("/api/admin/pilot-participation", { identity: identities.admin });
+}
+const participationPlan = participationCentre.data.plans.find((item) => item.id === pilotPlan.id);
+assert.equal(participationPlan.participationGovernanceReady, true); assert.equal(participationPlan.verifiedDrillCount, 2);
+
 await request("/api/admin/pilot-learning", { identity: identities.patient, status: 403 });
 let learningCentre = await request("/api/admin/pilot-learning", { identity: identities.admin });
 let learningPlan = learningCentre.data.plans.find((item) => item.id === pilotPlan.id);

@@ -531,6 +531,66 @@ export const pilotInvitationPolicyEvents = sqliteTable("pilot_invitation_policy_
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_pilot_invitation_policy_events_policy_created").on(table.policyId, table.createdAt)]);
 
+export const pilotParticipationPolicies = sqliteTable("pilot_participation_policies", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
+  participantType: text("participant_type").notNull(),
+  invitationPolicyId: text("invitation_policy_id").notNull().references(() => pilotInvitationPolicies.id, { onDelete: "restrict" }),
+  policyVersion: text("policy_version").notNull(),
+  accessRevocationTargetMinutes: integer("access_revocation_target_minutes").notNull(),
+  acknowledgementTargetHours: integer("acknowledgement_target_hours").notNull(),
+  supportFollowupHours: integer("support_followup_hours").notNull(),
+  withdrawalMethod: text("withdrawal_method").notNull().default("authenticated_self_service_and_support"),
+  recordTreatment: text("record_treatment").notNull().default("preserve_required_records"),
+  reactivationMode: text("reactivation_mode").notNull().default("new_invitation_and_fresh_acceptance"),
+  status: text("status").notNull().default("draft"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_participation_policy_plan_type_version").on(table.planId, table.participantType, table.policyVersion),
+  index("idx_pilot_participation_policy_plan_type_status").on(table.planId, table.participantType, table.status),
+  index("idx_pilot_participation_policy_invitation_status").on(table.invitationPolicyId, table.status),
+]);
+
+export const pilotParticipationPolicyEvents = sqliteTable("pilot_participation_policy_events", {
+  id: text("id").primaryKey(),
+  policyId: text("policy_id").notNull().references(() => pilotParticipationPolicies.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_participation_policy_events_policy_created").on(table.policyId, table.createdAt)]);
+
+export const pilotWithdrawalDrills = sqliteTable("pilot_withdrawal_drills", {
+  id: text("id").primaryKey(),
+  policyId: text("policy_id").notNull().references(() => pilotParticipationPolicies.id, { onDelete: "restrict" }),
+  scenario: text("scenario").notNull(),
+  syntheticReference: text("synthetic_reference").notNull(),
+  revocationMinutes: integer("revocation_minutes").notNull(),
+  acknowledgementMinutes: integer("acknowledgement_minutes").notNull(),
+  openActionCount: integer("open_action_count").notNull(),
+  result: text("result").notNull(),
+  status: text("status").notNull().default("pending_review"),
+  runByUserId: text("run_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_withdrawal_drill_policy_reference").on(table.policyId, table.syntheticReference),
+  index("idx_pilot_withdrawal_drill_policy_status_created").on(table.policyId, table.status, table.createdAt),
+]);
+
+export const pilotWithdrawalDrillEvents = sqliteTable("pilot_withdrawal_drill_events", {
+  id: text("id").primaryKey(), drillId: text("drill_id").notNull().references(() => pilotWithdrawalDrills.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_withdrawal_drill_events_drill_created").on(table.drillId, table.createdAt)]);
+
 export const pilotSuccessMetrics = sqliteTable("pilot_success_metrics", {
   id: text("id").primaryKey(),
   planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
