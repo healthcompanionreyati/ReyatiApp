@@ -229,6 +229,43 @@ export const dataLifecyclePolicyEvents = sqliteTable("data_lifecycle_policy_even
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_data_lifecycle_policy_events_policy_created").on(table.policyId, table.createdAt)]);
 
+export const legalHoldOrders = sqliteTable("legal_hold_orders", {
+  id: text("id").primaryKey(),
+  reference: text("reference").notNull(),
+  recordClass: text("record_class").notNull(),
+  scopeType: text("scope_type").notNull(),
+  protectedReference: text("protected_reference").notNull(),
+  reasonCode: text("reason_code").notNull(),
+  authorityReference: text("authority_reference").notNull(),
+  ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  placedByUserId: text("placed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("active"),
+  placedAt: integer("placed_at", { mode: "timestamp_ms" }).notNull(),
+  reviewDueAt: integer("review_due_at", { mode: "timestamp_ms" }).notNull(),
+  releaseRequestedByUserId: text("release_requested_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  releaseRequestedAt: integer("release_requested_at", { mode: "timestamp_ms" }),
+  releasedByUserId: text("released_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  releasedAt: integer("released_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_legal_hold_orders_reference").on(table.reference),
+  index("idx_legal_hold_orders_status_review").on(table.status, table.reviewDueAt),
+  index("idx_legal_hold_orders_record_scope_status").on(table.recordClass, table.scopeType, table.protectedReference, table.status),
+  index("idx_legal_hold_orders_owner_status").on(table.ownerUserId, table.status),
+]);
+
+export const legalHoldOrderEvents = sqliteTable("legal_hold_order_events", {
+  id: text("id").primaryKey(),
+  holdId: text("hold_id").notNull().references(() => legalHoldOrders.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_legal_hold_order_events_hold_created").on(table.holdId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

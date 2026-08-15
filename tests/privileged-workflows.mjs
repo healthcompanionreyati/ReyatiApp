@@ -409,6 +409,19 @@ const lifecycleGate = lifecycleReadiness.data.pilotReadiness.gates.find((gate) =
 assert.equal(lifecycleGate.status, "blocked", "Policy approval must not bypass remaining lifecycle controls");
 assert.match(lifecycleGate.evidence, /5\/5 required record-class policies/);
 
+await request("/api/admin/legal-holds", { identity: identities.patient, status: 403 });
+const placedHold = await request("/api/admin/legal-holds", {
+  identity: identities.admin,
+  method: "POST",
+  body: { operation: "place", recordClass: "medical_documents", scopeType: "record_class", protectedReference: "*", reasonCode: "formal_investigation", authorityReference: `UAT-HOLD-${runId}`, ownerUserId: adminRole.userId, reviewDays: 30 },
+});
+const releaseRequested = await request("/api/admin/legal-holds", { identity: identities.admin, method: "POST", body: { operation: "transition", holdId: placedHold.data.id, version: placedHold.data.version, action: "request_release", note: "Synthetic investigation completed; independent release review requested." } });
+const releasedHold = await request("/api/admin/legal-holds", { identity: identities.reviewer, method: "POST", body: { operation: "transition", holdId: placedHold.data.id, version: releaseRequested.data.version, action: "approve_release", note: "Independent reviewer confirmed the synthetic hold may be released." } });
+assert.equal(releasedHold.data.status, "released");
+const holdCentre = await request("/api/admin/legal-holds", { identity: identities.admin });
+const completedHold = holdCentre.data.holds.find((item) => item.id === placedHold.data.id);
+assert.equal(completedHold.events.length, 3);
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,

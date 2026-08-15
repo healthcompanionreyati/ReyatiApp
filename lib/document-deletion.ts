@@ -3,6 +3,7 @@ import { getDb } from "@/db";
 import { auditEvents, documentAccessGrants, documentDeletionJobs, documentRecords, documentShares } from "@/db/schema";
 import { deletePrivateDocumentObject } from "@/lib/document-storage";
 import { foundationFlags } from "@/lib/foundation-flags";
+import { hasActiveDocumentLegalHold } from "@/lib/legal-hold-operations";
 
 const MAX_CLOCK_SKEW_SECONDS = 5 * 60;
 const LEASE_MILLISECONDS = 5 * 60 * 1000;
@@ -74,7 +75,7 @@ export async function processDocumentDeletionInvocation(rawBody: string, headers
     ]);
     return { accepted: true, matched: true, completed: true, recovered: true } as const;
   }
-  if (row.legalHold) {
+  if (row.legalHold || await hasActiveDocumentLegalHold(row.documentId)) {
     if (row.jobStatus !== "blocked") await db.batch([
       db.update(documentDeletionJobs).set({ status: "blocked", leaseExpiresAt: null, lastErrorCode: "legal_hold", version: row.jobVersion + 1, updatedAt: now }).where(and(eq(documentDeletionJobs.id, jobId), eq(documentDeletionJobs.version, row.jobVersion))),
       db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: null, organizationId: row.sourceOrganizationId, action: "document.deletion_blocked", resourceType: "document", resourceId: row.documentId, outcome: "blocked", metadataJson: JSON.stringify({ runHash: await sha256(runId), reasonCode: "legal_hold" }), createdAt: now }),
@@ -92,6 +93,13 @@ export async function processDocumentDeletionInvocation(rawBody: string, headers
     .where(and(eq(documentDeletionJobs.id, jobId), eq(documentDeletionJobs.version, row.jobVersion), eq(documentDeletionJobs.legalHold, false), or(eq(documentDeletionJobs.status, "pending"), eq(documentDeletionJobs.status, "retrying"), and(eq(documentDeletionJobs.status, "processing"), lt(documentDeletionJobs.leaseExpiresAt, now)))))
     .returning({ id: documentDeletionJobs.id });
   if (!claimed[0]) throw new DocumentDeletionError("job_unavailable", 409);
+  if (await hasActiveDocumentLegalHold(row.documentId)) {
+    await db.batch([
+      db.update(documentDeletionJobs).set({ status: "blocked", legalHold: true, leaseExpiresAt: null, lastErrorCode: "legal_hold", version: row.jobVersion + 2, updatedAt: new Date() }).where(and(eq(documentDeletionJobs.id, jobId), eq(documentDeletionJobs.status, "processing"), eq(documentDeletionJobs.version, row.jobVersion + 1))),
+      db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: null, organizationId: row.sourceOrganizationId, action: "document.deletion_blocked", resourceType: "document", resourceId: row.documentId, outcome: "blocked", metadataJson: JSON.stringify({ runHash: await sha256(runId), reasonCode: "legal_hold_after_claim" }), createdAt: new Date() }),
+    ]);
+    return { accepted: true, matched: true, blocked: true } as const;
+  }
   try {
     await deletePrivateDocumentObject(row.objectKey);
     const completedAt = new Date();

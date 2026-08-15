@@ -50,6 +50,7 @@ import "./pilot-ownership.css";
 import "./incident-response.css";
 import "./recovery-rehearsal.css";
 import "./data-lifecycle.css";
+import "./legal-holds.css";
 import "./documents.css";
 import "./rtl.css";
 import MobileDock from "./components/MobileDock";
