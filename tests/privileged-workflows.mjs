@@ -512,6 +512,31 @@ for (const requirement of [
 const enrollmentPlan = enrollmentCentre.data.plans.find((item) => item.id === pilotPlan.id);
 assert.equal(enrollmentPlan.enrollmentEvidenceReady, true); assert.equal(enrollmentPlan.approvedRequirementCount, 2); assert.equal(enrollmentCentre.data.participantAcceptanceEnabled, false);
 
+await request("/api/admin/pilot-learning", { identity: identities.patient, status: 403 });
+let learningCentre = await request("/api/admin/pilot-learning", { identity: identities.admin });
+let learningPlan = learningCentre.data.plans.find((item) => item.id === pilotPlan.id);
+let successMetric = learningPlan.metrics.find((item) => item.metricKey === "booking_journey_completion" && item.status === "approved") ?? learningPlan.metrics.find((item) => item.metricKey === "booking_journey_completion" && ["draft", "pending_review"].includes(item.status));
+if (!successMetric) {
+  const savedMetric = await request("/api/admin/pilot-learning", { identity: identities.admin, method: "POST", body: { operation: "save_metric", planId: pilotPlan.id, metricKey: "booking_journey_completion", definitionVersion: `UAT-${runId}`, label: "Synthetic booking journey completion", definition: "Percentage of synthetic dry-run booking attempts that reach a confirmed appointment without operator correction.", targetValue: 8000, minimumSampleSize: 20, evidenceSource: `UAT-ANALYTICS-PROTOCOL-${runId}` } });
+  successMetric = { id: savedMetric.data.id, status: savedMetric.data.status, version: savedMetric.data.version, preparedByUserId: adminRole.userId };
+}
+if (successMetric.status === "draft") {
+  const submittedMetric = await request("/api/admin/pilot-learning", { identity: identities.admin, method: "POST", body: { operation: "transition_metric", metricId: successMetric.id, version: successMetric.version, action: "submit", note: "Synthetic metric definition submitted for independent UAT review." } });
+  successMetric = { ...successMetric, status: submittedMetric.data.status, version: submittedMetric.data.version };
+}
+if (successMetric.status === "pending_review") {
+  const approvedMetric = await request("/api/admin/pilot-learning", { identity: identities.reviewer, method: "POST", body: { operation: "transition_metric", metricId: successMetric.id, version: successMetric.version, action: "approve", note: "Independent reviewer approved the synthetic calculation definition and minimum sample rule." } });
+  assert.equal(approvedMetric.data.outcomeRecorded, false);
+}
+const dryRunFeedback = await request("/api/admin/pilot-learning", { identity: identities.admin, method: "POST", body: { operation: "record_feedback", planId: pilotPlan.id, persona: "patient", category: "booking", severity: "minor", summary: "Synthetic participant found the slot comparison clear but wanted the confirmation action closer to the selected time.", dataMode: "synthetic_only" } });
+assert.equal(dryRunFeedback.data.realFeedbackEnabled, false);
+const reviewedFeedback = await request("/api/admin/pilot-learning", { identity: identities.admin, method: "POST", body: { operation: "transition_feedback", feedbackId: dryRunFeedback.data.id, version: 1, action: "review", note: "Synthetic workflow observation reviewed against the booking usability checklist." } });
+const closedFeedback = await request("/api/admin/pilot-learning", { identity: identities.admin, method: "POST", body: { operation: "transition_feedback", feedbackId: dryRunFeedback.data.id, version: reviewedFeedback.data.version, action: "close", note: "Synthetic dry-run issue resolved through a clearer confirmation action placement." } });
+assert.equal(closedFeedback.data.status, "closed");
+learningCentre = await request("/api/admin/pilot-learning", { identity: identities.admin });
+learningPlan = learningCentre.data.plans.find((item) => item.id === pilotPlan.id);
+assert.ok(learningPlan.approvedMetricCount >= 1); assert.equal(learningCentre.data.realFeedbackEnabled, false);
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,
