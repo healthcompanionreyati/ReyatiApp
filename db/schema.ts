@@ -382,6 +382,33 @@ export const observabilityValidationRuns = sqliteTable("observability_validation
   mode: text("mode").notNull().default("local_redaction_test"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_observability_validation_runs_policy_created").on(table.policyId, table.createdAt)]);
 
+export const pilotReadinessReviews = sqliteTable("pilot_readiness_reviews", {
+  id: text("id").primaryKey(),
+  cycleLabel: text("cycle_label").notNull(),
+  scope: text("scope").notNull().default("controlled_provider_pilot"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  snapshotJson: text("snapshot_json").notNull(),
+  clearedGateCount: integer("cleared_gate_count").notNull(),
+  totalGateCount: integer("total_gate_count").notNull(),
+  blockedGateCount: integer("blocked_gate_count").notNull(),
+  status: text("status").notNull().default("draft"),
+  decision: text("decision").notNull().default("pending"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  index("idx_pilot_readiness_reviews_status_updated").on(table.status, table.updatedAt),
+  index("idx_pilot_readiness_reviews_preparer_created").on(table.preparedByUserId, table.createdAt),
+]);
+
+export const pilotReadinessReviewEvents = sqliteTable("pilot_readiness_review_events", {
+  id: text("id").primaryKey(), reviewId: text("review_id").notNull().references(() => pilotReadinessReviews.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_readiness_review_events_review_created").on(table.reviewId, table.createdAt)]);
+
 export const patientProfiles = sqliteTable("patient_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

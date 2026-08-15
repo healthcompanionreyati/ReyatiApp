@@ -232,6 +232,13 @@
       "when": 1786806367064,
       "tag": "0032_wide_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1786806880258,
+      "tag": "0033_parched_katie_power",
+      "breakpoints": true
     }
   ]
 }

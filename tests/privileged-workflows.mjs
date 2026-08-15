@@ -456,6 +456,14 @@ assert.equal(observabilityPolicy.status, "approved");
 const redactionValidation = await request("/api/admin/observability", { identity: identities.admin, method: "POST", body: { operation: "validate", policyId: observabilityPolicy.id } });
 assert.equal(redactionValidation.data.fixturesPassed, 8); assert.equal(redactionValidation.data.prohibitedFieldsDetected, 0); assert.equal(redactionValidation.data.externalExported, false);
 
+await request("/api/admin/pilot-review", { identity: identities.patient, status: 403 });
+const readinessSnapshot = await request("/api/admin/pilot-review", { identity: identities.admin, method: "POST", body: { operation: "create", cycleLabel: `UAT Pilot ${runId}`, note: "Synthetic go/no-go snapshot created from server-derived readiness gates." } });
+assert.ok(readinessSnapshot.data.blockedGateCount > 0, "Controlled pilot must remain blocked while external dependencies are absent");
+const submittedReadiness = await request("/api/admin/pilot-review", { identity: identities.admin, method: "POST", body: { operation: "transition", reviewId: readinessSnapshot.data.id, version: readinessSnapshot.data.version, action: "submit", note: "Synthetic snapshot submitted for an independent no-go decision." } });
+await request("/api/admin/pilot-review", { identity: identities.reviewer, method: "POST", status: 400, body: { operation: "transition", reviewId: readinessSnapshot.data.id, version: submittedReadiness.data.version, action: "approve_go", note: "Attempted approval must fail while any readiness gate remains blocked." } });
+const noGoReadiness = await request("/api/admin/pilot-review", { identity: identities.reviewer, method: "POST", body: { operation: "transition", reviewId: readinessSnapshot.data.id, version: submittedReadiness.data.version, action: "record_no_go", note: "Independent reviewer recorded no-go because required external controls remain unavailable." } });
+assert.equal(noGoReadiness.data.decision, "no_go"); assert.equal(noGoReadiness.data.status, "not_approved");
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,
