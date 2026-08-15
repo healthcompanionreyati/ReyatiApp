@@ -31,11 +31,12 @@ test("R2 configuration alone cannot activate document uploads", () => {
   assert.match(service, /if \(!readiness\.uploadEnabled\)/);
 });
 
-test("storage adapter bounds size and supports quarantine without exposing reads", () => {
+test("storage adapter bounds size and keeps reads inside a private server adapter", () => {
   assert.match(storage, /10 \* 1024 \* 1024/);
   assert.match(storage, /ownerReferenceHash: await sha256/);
   assert.doesNotMatch(storage, /ownerReference: input\.ownerReference/);
   assert.match(storage, /quarantine\//);
   assert.match(storage, /await storage\.delete\(key\)/);
-  assert.doesNotMatch(storage, /export async function (read|download|serve)/);
+  assert.match(storage, /export async function readPrivateDocumentObject/);
+  assert.doesNotMatch(storage, /publicUrl|presignedUrl|signedUrl/);
 });

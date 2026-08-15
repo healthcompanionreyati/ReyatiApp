@@ -6,6 +6,7 @@ export const foundationFlags = {
   medicalDocumentUploads: false,
   documentScanCallbacks: false,
   documentDeletionProcessor: false,
+  privateDocumentDelivery: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

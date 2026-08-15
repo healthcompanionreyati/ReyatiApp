@@ -18,7 +18,7 @@ async function routeFiles(directory) {
 test("Phase 1A external capabilities remain hard-disabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor"]) {
+  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
 });
@@ -135,7 +135,7 @@ test("medical documents remain metadata-only, consent-scoped, and upload-gated",
   assert.match(service, /db\.insert\(consents\)/);
   assert.match(service, /db\.insert\(documentShares\)/);
   assert.match(service, /version: share\[0\]\.version \+ 1/);
-  assert.match(service, /contentAccessEnabled: false/);
+  assert.match(service, /contentAccessEnabled: foundationFlags\.privateDocumentDelivery/);
   assert.doesNotMatch(service.match(/getProviderSharedDocuments[\s\S]*$/)?.[0] ?? "", /objectKey|checksumSha256/);
   assert.match(patientRoute, /enforceWriteRateLimit/);
   assert.match(patientRoute, /body\.action === "cancel_upload"/);

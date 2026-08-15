@@ -187,5 +187,5 @@ export async function getProviderSharedDocuments(userId: string) {
       eq(documentRecords.status, "ready"), eq(documentRecords.malwareScanStatus, "clean"), eq(documentRecords.retentionState, "active"),
     )).orderBy(desc(documentShares.createdAt)).limit(100);
   await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: provider.organizationId, action: "provider.shared_documents_viewed", resourceType: "document_share_collection", resourceId: provider.id, outcome: "success", metadataJson: JSON.stringify({ documentCount: documents.length }), createdAt: now });
-  return { documents, contentAccessEnabled: false, limitation: "Document bytes remain unavailable until protected object delivery is activated." };
+  return { documents, contentAccessEnabled: foundationFlags.privateDocumentDelivery, limitation: foundationFlags.privateDocumentDelivery ? null : "Document bytes remain unavailable until protected object delivery is activated." };
 }

@@ -46,6 +46,13 @@ export async function inspectPrivateDocumentObject(objectKey: string) {
   return { size: object.size, etag: object.etag, uploaded: object.uploaded, contentType: object.httpMetadata?.contentType ?? null };
 }
 
+export async function readPrivateDocumentObject(objectKey: string) {
+  const storage = await storageBinding();
+  const object = await storage.get(assertPrivateDocumentObjectKey(objectKey));
+  if (!object) return null;
+  return { body: object.body, size: object.size, etag: object.etag, contentType: object.httpMetadata?.contentType ?? null };
+}
+
 export async function stagePrivateDocumentObject(input: { objectKey: string; body: ReadableStream<Uint8Array>; contentType: string; ownerReference: string; expectedSizeBytes: number }) {
   const storage = await storageBinding();
   const objectKey = assertPrivateDocumentObjectKey(input.objectKey);
