@@ -1,4 +1,4 @@
-export const DOCUMENT_UPLOAD_STATES = ["created", "uploading", "uploaded", "cancelled", "expired", "failed"] as const;
+export const DOCUMENT_UPLOAD_STATES = ["created", "uploading", "uploaded", "cancelled", "expired", "failed", "cleaned"] as const;
 export const DOCUMENT_PROCESSING_STATES = ["upload_pending", "scanning", "ready", "quarantined", "rejected"] as const;
 export const DOCUMENT_DELETION_STATES = ["pending", "processing", "retrying", "completed", "failed", "blocked"] as const;
 
@@ -12,7 +12,8 @@ const uploadTransitions: Record<DocumentUploadState, readonly DocumentUploadStat
   uploaded: [],
   cancelled: [],
   expired: [],
-  failed: [],
+  failed: ["cleaned"],
+  cleaned: [],
 };
 
 const processingTransitions: Record<DocumentProcessingState, readonly DocumentProcessingState[]> = {

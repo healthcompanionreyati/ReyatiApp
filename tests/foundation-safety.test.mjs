@@ -18,7 +18,7 @@ async function routeFiles(directory) {
 test("Phase 1A external capabilities remain hard-disabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery"]) {
+  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery", "documentUploadCleanup"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
 });
@@ -60,6 +60,10 @@ test("operations health is role-scoped, privacy-minimized, and truthful about pi
   assert.match(route, /reportOperationalError/);
   assert.match(page, /No patient identity, clinical content, support descriptions, recipient details, or audit payloads/);
   assert.match(page, /not a claim of full monitoring coverage or pilot readiness/);
+  assert.match(service, /documentUploadCleanupBacklog/);
+  assert.match(service, /documentScanBacklog/);
+  assert.match(service, /documentDeletionAttention/);
+  assert.match(page, /Upload cleanup backlog/);
 });
 
 test("all authenticated write APIs use durable privacy-safe rate limits", async () => {
@@ -98,6 +102,14 @@ test("all authenticated write APIs use durable privacy-safe rate limits", async 
       assert.match(deletion, /x-reyati-deletion-signature/);
       assert.match(deletion, /x-reyati-deletion-timestamp/);
       assert.match(deletion, /eq\(documentDeletionJobs\.legalHold, false\)/);
+      continue;
+    }
+    if (file.endsWith(path.join("internal", "document-upload-cleanup", "route.ts"))) {
+      assert.match(contents, /documentUploadCleanup/);
+      const cleanup = await source("lib/document-upload-cleanup.ts");
+      assert.match(cleanup, /x-reyati-cleanup-signature/);
+      assert.match(cleanup, /x-reyati-cleanup-timestamp/);
+      assert.match(cleanup, /MAX_BATCH_SIZE = 25/);
       continue;
     }
     assert.match(contents, /@\/lib\/rate-limits/, `${path.relative(root, file)} lacks the shared limiter`);

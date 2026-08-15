@@ -13,6 +13,8 @@ test("document lifecycle uses explicit fail-closed transitions", () => {
   assert.match(lifecycle, /upload_pending: \["scanning", "rejected"\]/);
   assert.match(lifecycle, /scanning: \["ready", "quarantined", "rejected"\]/);
   assert.match(lifecycle, /quarantined: \["scanning", "rejected"\]/);
+  assert.match(lifecycle, /failed: \["cleaned"\]/);
+  assert.match(lifecycle, /cleaned: \[\]/);
   assert.match(lifecycle, /legalHold && next !== "blocked"/);
   assert.match(lifecycle, /invalid_transition/);
   assert.match(lifecycle, /version_conflict/);

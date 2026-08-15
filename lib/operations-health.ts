@@ -1,6 +1,6 @@
-import { and, count, desc, eq, gt, inArray, lt, ne, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { appointments, auditEvents, authEvents, operationalRateLimits, outboundMessages, supportCases, webhookReceipts } from "@/db/schema";
+import { appointments, auditEvents, authEvents, documentDeletionJobs, documentRecords, documentUploadSessions, operationalRateLimits, outboundMessages, supportCases, webhookReceipts } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 
 const OPEN_SUPPORT_STATUSES = ["open", "in_progress", "waiting_requester", "waiting_support"];
@@ -16,8 +16,9 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
   const now = new Date();
   const last24Hours = new Date(now.valueOf() - 24 * 60 * 60 * 1000);
   const staleSupportBoundary = new Date(now.valueOf() - 48 * 60 * 60 * 1000);
+  const uploadCleanupBoundary = new Date(now.valueOf() - 20 * 60 * 1000);
 
-  const [authFailureRows, auditFailureRows, openSupportRows, staleSupportRows, pendingAppointmentRows, messageAttentionRows, webhookFailureRows, activeLimitedRows, recentAuthSignals, recentAuditSignals] = await Promise.all([
+  const [authFailureRows, auditFailureRows, openSupportRows, staleSupportRows, pendingAppointmentRows, messageAttentionRows, webhookFailureRows, activeLimitedRows, uploadCleanupRows, scanBacklogRows, deletionAttentionRows, recentAuthSignals, recentAuditSignals] = await Promise.all([
     db.select({ value: count() }).from(authEvents).where(and(gt(authEvents.createdAt, last24Hours), ne(authEvents.outcome, "success"))),
     db.select({ value: count() }).from(auditEvents).where(and(gt(auditEvents.createdAt, last24Hours), ne(auditEvents.outcome, "success"))),
     db.select({ priority: supportCases.priority, value: count() }).from(supportCases).where(inArray(supportCases.status, OPEN_SUPPORT_STATUSES)).groupBy(supportCases.priority),
@@ -26,6 +27,12 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     db.select({ status: outboundMessages.status, value: count() }).from(outboundMessages).where(inArray(outboundMessages.status, ATTENTION_MESSAGE_STATUSES)).groupBy(outboundMessages.status),
     db.select({ value: count() }).from(webhookReceipts).where(eq(webhookReceipts.status, "failed")),
     db.select({ value: count() }).from(operationalRateLimits).where(and(gt(operationalRateLimits.windowEndsAt, now), sql`${operationalRateLimits.requestCount} > ${operationalRateLimits.requestLimit}`)),
+    db.select({ value: count() }).from(documentUploadSessions).where(or(
+      and(inArray(documentUploadSessions.status, ["created", "uploading"]), lt(documentUploadSessions.expiresAt, uploadCleanupBoundary)),
+      and(eq(documentUploadSessions.status, "failed"), lt(documentUploadSessions.updatedAt, uploadCleanupBoundary)),
+    )),
+    db.select({ value: count() }).from(documentRecords).where(eq(documentRecords.status, "scanning")),
+    db.select({ value: count() }).from(documentDeletionJobs).where(inArray(documentDeletionJobs.status, ["retrying", "failed", "blocked"])),
     db.select({ eventType: authEvents.eventType, outcome: authEvents.outcome, channel: authEvents.channel, createdAt: authEvents.createdAt })
       .from(authEvents).where(ne(authEvents.outcome, "success")).orderBy(desc(authEvents.createdAt)).limit(12),
     db.select({ action: auditEvents.action, resourceType: auditEvents.resourceType, outcome: auditEvents.outcome, createdAt: auditEvents.createdAt })
@@ -42,6 +49,9 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     communicationAttention: total(messageAttentionRows),
     failedWebhookReceipts: total(webhookFailureRows),
     activeRateLimitedBuckets: total(activeLimitedRows),
+    documentUploadCleanupBacklog: total(uploadCleanupRows),
+    documentScanBacklog: total(scanBacklogRows),
+    documentDeletionAttention: total(deletionAttentionRows),
   };
 
   const controls = [
@@ -54,6 +64,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "security_alerting", name: "Security alerting and escalation", status: "blocked", note: "Alert transport, thresholds, recipients, and on-call rota are not configured." },
     { id: "backup_rehearsal", name: "Hosted backup restoration rehearsal", status: "blocked", note: "No completed rehearsal evidence or recovery-time result is recorded." },
     { id: "retention_enforcement", name: "Automated retention enforcement", status: "blocked", note: "A gated deletion processor exists, but approved retention periods and legal-hold operations remain undecided." },
+    { id: "document_upload_cleanup", name: "Expired document-upload cleanup", status: "partial", note: "Signed bounded cleanup and privacy-safe backlog counts are implemented; scheduled activation and alert thresholds remain outstanding." },
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 
