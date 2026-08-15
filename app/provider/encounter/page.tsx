@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 
 type Appointment = {
   id: string;
@@ -26,11 +27,12 @@ function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "PT";
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-QA", { timeZone: "Asia/Qatar", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+function formatDate(value: string, ar = false) {
+  return new Intl.DateTimeFormat(ar ? "ar-QA" : "en-QA", { timeZone: "Asia/Qatar", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 export default function Encounter() {
+  const [lang, setLang] = useReyatiLocale(); const ar = lang === "ar";
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [noteStatus, setNoteStatus] = useState<"draft" | "finalized">("draft");
   const [version, setVersion] = useState(0);
@@ -69,7 +71,7 @@ export default function Encounter() {
 
   async function save(action: "save_draft" | "finalize") {
     if (!appointment || noteStatus === "finalized") return;
-    if (action === "finalize" && !window.confirm("Finalize this encounter? The note will become immutable and the appointment will be completed.")) return;
+    if (action === "finalize" && !window.confirm(ar ? "إنهاء هذه الزيارة؟ ستصبح الملاحظة غير قابلة للتعديل وسيتم إكمال الموعد." : "Finalize this encounter? The note will become immutable and the appointment will be completed.")) return;
     setSaving(action); setError(""); setMessage("");
     try {
       const response = await fetch("/api/provider/encounters", {
@@ -82,7 +84,7 @@ export default function Encounter() {
       setVersion(payload.data.version);
       setNoteStatus(payload.data.status);
       if (payload.data.status === "finalized") setAppointment((current) => current ? { ...current, status: "completed" } : current);
-      setMessage(payload.data.status === "finalized" ? "Encounter finalized. The patient received a privacy-safe notification." : "Private draft saved.");
+      setMessage(payload.data.status === "finalized" ? (ar ? "تم إنهاء الزيارة. تلقى المريض إشعاراً يحمي الخصوصية." : "Encounter finalized. The patient received a privacy-safe notification.") : (ar ? "تم حفظ المسودة الخاصة." : "Private draft saved."));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to save this encounter.");
     } finally { setSaving(null); }
@@ -90,25 +92,25 @@ export default function Encounter() {
 
   const locked = noteStatus === "finalized";
 
-  return <main className="encounter-shell encounter-live-shell">
-    <header className="encounter-top"><a href="/provider" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>Encounter workspace</span></a><div className="encounter-context"><span className="live-dot"/><b>{locked ? "Finalized encounter" : "Private clinical draft"}</b>{appointment && <small>{formatDate(appointment.scheduledStart)}</small>}</div><div><a href="/notifications">Notifications</a><span className="provider-avatar">PR</span><b>Provider account</b></div></header>
+  return <main className={`encounter-shell encounter-live-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"} id="main-content">
+    <header className="encounter-top"><a href="/provider" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "مساحة الزيارة" : "Encounter workspace"}</span></a><div className="encounter-context"><span className="live-dot"/><b>{locked ? (ar ? "زيارة منتهية" : "Finalized encounter") : (ar ? "مسودة سريرية خاصة" : "Private clinical draft")}</b>{appointment && <small>{formatDate(appointment.scheduledStart, ar)}</small>}</div><div><button className="lang" type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications">{ar ? "الإشعارات" : "Notifications"}</a><span className="provider-avatar">PR</span><b>{ar ? "حساب مقدم الرعاية" : "Provider account"}</b></div></header>
 
-    {loading ? <section className="encounter-live-state"><span>◌</span><h1>Opening the protected encounter</h1><p>Verifying appointment ownership and current lifecycle state.</p></section> : error && !appointment ? <section className="encounter-live-state error"><span>!</span><h1>Encounter unavailable</h1><p>{error}</p><a href="/provider">Return to provider schedule</a></section> : appointment && <>
-      <aside className="patient-context"><a href="/provider">← Back to schedule</a><div className="context-patient"><span>{initials(appointment.patientName)}</span><h1>{appointment.patientName}</h1><p>Account-owned appointment</p><i>✓ Provider ownership verified</i></div><section><h2>Appointment</h2><p>{formatDate(appointment.scheduledStart)}</p><small>{appointment.mode.replaceAll("_", " ")} · Status: {appointment.status}</small></section><section><h2>Record boundary</h2><p>Only information entered for this encounter is shown.</p><small>No allergies, diagnoses, consent, demographics, or documents are inferred.</small></section><section className="context-alert"><h2>! Clinical responsibility</h2><p>Verify information directly with the patient before relying on it.</p></section><p className="context-footnote">Sensitive note access and lifecycle changes are attributed to the signed-in provider.</p></aside>
+    {loading ? <section className="encounter-live-state"><span>◌</span><h1>{ar ? "جارٍ فتح الزيارة المحمية" : "Opening the protected encounter"}</h1><p>{ar ? "جارٍ التحقق من ملكية الموعد وحالة دورة حياته الحالية." : "Verifying appointment ownership and current lifecycle state."}</p></section> : error && !appointment ? <section className="encounter-live-state error"><span>!</span><h1>{ar ? "الزيارة غير متاحة" : "Encounter unavailable"}</h1><p>{error}</p><a href="/provider">{ar ? "العودة إلى جدول مقدم الرعاية" : "Return to provider schedule"}</a></section> : appointment && <>
+      <aside className="patient-context"><a href="/provider">{ar ? "العودة إلى الجدول ←" : "← Back to schedule"}</a><div className="context-patient"><span>{initials(appointment.patientName)}</span><h1>{appointment.patientName}</h1><p>{ar ? "موعد مملوك للحساب" : "Account-owned appointment"}</p><i>✓ {ar ? "تم التحقق من ملكية مقدم الرعاية" : "Provider ownership verified"}</i></div><section><h2>{ar ? "الموعد" : "Appointment"}</h2><p>{formatDate(appointment.scheduledStart, ar)}</p><small>{appointment.mode.replaceAll("_", " ")} · {ar ? "الحالة" : "Status"}: {appointment.status}</small></section><section><h2>{ar ? "حدود السجل" : "Record boundary"}</h2><p>{ar ? "تظهر فقط المعلومات المدخلة لهذه الزيارة." : "Only information entered for this encounter is shown."}</p><small>{ar ? "لا يتم استنتاج الحساسية أو التشخيصات أو الموافقات أو البيانات الديموغرافية أو المستندات." : "No allergies, diagnoses, consent, demographics, or documents are inferred."}</small></section><section className="context-alert"><h2>! {ar ? "المسؤولية السريرية" : "Clinical responsibility"}</h2><p>{ar ? "تحقق من المعلومات مباشرة مع المريض قبل الاعتماد عليها." : "Verify information directly with the patient before relying on it."}</p></section><p className="context-footnote">{ar ? "يُنسب الوصول إلى الملاحظات الحساسة وتغييرات دورة الحياة إلى مقدم الرعاية المسجل." : "Sensitive note access and lifecycle changes are attributed to the signed-in provider."}</p></aside>
 
-      <section className="encounter-main"><div className="encounter-heading"><div><p>Protected clinical record</p><h1>{appointment.patientName} encounter</h1></div><span><i/> {locked ? "Finalized and locked" : version ? `Draft version ${version}` : "New draft"}</span></div>
+      <section className="encounter-main"><div className="encounter-heading"><div><p>{ar ? "سجل سريري محمي" : "Protected clinical record"}</p><h1>{ar ? `زيارة ${appointment.patientName}` : `${appointment.patientName} encounter`}</h1></div><span><i/> {locked ? (ar ? "منتهي ومقفل" : "Finalized and locked") : version ? (ar ? `إصدار المسودة ${version}` : `Draft version ${version}`) : (ar ? "مسودة جديدة" : "New draft")}</span></div>
         {error && <div className="encounter-live-alert error"><span>{error}</span><button onClick={() => setError("")}>×</button></div>}
         {message && <div className="encounter-live-alert success"><span>{message}</span><button onClick={() => setMessage("")}>×</button></div>}
-        <div className="note-form"><div className={`draft-banner ${locked ? "locked" : ""}`}><span>{locked ? "✓" : "✎"}</span><div><b>{locked ? "Finalized clinical note" : "Internal draft"}</b><p>{locked ? "This record is immutable. Corrections require a future amendment workflow." : "Clinical content remains private to the authorized care workflow and is never placed in notifications."}</p></div></div>
-          <label>History and examination<textarea disabled={locked} maxLength={8000} value={historyText} onChange={(event) => setHistoryText(event.target.value)} placeholder="Record verified history and examination findings…"/></label>
-          <label>Assessment<textarea disabled={locked} maxLength={8000} value={assessmentText} onChange={(event) => setAssessmentText(event.target.value)} placeholder="Required before finalization…"/></label>
-          <label>Plan<textarea disabled={locked} maxLength={8000} value={planText} onChange={(event) => setPlanText(event.target.value)} placeholder="Required before finalization…"/></label>
-          <label>Patient instructions<textarea disabled={locked} maxLength={5000} value={patientInstructions} onChange={(event) => setPatientInstructions(event.target.value)} placeholder="Optional patient-facing instructions for a future records view…"/></label>
-          {!locked && <div className="note-actions"><button className="secondary" disabled={saving !== null} onClick={() => void save("save_draft")}>{saving === "save_draft" ? "Saving…" : "Save private draft"}</button><button className="primary" disabled={saving !== null || !assessmentText.trim() || !planText.trim()} onClick={() => void save("finalize")}>{saving === "finalize" ? "Finalizing…" : "Finalize encounter"}</button></div>}
+        <div className="note-form"><div className={`draft-banner ${locked ? "locked" : ""}`}><span>{locked ? "✓" : "✎"}</span><div><b>{locked ? (ar ? "ملاحظة سريرية منتهية" : "Finalized clinical note") : (ar ? "مسودة داخلية" : "Internal draft")}</b><p>{locked ? (ar ? "هذا السجل غير قابل للتعديل. تتطلب التصحيحات مسار تعديل مستقبلياً." : "This record is immutable. Corrections require a future amendment workflow.") : (ar ? "يبقى المحتوى السريري خاصاً بمسار الرعاية المصرح به ولا يُدرج أبداً في الإشعارات." : "Clinical content remains private to the authorized care workflow and is never placed in notifications.")}</p></div></div>
+          <label>{ar ? "التاريخ والفحص" : "History and examination"}<textarea disabled={locked} maxLength={8000} value={historyText} onChange={(event) => setHistoryText(event.target.value)} placeholder={ar ? "سجّل التاريخ ونتائج الفحص التي تم التحقق منها…" : "Record verified history and examination findings…"}/></label>
+          <label>{ar ? "التقييم" : "Assessment"}<textarea disabled={locked} maxLength={8000} value={assessmentText} onChange={(event) => setAssessmentText(event.target.value)} placeholder={ar ? "مطلوب قبل الإنهاء…" : "Required before finalization…"}/></label>
+          <label>{ar ? "الخطة" : "Plan"}<textarea disabled={locked} maxLength={8000} value={planText} onChange={(event) => setPlanText(event.target.value)} placeholder={ar ? "مطلوب قبل الإنهاء…" : "Required before finalization…"}/></label>
+          <label>{ar ? "تعليمات المريض" : "Patient instructions"}<textarea disabled={locked} maxLength={5000} value={patientInstructions} onChange={(event) => setPatientInstructions(event.target.value)} placeholder={ar ? "تعليمات اختيارية للمريض لعرضها لاحقاً في السجلات…" : "Optional patient-facing instructions for a future records view…"}/></label>
+          {!locked && <div className="note-actions"><button className="secondary" disabled={saving !== null} onClick={() => void save("save_draft")}>{saving === "save_draft" ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "حفظ المسودة الخاصة" : "Save private draft")}</button><button className="primary" disabled={saving !== null || !assessmentText.trim() || !planText.trim()} onClick={() => void save("finalize")}>{saving === "finalize" ? (ar ? "جارٍ الإنهاء…" : "Finalizing…") : (ar ? "إنهاء الزيارة" : "Finalize encounter")}</button></div>}
         </div>
       </section>
 
-      <aside className="encounter-audit"><h2>Record status</h2><dl><div><dt>Appointment</dt><dd>{appointment.id}</dd></div><div><dt>Note state</dt><dd>{noteStatus}</dd></div><div><dt>Note version</dt><dd>{version || "Not saved"}</dd></div><div><dt>Visit mode</dt><dd>{appointment.mode.replaceAll("_", " ")}</dd></div></dl><h2>Security controls</h2><ol><li><i/><div><b>Provider ownership enforced</b><small>Server-side for every read and write</small></div></li><li><i/><div><b>Concurrent edits protected</b><small>Version checked before saving</small></div></li><li><i/><div><b>Finalization recorded</b><small>Audit entry and generic patient notification</small></div></li></ol><p>Clinical content is excluded from notification text and general audit metadata.</p></aside>
+      <aside className="encounter-audit"><h2>{ar ? "حالة السجل" : "Record status"}</h2><dl><div><dt>{ar ? "الموعد" : "Appointment"}</dt><dd>{appointment.id}</dd></div><div><dt>{ar ? "حالة الملاحظة" : "Note state"}</dt><dd>{noteStatus}</dd></div><div><dt>{ar ? "إصدار الملاحظة" : "Note version"}</dt><dd>{version || (ar ? "غير محفوظ" : "Not saved")}</dd></div><div><dt>{ar ? "نمط الزيارة" : "Visit mode"}</dt><dd>{appointment.mode.replaceAll("_", " ")}</dd></div></dl><h2>{ar ? "ضوابط الأمان" : "Security controls"}</h2><ol><li><i/><div><b>{ar ? "فرض ملكية مقدم الرعاية" : "Provider ownership enforced"}</b><small>{ar ? "على الخادم لكل قراءة وكتابة" : "Server-side for every read and write"}</small></div></li><li><i/><div><b>{ar ? "حماية التعديلات المتزامنة" : "Concurrent edits protected"}</b><small>{ar ? "يتم فحص الإصدار قبل الحفظ" : "Version checked before saving"}</small></div></li><li><i/><div><b>{ar ? "تسجيل الإنهاء" : "Finalization recorded"}</b><small>{ar ? "قيد تدقيق وإشعار عام للمريض" : "Audit entry and generic patient notification"}</small></div></li></ol><p>{ar ? "يُستبعد المحتوى السريري من نص الإشعارات وبيانات التدقيق العامة." : "Clinical content is excluded from notification text and general audit metadata."}</p></aside>
     </>}
   </main>;
 }

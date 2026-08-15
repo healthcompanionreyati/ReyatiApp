@@ -542,16 +542,18 @@ test("ships durable user-owned support cases with a role-gated operations queue"
 });
 
 test("replaces simulated OTP authentication with the dispatch-owned ChatGPT identity", async () => {
-  const [page, auth, identityRoute] = await Promise.all([
+  const [page, experience, auth, identityRoute] = await Promise.all([
     readFile(new URL("../app/auth/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/AuthExperience.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/chatgpt-auth.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/me/route.ts", import.meta.url), "utf8"),
   ]);
+  const authUi = `${page}\n${experience}`;
   assert.match(page, /getChatGPTUser/);
   assert.match(page, /chatGPTSignInPath\("\/auth"\)/);
   assert.match(page, /chatGPTSignOutPath\("\/"\)/);
-  assert.match(page, /Signing in identifies you; it does not grant provider/);
-  assert.match(page, /Reyati never asks for a password, SMS code, or payment credential/);
+  assert.match(authUi, /Signing in identifies you; it does not grant provider/);
+  assert.match(authUi, /Reyati never asks for a password, SMS code, or payment credential/);
   assert.match(auth, /oai-authenticated-user-id/);
   assert.match(auth, /safeRelativeReturnPath/);
   assert.match(identityRoute, /getOrCreateCurrentUser/);
@@ -749,7 +751,7 @@ test("uses explicit shared navigation mappings and accessible dialog behavior", 
   const [dock, accessibility, authPage, authStyles] = await Promise.all([
     readFile(new URL("../app/components/MobileDock.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/AccessibilitySync.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/auth/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/AuthExperience.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/auth.css", import.meta.url), "utf8"),
   ]);
 

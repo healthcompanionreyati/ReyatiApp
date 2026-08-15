@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 
 type Settings = {
   contact: { email: string; status: string; independentlyVerified: boolean } | null;
@@ -29,7 +30,7 @@ async function verifyEmail(action: "request" | "confirm", token?: string) {
 
 export default function CommunicationSettingsPage() {
   const [data, setData] = useState<Settings | null>(null);
-  const [locale, setLocale] = useState<"en" | "ar">("en");
+  const [locale, setLocale] = useReyatiLocale();
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -50,7 +51,7 @@ export default function CommunicationSettingsPage() {
     }).catch((caught) => { if (active) setError(caught instanceof Error ? caught.message : "Communication settings are unavailable"); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [setLocale]);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true); setError(""); setNotice("");

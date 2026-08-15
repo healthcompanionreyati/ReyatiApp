@@ -189,12 +189,16 @@ test("Arabic and RTL preferences persist across critical journeys", async () => 
   assert.match(rtl, /main\[dir="rtl"\] \.provider-sidebar/);
   assert.match(rtl, /margin-right:250px/);
   assert.match(accessibility, /arabicRouteTitles/);
-  for (const page of ["app/page.tsx", "app/providers/page.tsx", "app/appointments/page.tsx", "app/wallet/page.tsx", "app/documents/page.tsx", "app/family/page.tsx", "app/payments/page.tsx", "app/support/page.tsx", "app/notifications/page.tsx", "app/provider/page.tsx", "app/provider/documents/page.tsx"]) {
+  for (const page of ["app/page.tsx", "app/providers/page.tsx", "app/appointments/page.tsx", "app/wallet/page.tsx", "app/documents/page.tsx", "app/family/page.tsx", "app/payments/page.tsx", "app/support/page.tsx", "app/notifications/page.tsx", "app/settings/communications/page.tsx", "app/provider/page.tsx", "app/provider/documents/page.tsx", "app/provider/encounter/page.tsx"]) {
     const contents = await source(page);
     assert.match(contents, /useReyatiLocale/);
     assert.match(contents, /dir=\{ar \? "rtl" : "ltr"\}|dir=\{ar\?"rtl":"ltr"\}/);
     assert.match(contents, /العربية/);
   }
+  const authExperience = await source("app/auth/AuthExperience.tsx");
+  assert.match(authExperience, /useReyatiLocale/);
+  assert.match(authExperience, /dir=\{ar \? "rtl" : "ltr"\}/);
+  assert.match(authExperience, /تسجيل الدخول باستخدام ChatGPT/);
 });
 
 test("real workflow events record suppressed email intents without calling delivery", async () => {
