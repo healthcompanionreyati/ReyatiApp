@@ -17,6 +17,7 @@ export const foundationFlags = {
   pilotAccessGrant: false,
   pilotParticipantLifecycle: false,
   realPilotFeedbackCollection: false,
+  pilotLaunchRuntime: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

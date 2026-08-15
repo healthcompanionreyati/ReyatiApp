@@ -591,6 +591,15 @@ for (const [gateId, href] of [["pilot_enrollment", "/admin/pilot-enrollment"], [
 }
 assert.equal(integratedReadiness.data.pilotReadiness.gates.find((item) => item.id === "pilot_measurement").status, "blocked");
 
+await request("/api/admin/pilot-launch", { identity: identities.patient, status: 403 });
+const launchScope = await request("/api/admin/pilot-scope", { identity: identities.admin });
+const launchPlan = launchScope.data.plans.find((item) => item.id === pilotPlan.id);
+const launchPackage = await request("/api/admin/pilot-launch", { identity: identities.admin, method: "POST", body: { operation: "save_package", planId: pilotPlan.id, packageVersion: `UAT-${runId}`, activationWindowStart: new Date(launchPlan.plannedStartAt).toISOString(), activationWindowEnd: new Date(launchPlan.plannedEndAt).toISOString(), primaryOwnerUserId: adminRole.userId, backupOwnerUserId: reviewerRole.userId, supportReference: `UAT-LAUNCH-${runId}`, rollbackTargetMinutes: 15, participantContactTargetHours: 4 } });
+assert.ok(launchPackage.data.blockedGateCount > 0); assert.equal(launchPackage.data.activationEnabled, false);
+await request("/api/admin/pilot-launch", { identity: identities.admin, method: "POST", status: 400, body: { operation: "transition_package", packageId: launchPackage.data.id, version: launchPackage.data.version, action: "submit", note: "Submission must fail while any current or captured readiness dependency remains blocked." } });
+const launchCentre = await request("/api/admin/pilot-launch", { identity: identities.admin });
+assert.equal(launchCentre.data.activationEnabled, false); assert.ok(launchCentre.data.plans.find((item) => item.id === pilotPlan.id).packages.some((item) => item.id === launchPackage.data.id));
+
 await request("/api/admin/incidents", { identity: identities.patient, status: 403 });
 const declaredIncident = await request("/api/admin/incidents", {
   identity: identities.admin,

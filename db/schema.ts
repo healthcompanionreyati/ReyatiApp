@@ -439,6 +439,57 @@ export const controlledPilotPlanEvents = sqliteTable("controlled_pilot_plan_even
   previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_controlled_pilot_plan_events_plan_created").on(table.planId, table.createdAt)]);
 
+export const pilotLaunchPackages = sqliteTable("pilot_launch_packages", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
+  packageVersion: text("package_version").notNull(),
+  activationWindowStart: integer("activation_window_start", { mode: "timestamp_ms" }).notNull(),
+  activationWindowEnd: integer("activation_window_end", { mode: "timestamp_ms" }).notNull(),
+  primaryOwnerUserId: text("primary_owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  backupOwnerUserId: text("backup_owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  supportReference: text("support_reference").notNull(),
+  rollbackTargetMinutes: integer("rollback_target_minutes").notNull(),
+  participantContactTargetHours: integer("participant_contact_target_hours").notNull(),
+  readinessSnapshotJson: text("readiness_snapshot_json").notNull(),
+  blockedGateCount: integer("blocked_gate_count").notNull(),
+  totalGateCount: integer("total_gate_count").notNull(),
+  status: text("status").notNull().default("draft"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_launch_packages_plan_package_version").on(table.planId, table.packageVersion),
+  index("idx_pilot_launch_packages_plan_status").on(table.planId, table.status),
+  index("idx_pilot_launch_packages_status_window").on(table.status, table.activationWindowStart, table.activationWindowEnd),
+]);
+
+export const pilotLaunchPackageEvents = sqliteTable("pilot_launch_package_events", {
+  id: text("id").primaryKey(), packageId: text("package_id").notNull().references(() => pilotLaunchPackages.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_launch_package_events_package_created").on(table.packageId, table.createdAt)]);
+
+export const pilotRollbackDrills = sqliteTable("pilot_rollback_drills", {
+  id: text("id").primaryKey(), packageId: text("package_id").notNull().references(() => pilotLaunchPackages.id, { onDelete: "restrict" }),
+  scenario: text("scenario").notNull(), syntheticReference: text("synthetic_reference").notNull(),
+  containmentMinutes: integer("containment_minutes").notNull(), contactMinutes: integer("contact_minutes").notNull(), openActionCount: integer("open_action_count").notNull(),
+  result: text("result").notNull(), status: text("status").notNull().default("pending_review"),
+  runByUserId: text("run_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }), reviewNote: text("review_note"), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_rollback_drills_package_reference").on(table.packageId, table.syntheticReference),
+  index("idx_pilot_rollback_drills_package_status_created").on(table.packageId, table.status, table.createdAt),
+]);
+
+export const pilotRollbackDrillEvents = sqliteTable("pilot_rollback_drill_events", {
+  id: text("id").primaryKey(), drillId: text("drill_id").notNull().references(() => pilotRollbackDrills.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(),
+  previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_rollback_drill_events_drill_created").on(table.drillId, table.createdAt)]);
+
 export const controlledPilotCohortMembers = sqliteTable("controlled_pilot_cohort_members", {
   id: text("id").primaryKey(),
   planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
