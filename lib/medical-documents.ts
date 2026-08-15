@@ -1,10 +1,14 @@
 import { and, desc, eq, gt, inArray, lt, ne } from "drizzle-orm";
 import { getDb } from "@/db";
-import { appointments, auditEvents, consents, documentRecords, documentShares, organizations, patientProfiles, providerProfiles, users } from "@/db/schema";
+import { appointments, auditEvents, consents, documentRecords, documentShares, documentUploadSessions, organizations, patientProfiles, providerProfiles, users } from "@/db/schema";
 import { AuthorizationDeniedError, requireActiveProvider } from "@/lib/authorization";
+import { assertExpectedDocumentVersion, publicUploadSession, transitionDocumentUpload } from "@/lib/document-lifecycle";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 const SHARE_PURPOSES = ["continuity_of_care", "follow_up", "second_opinion"] as const;
+const DOCUMENT_CATEGORIES = ["prescription", "laboratory_report", "radiology_report", "discharge_summary", "referral_letter", "vaccination_record", "medical_certificate", "insurance_card", "other"] as const;
+const ACCEPTED_CONTENT_TYPES = ["application/pdf", "image/jpeg", "image/png"] as const;
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_SHARE_DAYS = 30;
 
 export class MedicalDocumentError extends Error {
@@ -23,6 +27,21 @@ function sharePurpose(value: unknown) {
 
 function shareDays(value: unknown) {
   if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > MAX_SHARE_DAYS) throw new MedicalDocumentError("invalid_request", 400, "expiryDays must be between 1 and 30");
+  return value;
+}
+
+function uploadContentType(value: unknown) {
+  if (typeof value !== "string" || !ACCEPTED_CONTENT_TYPES.includes(value as typeof ACCEPTED_CONTENT_TYPES[number])) throw new MedicalDocumentError("unsupported_file_type", 400, "Only PDF, JPEG, and PNG documents are accepted");
+  return value;
+}
+
+function uploadSize(value: unknown) {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1 || value > MAX_FILE_BYTES) throw new MedicalDocumentError("invalid_file_size", 400, "Document size must be between 1 byte and 10 MB");
+  return value;
+}
+
+function documentCategory(value: unknown) {
+  if (typeof value !== "string" || !DOCUMENT_CATEGORIES.includes(value as typeof DOCUMENT_CATEGORIES[number])) throw new MedicalDocumentError("invalid_category", 400, "Document category is invalid");
   return value;
 }
 
@@ -74,15 +93,42 @@ export async function getPatientDocumentWorkspace(userId: string) {
   ]);
   const eligibleProviders = [...new Map(providerRows.map((provider) => [provider.id, provider])).values()];
   await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: "documents.workspace_viewed", resourceType: "document_collection", resourceId: userId, outcome: "success", metadataJson: JSON.stringify({ documentCount: documents.length, activeShareCount: shares.filter((share) => share.status === "active" && share.expiresAt > now).length }), createdAt: now });
-  return { documents, shares, eligibleProviders, readiness, limits: { maxFileBytes: 10 * 1024 * 1024, maxPages: 25, maxShareDays: MAX_SHARE_DAYS, acceptedTypes: ["application/pdf", "image/jpeg", "image/png"] } };
+  return { documents, shares, eligibleProviders, readiness, limits: { maxFileBytes: MAX_FILE_BYTES, maxPages: 25, maxShareDays: MAX_SHARE_DAYS, acceptedTypes: ACCEPTED_CONTENT_TYPES } };
 }
 
-export async function requestDocumentUpload(userId: string) {
+export async function requestDocumentUpload(userId: string, body: Record<string, unknown>) {
+  const idempotencyKey = identifier(body.idempotencyKey, "idempotencyKey");
+  const expectedContentType = uploadContentType(body.contentType); const expectedSizeBytes = uploadSize(body.sizeBytes);
+  documentCategory(body.category);
   const readiness = await uploadReadiness();
   const db = await getDb(); const now = new Date();
   await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: "documents.upload_requested", resourceType: "document_upload", resourceId: "unavailable", outcome: readiness.uploadEnabled ? "success" : "blocked", metadataJson: null, createdAt: now });
   if (!readiness.uploadEnabled) throw new MedicalDocumentError("integration_required", 409, "Protected storage and malware scanning must be active before upload");
-  throw new MedicalDocumentError("integration_required", 409, "Upload intent activation requires the approved storage implementation");
+  const existing = await db.select({ id: documentUploadSessions.id, expectedContentType: documentUploadSessions.expectedContentType, expectedSizeBytes: documentUploadSessions.expectedSizeBytes, status: documentUploadSessions.status, expiresAt: documentUploadSessions.expiresAt, version: documentUploadSessions.version })
+    .from(documentUploadSessions).where(and(eq(documentUploadSessions.ownerUserId, userId), eq(documentUploadSessions.idempotencyKey, idempotencyKey))).limit(1);
+  if (existing[0]) {
+    if (existing[0].expectedContentType !== expectedContentType || existing[0].expectedSizeBytes !== expectedSizeBytes) throw new MedicalDocumentError("idempotency_conflict", 409, "Idempotency key was already used for different upload metadata");
+    return publicUploadSession(existing[0]);
+  }
+  const session = { id: crypto.randomUUID(), ownerUserId: userId, documentId: null, objectKey: `documents/${now.getUTCFullYear()}/${crypto.randomUUID()}`, expectedContentType, expectedSizeBytes, idempotencyKey, status: "created", expiresAt: new Date(now.valueOf() + 15 * 60 * 1000), cancelledAt: null, completedAt: null, version: 1, createdAt: now, updatedAt: now };
+  await db.insert(documentUploadSessions).values(session);
+  return publicUploadSession(session);
+}
+
+export async function cancelDocumentUpload(userId: string, body: Record<string, unknown>) {
+  const uploadSessionId = identifier(body.uploadSessionId, "uploadSessionId");
+  if (typeof body.expectedVersion !== "number") throw new MedicalDocumentError("invalid_request", 400, "expectedVersion is invalid");
+  const db = await getDb(); const now = new Date();
+  const row = await db.select({ id: documentUploadSessions.id, expectedContentType: documentUploadSessions.expectedContentType, expectedSizeBytes: documentUploadSessions.expectedSizeBytes, status: documentUploadSessions.status, expiresAt: documentUploadSessions.expiresAt, version: documentUploadSessions.version })
+    .from(documentUploadSessions).where(and(eq(documentUploadSessions.id, uploadSessionId), eq(documentUploadSessions.ownerUserId, userId))).limit(1);
+  if (!row[0]) throw new MedicalDocumentError("upload_unavailable", 404, "Upload session was not found");
+  try { assertExpectedDocumentVersion(row[0].version, body.expectedVersion); transitionDocumentUpload(row[0].status as "created" | "uploading", "cancelled"); }
+  catch { throw new MedicalDocumentError("upload_changed", 409, "Upload session cannot be cancelled from its current state"); }
+  const changed = await db.update(documentUploadSessions).set({ status: "cancelled", cancelledAt: now, version: row[0].version + 1, updatedAt: now })
+    .where(and(eq(documentUploadSessions.id, uploadSessionId), eq(documentUploadSessions.ownerUserId, userId), eq(documentUploadSessions.status, row[0].status), eq(documentUploadSessions.version, row[0].version))).returning({ id: documentUploadSessions.id });
+  if (!changed[0]) throw new MedicalDocumentError("upload_changed", 409, "Upload session changed before cancellation");
+  await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: null, action: "documents.upload_cancelled", resourceType: "document_upload", resourceId: uploadSessionId, outcome: "success", metadataJson: null, createdAt: now });
+  return { id: uploadSessionId, status: "cancelled", version: row[0].version + 1 };
 }
 
 export async function shareDocument(userId: string, body: Record<string, unknown>) {

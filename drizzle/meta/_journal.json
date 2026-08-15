@@ -148,6 +148,13 @@
       "when": 1786727693592,
       "tag": "0020_futuristic_obadiah_stane",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1786779146220,
+      "tag": "0021_purple_doomsday",
+      "breakpoints": true
     }
   ]
 }

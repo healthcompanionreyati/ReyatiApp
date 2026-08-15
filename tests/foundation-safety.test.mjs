@@ -104,6 +104,7 @@ test("medical documents remain metadata-only, consent-scoped, and upload-gated",
   const providerPage = await source("app/provider/documents/page.tsx");
   const hosting = await source(".openai/hosting.json");
   assert.match(schema, /sqliteTable\("document_shares"/);
+  for (const table of ["document_upload_sessions", "document_processing_events", "document_access_grants", "document_deletion_jobs"]) assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
   assert.match(service, /foundationFlags\.medicalDocumentUploads/);
   assert.match(hosting, /"r2": null/);
   assert.match(service, /10 \* 1024 \* 1024/);
@@ -119,6 +120,7 @@ test("medical documents remain metadata-only, consent-scoped, and upload-gated",
   assert.match(service, /contentAccessEnabled: false/);
   assert.doesNotMatch(service.match(/getProviderSharedDocuments[\s\S]*$/)?.[0] ?? "", /objectKey|checksumSha256/);
   assert.match(patientRoute, /enforceWriteRateLimit/);
+  assert.match(patientRoute, /body\.action === "cancel_upload"/);
   assert.match(providerRoute, /requireActiveProvider|getProviderSharedDocuments/);
   assert.match(patientPage, /Document uploads are not active yet/);
   assert.match(providerPage, /Document content is not available/);

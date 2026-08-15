@@ -1,6 +1,6 @@
 # ADR-003: Medical document foundation
 
-- Status: Accepted foundation; file handling inactive
+- Status: Accepted lifecycle foundation; file handling inactive
 - Date: 2026-08-14
 
 ## Decision
@@ -13,9 +13,11 @@ Provider workspaces expose only metadata for active grants. They never receive o
 
 ## State model
 
+- Upload session: `created` → `uploading` → `uploaded`, or `cancelled` / `expired` / `failed`.
 - Document processing: `upload_pending` → `scanning` → `ready`, or `quarantined` / `rejected`.
 - Malware scan: `pending` → `clean`, `infected`, or `failed`.
 - Retention: `active` → `deletion_pending` → `permanently_deleted`.
+- Deletion job: `pending` → `processing` → `completed`, with bounded `retrying`, `failed`, and legal-hold `blocked` states.
 - Share: `active` → `revoked` or `expired`.
 
 Only documents that are patient-owned, `ready`, `clean`, and `active` may be shared. Share revocation uses optimistic versioning.
@@ -26,4 +28,4 @@ Activation requires an approved R2 binding, a malware-scanning provider, private
 
 ## Consequences
 
-The interface can truthfully demonstrate document ownership and access-control design without pretending that files are stored. This adds schema and consent behavior now while avoiding an unsafe temporary upload path. A later expand-and-migrate change can add upload intents and storage events without weakening the current boundary.
+The interface can truthfully demonstrate document ownership and access-control design without pretending that files are stored. Expand-only upload-session, processing-event, access-grant, and deletion-job records now define idempotency, replay protection, optimistic concurrency, short-lived access, recovery, and legal-hold boundaries. The patient API has a dormant upload-intent and cancellation contract, but the compiled capability gate, missing R2 binding, and missing scanner configuration prevent session creation in production. Object keys are never returned by the public session shape. A later storage-and-scanner package can use these records without weakening the current boundary.

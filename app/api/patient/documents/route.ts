@@ -1,6 +1,6 @@
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
-import { MedicalDocumentError, getPatientDocumentWorkspace, requestDocumentUpload, revokeDocumentShare, shareDocument } from "@/lib/medical-documents";
+import { MedicalDocumentError, cancelDocumentUpload, getPatientDocumentWorkspace, requestDocumentUpload, revokeDocumentShare, shareDocument } from "@/lib/medical-documents";
 import { reportOperationalError } from "@/lib/observability";
 import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 
@@ -11,7 +11,8 @@ export async function GET() { return handle(async (userId) => getPatientDocument
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({})) as Record<string, unknown>;
   return handle(async (userId) => {
-    if (body.action === "request_upload") return requestDocumentUpload(userId);
+    if (body.action === "request_upload") return requestDocumentUpload(userId, body);
+    if (body.action === "cancel_upload") return cancelDocumentUpload(userId, body);
     if (body.action === "share") return shareDocument(userId, body);
     if (body.action === "revoke_share") return revokeDocumentShare(userId, body);
     throw new MedicalDocumentError("invalid_request", 400, "action is invalid");

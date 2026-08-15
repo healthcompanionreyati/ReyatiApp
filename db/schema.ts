@@ -340,6 +340,73 @@ export const documentShares = sqliteTable("document_shares", {
   index("idx_document_shares_document_status").on(table.documentId, table.status),
 ]);
 
+export const documentUploadSessions = sqliteTable("document_upload_sessions", {
+  id: text("id").primaryKey(),
+  ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  documentId: text("document_id").references(() => documentRecords.id, { onDelete: "restrict" }),
+  objectKey: text("object_key").notNull(),
+  expectedContentType: text("expected_content_type").notNull(),
+  expectedSizeBytes: integer("expected_size_bytes").notNull(),
+  idempotencyKey: text("idempotency_key").notNull(),
+  status: text("status").notNull().default("created"),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  cancelledAt: integer("cancelled_at", { mode: "timestamp_ms" }),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_document_upload_sessions_object_key").on(table.objectKey),
+  uniqueIndex("idx_document_upload_sessions_owner_idempotency").on(table.ownerUserId, table.idempotencyKey),
+  index("idx_document_upload_sessions_owner_status").on(table.ownerUserId, table.status, table.expiresAt),
+]);
+
+export const documentProcessingEvents = sqliteTable("document_processing_events", {
+  id: text("id").primaryKey(),
+  documentId: text("document_id").notNull().references(() => documentRecords.id, { onDelete: "restrict" }),
+  eventType: text("event_type").notNull(),
+  providerReference: text("provider_reference"),
+  reasonCode: text("reason_code"),
+  dedupeKey: text("dedupe_key").notNull(),
+  occurredAt: integer("occurred_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_document_processing_events_dedupe").on(table.dedupeKey),
+  index("idx_document_processing_events_document_occurred").on(table.documentId, table.occurredAt),
+]);
+
+export const documentAccessGrants = sqliteTable("document_access_grants", {
+  id: text("id").primaryKey(),
+  documentId: text("document_id").notNull().references(() => documentRecords.id, { onDelete: "restrict" }),
+  shareId: text("share_id").references(() => documentShares.id, { onDelete: "restrict" }),
+  requesterUserId: text("requester_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  tokenHash: text("token_hash").notNull(),
+  purpose: text("purpose").notNull(),
+  status: text("status").notNull().default("active"),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  consumedAt: integer("consumed_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_document_access_grants_token_hash").on(table.tokenHash),
+  index("idx_document_access_grants_requester_status").on(table.requesterUserId, table.status, table.expiresAt),
+  index("idx_document_access_grants_document_status").on(table.documentId, table.status, table.expiresAt),
+]);
+
+export const documentDeletionJobs = sqliteTable("document_deletion_jobs", {
+  id: text("id").primaryKey(),
+  documentId: text("document_id").notNull().references(() => documentRecords.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("pending"),
+  legalHold: integer("legal_hold", { mode: "boolean" }).notNull().default(false),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  leaseExpiresAt: integer("lease_expires_at", { mode: "timestamp_ms" }),
+  lastErrorCode: text("last_error_code"),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_document_deletion_jobs_document").on(table.documentId),
+  index("idx_document_deletion_jobs_status_lease").on(table.status, table.leaseExpiresAt),
+]);
+
 export const auditEvents = sqliteTable("audit_events", {
   id: text("id").primaryKey(),
   actorUserId: text("actor_user_id").references(() => users.id, { onDelete: "restrict" }),

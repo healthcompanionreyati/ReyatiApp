@@ -57,7 +57,7 @@ await request("/api/provider/appointments", { identity: identities.patient, stat
 const documentWorkspace = await request("/api/patient/documents", { identity: identities.patient });
 assert.equal(documentWorkspace.data.readiness.uploadEnabled, false, "Medical document upload must remain gated");
 assert.deepEqual(documentWorkspace.data.documents, []);
-await request("/api/patient/documents", { identity: identities.patient, method: "POST", body: { action: "request_upload" }, status: 409 });
+await request("/api/patient/documents", { identity: identities.patient, method: "POST", body: { action: "request_upload", idempotencyKey: "pilot-upload-1", contentType: "application/pdf", sizeBytes: 1024, category: "laboratory_report" }, status: 409 });
 await request("/api/provider/documents", { identity: identities.provider, status: 403 });
 
 const initialCommunications = await request("/api/account/communications", { identity: identities.patient });
