@@ -1,0 +1,37 @@
+.orgops-operational {
+  margin-block-end: 24px;
+  border-color: #e2c98f;
+}
+
+.orgops-operational-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  padding: 20px 24px 24px;
+}
+
+.orgops-operational-grid article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #dde7e5;
+  border-radius: 12px;
+  background: #f8fbfa;
+}
+
+.orgops-operational-grid article div { display: grid; gap: 5px; }
+.orgops-operational-grid article small { color: #657f81; line-height: 1.45; }
+.orgops-operational-grid button { border: 1px solid #176e70; border-radius: 8px; background: white; color: #176e70; padding: 9px 12px; font-weight: 800; cursor: pointer; }
+.orgops-operational-grid .danger-action { border-color: #a94336; color: #8e382f; }
+.orgops-org-head i.suspended { background: #fde9e5; color: #8e382f; }
+.orgops-impact { display: grid; gap: 7px; padding: 14px; border: 1px solid #ead7ad; border-radius: 10px; background: #fff9eb; }
+.orgops-impact b { color: #684d1c; line-height: 1.45; }
+.orgops-impact span { color: #705f3f; font-size: 12px; line-height: 1.5; }
+.orgops-operational-modal label small { color: #657f81; font-weight: 500; text-align: end; }
+
+@media (max-width: 640px) {
+  .orgops-operational-grid { grid-template-columns: 1fr; padding: 16px; }
+  .orgops-operational-grid article { align-items: flex-start; flex-direction: column; }
+}

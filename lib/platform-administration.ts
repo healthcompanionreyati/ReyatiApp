@@ -135,3 +135,25 @@ export async function createPlatformFacility(userId: string, body: Record<string
   ]);
   return { facilityId };
 }
+
+export async function setOrganizationOperationalStatus(userId: string, body: Record<string, unknown>) {
+  await requirePlatformRole(userId, ["platform_admin"]);
+  const organizationId = valueText(body.organizationId, "organizationId");
+  const action = valueText(body.operationalAction, "operationalAction", 24);
+  const reason = valueText(body.reason, "reason", 500);
+  if (reason.length < 10) throw new PlatformAdministrationError("reason must contain at least 10 characters");
+  if (!Number.isSafeInteger(body.expectedVersion) || Number(body.expectedVersion) < 1) throw new PlatformAdministrationError("expectedVersion is invalid");
+  if (!["suspend", "reactivate"].includes(action)) throw new PlatformAdministrationError("operationalAction is invalid");
+  const expectedVersion = Number(body.expectedVersion); const db = await getDb();
+  const current = await db.select({ status: organizations.status, verificationVersion: organizations.verificationVersion }).from(organizations).where(eq(organizations.id, organizationId)).limit(1);
+  if (!current[0]) throw new PlatformAdministrationError("Organization was not found");
+  const previousStatus = action === "suspend" ? "active" : "suspended"; const nextStatus = action === "suspend" ? "suspended" : "active";
+  if (current[0].status !== previousStatus || current[0].verificationVersion !== expectedVersion) throw new PlatformAdministrationError("Organization status changed; refresh before trying again");
+  const now = new Date();
+  const changed = await db.update(organizations).set({ status: nextStatus, verificationVersion: expectedVersion + 1, updatedAt: now }).where(and(
+    eq(organizations.id, organizationId), eq(organizations.status, previousStatus), eq(organizations.verificationVersion, expectedVersion),
+  )).returning({ id: organizations.id });
+  if (!changed[0]) throw new PlatformAdministrationError("Organization status changed; refresh before trying again");
+  await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId, action: `organization.operational_${nextStatus}`, resourceType: "organization", resourceId: organizationId, outcome: "success", metadataJson: JSON.stringify({ previousStatus, nextStatus, reason }), createdAt: now });
+  return { organizationId, status: nextStatus, verificationVersion: expectedVersion + 1 };
+}

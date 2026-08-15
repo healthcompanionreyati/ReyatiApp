@@ -5,6 +5,7 @@ import "./appointments-live.css";
 import "./admin.css";
 import "./admin-verification.css";
 import "./admin-organizations.css";
+import "./admin-organization-safety.css";
 import "./admin-access.css";
 import "./admin-finance.css";
 import "./admin-cases.css";

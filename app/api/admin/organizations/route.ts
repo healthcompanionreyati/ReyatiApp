@@ -3,7 +3,7 @@ import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import {
   createPlatformFacility, createPlatformOrganization, getPlatformOrganizations,
-  PlatformAdministrationError, reviewPlatformOrganization,
+  PlatformAdministrationError, reviewPlatformOrganization, setOrganizationOperationalStatus,
 } from "@/lib/platform-administration";
 import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 
@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     if (body.action === "create_organization") return createPlatformOrganization(userId, body);
     if (body.action === "review_organization") return reviewPlatformOrganization(userId, body);
     if (body.action === "create_facility") return createPlatformFacility(userId, body);
+    if (body.action === "set_operational_status") return setOrganizationOperationalStatus(userId, body);
     throw new PlatformAdministrationError("action is invalid");
   }, "admin.organizations");
 }

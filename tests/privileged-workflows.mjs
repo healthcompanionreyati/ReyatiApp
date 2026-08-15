@@ -270,6 +270,42 @@ await request("/api/organizations/members", {
 });
 await request("/api/provider/appointments", { identity: identities.provider });
 
+const pilotOrganizations = await request("/api/admin/organizations", { identity: identities.admin });
+const pilotOrganization = pilotOrganizations.data.organizations.find((organization) => organization.id === organizationId);
+assert.ok(pilotOrganization, "Pilot organization should be available to platform operations");
+const suspendedOrganization = await request("/api/admin/organizations", {
+  identity: identities.admin,
+  method: "POST",
+  body: {
+    action: "set_operational_status",
+    organizationId,
+    operationalAction: "suspend",
+    expectedVersion: pilotOrganization.verificationVersion,
+    reason: "UAT containment exercise with an approved rollback step",
+  },
+});
+assert.equal(suspendedOrganization.data.status, "suspended");
+await request("/api/provider/appointments", { identity: identities.provider, status: 403 });
+await request("/api/provider/catalog-management", {
+  identity: identities.provider,
+  method: "POST",
+  status: 403,
+  body: { action: "publish_service", serviceLocationId: service.data.id },
+});
+const reactivatedOrganization = await request("/api/admin/organizations", {
+  identity: identities.admin,
+  method: "POST",
+  body: {
+    action: "set_operational_status",
+    organizationId,
+    operationalAction: "reactivate",
+    expectedVersion: suspendedOrganization.data.verificationVersion,
+    reason: "UAT rollback completed after containment checks passed",
+  },
+});
+assert.equal(reactivatedOrganization.data.status, "active");
+await request("/api/provider/appointments", { identity: identities.provider });
+
 const audit = await request("/api/admin/audit?limit=100", { identity: identities.admin });
 assert.ok(audit.data.events.length >= 12, "Privileged workflow should produce auditable events");
 
