@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import ConfirmActionDialog from "@/app/components/ConfirmActionDialog";
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 
 export default function UnsavedChangesGuard() {
+  const [locale] = useReyatiLocale(); const ar = locale === "ar";
   const [pendingHref, setPendingHref] = useState("");
 
   useEffect(() => {
@@ -56,5 +58,5 @@ export default function UnsavedChangesGuard() {
     window.location.assign(pendingHref);
   };
 
-  return <ConfirmActionDialog open={Boolean(pendingHref)} title="Leave with unsent information?" description="You have started entering information in a form on this page." consequence="Anything not submitted will be discarded. Reyati has not saved this unfinished information." confirmLabel="Leave page" busyLabel="Leaving…" onCancel={() => setPendingHref("")} onConfirm={leave}/>;
+  return <ConfirmActionDialog locale={locale} open={Boolean(pendingHref)} title={ar ? "المغادرة مع معلومات غير مرسلة؟" : "Leave with unsent information?"} description={ar ? "لقد بدأت إدخال معلومات في نموذج بهذه الصفحة." : "You have started entering information in a form on this page."} consequence={ar ? "سيتم تجاهل أي شيء لم يُرسل. لم تحفظ رعايتي هذه المعلومات غير المكتملة." : "Anything not submitted will be discarded. Reyati has not saved this unfinished information."} confirmLabel={ar ? "مغادرة الصفحة" : "Leave page"} busyLabel={ar ? "جارٍ المغادرة…" : "Leaving…"} onCancel={() => setPendingHref("")} onConfirm={leave}/>;
 }

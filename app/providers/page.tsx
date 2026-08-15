@@ -1,6 +1,7 @@
 "use client";
 
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+import { reyatiDate, reyatiNumber } from "@/lib/reyati-i18n";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -69,6 +70,7 @@ export default function ProviderDiscovery() {
   const [bookingMessage, setBookingMessage] = useState("");
   const [subjectUserId, setSubjectUserId] = useState<string | null>(null);
   const ar = lang === "ar";
+  const slotLabel = (value: string) => reyatiDate(value, lang, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
   const loadCatalog = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -193,10 +195,10 @@ export default function ProviderDiscovery() {
         <a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a>
         <a href="/wallet">{ar ? "المحفظة الصحية" : "Health wallet"}</a>
       </nav>
-      <div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label="Notifications">●</a><span>MA</span></div>
+      <div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label={ar ? "الإشعارات" : "Notifications"}>●</a><span>MA</span></div>
     </header>
 
-    {subjectUserId && <div className="providers-delegated-note"><b>Booking with delegated consent.</b> This request will belong to the patient who granted appointment access. The patient, provider, and your account will be notified, and the action will be audited.</div>}
+    {subjectUserId && <div className="providers-delegated-note"><b>{ar ? "الحجز بموافقة مفوّضة." : "Booking with delegated consent."}</b> {ar ? "سينتمي هذا الطلب إلى المريض الذي منح صلاحية المواعيد. سيتم إخطار المريض ومقدم الرعاية وحسابك وتدقيق الإجراء." : "This request will belong to the patient who granted appointment access. The patient, provider, and your account will be notified, and the action will be audited."}</div>}
 
     <section className="provider-search-hero">
       <div>
@@ -220,7 +222,7 @@ export default function ProviderDiscovery() {
       </div>
       <div className="results-head">
         <div><h2>{loading ? (ar ? "جارٍ تحميل مقدمي الرعاية" : "Loading verified providers") : `${filtered.length} ${ar ? "مقدمي رعاية موثّقين" : "verified providers"}`}</h2><p>{ar ? "يتم التحقق من الترخيص والانتماء قبل النشر." : "Licence and affiliation are checked before publication."}</p></div>
-        <label>{ar ? "ترتيب" : "Sort"}<select value={sort} onChange={(event) => setSort(event.target.value)}><option>Recommended</option><option>Price</option></select></label>
+        <label>{ar ? "ترتيب" : "Sort"}<select value={sort} onChange={(event) => setSort(event.target.value)}><option value="Recommended">{ar ? "موصى به" : "Recommended"}</option><option value="Price">{ar ? "السعر" : "Price"}</option></select></label>
       </div>
 
       <div className="provider-results">
@@ -232,7 +234,7 @@ export default function ProviderDiscovery() {
             return <article className="provider-result" key={provider.id}>
               <div className={`provider-photo ${colorFor(provider.id)}`}>{initials(provider.name)}<span>✓</span></div>
               <div className="provider-info"><p>✓ {ar ? "مقدم رعاية موثّق" : "Verified provider"}</p><button className="provider-name" onClick={() => openProvider(provider)}>{provider.name}</button><h3>{provider.specialty}</h3><span>⌖ {service.facilityName ?? (ar ? "زيارة فيديو" : "Video consultation")}{service.area ? ` · ${service.area}` : ""}</span><div className="provider-tags">{provider.languages.map((language) => <i key={language}>{language}</i>)}{service.mode === "in_person" && <i>♿ {ar ? "تحقق من إمكانية الوصول" : "Accessibility details"}</i>}</div></div>
-              <aside><div><small>{ar ? "نوع الزيارة" : "Visit type"}</small><b>{service.mode === "video" ? (ar ? "فيديو" : "Video") : (ar ? "في العيادة" : "In person")}</b></div><div><strong>{service.feeQar} {ar ? "ر.ق" : "QAR"}</strong><small>{ar ? "السعر المنشور" : "published price"}</small></div><button onClick={() => openProvider(provider)}>{ar ? "عرض الملف والمواعيد" : "View profile & times"}</button></aside>
+              <aside><div><small>{ar ? "نوع الزيارة" : "Visit type"}</small><b>{service.mode === "video" ? (ar ? "فيديو" : "Video") : (ar ? "في العيادة" : "In person")}</b></div><div><strong>{reyatiNumber(service.feeQar, lang)} {ar ? "ر.ق" : "QAR"}</strong><small>{ar ? "السعر المنشور" : "published price"}</small></div><button onClick={() => openProvider(provider)}>{ar ? "عرض الملف والمواعيد" : "View profile & times"}</button></aside>
             </article>;
           })}
         </section>
@@ -242,14 +244,14 @@ export default function ProviderDiscovery() {
 
     {selected && <div className="profile-layer" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><aside className="provider-profile" aria-label={ar ? "ملف مقدم الرعاية" : "Provider profile"}>
       <button className="drawer-close" onClick={() => setSelected(null)} aria-label={ar ? "إغلاق" : "Close"}>×</button>
-      {booking === "confirmed" ? <div className="profile-confirmed"><span>✓</span><p>{ar ? "تم الحجز" : "BOOKING CONFIRMED"}</p><h2>{ar ? "تم تأكيد موعدك" : "Your appointment is confirmed"}</h2><b>{slot?.label} · {selected.name}</b><small>{ar ? "تم حفظ الموعد بأمان في حسابك." : subjectUserId ? "The appointment is securely saved to the patient account that granted access." : "The appointment is securely saved to your account."}</small><a href={subjectUserId ? `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/appointments"}>{ar ? "عرض مواعيدي" : subjectUserId ? "View delegated appointments" : "View my appointments"}</a></div> : <>
+      {booking === "confirmed" ? <div className="profile-confirmed"><span>✓</span><p>{ar ? "تم الحجز" : "BOOKING CONFIRMED"}</p><h2>{ar ? "تم تأكيد موعدك" : "Your appointment is confirmed"}</h2><b>{slot ? slotLabel(slot.scheduledStart) : ""} · {selected.name}</b><small>{ar ? (subjectUserId ? "تم حفظ الموعد بأمان في حساب المريض الذي منح الصلاحية." : "تم حفظ الموعد بأمان في حسابك.") : subjectUserId ? "The appointment is securely saved to the patient account that granted access." : "The appointment is securely saved to your account."}</small><a href={subjectUserId ? `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/appointments"}>{ar ? (subjectUserId ? "عرض المواعيد المفوّضة" : "عرض مواعيدي") : subjectUserId ? "View delegated appointments" : "View my appointments"}</a></div> : <>
         <div className="profile-head"><div className={`provider-photo large ${colorFor(selected.id)}`}>{initials(selected.name)}<span>✓</span></div><div><p>✓ {ar ? "مقدم رعاية موثّق" : "Verified provider"}</p><h2>{selected.name}</h2><span>{selected.specialty}</span></div></div>
         <div className="verification-strip"><span>♙</span><p><b>{ar ? "تم التحقق من الترخيص والانتماء" : "Licence and affiliation verified"}</b>{ar ? "تم نشر الملف من منشأة نشطة" : "Published by an active organization"}</p></div>
         <section className="profile-about"><h3>{ar ? "عن مقدم الرعاية" : "About"}</h3><p>{ar ? selected.bioAr || selected.bioEn || "لم تُضف نبذة بعد." : selected.bioEn || "The provider has not added a public biography yet."}</p><div><article><b>{selected.yearsExperience ?? "—"}</b><small>{ar ? "سنوات خبرة" : "Years experience"}</small></article><article><b>{selected.languages.join(" · ") || "—"}</b><small>{ar ? "اللغات" : "Languages"}</small></article><article><b>✓</b><small>{ar ? "هوية موثقة" : "Verified identity"}</small></article></div></section>
-        <section className="profile-location"><h3>{ar ? "الخدمة والموقع" : "Service & location"}</h3><select className="service-location-select" value={serviceId} onChange={(event) => setServiceId(event.target.value)} aria-label={ar ? "اختر الخدمة" : "Choose service"}>{selected.services.map((service) => <option value={service.id} key={service.id}>{service.mode === "video" ? (ar ? "زيارة فيديو" : "Video consultation") : service.facilityName} · {service.feeQar} QAR</option>)}</select>{activeService && <div><span>⌖</span><p><b>{activeService.facilityName ?? (ar ? "زيارة فيديو" : "Video consultation")}</b><small>{activeService.area ? `${activeService.area}, Doha · ` : ""}{activeService.slotDurationMinutes} {ar ? "دقيقة" : "minutes"}</small></p><strong>{activeService.feeQar} {ar ? "ر.ق" : "QAR"}<small>{ar ? "السعر المنشور" : "published price"}</small></strong></div>}</section>
-        <section className="profile-slots"><div><h3>{ar ? "اختر موعداً" : "Choose a time"}</h3><span>{ar ? "الأيام الـ ١٤ القادمة" : "Next 14 days"}</span></div><div>{slotsLoading ? <p className="slot-state">{ar ? "جارٍ تحميل المواعيد…" : "Loading availability…"}</p> : availabilityError ? <div className="slot-state error"><p>{ar ? "تعذر تحميل المواعيد. حاول مرة أخرى." : "Availability could not be loaded. Please try again."}</p><button type="button" onClick={() => setAvailabilityRefresh((value) => value + 1)}>{ar ? "حاول مرة أخرى" : "Try again"}</button></div> : slots.length ? slots.map((item) => <button className={slot?.scheduledStart === item.scheduledStart ? "active" : ""} key={`${item.serviceLocationId}-${item.scheduledStart}`} onClick={() => chooseSlot(item)}>{item.label}</button>) : <p className="slot-state">{ar ? "لا توجد مواعيد متاحة حالياً." : "No bookable times are currently available."}</p>}</div></section>
+        <section className="profile-location"><h3>{ar ? "الخدمة والموقع" : "Service & location"}</h3><select className="service-location-select" value={serviceId} onChange={(event) => setServiceId(event.target.value)} aria-label={ar ? "اختر الخدمة" : "Choose service"}>{selected.services.map((service) => <option value={service.id} key={service.id}>{service.mode === "video" ? (ar ? "زيارة فيديو" : "Video consultation") : service.facilityName} · {reyatiNumber(service.feeQar, lang)} {ar ? "ر.ق" : "QAR"}</option>)}</select>{activeService && <div><span>⌖</span><p><b>{activeService.facilityName ?? (ar ? "زيارة فيديو" : "Video consultation")}</b><small>{activeService.area ? `${activeService.area}, ${ar ? "الدوحة" : "Doha"} · ` : ""}{reyatiNumber(activeService.slotDurationMinutes, lang)} {ar ? "دقيقة" : "minutes"}</small></p><strong>{reyatiNumber(activeService.feeQar, lang)} {ar ? "ر.ق" : "QAR"}<small>{ar ? "السعر المنشور" : "published price"}</small></strong></div>}</section>
+        <section className="profile-slots"><div><h3>{ar ? "اختر موعداً" : "Choose a time"}</h3><span>{ar ? "الأيام الـ ١٤ القادمة" : "Next 14 days"}</span></div><div>{slotsLoading ? <p className="slot-state">{ar ? "جارٍ تحميل المواعيد…" : "Loading availability…"}</p> : availabilityError ? <div className="slot-state error"><p>{ar ? "تعذر تحميل المواعيد. حاول مرة أخرى." : "Availability could not be loaded. Please try again."}</p><button type="button" onClick={() => setAvailabilityRefresh((value) => value + 1)}>{ar ? "حاول مرة أخرى" : "Try again"}</button></div> : slots.length ? slots.map((item) => <button className={slot?.scheduledStart === item.scheduledStart ? "active" : ""} key={`${item.serviceLocationId}-${item.scheduledStart}`} onClick={() => chooseSlot(item)}>{slotLabel(item.scheduledStart)}</button>) : <p className="slot-state">{ar ? "لا توجد مواعيد متاحة حالياً." : "No bookable times are currently available."}</p>}</div></section>
         {booking === "error" && <p className="booking-error" role="alert">{bookingMessage === "The requested time is no longer available" ? (ar ? "هذا الموعد لم يعد متاحاً. اختر موعداً آخر." : "That time was just booked. Please choose another slot.") : (ar ? "تعذر تأكيد الحجز. يرجى المحاولة مرة أخرى." : "We couldn’t confirm the booking. Please try again.")}</p>}
-        <div className="profile-book"><div><small>{ar ? "الإجمالي" : "Total"}</small><b>{activeService?.feeQar ?? "—"} {ar ? "ر.ق" : "QAR"}</b></div><button disabled={!slot || booking === "submitting"} onClick={confirmBooking}>{booking === "submitting" ? (ar ? "جارٍ التأكيد…" : "Confirming…") : slot ? (ar ? "تأكيد الموعد" : "Confirm appointment") : (ar ? "اختر وقتاً للمتابعة" : "Select a time to continue")}</button></div>
+        <div className="profile-book"><div><small>{ar ? "الإجمالي" : "Total"}</small><b>{activeService ? reyatiNumber(activeService.feeQar, lang) : "—"} {ar ? "ر.ق" : "QAR"}</b></div><button disabled={!slot || booking === "submitting"} onClick={confirmBooking}>{booking === "submitting" ? (ar ? "جارٍ التأكيد…" : "Confirming…") : slot ? (ar ? "تأكيد الموعد" : "Confirm appointment") : (ar ? "اختر وقتاً للمتابعة" : "Select a time to continue")}</button></div>
       </>}
     </aside></div>}
   </main>;

@@ -11,6 +11,8 @@ main[dir="rtl"] .provider-nav-link em{margin-left:0;margin-right:auto}
 main[dir="rtl"] .drawer-close,main[dir="rtl"] .documents-dialog-close{right:auto;left:20px}
 main[dir="rtl"] .documents-hero:after{right:auto;left:-60px;transform:rotate(27deg)}
 main[dir="rtl"] input,main[dir="rtl"] textarea,main[dir="rtl"] select{text-align:right}
+main[dir="rtl"] input[type="email"],main[dir="rtl"] input[type="tel"],main[dir="rtl"] input[type="url"],main[dir="rtl"] input[dir="ltr"]{direction:ltr;text-align:left}
+main[dir="rtl"] [dir="ltr"]{font-family:Manrope,Arial,sans-serif;unicode-bidi:isolate}
 .documents-header-actions{display:flex;align-items:center;gap:14px}.documents-header-actions .lang{font-size:12px}
 @media(max-width:900px){main[dir="rtl"] .hero-inner{padding-inline:0}main[dir="rtl"] .provider-main{margin-right:210px}}
 @media(max-width:720px){main[dir="rtl"] .provider-main{margin:0}}
