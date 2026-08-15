@@ -494,6 +494,43 @@ export const pilotEnrollmentDocumentEvents = sqliteTable("pilot_enrollment_docum
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_pilot_enrollment_document_events_document_created").on(table.documentId, table.createdAt)]);
 
+export const pilotInvitationPolicies = sqliteTable("pilot_invitation_policies", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),
+  participantType: text("participant_type").notNull(),
+  enrollmentDocumentId: text("enrollment_document_id").notNull().references(() => pilotEnrollmentDocuments.id, { onDelete: "restrict" }),
+  policyVersion: text("policy_version").notNull(),
+  expiryHours: integer("expiry_hours").notNull(),
+  maxReissues: integer("max_reissues").notNull(),
+  identityBinding: text("identity_binding").notNull().default("account_email_and_user"),
+  tokenStorageMode: text("token_storage_mode").notNull().default("hash_only"),
+  singleUseRequired: integer("single_use_required", { mode: "boolean" }).notNull().default(true),
+  acceptanceLocaleRequired: integer("acceptance_locale_required", { mode: "boolean" }).notNull().default(true),
+  withdrawalEnabled: integer("withdrawal_enabled", { mode: "boolean" }).notNull().default(true),
+  status: text("status").notNull().default("draft"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_pilot_invitation_policy_plan_type_version").on(table.planId, table.participantType, table.policyVersion),
+  index("idx_pilot_invitation_policy_plan_type_status").on(table.planId, table.participantType, table.status),
+  index("idx_pilot_invitation_policy_document_status").on(table.enrollmentDocumentId, table.status),
+]);
+
+export const pilotInvitationPolicyEvents = sqliteTable("pilot_invitation_policy_events", {
+  id: text("id").primaryKey(),
+  policyId: text("policy_id").notNull().references(() => pilotInvitationPolicies.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_pilot_invitation_policy_events_policy_created").on(table.policyId, table.createdAt)]);
+
 export const pilotSuccessMetrics = sqliteTable("pilot_success_metrics", {
   id: text("id").primaryKey(),
   planId: text("plan_id").notNull().references(() => controlledPilotPlans.id, { onDelete: "restrict" }),

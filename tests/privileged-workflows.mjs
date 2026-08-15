@@ -512,6 +512,32 @@ for (const requirement of [
 const enrollmentPlan = enrollmentCentre.data.plans.find((item) => item.id === pilotPlan.id);
 assert.equal(enrollmentPlan.enrollmentEvidenceReady, true); assert.equal(enrollmentPlan.approvedRequirementCount, 2); assert.equal(enrollmentCentre.data.participantAcceptanceEnabled, false);
 
+await request("/api/admin/pilot-invitations", { identity: identities.patient, status: 403 });
+let invitationCentre = await request("/api/admin/pilot-invitations", { identity: identities.admin });
+for (const type of ["patient", "provider"]) {
+  let invitationPlan = invitationCentre.data.plans.find((item) => item.id === pilotPlan.id);
+  const documentType = type === "patient" ? "patient_consent" : "provider_agreement";
+  const approvedDocument = enrollmentPlan.documents.find((item) => item.documentType === documentType && item.status === "approved");
+  assert.ok(approvedDocument, `Approved ${documentType} must exist before invitation safeguards`);
+  let policy = invitationPlan.policies.find((item) => item.participantType === type && item.status === "approved") ?? invitationPlan.policies.find((item) => item.participantType === type && ["draft", "pending_review"].includes(item.status));
+  if (!policy) {
+    const saved = await request("/api/admin/pilot-invitations", { identity: identities.admin, method: "POST", body: { operation: "save", planId: pilotPlan.id, participantType: type, enrollmentDocumentId: approvedDocument.id, policyVersion: `UAT-${runId}`, expiryHours: 72, maxReissues: 1 } });
+    policy = { id: saved.data.id, status: saved.data.status, version: saved.data.version, preparedByUserId: adminRole.userId };
+    assert.equal(saved.data.invitationDeliveryEnabled, false);
+  }
+  if (policy.status === "draft") {
+    const submitted = await request("/api/admin/pilot-invitations", { identity: identities.admin, method: "POST", body: { operation: "transition", policyId: policy.id, version: policy.version, action: "submit", note: "Synthetic identity-bound safeguards submitted for independent UAT review." } });
+    policy = { ...policy, status: submitted.data.status, version: submitted.data.version };
+  }
+  if (policy.status === "pending_review") {
+    const approved = await request("/api/admin/pilot-invitations", { identity: identities.reviewer, method: "POST", body: { operation: "transition", policyId: policy.id, version: policy.version, action: "approve", note: "Independent reviewer approved the synthetic invitation safety contract only." } });
+    assert.equal(approved.data.participantAcceptanceEnabled, false); assert.equal(approved.data.pilotAccessGrantEnabled, false);
+  }
+  invitationCentre = await request("/api/admin/pilot-invitations", { identity: identities.admin });
+}
+const invitationPlan = invitationCentre.data.plans.find((item) => item.id === pilotPlan.id);
+assert.equal(invitationPlan.invitationSafeguardsReady, true); assert.equal(invitationPlan.approvedSafeguardCount, 2);
+
 await request("/api/admin/pilot-learning", { identity: identities.patient, status: 403 });
 let learningCentre = await request("/api/admin/pilot-learning", { identity: identities.admin });
 let learningPlan = learningCentre.data.plans.find((item) => item.id === pilotPlan.id);

@@ -14,6 +14,7 @@ export const foundationFlags = {
   externalObservabilityExport: false,
   pilotInvitationDelivery: false,
   pilotParticipantAcceptance: false,
+  pilotAccessGrant: false,
   realPilotFeedbackCollection: false,
 } as const;
 

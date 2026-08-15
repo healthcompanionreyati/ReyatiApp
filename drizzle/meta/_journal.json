@@ -267,6 +267,13 @@
       "when": 1786824695865,
       "tag": "0037_oval_mercury",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "6",
+      "when": 1786828138359,
+      "tag": "0038_lyrical_quicksilver",
+      "breakpoints": true
     }
   ]
 }
