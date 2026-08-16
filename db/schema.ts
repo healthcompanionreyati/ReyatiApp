@@ -968,6 +968,73 @@ export const appointments = sqliteTable("appointments", {
   index("idx_appointments_facility_start").on(table.facilityId, table.scheduledStart),
 ]);
 
+export const virtualCareSessions = sqliteTable("virtual_care_sessions", {
+  id: text("id").primaryKey(),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  status: text("status").notNull().default("scheduled"),
+  patientReadinessStatus: text("patient_readiness_status").notNull().default("not_started"),
+  patientReadyAt: integer("patient_ready_at", { mode: "timestamp_ms" }),
+  patientEnteredAt: integer("patient_entered_at", { mode: "timestamp_ms" }),
+  providerReadyAt: integer("provider_ready_at", { mode: "timestamp_ms" }),
+  fallbackStatus: text("fallback_status").notNull().default("not_required"),
+  fallbackReasonCode: text("fallback_reason_code"),
+  mediaSessionCreated: integer("media_session_created", { mode: "boolean" }).notNull().default(false),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_virtual_care_sessions_appointment").on(table.appointmentId),
+  index("idx_virtual_care_sessions_status_updated").on(table.status, table.updatedAt),
+  index("idx_virtual_care_sessions_fallback_updated").on(table.fallbackStatus, table.updatedAt),
+]);
+
+export const virtualCareReadinessChecks = sqliteTable("virtual_care_readiness_checks", {
+  id: text("id").primaryKey(),
+  sessionId: text("session_id").notNull().references(() => virtualCareSessions.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  cameraReady: integer("camera_ready", { mode: "boolean" }).notNull(),
+  microphoneReady: integer("microphone_ready", { mode: "boolean" }).notNull(),
+  connectionReady: integer("connection_ready", { mode: "boolean" }).notNull(),
+  privateSpaceReady: integer("private_space_ready", { mode: "boolean" }).notNull(),
+  emergencyBoundaryAcknowledged: integer("emergency_boundary_acknowledged", { mode: "boolean" }).notNull(),
+  locale: text("locale").notNull(),
+  result: text("result").notNull(),
+  submittedAt: integer("submitted_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_virtual_care_readiness_session_submitted").on(table.sessionId, table.submittedAt),
+  index("idx_virtual_care_readiness_actor_submitted").on(table.actorUserId, table.submittedAt),
+]);
+
+export const virtualCareEvents = sqliteTable("virtual_care_events", {
+  id: text("id").primaryKey(),
+  sessionId: text("session_id").notNull().references(() => virtualCareSessions.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  reasonCode: text("reason_code"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_virtual_care_events_session_created").on(table.sessionId, table.createdAt),
+  index("idx_virtual_care_events_action_created").on(table.action, table.createdAt),
+]);
+
+export const virtualCareRehearsals = sqliteTable("virtual_care_rehearsals", {
+  id: text("id").primaryKey(),
+  rehearsalVersion: text("rehearsal_version").notNull(),
+  scenarioCount: integer("scenario_count").notNull(),
+  passedScenarios: integer("passed_scenarios").notNull(),
+  failedScenarios: integer("failed_scenarios").notNull(),
+  mediaSessionsCreated: integer("media_sessions_created").notNull(),
+  externalMessagesSent: integer("external_messages_sent").notNull(),
+  result: text("result").notNull(),
+  dataMode: text("data_mode").notNull().default("synthetic_only"),
+  executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_virtual_care_rehearsals_result_executed").on(table.result, table.executedAt),
+  index("idx_virtual_care_rehearsals_executor_executed").on(table.executedByUserId, table.executedAt),
+]);
+
 export const careContinuityCases = sqliteTable("care_continuity_cases", {
   id: text("id").primaryKey(),
   appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),

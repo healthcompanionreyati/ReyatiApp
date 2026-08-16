@@ -106,6 +106,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/reminder-activation-readiness"><span>◎</span>{ar ? "جاهزية تشغيل التذكير" : "Reminder activation readiness"}</a>
         <a className="admin-verification-link" href="/admin/dependent-care"><span>♧</span>{ar ? "حوكمة التابعين" : "Dependent care governance"}</a>
         <a className="admin-verification-link" href="/admin/dependent-transition"><span>↺</span>{ar ? "انتقال سن الرشد" : "Majority transition rehearsal"}</a>
+        <a className="admin-verification-link" href="/admin/virtual-care"><span>◉</span>{ar ? "حوكمة الرعاية الافتراضية" : "Virtual-care governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>

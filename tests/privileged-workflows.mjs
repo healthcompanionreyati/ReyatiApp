@@ -317,6 +317,11 @@ const service = await request("/api/provider/catalog-management", {
     acceptingNewPatients: true,
   },
 });
+const videoService = await request("/api/provider/catalog-management", {
+  identity: identities.provider,
+  method: "POST",
+  body: { action: "save_service", mode: "video", facilityId: null, feeQar: 220, slotDurationMinutes: 30, acceptingNewPatients: true },
+});
 await request("/api/provider/catalog-management", {
   identity: identities.provider,
   method: "POST",
@@ -331,6 +336,8 @@ await request("/api/provider/catalog-management", {
   method: "POST",
   body: { action: "publish_service", serviceLocationId: service.data.id },
 });
+await request("/api/provider/catalog-management", { identity: identities.provider, method: "POST", body: { action: "save_availability", serviceLocationId: videoService.data.id, windows: Array.from({ length: 7 }, (_, weekday) => ({ weekday, startMinute: 0, endMinute: 1440 })) } });
+await request("/api/provider/catalog-management", { identity: identities.provider, method: "POST", body: { action: "publish_service", serviceLocationId: videoService.data.id } });
 
 const now = new Date();
 const scheduledStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 2, 7, 0));
@@ -366,6 +373,21 @@ await request("/api/provider/appointments", {
   method: "PATCH",
   body: { action: "confirm", appointmentId: booking.appointment.id, version: booking.appointment.version },
 });
+const videoStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 3, 8, 0));
+const videoEnd = new Date(videoStart.valueOf() + 30 * 60 * 1000);
+const videoBooking = await request("/api/appointments", { identity: identities.patient, method: "POST", status: 201, headers: { "Idempotency-Key": `uat-video-${runId}` }, body: { providerId: profile.data.id, serviceLocationId: videoService.data.id, facilityId: null, scheduledStart: videoStart.toISOString(), scheduledEnd: videoEnd.toISOString(), mode: "video" } });
+await request("/api/provider/appointments", { identity: identities.provider, method: "PATCH", body: { action: "confirm", appointmentId: videoBooking.appointment.id, version: videoBooking.appointment.version } });
+let patientVirtualCare = await request("/api/virtual-care", { identity: identities.patient });
+assert.equal(patientVirtualCare.data.runtime.mediaRuntime, false); assert.ok(patientVirtualCare.data.appointments.some(item => item.appointmentId === videoBooking.appointment.id));
+const patientReadiness = await request("/api/virtual-care", { identity: identities.patient, method: "POST", body: { action: "submit_readiness", appointmentId: videoBooking.appointment.id, cameraReady: true, microphoneReady: true, connectionReady: true, privateSpaceReady: true, emergencyBoundaryAcknowledged: true, locale: "en" } });
+assert.equal(patientReadiness.data.readinessStatus, "ready"); assert.equal(patientReadiness.data.mediaJoinAvailable, false); assert.equal(patientReadiness.data.mediaRuntime, false);
+let providerVirtualCare = await request("/api/provider/virtual-care", { identity: identities.provider });
+let providerVideoVisit = providerVirtualCare.data.appointments.find(item => item.appointmentId === videoBooking.appointment.id); assert.equal(providerVideoVisit.patientReadinessStatus, "ready"); assert.equal(providerVideoVisit.mediaSessionCreated, false);
+const providerReady = await request("/api/provider/virtual-care", { identity: identities.provider, method: "POST", body: { action: "provider_ready", appointmentId: videoBooking.appointment.id, version: providerVideoVisit.version } }); assert.equal(providerReady.data.status, "provider_ready"); assert.equal(providerReady.data.mediaJoinAvailable, false);
+const fallback = await request("/api/provider/virtual-care", { identity: identities.provider, method: "POST", body: { action: "record_fallback", appointmentId: videoBooking.appointment.id, version: providerReady.data.version, reasonCode: "connectivity" } }); assert.equal(fallback.data.status, "fallback_required"); assert.equal(fallback.data.externalFallback, false);
+patientVirtualCare = await request("/api/virtual-care", { identity: identities.patient }); assert.equal(patientVirtualCare.data.appointments.find(item => item.appointmentId === videoBooking.appointment.id).fallbackStatus, "required");
+await request("/api/admin/virtual-care", { identity: identities.patient, status: 403 });
+const virtualRehearsal = await request("/api/admin/virtual-care", { identity: identities.admin, method: "POST", body: { action: "run_rehearsal" } }); assert.equal(virtualRehearsal.data.result, "pass"); assert.equal(virtualRehearsal.data.scenarioCount, 8); assert.equal(virtualRehearsal.data.mediaSessionsCreated, 0); assert.equal(virtualRehearsal.data.externalMessagesSent, 0); assert.equal(virtualRehearsal.data.mediaRuntime, false);
 const providerDocuments = await request("/api/provider/documents", { identity: identities.provider });
 assert.equal(providerDocuments.data.contentAccessEnabled, false, "Provider document bytes must remain disabled");
 assert.deepEqual(providerDocuments.data.documents, []);

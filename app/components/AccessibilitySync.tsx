@@ -3,23 +3,23 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
-  "/": "Home", "/navigator": "Care Navigator", "/providers": "Find care", "/appointments": "Appointments", "/wallet": "Health records", "/medication-reminders": "Medication reminders",
+  "/": "Home", "/navigator": "Care Navigator", "/providers": "Find care", "/appointments": "Appointments", "/virtual-care": "Virtual care", "/wallet": "Health records", "/medication-reminders": "Medication reminders",
   "/documents": "Medical documents", "/provider/documents": "Shared documents", "/provider/prescription-review": "Prescription review", "/provider/report-review": "Report review",
   "/payments": "Payments", "/family": "Family access", "/family/dependents": "Dependant and guardian lifecycle", "/support": "Support", "/notifications": "Notifications",
   "/auth": "Secure account", "/journeys": "Care journeys", "/provider": "Provider dashboard",
   "/provider/services": "Provider services", "/provider/settings": "Provider settings", "/provider/patients": "Provider patients",
-  "/provider/insights": "Provider insights", "/provider/encounter": "Encounter workspace", "/partner": "Partner workspace",
+  "/provider/insights": "Provider insights", "/provider/encounter": "Encounter workspace", "/provider/virtual-care": "Provider virtual care", "/partner": "Partner workspace",
   "/partner/program": "Partner programme", "/admin": "Operations overview", "/admin/access": "Platform access",
   "/admin/audit": "Audit ledger", "/admin/cases": "Support operations", "/admin/finance": "Finance operations",
-  "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification", "/admin/navigator-governance": "Care Navigator governance", "/admin/prescription-intelligence": "Prescription intelligence", "/admin/report-reader": "Medical Report Reader", "/admin/reminder-readiness": "Medication reminder readiness", "/admin/reminder-delivery-policy": "Medication reminder delivery policy", "/admin/reminder-activation-readiness": "Medication reminder activation readiness", "/admin/dependent-care": "Dependent care governance", "/admin/dependent-transition": "Age-of-majority transition rehearsal",
+  "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification", "/admin/virtual-care": "Virtual-care governance", "/admin/navigator-governance": "Care Navigator governance", "/admin/prescription-intelligence": "Prescription intelligence", "/admin/report-reader": "Medical Report Reader", "/admin/reminder-readiness": "Medication reminder readiness", "/admin/reminder-delivery-policy": "Medication reminder delivery policy", "/admin/reminder-activation-readiness": "Medication reminder activation readiness", "/admin/dependent-care": "Dependent care governance", "/admin/dependent-transition": "Age-of-majority transition rehearsal",
 };
 
 const arabicRouteTitles: Record<string, string> = {
-  "/": "الرئيسية", "/navigator": "موجّه الرعاية", "/providers": "ابحث عن رعاية", "/appointments": "المواعيد", "/wallet": "السجلات الصحية", "/medication-reminders": "تذكيرات الدواء",
+  "/": "الرئيسية", "/navigator": "موجّه الرعاية", "/providers": "ابحث عن رعاية", "/appointments": "المواعيد", "/virtual-care": "الرعاية الافتراضية", "/wallet": "السجلات الصحية", "/medication-reminders": "تذكيرات الدواء",
   "/documents": "المستندات الطبية", "/payments": "المدفوعات", "/family": "وصول العائلة", "/family/dependents": "دورة حياة التابع والوصي", "/support": "الدعم",
   "/notifications": "الإشعارات", "/auth": "الحساب الآمن", "/journeys": "رحلات الرعاية", "/provider": "لوحة مقدم الرعاية",
   "/provider/services": "خدمات مقدم الرعاية", "/provider/settings": "إعدادات مقدم الرعاية", "/provider/patients": "المرضى",
-  "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/provider/prescription-review": "مراجعة الوصفات", "/provider/report-review": "مراجعة التقارير", "/admin": "نظرة العمليات العامة", "/admin/navigator-governance": "حوكمة موجّه الرعاية", "/admin/prescription-intelligence": "ذكاء الوصفات", "/admin/report-reader": "قارئ التقارير الطبية", "/admin/reminder-readiness": "جاهزية تذكيرات الدواء", "/admin/reminder-delivery-policy": "سياسة إرسال تذكيرات الدواء", "/admin/reminder-activation-readiness": "جاهزية تشغيل تذكيرات الدواء", "/admin/dependent-care": "حوكمة رعاية التابعين", "/admin/dependent-transition": "بروفة انتقال سن الرشد",
+  "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/provider/virtual-care": "الرعاية الافتراضية لمقدم الرعاية", "/provider/prescription-review": "مراجعة الوصفات", "/provider/report-review": "مراجعة التقارير", "/admin": "نظرة العمليات العامة", "/admin/virtual-care": "حوكمة الرعاية الافتراضية", "/admin/navigator-governance": "حوكمة موجّه الرعاية", "/admin/prescription-intelligence": "ذكاء الوصفات", "/admin/report-reader": "قارئ التقارير الطبية", "/admin/reminder-readiness": "جاهزية تذكيرات الدواء", "/admin/reminder-delivery-policy": "سياسة إرسال تذكيرات الدواء", "/admin/reminder-activation-readiness": "جاهزية تشغيل تذكيرات الدواء", "/admin/dependent-care": "حوكمة رعاية التابعين", "/admin/dependent-transition": "بروفة انتقال سن الرشد",
 };
 
 export default function AccessibilitySync() {
