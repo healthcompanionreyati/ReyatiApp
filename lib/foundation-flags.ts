@@ -25,6 +25,9 @@ export const foundationFlags = {
   careNavigatorClinicalApproval: false,
   prescriptionOcrDispatch: false,
   prescriptionRecordCommit: false,
+  reportReaderDispatch: false,
+  reportReaderInterpretation: false,
+  reportReaderRecordCommit: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

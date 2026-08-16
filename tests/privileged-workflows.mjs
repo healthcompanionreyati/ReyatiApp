@@ -248,6 +248,27 @@ const prescriptionEvaluation = await request("/api/admin/prescription-intelligen
 assert.equal(prescriptionEvaluation.data.result, "pass"); assert.equal(prescriptionEvaluation.data.totalCases, 4); assert.equal(prescriptionEvaluation.data.correctDecisions, 4); assert.equal(prescriptionEvaluation.data.unsafeAcceptances, 0); assert.equal(prescriptionEvaluation.data.recordCommitEnabled, false);
 providerReviews = await request("/api/provider/prescription-review", { identity: identities.provider }); assert.equal(providerReviews.data.recordCommitEnabled, false); assert.equal(providerReviews.data.cases.filter((item) => item.reviewDecision).length, 4);
 
+await request("/api/admin/report-reader", { identity: identities.patient, status: 403 });
+let reportCentre = await request("/api/admin/report-reader", { identity: identities.admin });
+let reportSuite = reportCentre.data.suites.find((item) => item.suiteVersion === "report-reader-safety-2026-08-16");
+if (!reportSuite) {
+  const createdReportSuite = await request("/api/admin/report-reader", { identity: identities.admin, method: "POST", body: { operation: "create_suite", suiteVersion: "report-reader-safety-2026-08-16", label: "Medical Report Reader safety suite", sourceReference: "ADR-028/report-reader-foundation" } });
+  reportCentre = await request("/api/admin/report-reader", { identity: identities.admin }); reportSuite = reportCentre.data.suites.find((item) => item.id === createdReportSuite.data.id);
+}
+if (reportSuite.cases.length === 0) {
+  await request("/api/admin/report-reader", { identity: identities.admin, method: "POST", body: { operation: "seed_suite", suiteId: reportSuite.id } });
+  reportCentre = await request("/api/admin/report-reader", { identity: identities.admin }); reportSuite = reportCentre.data.suites.find((item) => item.id === reportSuite.id);
+}
+let reportReviews = await request("/api/provider/report-review", { identity: identities.provider });
+for (const reportCase of reportReviews.data.cases.filter((item) => item.status === "review_required")) {
+  const decision = /missing-unit|range-conflict/.test(reportCase.caseKey) ? "reject" : "accept";
+  const reviewedReport = await request("/api/provider/report-review", { identity: identities.provider, method: "POST", body: { caseId: reportCase.id, version: reportCase.version, decision, note: `Synthetic ${decision} decision based only on value, unit, range, source flag, and provenance evidence.` } });
+  assert.equal(reviewedReport.data.interpretationEnabled, false); assert.equal(reviewedReport.data.recordCommitEnabled, false);
+}
+const reportEvaluation = await request("/api/admin/report-reader", { identity: identities.admin, method: "POST", body: { operation: "run_evaluation", suiteId: reportSuite.id } });
+assert.equal(reportEvaluation.data.result, "pass"); assert.equal(reportEvaluation.data.totalCases, 4); assert.equal(reportEvaluation.data.correctDecisions, 4); assert.equal(reportEvaluation.data.unsafeAcceptances, 0); assert.equal(reportEvaluation.data.interpretationCount, 0); assert.equal(reportEvaluation.data.recordCommitEnabled, false);
+reportReviews = await request("/api/provider/report-review", { identity: identities.provider }); assert.equal(reportReviews.data.interpretationEnabled, false); assert.equal(reportReviews.data.cases.filter((item) => item.reviewDecision).length, 4);
+
 const service = await request("/api/provider/catalog-management", {
   identity: identities.provider,
   method: "POST",

@@ -4,14 +4,14 @@ import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
   "/": "Home", "/navigator": "Care Navigator", "/providers": "Find care", "/appointments": "Appointments", "/wallet": "Health records",
-  "/documents": "Medical documents", "/provider/documents": "Shared documents", "/provider/prescription-review": "Prescription review",
+  "/documents": "Medical documents", "/provider/documents": "Shared documents", "/provider/prescription-review": "Prescription review", "/provider/report-review": "Report review",
   "/payments": "Payments", "/family": "Family access", "/support": "Support", "/notifications": "Notifications",
   "/auth": "Secure account", "/journeys": "Care journeys", "/provider": "Provider dashboard",
   "/provider/services": "Provider services", "/provider/settings": "Provider settings", "/provider/patients": "Provider patients",
   "/provider/insights": "Provider insights", "/provider/encounter": "Encounter workspace", "/partner": "Partner workspace",
   "/partner/program": "Partner programme", "/admin": "Operations overview", "/admin/access": "Platform access",
   "/admin/audit": "Audit ledger", "/admin/cases": "Support operations", "/admin/finance": "Finance operations",
-  "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification", "/admin/navigator-governance": "Care Navigator governance", "/admin/prescription-intelligence": "Prescription intelligence",
+  "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification", "/admin/navigator-governance": "Care Navigator governance", "/admin/prescription-intelligence": "Prescription intelligence", "/admin/report-reader": "Medical Report Reader",
 };
 
 const arabicRouteTitles: Record<string, string> = {
@@ -19,7 +19,7 @@ const arabicRouteTitles: Record<string, string> = {
   "/documents": "المستندات الطبية", "/payments": "المدفوعات", "/family": "وصول العائلة", "/support": "الدعم",
   "/notifications": "الإشعارات", "/auth": "الحساب الآمن", "/journeys": "رحلات الرعاية", "/provider": "لوحة مقدم الرعاية",
   "/provider/services": "خدمات مقدم الرعاية", "/provider/settings": "إعدادات مقدم الرعاية", "/provider/patients": "المرضى",
-  "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/provider/prescription-review": "مراجعة الوصفات", "/admin": "نظرة العمليات العامة", "/admin/navigator-governance": "حوكمة موجّه الرعاية", "/admin/prescription-intelligence": "ذكاء الوصفات",
+  "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/provider/prescription-review": "مراجعة الوصفات", "/provider/report-review": "مراجعة التقارير", "/admin": "نظرة العمليات العامة", "/admin/navigator-governance": "حوكمة موجّه الرعاية", "/admin/prescription-intelligence": "ذكاء الوصفات", "/admin/report-reader": "قارئ التقارير الطبية",
 };
 
 export default function AccessibilitySync() {
