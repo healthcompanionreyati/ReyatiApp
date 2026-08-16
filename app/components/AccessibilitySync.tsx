@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
-  "/": "Home", "/navigator": "Care Navigator", "/providers": "Find care", "/appointments": "Appointments", "/wallet": "Health records",
+  "/": "Home", "/navigator": "Care Navigator", "/providers": "Find care", "/appointments": "Appointments", "/wallet": "Health records", "/medication-reminders": "Medication reminders",
   "/documents": "Medical documents", "/provider/documents": "Shared documents", "/provider/prescription-review": "Prescription review", "/provider/report-review": "Report review",
   "/payments": "Payments", "/family": "Family access", "/support": "Support", "/notifications": "Notifications",
   "/auth": "Secure account", "/journeys": "Care journeys", "/provider": "Provider dashboard",
@@ -15,7 +15,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
-  "/": "الرئيسية", "/navigator": "موجّه الرعاية", "/providers": "ابحث عن رعاية", "/appointments": "المواعيد", "/wallet": "السجلات الصحية",
+  "/": "الرئيسية", "/navigator": "موجّه الرعاية", "/providers": "ابحث عن رعاية", "/appointments": "المواعيد", "/wallet": "السجلات الصحية", "/medication-reminders": "تذكيرات الدواء",
   "/documents": "المستندات الطبية", "/payments": "المدفوعات", "/family": "وصول العائلة", "/support": "الدعم",
   "/notifications": "الإشعارات", "/auth": "الحساب الآمن", "/journeys": "رحلات الرعاية", "/provider": "لوحة مقدم الرعاية",
   "/provider/services": "خدمات مقدم الرعاية", "/provider/settings": "إعدادات مقدم الرعاية", "/provider/patients": "المرضى",

@@ -826,6 +826,18 @@ export const reportReaderEvaluationRuns = sqliteTable("report_reader_evaluation_
   id: text("id").primaryKey(), suiteId: text("suite_id").notNull().references(() => reportReaderSuites.id, { onDelete: "restrict" }), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), totalCases: integer("total_cases").notNull(), reviewedCases: integer("reviewed_cases").notNull(), correctDecisions: integer("correct_decisions").notNull(), unsafeAcceptances: integer("unsafe_acceptances").notNull(), interpretationCount: integer("interpretation_count").notNull(), result: text("result").notNull(), dataMode: text("data_mode").notNull().default("synthetic_only"), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_report_reader_runs_suite_executed").on(table.suiteId, table.executedAt), index("idx_report_reader_runs_result_executed").on(table.result, table.executedAt)]);
 
+export const medicationReminderPlans = sqliteTable("medication_reminder_plans", {
+  id: text("id").primaryKey(), userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }), medicationLabel: text("medication_label").notNull(), directionsLabel: text("directions_label").notNull(), sourceType: text("source_type").notNull().default("patient_entered"), sourceReference: text("source_reference").notNull(), verificationStatus: text("verification_status").notNull().default("unverified"), timezone: text("timezone").notNull().default("Asia/Qatar"), startDate: text("start_date").notNull(), endDate: text("end_date"), status: text("status").notNull().default("configured"), acknowledgementVersion: text("acknowledgement_version").notNull(), acknowledgedAt: integer("acknowledged_at", { mode: "timestamp_ms" }).notNull(), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [index("idx_medication_reminder_plans_user_status_created").on(table.userId, table.status, table.createdAt), index("idx_medication_reminder_plans_user_start").on(table.userId, table.startDate)]);
+
+export const medicationReminderTimes = sqliteTable("medication_reminder_times", {
+  id: text("id").primaryKey(), planId: text("plan_id").notNull().references(() => medicationReminderPlans.id, { onDelete: "restrict" }), localTime: text("local_time").notNull(), daysOfWeekJson: text("days_of_week_json").notNull().default("[0,1,2,3,4,5,6]"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_medication_reminder_times_plan_time").on(table.planId, table.localTime), index("idx_medication_reminder_times_plan").on(table.planId)]);
+
+export const medicationReminderEvents = sqliteTable("medication_reminder_events", {
+  id: text("id").primaryKey(), planId: text("plan_id").notNull().references(() => medicationReminderPlans.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_medication_reminder_events_plan_created").on(table.planId, table.createdAt)]);
+
 export const providerProfiles = sqliteTable("provider_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

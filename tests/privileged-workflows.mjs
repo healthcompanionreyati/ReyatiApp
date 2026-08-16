@@ -206,6 +206,12 @@ if (["draft", "rejected"].includes(governedRules.status)) {
 }
 assert.equal(governedRules.status, "governance_approved"); assert.equal(governedRules.clinicalApprovalStatus, "not_reviewed"); assert.equal(governedRules.scenarios.length, 24); assert.equal(navigatorGovernance.data.runtimeActivationEnabled, false); assert.equal(navigatorGovernance.data.clinicalApprovalEnabled, false);
 
+const configuredReminder = await request("/api/medication-reminders", { identity: identities.patient, method: "POST", body: { operation: "create", medicationLabel: "Synthetic medication label", directionsLabel: "Synthetic directions copied from a clinician-provided test fixture.", startDate: "2026-08-17", endDate: "2026-08-24", times: ["08:00", "20:00"], sourceType: "patient_entered", acknowledgementAccepted: true } });
+assert.equal(configuredReminder.data.status, "configured"); assert.equal(configuredReminder.data.deliveryEnabled, false); assert.equal(configuredReminder.data.verificationStatus, "unverified");
+const pausedReminder = await request("/api/medication-reminders", { identity: identities.patient, method: "POST", body: { operation: "transition", planId: configuredReminder.data.id, version: configuredReminder.data.version, action: "pause" } }); assert.equal(pausedReminder.data.status, "paused"); assert.equal(pausedReminder.data.deliveryEnabled, false);
+const resumedReminder = await request("/api/medication-reminders", { identity: identities.patient, method: "POST", body: { operation: "transition", planId: configuredReminder.data.id, version: pausedReminder.data.version, action: "resume" } }); assert.equal(resumedReminder.data.status, "configured");
+const reminderWorkspace = await request("/api/medication-reminders", { identity: identities.patient }); const ownedReminder = reminderWorkspace.data.plans.find((item) => item.id === configuredReminder.data.id); assert.equal(reminderWorkspace.data.deliveryEnabled, false); assert.equal(reminderWorkspace.data.ocrImportEnabled, false); assert.equal(ownedReminder.timezone, "Asia/Qatar"); assert.deepEqual(ownedReminder.times, ["08:00", "20:00"]); assert.equal(ownedReminder.events.length, 3);
+
 const profile = await request("/api/provider/setup", {
   identity: identities.provider,
   method: "POST",
