@@ -361,6 +361,15 @@ const reviewerRole = access.data.roles.find((role) => role.email === identities.
 const adminRole = access.data.roles.find((role) => role.email === identities.admin.email && role.role === "platform_admin");
 assert.ok(reviewerRole, "Accepted reviewer role should be listed");
 assert.ok(adminRole, "Active administrator role should be listed");
+await request("/api/admin/reminder-delivery-policy", { identity: identities.patient, status: 403 });
+let reminderPolicyCentre = await request("/api/admin/reminder-delivery-policy", { identity: identities.admin });
+let reminderPolicy = reminderPolicyCentre.data.policies.find((item) => item.policyVersion === "reminder-delivery-policy-2026-08-16");
+if (!reminderPolicy) {
+  const savedPolicy = await request("/api/admin/reminder-delivery-policy", { identity: identities.admin, method: "POST", body: { operation: "save", policyVersion: reminderPolicyCentre.data.policyVersion, label: "Medication reminder delivery safety policy", templateEn: reminderPolicyCentre.data.templateEn, templateAr: reminderPolicyCentre.data.templateAr, consentVersion: "medication-reminder-consent-v1", quietHoursStart: "22:00", quietHoursEnd: "07:00", maximumLatenessMinutes: 5, maxAttempts: 3, dedupeWindowMinutes: 10, primaryOwnerUserId: adminRole.userId, backupOwnerUserId: reviewerRole.userId } });
+  reminderPolicyCentre = await request("/api/admin/reminder-delivery-policy", { identity: identities.admin }); reminderPolicy = reminderPolicyCentre.data.policies.find((item) => item.id === savedPolicy.data.id);
+}
+if (["draft", "rejected"].includes(reminderPolicy.status)) { const submitted = await request("/api/admin/reminder-delivery-policy", { identity: identities.admin, method: "POST", body: { operation: "transition", policyId: reminderPolicy.id, version: reminderPolicy.version, action: "submit", note: "Submitted after verified scheduler evidence, owner assignment, and privacy-safe bilingual wording review." } }); reminderPolicy = { ...reminderPolicy, status: submitted.data.status, version: submitted.data.version }; }
+if (reminderPolicy.status === "pending_review") { const approved = await request("/api/admin/reminder-delivery-policy", { identity: identities.reviewer, method: "POST", body: { operation: "transition", policyId: reminderPolicy.id, version: reminderPolicy.version, action: "approve", note: "Independently approved the generic wording, consent, retry boundaries, quiet-hour rule, and dual ownership." } }); assert.equal(approved.data.status, "approved"); assert.equal(approved.data.policyActivationEnabled, false); assert.equal(approved.data.occurrenceMaterializationEnabled, false); assert.equal(approved.data.deliveryEnabled, false); }
 await request("/api/admin/platform-access", {
   identity: identities.admin,
   method: "POST",
