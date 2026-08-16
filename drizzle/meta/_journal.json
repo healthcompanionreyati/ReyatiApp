@@ -351,6 +351,13 @@
       "when": 1786886408647,
       "tag": "0049_blue_chronomancer",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "6",
+      "when": 1786893256218,
+      "tag": "0050_hesitant_thunderbolt_ross",
+      "breakpoints": true
     }
   ]
 }
