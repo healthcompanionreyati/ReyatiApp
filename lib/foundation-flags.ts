@@ -30,6 +30,7 @@ export const foundationFlags = {
   reportReaderRecordCommit: false,
   medicationReminderDelivery: false,
   medicationReminderOcrImport: false,
+  medicationReminderOccurrenceMaterialization: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

@@ -330,6 +330,13 @@
       "when": 1786859293725,
       "tag": "0046_colossal_darwin",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "6",
+      "when": 1786880976327,
+      "tag": "0047_free_stingray",
+      "breakpoints": true
     }
   ]
 }

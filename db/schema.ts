@@ -838,6 +838,18 @@ export const medicationReminderEvents = sqliteTable("medication_reminder_events"
   id: text("id").primaryKey(), planId: text("plan_id").notNull().references(() => medicationReminderPlans.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_medication_reminder_events_plan_created").on(table.planId, table.createdAt)]);
 
+export const medicationReminderSchedulerSuites = sqliteTable("medication_reminder_scheduler_suites", {
+  id: text("id").primaryKey(), suiteVersion: text("suite_version").notNull(), label: text("label").notNull(), sourceReference: text("source_reference").notNull(), status: text("status").notNull().default("draft"), preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [uniqueIndex("idx_med_reminder_scheduler_suites_version").on(table.suiteVersion), index("idx_med_reminder_scheduler_suites_status_updated").on(table.status, table.updatedAt)]);
+
+export const medicationReminderSchedulerScenarios = sqliteTable("medication_reminder_scheduler_scenarios", {
+  id: text("id").primaryKey(), suiteId: text("suite_id").notNull().references(() => medicationReminderSchedulerSuites.id, { onDelete: "restrict" }), scenarioKey: text("scenario_key").notNull(), locale: text("locale").notNull(), inputJson: text("input_json").notNull(), expectedOccurrenceCount: integer("expected_occurrence_count").notNull(), expectedBlockReason: text("expected_block_reason"), sourceReference: text("source_reference").notNull(), dataMode: text("data_mode").notNull().default("synthetic_only"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_med_reminder_scheduler_scenarios_suite_key").on(table.suiteId, table.scenarioKey), index("idx_med_reminder_scheduler_scenarios_suite_expected").on(table.suiteId, table.expectedOccurrenceCount)]);
+
+export const medicationReminderSchedulerRuns = sqliteTable("medication_reminder_scheduler_runs", {
+  id: text("id").primaryKey(), suiteId: text("suite_id").notNull().references(() => medicationReminderSchedulerSuites.id, { onDelete: "restrict" }), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), totalScenarios: integer("total_scenarios").notNull(), passedScenarios: integer("passed_scenarios").notNull(), failedScenarios: integer("failed_scenarios").notNull(), duplicateOccurrences: integer("duplicate_occurrences").notNull(), invalidSourceOccurrences: integer("invalid_source_occurrences").notNull(), deliveryAttempts: integer("delivery_attempts").notNull(), result: text("result").notNull(), failuresJson: text("failures_json").notNull().default("[]"), dataMode: text("data_mode").notNull().default("synthetic_only"), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_med_reminder_scheduler_runs_suite_executed").on(table.suiteId, table.executedAt), index("idx_med_reminder_scheduler_runs_result_executed").on(table.result, table.executedAt)]);
+
 export const providerProfiles = sqliteTable("provider_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

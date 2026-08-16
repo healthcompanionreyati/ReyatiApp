@@ -101,6 +101,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/navigator-governance"><span>◇</span>{ar ? "حوكمة موجّه الرعاية" : "Navigator governance"}</a>
         <a className="admin-verification-link" href="/admin/prescription-intelligence"><span>▤</span>{ar ? "ذكاء الوصفات" : "Prescription intelligence"}</a>
         <a className="admin-verification-link" href="/admin/report-reader"><span>▧</span>{ar ? "قارئ التقارير" : "Report Reader"}</a>
+        <a className="admin-verification-link" href="/admin/reminder-readiness"><span>◴</span>{ar ? "جاهزية التذكير" : "Reminder readiness"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>

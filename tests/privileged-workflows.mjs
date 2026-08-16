@@ -275,6 +275,20 @@ const reportEvaluation = await request("/api/admin/report-reader", { identity: i
 assert.equal(reportEvaluation.data.result, "pass"); assert.equal(reportEvaluation.data.totalCases, 4); assert.equal(reportEvaluation.data.correctDecisions, 4); assert.equal(reportEvaluation.data.unsafeAcceptances, 0); assert.equal(reportEvaluation.data.interpretationCount, 0); assert.equal(reportEvaluation.data.recordCommitEnabled, false);
 reportReviews = await request("/api/provider/report-review", { identity: identities.provider }); assert.equal(reportReviews.data.interpretationEnabled, false); assert.equal(reportReviews.data.cases.filter((item) => item.reviewDecision).length, 4);
 
+await request("/api/admin/reminder-readiness", { identity: identities.patient, status: 403 });
+let reminderReadiness = await request("/api/admin/reminder-readiness", { identity: identities.admin });
+let reminderSuite = reminderReadiness.data.suites.find((item) => item.suiteVersion === "medication-reminder-scheduler-2026-08-16");
+if (!reminderSuite) {
+  const createdReminderSuite = await request("/api/admin/reminder-readiness", { identity: identities.admin, method: "POST", body: { operation: "create_suite", suiteVersion: "medication-reminder-scheduler-2026-08-16", label: "Medication reminder scheduler readiness suite", sourceReference: "ADR-030/reminder-scheduler-readiness" } });
+  reminderReadiness = await request("/api/admin/reminder-readiness", { identity: identities.admin }); reminderSuite = reminderReadiness.data.suites.find((item) => item.id === createdReminderSuite.data.id);
+}
+if (reminderSuite.scenarios.length === 0) {
+  await request("/api/admin/reminder-readiness", { identity: identities.admin, method: "POST", body: { operation: "seed_suite", suiteId: reminderSuite.id } });
+  reminderReadiness = await request("/api/admin/reminder-readiness", { identity: identities.admin }); reminderSuite = reminderReadiness.data.suites.find((item) => item.id === reminderSuite.id);
+}
+const reminderEvaluation = await request("/api/admin/reminder-readiness", { identity: identities.admin, method: "POST", body: { operation: "run_evaluation", suiteId: reminderSuite.id } });
+assert.equal(reminderEvaluation.data.result, "pass"); assert.equal(reminderEvaluation.data.totalScenarios, 9); assert.equal(reminderEvaluation.data.passedScenarios, 9); assert.equal(reminderEvaluation.data.duplicateOccurrences, 0); assert.equal(reminderEvaluation.data.invalidSourceOccurrences, 0); assert.equal(reminderEvaluation.data.deliveryAttempts, 0); assert.equal(reminderEvaluation.data.occurrenceMaterializationEnabled, false); assert.equal(reminderEvaluation.data.deliveryEnabled, false);
+
 const service = await request("/api/provider/catalog-management", {
   identity: identities.provider,
   method: "POST",
