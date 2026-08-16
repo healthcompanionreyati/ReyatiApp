@@ -11,7 +11,7 @@ const routeTitles: Record<string, string> = {
   "/provider/insights": "Provider insights", "/provider/encounter": "Encounter workspace", "/partner": "Partner workspace",
   "/partner/program": "Partner programme", "/admin": "Operations overview", "/admin/access": "Platform access",
   "/admin/audit": "Audit ledger", "/admin/cases": "Support operations", "/admin/finance": "Finance operations",
-  "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification",
+  "/admin/moderation": "Moderation boundary", "/admin/organizations": "Organizations", "/admin/verification": "Provider verification", "/admin/navigator-governance": "Care Navigator governance",
 };
 
 const arabicRouteTitles: Record<string, string> = {
@@ -19,7 +19,7 @@ const arabicRouteTitles: Record<string, string> = {
   "/documents": "المستندات الطبية", "/payments": "المدفوعات", "/family": "وصول العائلة", "/support": "الدعم",
   "/notifications": "الإشعارات", "/auth": "الحساب الآمن", "/journeys": "رحلات الرعاية", "/provider": "لوحة مقدم الرعاية",
   "/provider/services": "خدمات مقدم الرعاية", "/provider/settings": "إعدادات مقدم الرعاية", "/provider/patients": "المرضى",
-  "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/admin": "نظرة العمليات العامة",
+  "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/admin": "نظرة العمليات العامة", "/admin/navigator-governance": "حوكمة موجّه الرعاية",
 };
 
 export default function AccessibilitySync() {

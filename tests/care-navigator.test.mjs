@@ -1,13 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("Care Navigator assessments and decisions are durable, owned, indexed, and migrated", async () => {
   const schema = await read("db/schema.ts");
-  const files = await readdir(new URL("../drizzle/", import.meta.url));
-  const migration = await read(`drizzle/${files.filter((name) => name.endsWith(".sql")).sort().at(-1)}`);
+  const migration = await read("drizzle/0042_flippant_karen_page.sql");
   assert.match(schema, /careNavigatorAssessments/);
   assert.match(schema, /careNavigatorAssessmentEvents/);
   assert.match(schema, /idx_care_navigator_assessments_user_created/);
@@ -20,7 +19,7 @@ test("emergency questions require explicit answers and stop routing before any s
   for (const key of ["breathing_difficulty", "unconscious_or_confused", "stroke_signs", "uncontrolled_bleeding", "serious_injury", "immediate_harm_risk"]) assert.match(source, new RegExp(key));
   assert.match(source, /Every emergency red-flag question requires an explicit answer/);
   assert.match(source, /outcome = emergency \? "emergency"/);
-  assert.match(source, /specialty = emergency \? null/);
+  assert.match(source, /specialty: emergency \? null/);
   assert.match(source, /emergencyNumber: emergency \? "999"/);
 });
 

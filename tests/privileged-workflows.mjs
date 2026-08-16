@@ -188,6 +188,24 @@ await request("/api/admin/platform-access", {
   body: { action: "accept", token: invitationToken(securityInvitation.data.acceptPath) },
 });
 
+await request("/api/admin/navigator-governance", { identity: identities.patient, status: 403 });
+let navigatorGovernance = await request("/api/admin/navigator-governance", { identity: identities.admin });
+let governedRules = navigatorGovernance.data.ruleSets.find((item) => item.rulesetVersion === "rules-foundation-2026-08-16");
+if (!governedRules) {
+  const createdRules = await request("/api/admin/navigator-governance", { identity: identities.admin, method: "POST", body: { operation: "create_ruleset", rulesetVersion: "rules-foundation-2026-08-16", label: "Care Navigator foundation rules", sourceReference: "ADR-025/care-navigator-foundation" } });
+  navigatorGovernance = await request("/api/admin/navigator-governance", { identity: identities.admin }); governedRules = navigatorGovernance.data.ruleSets.find((item) => item.id === createdRules.data.id);
+}
+if (["draft", "rejected"].includes(governedRules.status)) {
+  if (governedRules.scenarios.length === 0) await request("/api/admin/navigator-governance", { identity: identities.admin, method: "POST", body: { operation: "seed_suite", ruleSetId: governedRules.id } });
+  const evaluation = await request("/api/admin/navigator-governance", { identity: identities.admin, method: "POST", body: { operation: "run_evaluation", ruleSetId: governedRules.id } });
+  assert.equal(evaluation.data.result, "pass"); assert.equal(evaluation.data.totalScenarios, 24); assert.equal(evaluation.data.criticalFailures, 0); assert.equal(evaluation.data.emergencyRecallBps, 10000); assert.equal(evaluation.data.routeAccuracyBps, 10000); assert.equal(evaluation.data.bilingualParityBps, 10000); assert.equal(evaluation.data.clinicallyApproved, false); assert.equal(evaluation.data.runtimeActivationEnabled, false);
+  const submittedRules = await request("/api/admin/navigator-governance", { identity: identities.admin, method: "POST", body: { operation: "transition_ruleset", ruleSetId: governedRules.id, version: governedRules.version, action: "submit", note: "Synthetic bilingual safety suite passed every mandatory foundation threshold with zero critical failures." } });
+  const approvedRules = await request("/api/admin/navigator-governance", { identity: identities.reviewer, method: "POST", body: { operation: "transition_ruleset", ruleSetId: governedRules.id, version: submittedRules.data.version, action: "approve", note: "Independent governance evidence review completed; this does not constitute clinical approval or runtime activation." } });
+  assert.equal(approvedRules.data.status, "governance_approved"); assert.equal(approvedRules.data.clinicallyApproved, false); assert.equal(approvedRules.data.runtimeActivationEnabled, false);
+  navigatorGovernance = await request("/api/admin/navigator-governance", { identity: identities.admin }); governedRules = navigatorGovernance.data.ruleSets.find((item) => item.id === governedRules.id);
+}
+assert.equal(governedRules.status, "governance_approved"); assert.equal(governedRules.clinicalApprovalStatus, "not_reviewed"); assert.equal(governedRules.scenarios.length, 24); assert.equal(navigatorGovernance.data.runtimeActivationEnabled, false); assert.equal(navigatorGovernance.data.clinicalApprovalEnabled, false);
+
 const profile = await request("/api/provider/setup", {
   identity: identities.provider,
   method: "POST",

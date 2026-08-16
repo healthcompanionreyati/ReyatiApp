@@ -758,6 +758,32 @@ export const careNavigatorAssessmentEvents = sqliteTable("care_navigator_assessm
   action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), decision: text("decision"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_care_navigator_events_assessment_created").on(table.assessmentId, table.createdAt)]);
 
+export const careNavigatorRuleSets = sqliteTable("care_navigator_rule_sets", {
+  id: text("id").primaryKey(), rulesetVersion: text("ruleset_version").notNull(), label: text("label").notNull(), sourceReference: text("source_reference").notNull(),
+  emergencyRuleCount: integer("emergency_rule_count").notNull(), routeRuleCount: integer("route_rule_count").notNull(), status: text("status").notNull().default("draft"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }), reviewNote: text("review_note"), clinicalApprovalStatus: text("clinical_approval_status").notNull().default("not_reviewed"),
+  version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [uniqueIndex("idx_care_navigator_rule_sets_version").on(table.rulesetVersion), index("idx_care_navigator_rule_sets_status_updated").on(table.status, table.updatedAt)]);
+
+export const careNavigatorRuleSetEvents = sqliteTable("care_navigator_rule_set_events", {
+  id: text("id").primaryKey(), ruleSetId: text("rule_set_id").notNull().references(() => careNavigatorRuleSets.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_care_navigator_rule_events_ruleset_created").on(table.ruleSetId, table.createdAt)]);
+
+export const careNavigatorEvaluationScenarios = sqliteTable("care_navigator_evaluation_scenarios", {
+  id: text("id").primaryKey(), ruleSetId: text("rule_set_id").notNull().references(() => careNavigatorRuleSets.id, { onDelete: "restrict" }), scenarioKey: text("scenario_key").notNull(),
+  locale: text("locale").notNull(), riskClass: text("risk_class").notNull(), inputJson: text("input_json").notNull(), expectedOutcome: text("expected_outcome").notNull(), expectedSpecialty: text("expected_specialty"),
+  sourceReference: text("source_reference").notNull(), dataMode: text("data_mode").notNull().default("synthetic_only"), createdByUserId: text("created_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [uniqueIndex("idx_care_navigator_scenarios_ruleset_key").on(table.ruleSetId, table.scenarioKey), index("idx_care_navigator_scenarios_ruleset_risk").on(table.ruleSetId, table.riskClass)]);
+
+export const careNavigatorEvaluationRuns = sqliteTable("care_navigator_evaluation_runs", {
+  id: text("id").primaryKey(), ruleSetId: text("rule_set_id").notNull().references(() => careNavigatorRuleSets.id, { onDelete: "restrict" }), suiteVersion: text("suite_version").notNull(),
+  totalScenarios: integer("total_scenarios").notNull(), passedScenarios: integer("passed_scenarios").notNull(), failedScenarios: integer("failed_scenarios").notNull(), criticalFailures: integer("critical_failures").notNull(),
+  emergencyRecallBps: integer("emergency_recall_bps").notNull(), routeAccuracyBps: integer("route_accuracy_bps").notNull(), bilingualParityBps: integer("bilingual_parity_bps").notNull(), result: text("result").notNull(),
+  failuresJson: text("failures_json").notNull().default("[]"), dataMode: text("data_mode").notNull().default("synthetic_only"), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_care_navigator_runs_ruleset_executed").on(table.ruleSetId, table.executedAt), index("idx_care_navigator_runs_result_executed").on(table.result, table.executedAt)]);
+
 export const providerProfiles = sqliteTable("provider_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
