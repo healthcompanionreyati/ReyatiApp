@@ -784,6 +784,32 @@ export const careNavigatorEvaluationRuns = sqliteTable("care_navigator_evaluatio
   failuresJson: text("failures_json").notNull().default("[]"), dataMode: text("data_mode").notNull().default("synthetic_only"), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_care_navigator_runs_ruleset_executed").on(table.ruleSetId, table.executedAt), index("idx_care_navigator_runs_result_executed").on(table.result, table.executedAt)]);
 
+export const prescriptionExtractionSuites = sqliteTable("prescription_extraction_suites", {
+  id: text("id").primaryKey(), suiteVersion: text("suite_version").notNull(), label: text("label").notNull(), sourceReference: text("source_reference").notNull(),
+  engineAlias: text("engine_alias").notNull(), modelVersion: text("model_version").notNull(), minimumConfidenceBps: integer("minimum_confidence_bps").notNull(),
+  criticalFieldConfidenceBps: integer("critical_field_confidence_bps").notNull(), status: text("status").notNull().default("draft"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [uniqueIndex("idx_prescription_extraction_suites_version").on(table.suiteVersion), index("idx_prescription_extraction_suites_status_updated").on(table.status, table.updatedAt)]);
+
+export const prescriptionExtractionCases = sqliteTable("prescription_extraction_cases", {
+  id: text("id").primaryKey(), suiteId: text("suite_id").notNull().references(() => prescriptionExtractionSuites.id, { onDelete: "restrict" }), caseKey: text("case_key").notNull(),
+  locale: text("locale").notNull(), sourceReference: text("source_reference").notNull(), sourceChecksumSha256: text("source_checksum_sha256").notNull(), documentId: text("document_id").references(() => documentRecords.id, { onDelete: "restrict" }),
+  documentVersion: integer("document_version"), extractedFieldsJson: text("extracted_fields_json").notNull(), expectedDecision: text("expected_decision").notNull(),
+  status: text("status").notNull().default("review_required"), dataMode: text("data_mode").notNull().default("synthetic_only"), humanVerificationRequired: integer("human_verification_required", { mode: "boolean" }).notNull().default(true),
+  reviewerProviderId: text("reviewer_provider_id").references(() => providerProfiles.id, { onDelete: "restrict" }), reviewDecision: text("review_decision"), reviewNote: text("review_note"), reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [uniqueIndex("idx_prescription_extraction_cases_suite_key").on(table.suiteId, table.caseKey), index("idx_prescription_extraction_cases_status_created").on(table.status, table.createdAt), index("idx_prescription_extraction_cases_reviewer_reviewed").on(table.reviewerProviderId, table.reviewedAt)]);
+
+export const prescriptionExtractionEvents = sqliteTable("prescription_extraction_events", {
+  id: text("id").primaryKey(), caseId: text("case_id").notNull().references(() => prescriptionExtractionCases.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_prescription_extraction_events_case_created").on(table.caseId, table.createdAt)]);
+
+export const prescriptionExtractionEvaluationRuns = sqliteTable("prescription_extraction_evaluation_runs", {
+  id: text("id").primaryKey(), suiteId: text("suite_id").notNull().references(() => prescriptionExtractionSuites.id, { onDelete: "restrict" }), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  totalCases: integer("total_cases").notNull(), reviewedCases: integer("reviewed_cases").notNull(), correctDecisions: integer("correct_decisions").notNull(), unsafeAcceptances: integer("unsafe_acceptances").notNull(),
+  result: text("result").notNull(), dataMode: text("data_mode").notNull().default("synthetic_only"), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_prescription_extraction_runs_suite_executed").on(table.suiteId, table.executedAt), index("idx_prescription_extraction_runs_result_executed").on(table.result, table.executedAt)]);
+
 export const providerProfiles = sqliteTable("provider_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

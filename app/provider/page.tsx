@@ -103,6 +103,7 @@ export default function ProviderConsole() {
         <a className="provider-nav-link active" href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}{counts.attention > 0 && <em>{counts.attention}</em>}</a>
         <a className="provider-nav-link" href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}</a>
         <a className="provider-nav-link" href="/provider/documents"><span>▤</span>{ar ? "المستندات المشتركة" : "Shared documents"}</a>
+        <a className="provider-nav-link" href="/provider/prescription-review"><span>◎</span>{ar ? "مراجعة الوصفات" : "Prescription review"}</a>
         <a className="provider-nav-link" href="/provider/services"><span>◇</span>{ar ? "الخدمات" : "Services"}</a>
         <a className="provider-nav-link" href="/provider/insights"><span>↗</span>{ar ? "الإحصاءات" : "Insights"}</a>
         <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>

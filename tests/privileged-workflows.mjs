@@ -227,6 +227,27 @@ await request("/api/admin/verification", {
   body: { providerId: profile.data.id, decision: "approved", notes: "Synthetic credentials approved for isolated role-based UAT only." },
 });
 
+await request("/api/admin/prescription-intelligence", { identity: identities.patient, status: 403 });
+let prescriptionCentre = await request("/api/admin/prescription-intelligence", { identity: identities.admin });
+let prescriptionSuite = prescriptionCentre.data.suites.find((item) => item.suiteVersion === "prescription-safety-2026-08-16");
+if (!prescriptionSuite) {
+  const createdSuite = await request("/api/admin/prescription-intelligence", { identity: identities.admin, method: "POST", body: { operation: "create_suite", suiteVersion: "prescription-safety-2026-08-16", label: "Prescription extraction safety suite", sourceReference: "ADR-027/prescription-intelligence-foundation" } });
+  prescriptionCentre = await request("/api/admin/prescription-intelligence", { identity: identities.admin }); prescriptionSuite = prescriptionCentre.data.suites.find((item) => item.id === createdSuite.data.id);
+}
+if (prescriptionSuite.cases.length === 0) {
+  await request("/api/admin/prescription-intelligence", { identity: identities.admin, method: "POST", body: { operation: "seed_suite", suiteId: prescriptionSuite.id } });
+  prescriptionCentre = await request("/api/admin/prescription-intelligence", { identity: identities.admin }); prescriptionSuite = prescriptionCentre.data.suites.find((item) => item.id === prescriptionSuite.id);
+}
+let providerReviews = await request("/api/provider/prescription-review", { identity: identities.provider });
+for (const reviewCase of providerReviews.data.cases.filter((item) => item.status === "review_required")) {
+  const decision = /low-dose-confidence|conflicting-unit/.test(reviewCase.caseKey) ? "reject" : "accept";
+  const reviewed = await request("/api/provider/prescription-review", { identity: identities.provider, method: "POST", body: { caseId: reviewCase.id, version: reviewCase.version, decision, note: `Synthetic ${decision} decision based on the visible source provenance, confidence, and issue evidence.` } });
+  assert.equal(reviewed.data.recordCommitEnabled, false);
+}
+const prescriptionEvaluation = await request("/api/admin/prescription-intelligence", { identity: identities.admin, method: "POST", body: { operation: "run_evaluation", suiteId: prescriptionSuite.id } });
+assert.equal(prescriptionEvaluation.data.result, "pass"); assert.equal(prescriptionEvaluation.data.totalCases, 4); assert.equal(prescriptionEvaluation.data.correctDecisions, 4); assert.equal(prescriptionEvaluation.data.unsafeAcceptances, 0); assert.equal(prescriptionEvaluation.data.recordCommitEnabled, false);
+providerReviews = await request("/api/provider/prescription-review", { identity: identities.provider }); assert.equal(providerReviews.data.recordCommitEnabled, false); assert.equal(providerReviews.data.cases.filter((item) => item.reviewDecision).length, 4);
+
 const service = await request("/api/provider/catalog-management", {
   identity: identities.provider,
   method: "POST",

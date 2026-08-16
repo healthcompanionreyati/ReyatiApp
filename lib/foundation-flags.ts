@@ -23,6 +23,8 @@ export const foundationFlags = {
   careNavigatorFreeText: false,
   careNavigatorRuleActivation: false,
   careNavigatorClinicalApproval: false,
+  prescriptionOcrDispatch: false,
+  prescriptionRecordCommit: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {
