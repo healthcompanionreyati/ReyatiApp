@@ -1067,6 +1067,18 @@ export const careRelationshipInvitations = sqliteTable("care_relationship_invita
   index("idx_care_relationship_invitations_email_status").on(table.email, table.status),
 ]);
 
+export const dependentProfiles = sqliteTable("dependent_profiles", {
+  id: text("id").primaryKey(), displayName: text("display_name").notNull(), dateOfBirth: text("date_of_birth").notNull(), status: text("status").notNull().default("pending_verification"), createdByUserId: text("created_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), ageOfMajorityReviewAt: text("age_of_majority_review_at").notNull(), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [index("idx_dependent_profiles_creator_status").on(table.createdByUserId, table.status), index("idx_dependent_profiles_majority_review").on(table.ageOfMajorityReviewAt, table.status)]);
+
+export const guardianshipAssignments = sqliteTable("guardianship_assignments", {
+  id: text("id").primaryKey(), dependentId: text("dependent_id").notNull().references(() => dependentProfiles.id, { onDelete: "restrict" }), guardianUserId: text("guardian_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), authorityType: text("authority_type").notNull(), status: text("status").notNull().default("pending_verification"), evidenceReference: text("evidence_reference"), appointmentsAuthority: integer("appointments_authority", { mode: "boolean" }).notNull().default(false), recordsAuthority: integer("records_authority", { mode: "boolean" }).notNull().default(false), paymentsAuthority: integer("payments_authority", { mode: "boolean" }).notNull().default(false), consentAuthority: integer("consent_authority", { mode: "boolean" }).notNull().default(false), emergencyAuthority: integer("emergency_authority", { mode: "boolean" }).notNull().default(false), preparedByUserId: text("prepared_by_user_id").references(() => users.id, { onDelete: "restrict" }), reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }), reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }), reviewNote: text("review_note"), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [uniqueIndex("idx_guardianship_assignments_dependent_guardian").on(table.dependentId, table.guardianUserId), index("idx_guardianship_assignments_guardian_status").on(table.guardianUserId, table.status), index("idx_guardianship_assignments_status_updated").on(table.status, table.updatedAt)]);
+
+export const guardianshipEvents = sqliteTable("guardianship_events", {
+  id: text("id").primaryKey(), assignmentId: text("assignment_id").notNull().references(() => guardianshipAssignments.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), note: text("note").notNull(), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_guardianship_events_assignment_created").on(table.assignmentId, table.createdAt)]);
+
 export const consents = sqliteTable("consents", {
   id: text("id").primaryKey(),
   subjectUserId: text("subject_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

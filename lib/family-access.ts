@@ -4,6 +4,7 @@ import { auditEvents, careRelationshipInvitations, careRelationships, emailDeliv
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 import { familyInvitationDeliveryAvailable, signedFamilyInvitationToken, verifiedFamilyInvitationId } from "@/lib/communications/family-invitations";
+import { createDependentProfile, getOwnedDependents } from "@/lib/dependent-care";
 
 export class FamilyAccessValidationError extends Error {
   constructor(message: string) { super(message); this.name = "FamilyAccessValidationError"; }
@@ -43,7 +44,7 @@ export async function getFamilyAccess(userId: string) {
   await db.update(careRelationships).set({ status: "revoked", updatedAt: now }).where(and(
     eq(careRelationships.status, "active"), lt(careRelationships.expiresAt, now),
   ));
-  const [managed, delegated, invitations] = await Promise.all([
+  const [managed, delegated, invitations, dependents] = await Promise.all([
     db.select({
       id: careRelationships.id, subjectLabel: careRelationships.subjectLabel, subjectName: users.displayName,
       subjectUserId: careRelationships.subjectUserId,
@@ -68,8 +69,9 @@ export async function getFamilyAccess(userId: string) {
     }).from(careRelationshipInvitations).innerJoin(careRelationships, eq(careRelationships.id, careRelationshipInvitations.relationshipId))
       .where(and(eq(careRelationships.managerUserId, userId), inArray(careRelationshipInvitations.status, ["pending", "expired", "revoked"])))
       .orderBy(asc(careRelationshipInvitations.createdAt)),
+    getOwnedDependents(userId),
   ]);
-  return { managed, delegated, invitations };
+  return { managed: [...dependents.map(item => ({ id: `dependent:${item.id}`, subjectLabel: item.subjectLabel, subjectName: null, subjectUserId: null, relationshipType: "dependent", status: item.status, appointmentsAccess: false, recordsAccess: false, paymentsAccess: false, expiresAt: null, version: item.version, createdAt: null, dateOfBirth: item.dateOfBirth, ageOfMajorityReviewAt: item.ageOfMajorityReviewAt, authorityType: item.authorityType })), ...managed.filter(item => item.relationshipType !== "dependent" && item.relationshipType !== "child")], delegated, invitations };
 }
 
 export async function resolveCareSubject(userId: string, requestedSubjectUserId: string | null, scope: "appointments" | "records" | "payments") {
@@ -93,23 +95,8 @@ export async function resolveCareSubject(userId: string, requestedSubjectUserId:
 }
 
 export async function createDependentRequest(userId: string, body: Record<string, unknown>) {
-  const subjectLabel = valueText(body.subjectLabel, "subjectLabel", 80);
-  const relationshipType = valueText(body.relationshipType, "relationshipType", 30);
-  if (!['child', 'dependent'].includes(relationshipType)) throw new FamilyAccessValidationError("relationshipType is invalid");
-  const db = await getDb(); const now = new Date(); const id = crypto.randomUUID();
-  await db.batch([
-    db.insert(careRelationships).values({
-      id, managerUserId: userId, subjectUserId: null, subjectLabel, relationshipType,
-      status: "pending_verification", appointmentsAccess: false, recordsAccess: false,
-      paymentsAccess: false, expiresAt: null, version: 1, createdAt: now, updatedAt: now,
-    }),
-    db.insert(auditEvents).values({
-      id: crypto.randomUUID(), actorUserId: userId, organizationId: null,
-      action: "care_relationship.verification_requested", resourceType: "care_relationship", resourceId: id,
-      outcome: "success", metadataJson: JSON.stringify({ relationshipType }), createdAt: now,
-    }),
-  ]);
-  return { id, status: "pending_verification" };
+  try { return await createDependentProfile(userId, body); }
+  catch (error) { if (error instanceof Error) throw new FamilyAccessValidationError(error.message); throw error; }
 }
 
 export async function inviteAdultCareAccess(userId: string, userEmail: string, body: Record<string, unknown>) {
