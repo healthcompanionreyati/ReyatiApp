@@ -105,6 +105,7 @@ export default function ProviderConsole() {
         <a className="provider-nav-link" href="/provider/messages"><span>✦</span>{ar ? "رسائل المتابعة" : "Follow-up messages"}</a>
         <a className="provider-nav-link" href="/provider/referrals"><span>↗</span>{ar ? "الإحالات" : "Referrals"}</a>
         <a className="provider-nav-link" href="/provider/experience"><span>◎</span>{ar ? "تجربة المرضى" : "Patient experience"}</a>
+        <a className="provider-nav-link" href="/provider/waitlist"><span>◷</span>{ar ? "قائمة الانتظار" : "Waitlist"}</a>
         <a className="provider-nav-link" href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}</a>
         <a className="provider-nav-link" href="/provider/documents"><span>▤</span>{ar ? "المستندات المشتركة" : "Shared documents"}</a>
         <a className="provider-nav-link" href="/provider/prescription-review"><span>◎</span>{ar ? "مراجعة الوصفات" : "Prescription review"}</a>

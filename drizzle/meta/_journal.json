@@ -400,6 +400,13 @@
       "when": 1786919199698,
       "tag": "0056_careful_impossible_man",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "6",
+      "when": 1786920876522,
+      "tag": "0057_safe_oracle",
+      "breakpoints": true
     }
   ]
 }
