@@ -1602,3 +1602,41 @@ export const operationalRateLimits = sqliteTable("operational_rate_limits", {
   index("idx_operational_rate_limits_window_end").on(table.windowEndsAt),
   index("idx_operational_rate_limits_scope_updated").on(table.scope, table.updatedAt),
 ]);
+
+export const patientExperienceSurveys = sqliteTable("patient_experience_surveys", {
+  id: text("id").primaryKey(),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }),
+  providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  surveyType: text("survey_type").notNull(),
+  overallRating: integer("overall_rating").notNull(),
+  accessRating: integer("access_rating").notNull(),
+  communicationRating: integer("communication_rating").notNull(),
+  respectRating: integer("respect_rating").notNull(),
+  clarityRating: integer("clarity_rating").notNull(),
+  structuredTagsJson: text("structured_tags_json").notNull().default("[]"),
+  locale: text("locale").notNull().default("en"),
+  status: text("status").notNull().default("submitted"),
+  consentVersion: text("consent_version").notNull(),
+  withdrawnAt: integer("withdrawn_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_patient_experience_appointment_type").on(table.appointmentId, table.surveyType),
+  index("idx_patient_experience_patient_status_created").on(table.patientId, table.status, table.createdAt),
+  index("idx_patient_experience_provider_type_status").on(table.providerId, table.surveyType, table.status),
+]);
+
+export const patientExperienceEvents = sqliteTable("patient_experience_events", {
+  id: text("id").primaryKey(),
+  surveyId: text("survey_id").notNull().references(() => patientExperienceSurveys.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_patient_experience_events_survey_created").on(table.surveyId, table.createdAt)]);
+
+export const patientExperienceRehearsals = sqliteTable("patient_experience_rehearsals", {
+  id: text("id").primaryKey(), rehearsalVersion: text("rehearsal_version").notNull(), scenarioCount: integer("scenario_count").notNull(), passedScenarios: integer("passed_scenarios").notNull(), failedScenarios: integer("failed_scenarios").notNull(), responsesCreated: integer("responses_created").notNull(), providerActionsCreated: integer("provider_actions_created").notNull(), externalExports: integer("external_exports").notNull(), result: text("result").notNull(), dataMode: text("data_mode").notNull(), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_patient_experience_rehearsals_result_executed").on(table.result, table.executedAt)]);
