@@ -1035,6 +1035,71 @@ export const virtualCareRehearsals = sqliteTable("virtual_care_rehearsals", {
   index("idx_virtual_care_rehearsals_executor_executed").on(table.executedByUserId, table.executedAt),
 ]);
 
+export const careMessageThreads = sqliteTable("care_message_threads", {
+  id: text("id").primaryKey(),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }),
+  providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  purpose: text("purpose").notNull().default("follow_up"),
+  status: text("status").notNull().default("open"),
+  opensAt: integer("opens_at", { mode: "timestamp_ms" }).notNull(),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  lastMessageAt: integer("last_message_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_care_message_threads_appointment").on(table.appointmentId),
+  index("idx_care_message_threads_patient_status_updated").on(table.patientId, table.status, table.updatedAt),
+  index("idx_care_message_threads_provider_status_updated").on(table.providerId, table.status, table.updatedAt),
+  index("idx_care_message_threads_status_expires").on(table.status, table.expiresAt),
+]);
+
+export const careMessages = sqliteTable("care_messages", {
+  id: text("id").primaryKey(),
+  threadId: text("thread_id").notNull().references(() => careMessageThreads.id, { onDelete: "restrict" }),
+  senderUserId: text("sender_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  senderRole: text("sender_role").notNull(),
+  bodyText: text("body_text").notNull(),
+  safetyClassification: text("safety_classification").notNull().default("standard"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_care_messages_thread_created").on(table.threadId, table.createdAt),
+  index("idx_care_messages_sender_created").on(table.senderUserId, table.createdAt),
+]);
+
+export const careMessageEvents = sqliteTable("care_message_events", {
+  id: text("id").primaryKey(),
+  threadId: text("thread_id").references(() => careMessageThreads.id, { onDelete: "restrict" }),
+  appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status"),
+  reasonCode: text("reason_code"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_care_message_events_thread_created").on(table.threadId, table.createdAt),
+  index("idx_care_message_events_action_created").on(table.action, table.createdAt),
+]);
+
+export const careMessagingRehearsals = sqliteTable("care_messaging_rehearsals", {
+  id: text("id").primaryKey(),
+  rehearsalVersion: text("rehearsal_version").notNull(),
+  scenarioCount: integer("scenario_count").notNull(),
+  passedScenarios: integer("passed_scenarios").notNull(),
+  failedScenarios: integer("failed_scenarios").notNull(),
+  messagesPersisted: integer("messages_persisted").notNull(),
+  externalMessagesSent: integer("external_messages_sent").notNull(),
+  clinicalActionsCreated: integer("clinical_actions_created").notNull(),
+  result: text("result").notNull(),
+  dataMode: text("data_mode").notNull().default("synthetic_only"),
+  executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_care_messaging_rehearsals_result_executed").on(table.result, table.executedAt),
+  index("idx_care_messaging_rehearsals_executor_executed").on(table.executedByUserId, table.executedAt),
+]);
+
 export const careContinuityCases = sqliteTable("care_continuity_cases", {
   id: text("id").primaryKey(),
   appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),

@@ -38,6 +38,9 @@ export const foundationFlags = {
   virtualCareMediaRuntime: false,
   virtualCareExternalFallback: false,
   virtualCareClinicalProtocolActivation: false,
+  careMessagingExternalDelivery: false,
+  careMessagingAttachments: false,
+  careMessagingClinicalAutomation: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

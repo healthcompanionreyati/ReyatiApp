@@ -379,6 +379,13 @@
       "when": 1786914435109,
       "tag": "0053_rich_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "6",
+      "when": 1786916025627,
+      "tag": "0054_red_millenium_guard",
+      "breakpoints": true
     }
   ]
 }

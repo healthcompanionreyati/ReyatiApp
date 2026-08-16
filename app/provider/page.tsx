@@ -102,6 +102,7 @@ export default function ProviderConsole() {
       <nav className="provider-nav">
         <a className="provider-nav-link active" href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}{counts.attention > 0 && <em>{counts.attention}</em>}</a>
         <a className="provider-nav-link" href="/provider/virtual-care"><span>◉</span>{ar ? "الرعاية الافتراضية" : "Virtual care"}</a>
+        <a className="provider-nav-link" href="/provider/messages"><span>✦</span>{ar ? "رسائل المتابعة" : "Follow-up messages"}</a>
         <a className="provider-nav-link" href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}</a>
         <a className="provider-nav-link" href="/provider/documents"><span>▤</span>{ar ? "المستندات المشتركة" : "Shared documents"}</a>
         <a className="provider-nav-link" href="/provider/prescription-review"><span>◎</span>{ar ? "مراجعة الوصفات" : "Prescription review"}</a>
