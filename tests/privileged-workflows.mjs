@@ -288,6 +288,8 @@ if (reminderSuite.scenarios.length === 0) {
 }
 const reminderEvaluation = await request("/api/admin/reminder-readiness", { identity: identities.admin, method: "POST", body: { operation: "run_evaluation", suiteId: reminderSuite.id } });
 assert.equal(reminderEvaluation.data.result, "pass"); assert.equal(reminderEvaluation.data.totalScenarios, 9); assert.equal(reminderEvaluation.data.passedScenarios, 9); assert.equal(reminderEvaluation.data.duplicateOccurrences, 0); assert.equal(reminderEvaluation.data.invalidSourceOccurrences, 0); assert.equal(reminderEvaluation.data.deliveryAttempts, 0); assert.equal(reminderEvaluation.data.occurrenceMaterializationEnabled, false); assert.equal(reminderEvaluation.data.deliveryEnabled, false);
+const reviewedReminderEvaluation = await request("/api/admin/reminder-readiness", { identity: identities.reviewer, method: "POST", body: { operation: "review_run", runId: reminderEvaluation.data.id, version: reminderEvaluation.data.version, action: "verify", note: "Independently verified all synthetic scheduler evidence and confirmed that occurrence creation and delivery remain disabled." } });
+assert.equal(reviewedReminderEvaluation.data.status, "verified"); assert.equal(reviewedReminderEvaluation.data.occurrenceMaterializationEnabled, false); assert.equal(reviewedReminderEvaluation.data.deliveryEnabled, false);
 
 const service = await request("/api/provider/catalog-management", {
   identity: identities.provider,

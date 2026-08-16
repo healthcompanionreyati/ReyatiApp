@@ -6,11 +6,13 @@ Reyati evaluates medication reminder scheduling with a fixed bilingual synthetic
 
 Each run is durable and records scenario totals, failures, duplicate occurrences, invalid-source occurrences, and delivery attempts. The application audit contains only operational counts and stable references; it excludes medication names, directions, patient data, and document content.
 
+A passing run remains pending until a separately assigned security auditor verifies it. The evaluator cannot review the same run. Review decisions use optimistic locking and append an immutable event; a failed run cannot be verified.
+
 ## Safety boundary
 
 The evaluator is deterministic and synthetic-only. It does not read patient reminder plans, materialize due occurrences, enqueue notifications, claim adherence, or activate OCR imports. Repeated ticks are deduplicated inside evaluation, and any source other than explicit patient entry is blocked before time evaluation.
 
-Passing the suite is evidence, not activation approval. Hosted scheduler reliability, timezone and travel policy, approved bilingual wording, monitoring, independent review, verified clinical-source policy, and separate occurrence and delivery activation decisions remain required.
+Passing and independently verifying the suite is evidence, not activation approval. Hosted scheduler reliability, timezone and travel policy, approved bilingual wording, monitoring, accountable ownership, verified clinical-source policy, and separate occurrence and delivery activation decisions remain required.
 
 ## Consequences
 
