@@ -41,6 +41,9 @@ export const foundationFlags = {
   careMessagingExternalDelivery: false,
   careMessagingAttachments: false,
   careMessagingClinicalAutomation: false,
+  referralExternalDelivery: false,
+  referralAutomatedRouting: false,
+  referralClinicalRecordTransfer: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

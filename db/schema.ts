@@ -1100,6 +1100,38 @@ export const careMessagingRehearsals = sqliteTable("care_messaging_rehearsals", 
   index("idx_care_messaging_rehearsals_executor_executed").on(table.executedByUserId, table.executedAt),
 ]);
 
+export const careReferrals = sqliteTable("care_referrals", {
+  id: text("id").primaryKey(),
+  sourceAppointmentId: text("source_appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),
+  patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }),
+  referringProviderId: text("referring_provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  receivingProviderId: text("receiving_provider_id").references(() => providerProfiles.id, { onDelete: "restrict" }),
+  requestedSpecialty: text("requested_specialty").notNull(),
+  reasonSummary: text("reason_summary").notNull(),
+  status: text("status").notNull().default("initiated"),
+  patientConsentVersion: text("patient_consent_version"),
+  patientConsentedAt: integer("patient_consented_at", { mode: "timestamp_ms" }),
+  providerRespondedAt: integer("provider_responded_at", { mode: "timestamp_ms" }),
+  expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+  idempotencyKey: text("idempotency_key").notNull(),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_care_referrals_referrer_idempotency").on(table.referringProviderId, table.idempotencyKey),
+  index("idx_care_referrals_patient_status_updated").on(table.patientId, table.status, table.updatedAt),
+  index("idx_care_referrals_referrer_status_updated").on(table.referringProviderId, table.status, table.updatedAt),
+  index("idx_care_referrals_receiver_status_updated").on(table.receivingProviderId, table.status, table.updatedAt),
+  index("idx_care_referrals_status_expires").on(table.status, table.expiresAt),
+]);
+
+export const careReferralEvents = sqliteTable("care_referral_events", {
+  id: text("id").primaryKey(), referralId: text("referral_id").notNull().references(() => careReferrals.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), reasonCode: text("reason_code"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_care_referral_events_referral_created").on(table.referralId, table.createdAt), index("idx_care_referral_events_action_created").on(table.action, table.createdAt)]);
+
+export const careReferralRehearsals = sqliteTable("care_referral_rehearsals", {
+  id: text("id").primaryKey(), rehearsalVersion: text("rehearsal_version").notNull(), scenarioCount: integer("scenario_count").notNull(), passedScenarios: integer("passed_scenarios").notNull(), failedScenarios: integer("failed_scenarios").notNull(), appointmentsCreated: integer("appointments_created").notNull(), externalMessagesSent: integer("external_messages_sent").notNull(), clinicalRecordsTransferred: integer("clinical_records_transferred").notNull(), result: text("result").notNull(), dataMode: text("data_mode").notNull().default("synthetic_only"), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_care_referral_rehearsals_result_executed").on(table.result, table.executedAt), index("idx_care_referral_rehearsals_executor_executed").on(table.executedByUserId, table.executedAt)]);
+
 export const careContinuityCases = sqliteTable("care_continuity_cases", {
   id: text("id").primaryKey(),
   appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }),

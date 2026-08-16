@@ -108,6 +108,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/dependent-transition"><span>↺</span>{ar ? "انتقال سن الرشد" : "Majority transition rehearsal"}</a>
         <a className="admin-verification-link" href="/admin/virtual-care"><span>◉</span>{ar ? "حوكمة الرعاية الافتراضية" : "Virtual-care governance"}</a>
         <a className="admin-verification-link" href="/admin/messaging"><span>✦</span>{ar ? "حوكمة الرسائل" : "Messaging governance"}</a>
+        <a className="admin-verification-link" href="/admin/referrals"><span>↗</span>{ar ? "حوكمة الإحالات" : "Referral governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>
