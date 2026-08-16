@@ -50,6 +50,14 @@ export const foundationFlags = {
   waitlistAutomatedMatching: false,
   waitlistAutomaticBooking: false,
   waitlistExternalDelivery: false,
+  laboratoryExternalLisIntegration: false,
+  laboratoryExternalResultUpload: false,
+  laboratoryAutomaticClinicalInterpretation: false,
+  laboratoryAutomaticUrgentEscalation: false,
+  homeCareIndependentMarketplace: false,
+  homeCareExternalDelivery: false,
+  homeCareLiveLocationTracking: false,
+  homeCareAutomaticAssignment: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

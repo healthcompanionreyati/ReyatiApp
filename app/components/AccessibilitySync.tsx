@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/queue": "Digital check-in", "/provider/queue": "Queue operations", "/admin/queue": "Queue governance", "/laboratory": "Laboratory orders", "/provider/laboratory": "Provider laboratory orders", "/partner/laboratory": "Laboratory fulfilment", "/admin/laboratory": "Laboratory governance", "/home-care": "Home care", "/partner/home-care": "Home-care fulfilment", "/admin/home-care": "Home-care governance",
   "/waitlist": "Appointment waitlist", "/provider/waitlist": "Provider waitlist", "/admin/waitlist": "Waitlist governance",
   "/": "Home", "/navigator": "Care Navigator", "/providers": "Find care", "/appointments": "Appointments", "/virtual-care": "Virtual care", "/messages": "Secure messages", "/referrals": "Referrals", "/experience": "My experience", "/wallet": "Health records", "/medication-reminders": "Medication reminders",
   "/documents": "Medical documents", "/provider/documents": "Shared documents", "/provider/prescription-review": "Prescription review", "/provider/report-review": "Report review",
@@ -16,6 +17,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/queue": "تسجيل الوصول الرقمي", "/provider/queue": "عمليات قائمة الانتظار", "/admin/queue": "حوكمة قائمة الانتظار الرقمية", "/laboratory": "طلبات المختبر", "/provider/laboratory": "طلبات المختبر لمقدم الرعاية", "/partner/laboratory": "تنفيذ خدمات المختبر", "/admin/laboratory": "حوكمة المختبر", "/home-care": "الرعاية المنزلية", "/partner/home-care": "تنفيذ الرعاية المنزلية", "/admin/home-care": "حوكمة الرعاية المنزلية",
   "/waitlist": "قائمة الانتظار", "/provider/waitlist": "قائمة انتظار مقدم الرعاية", "/admin/waitlist": "حوكمة قائمة الانتظار",
   "/": "الرئيسية", "/navigator": "موجّه الرعاية", "/providers": "ابحث عن رعاية", "/appointments": "المواعيد", "/virtual-care": "الرعاية الافتراضية", "/messages": "الرسائل الآمنة", "/referrals": "الإحالات", "/experience": "تجربتي", "/wallet": "السجلات الصحية", "/medication-reminders": "تذكيرات الدواء",
   "/documents": "المستندات الطبية", "/payments": "المدفوعات", "/family": "وصول العائلة", "/family/dependents": "دورة حياة التابع والوصي", "/support": "الدعم",

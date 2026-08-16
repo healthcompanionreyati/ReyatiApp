@@ -49,6 +49,8 @@ export default function PartnerPortal() {
       <div className="partner-org boundary-org"><span>—</span><div><b>{ar ? "لا توجد مؤسسة متصلة" : "No organization connected"}</b><small>{ar ? "وصول الشركاء غير مفعّل" : "Partner access not enabled"}</small></div></div>
       <nav className="partner-boundary-nav">
         <a className="active" href="/partner"><span>◇</span>{ar ? "حالة المساحة" : "Workspace status"}</a>
+        <a href="/partner/laboratory"><span>△</span>{ar ? "طلبات المختبر" : "Laboratory fulfilment"}</a>
+        <a href="/partner/home-care"><span>⌂</span>{ar ? "الرعاية المنزلية" : "Home-care fulfilment"}</a>
         <span><i>○</i>{ar ? "الأعضاء والأهلية" : "Members & eligibility"}</span>
         <span><i>○</i>{ar ? "التمويل والفواتير" : "Funding & invoices"}</span>
         <span><i>○</i>{ar ? "إعداد البرنامج" : "Programme setup"}</span>

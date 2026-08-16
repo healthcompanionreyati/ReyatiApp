@@ -407,6 +407,13 @@
       "when": 1786920876522,
       "tag": "0057_safe_oracle",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "6",
+      "when": 1786922329876,
+      "tag": "0058_long_stark_industries",
+      "breakpoints": true
     }
   ]
 }
