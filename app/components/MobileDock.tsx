@@ -5,14 +5,14 @@ import { useReyatiLocale } from "./useReyatiLocale";
 
 type DockItem = { href: string; icon: string; label: string; exact?: boolean; aliases?: string[] };
 
-const patientRoutes = ["/", "/providers", "/appointments", "/wallet", "/family", "/payments", "/support", "/notifications"];
+const patientRoutes = ["/", "/navigator", "/providers", "/appointments", "/wallet", "/family", "/payments", "/support", "/notifications"];
 
 const patientItems: DockItem[] = [
   { href: "/", icon: "⌂", label: "Home", exact: true },
-  { href: "/providers", icon: "⌕", label: "Find care" },
+  { href: "/navigator", icon: "◇", label: "Care guide" },
   { href: "/appointments", icon: "◉", label: "Visits" },
   { href: "/wallet", icon: "▤", label: "Records" },
-  { href: "/journeys", icon: "◇", label: "More", aliases: ["/family", "/payments", "/support", "/notifications"] },
+  { href: "/journeys", icon: "•••", label: "More", aliases: ["/providers", "/family", "/payments", "/support", "/notifications"] },
 ];
 
 const providerItems: DockItem[] = [
@@ -40,7 +40,7 @@ const partnerItems: DockItem[] = [
 ];
 
 const arabicLabels: Record<string, string> = {
-  "/": "الرئيسية", "/providers": "الرعاية", "/appointments": "الزيارات", "/wallet": "السجلات", "/journeys": "المزيد",
+  "/": "الرئيسية", "/navigator": "دليل الرعاية", "/providers": "الرعاية", "/appointments": "الزيارات", "/wallet": "السجلات", "/journeys": "المزيد",
   "/provider": "اليوم", "/provider/patients": "المرضى", "/provider/services": "الخدمات", "/provider/insights": "الإحصاءات", "/provider/settings": "الإعدادات",
   "/admin": "نظرة عامة", "/admin/verification": "التحقق", "/admin/finance": "المالية", "/admin/cases": "الحالات", "/admin/audit": "التدقيق",
   "/partner": "الحالة", "/partner/program": "البرنامج", "/support": "الدعم", "/auth": "الحساب",

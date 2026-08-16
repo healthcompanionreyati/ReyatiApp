@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("launch packages and rollback rehearsals are durable and indexed", async () => {
-  const schema = await read("db/schema.ts"); const files = await readdir(new URL("../drizzle/", import.meta.url)); const migration = await read(`drizzle/${files.filter((name) => name.endsWith(".sql")).sort().at(-1)}`);
+  const schema = await read("db/schema.ts"); const migration = await read("drizzle/0040_happy_stepford_cuckoos.sql");
   assert.match(schema, /pilotLaunchPackages/); assert.match(schema, /pilotRollbackDrills/); assert.match(schema, /idx_pilot_launch_packages_plan_package_version/); assert.match(migration, /pilot_launch_packages/); assert.match(migration, /PRAGMA optimize/);
 });
 

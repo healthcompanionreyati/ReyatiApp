@@ -755,7 +755,7 @@ test("uses explicit shared navigation mappings and accessible dialog behavior", 
     readFile(new URL("../app/auth.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(dock, /aliases: \["\/family", "\/payments", "\/support", "\/notifications"\]/);
+  assert.match(dock, /aliases: \["\/providers", "\/family", "\/payments", "\/support", "\/notifications"\]/);
   assert.match(dock, /label: "Status"/);
   assert.match(dock, /label: "Programme"/);
   assert.match(dock, /label: "Directory"/);

@@ -19,6 +19,8 @@ export const foundationFlags = {
   realPilotFeedbackCollection: false,
   pilotLaunchRuntime: false,
   pilotCommandRuntime: false,
+  careNavigatorModelAssistance: false,
+  careNavigatorFreeText: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

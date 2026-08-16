@@ -744,6 +744,20 @@ export const patientProfiles = sqliteTable("patient_profiles", {
   ...timestamps,
 }, (table) => [uniqueIndex("idx_patient_profiles_user_id").on(table.userId)]);
 
+export const careNavigatorAssessments = sqliteTable("care_navigator_assessments", {
+  id: text("id").primaryKey(), userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  locale: text("locale").notNull(), consentVersion: text("consent_version").notNull(), rulesetVersion: text("ruleset_version").notNull(),
+  concernCategory: text("concern_category").notNull(), durationBand: text("duration_band").notNull(), ageGroup: text("age_group").notNull(), careModePreference: text("care_mode_preference").notNull(),
+  redFlagsJson: text("red_flags_json").notNull(), outcome: text("outcome").notNull(), recommendedSpecialty: text("recommended_specialty"), recommendedCareMode: text("recommended_care_mode"),
+  rationaleCode: text("rationale_code").notNull(), preparationQuestionsJson: text("preparation_questions_json").notNull(), providerIdsJson: text("provider_ids_json").notNull().default("[]"),
+  status: text("status").notNull().default("presented"), decision: text("decision"), decidedAt: integer("decided_at", { mode: "timestamp_ms" }), version: integer("version").notNull().default(1), ...timestamps,
+}, (table) => [index("idx_care_navigator_assessments_user_created").on(table.userId, table.createdAt), index("idx_care_navigator_assessments_outcome_created").on(table.outcome, table.createdAt)]);
+
+export const careNavigatorAssessmentEvents = sqliteTable("care_navigator_assessment_events", {
+  id: text("id").primaryKey(), assessmentId: text("assessment_id").notNull().references(() => careNavigatorAssessments.id, { onDelete: "restrict" }), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), decision: text("decision"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_care_navigator_events_assessment_created").on(table.assessmentId, table.createdAt)]);
+
 export const providerProfiles = sqliteTable("provider_profiles", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),

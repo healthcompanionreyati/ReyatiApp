@@ -79,7 +79,10 @@ export default function ProviderDiscovery() {
       const data = await response.json().catch(() => ({})) as { providers?: Provider[] };
       if (!response.ok) throw new Error("catalog unavailable");
       setProviders(Array.isArray(data.providers) ? data.providers : []);
-      setSubjectUserId(new URLSearchParams(window.location.search).get("subjectUserId"));
+      const search = new URLSearchParams(window.location.search);
+      setSubjectUserId(search.get("subjectUserId"));
+      const navigatorSpecialty = search.get("specialty");
+      if (navigatorSpecialty) setQuery(navigatorSpecialty);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setCatalogError(true);

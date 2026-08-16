@@ -54,6 +54,42 @@ if (!bootstrap.data.isAdmin) {
 
 await request("/api/admin/overview", { identity: identities.patient, status: 403 });
 await request("/api/provider/appointments", { identity: identities.patient, status: 403 });
+const navigatorWorkspace = await request("/api/navigator", { identity: identities.patient });
+assert.equal(navigatorWorkspace.data.clinicallyApproved, false);
+assert.equal(navigatorWorkspace.data.modelAssistanceEnabled, false);
+assert.equal(navigatorWorkspace.data.emergency.number, "999");
+const noRedFlags = {
+  breathing_difficulty: false,
+  unconscious_or_confused: false,
+  stroke_signs: false,
+  uncontrolled_bleeding: false,
+  serious_injury: false,
+  immediate_harm_risk: false,
+};
+const emergencyGuidance = await request("/api/navigator", {
+  identity: identities.patient,
+  method: "POST",
+  body: { operation: "assess", consentAccepted: true, consentVersion: navigatorWorkspace.data.consentVersion, locale: "en", concernCategory: "general", durationBand: "today", ageGroup: "adult", careModePreference: "any", redFlags: { ...noRedFlags, breathing_difficulty: true } },
+});
+assert.equal(emergencyGuidance.data.outcome, "emergency");
+assert.equal(emergencyGuidance.data.recommendedSpecialty, null);
+assert.equal(emergencyGuidance.data.emergencyNumber, "999");
+await request("/api/navigator", { identity: identities.patient, method: "POST", body: { operation: "decision", assessmentId: emergencyGuidance.data.id, version: emergencyGuidance.data.version, decision: "seek_emergency_help" } });
+const routedGuidance = await request("/api/navigator", {
+  identity: identities.patient,
+  method: "POST",
+  body: { operation: "assess", consentAccepted: true, consentVersion: navigatorWorkspace.data.consentVersion, locale: "en", concernCategory: "skin", durationBand: "days", ageGroup: "adult", careModePreference: "in_person", redFlags: noRedFlags },
+});
+assert.equal(routedGuidance.data.outcome, "routed");
+assert.equal(routedGuidance.data.recommendedSpecialty, "Dermatology");
+await request("/api/navigator", { identity: identities.patient, method: "POST", body: { operation: "decision", assessmentId: routedGuidance.data.id, version: routedGuidance.data.version, decision: "view_providers" } });
+const uncertainGuidance = await request("/api/navigator", {
+  identity: identities.patient,
+  method: "POST",
+  body: { operation: "assess", consentAccepted: true, consentVersion: navigatorWorkspace.data.consentVersion, locale: "ar", concernCategory: "other", durationBand: "unsure", ageGroup: "prefer_not_to_say", careModePreference: "any", redFlags: noRedFlags },
+});
+assert.equal(uncertainGuidance.data.outcome, "insufficient_information");
+await request("/api/navigator", { identity: identities.patient, method: "POST", body: { operation: "assess", consentAccepted: true, consentVersion: navigatorWorkspace.data.consentVersion, locale: "en", concernCategory: "general", durationBand: "today", ageGroup: "adult", careModePreference: "any", redFlags: { breathing_difficulty: false } }, status: 400 });
 const documentWorkspace = await request("/api/patient/documents", { identity: identities.patient });
 assert.equal(documentWorkspace.data.readiness.uploadEnabled, false, "Medical document upload must remain gated");
 assert.deepEqual(documentWorkspace.data.documents, []);
