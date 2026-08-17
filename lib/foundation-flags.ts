@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationExternalVendorApproval: false,
+  integrationConnectionActivation: false,
+  integrationMappingRuntimeApply: false,
+  integrationRecordMigration: false,
+  integrationAutomaticIncidentResolution: false,
   releaseTwoExternalExchange: false,
   releaseTwoDeviceImport: false,
   releaseTwoProfileActivation: false,
