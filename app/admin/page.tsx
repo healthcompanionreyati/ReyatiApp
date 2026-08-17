@@ -159,6 +159,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/integration-traffic"><span>≋</span>{ar ? "حركة التكامل ومنع الإساءة" : "Traffic & abuse controls"}</a>
         <a className="admin-verification-link" href="/admin/integration-resilience"><span>⟳</span>{ar ? "مرونة التكامل" : "Integration resilience"}</a>
         <a className="admin-verification-link" href="/admin/integration-change"><span>△</span>{ar ? "تغيير التكامل" : "Integration changes"}</a>
+        <a className="admin-verification-link" href="/admin/integration-observability"><span>⌁</span>{ar ? "مراقبة التكامل" : "Integration observability"}</a>
         <a className="admin-verification-link" href="/admin/partner-governance"><span>◇</span>{ar ? "حوكمة الشركاء والتسوية" : "Partner & settlement governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>

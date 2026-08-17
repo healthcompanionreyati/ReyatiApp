@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationObservabilityTelemetryCollection: false,
+  integrationObservabilityPayloadInspection: false,
+  integrationObservabilityExternalTelemetryExport: false,
+  integrationObservabilityAutomatedAlertDelivery: false,
+  integrationObservabilityExternalContact: false,
   integrationChangeDeploymentExecution: false,
   integrationChangeConfigurationMutation: false,
   integrationChangeMaintenanceWindowActivation: false,
