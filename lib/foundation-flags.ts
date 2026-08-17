@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  verificationExternalAuthorityCheck: false,
+  verificationAutomaticProfileActivation: false,
+  verificationAutomaticUnpublishing: false,
+  verificationAutomaticSuspension: false,
+  verificationEvidenceFileUpload: false,
   partnerGovernanceExternalVerification: false,
   partnerGovernanceAutomaticActivation: false,
   partnerGovernanceRuntimeRoleGrant: false,

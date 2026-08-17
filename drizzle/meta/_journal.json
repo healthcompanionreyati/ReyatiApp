@@ -498,6 +498,13 @@
       "when": 1786975186538,
       "tag": "0070_colossal_ricochet",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "6",
+      "when": 1786976445387,
+      "tag": "0071_grey_shadowcat",
+      "breakpoints": true
     }
   ]
 }

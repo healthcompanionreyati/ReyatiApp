@@ -123,6 +123,8 @@ export default function ProviderConsole() {
         <a className="provider-nav-link" href="/provider/organization-settings"><span>⚙</span>{ar ? "إعدادات المؤسسة" : "Organization settings"}</a>
         <a className="provider-nav-link" href="/provider/team-access"><span>♙</span>{ar ? "الفريق والوصول" : "Team & access"}</a>
         <a className="provider-nav-link" href="/provider/schedule-rules"><span>◫</span>{ar ? "قواعد الجدولة" : "Scheduling rules"}</a>
+        <a className="provider-nav-link" href="/provider/credentials"><span>✓</span>{ar ? "الاعتماد وإعادة التحقق" : "Credentials & re-verification"}</a>
+        <a className="provider-nav-link" href="/provider/organization-verification"><span>▣</span>{ar ? "تحقق المؤسسة والموقع" : "Organization verification"}</a>
         <a className="provider-nav-link" href="/provider/insights"><span>↗</span>{ar ? "الإحصاءات" : "Insights"}</a>
         <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>
       </nav>
