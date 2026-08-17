@@ -505,6 +505,13 @@
       "when": 1786976445387,
       "tag": "0071_grey_shadowcat",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "6",
+      "when": 1786977205272,
+      "tag": "0072_crazy_captain_midlands",
+      "breakpoints": true
     }
   ]
 }

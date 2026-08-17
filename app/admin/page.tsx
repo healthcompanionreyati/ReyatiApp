@@ -142,6 +142,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/service-status"><span>●</span>{ar ? "اتصالات حالة الخدمة" : "Service-status communications"}</a>
         <a className="admin-verification-link" href="/admin/provider-operations-governance"><span>◫</span>{ar ? "حوكمة عمليات المزود" : "Provider operations governance"}</a>
         <a className="admin-verification-link" href="/admin/verification-lifecycle"><span>✓</span>{ar ? "دورة حياة التحقق" : "Verification lifecycle"}</a>
+        <a className="admin-verification-link" href="/admin/workforce-governance"><span>♙</span>{ar ? "حوكمة القوى العاملة" : "Workforce governance"}</a>
         <a className="admin-verification-link" href="/admin/partner-governance"><span>◇</span>{ar ? "حوكمة الشركاء والتسوية" : "Partner & settlement governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>

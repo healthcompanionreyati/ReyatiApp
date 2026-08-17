@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  workforceExternalRegistryLookup: false,
+  workforceAutomaticCredentialVerification: false,
+  workforceRuntimePrivilegeGrant: false,
+  workforceAutomaticSuspension: false,
+  workforceClinicalRecordAccess: false,
   verificationExternalAuthorityCheck: false,
   verificationAutomaticProfileActivation: false,
   verificationAutomaticUnpublishing: false,
