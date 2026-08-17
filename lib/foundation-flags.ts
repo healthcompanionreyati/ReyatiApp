@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationNetworkFirewallMutation: false,
+  integrationNetworkRouteMutation: false,
+  integrationNetworkDnsMutation: false,
+  integrationNetworkTunnelProvisioning: false,
+  integrationNetworkExternalContact: false,
   integrationCertificateFileStorage: false,
   integrationCertificatePrivateKeyStorage: false,
   integrationCertificateTrustStoreMutation: false,
