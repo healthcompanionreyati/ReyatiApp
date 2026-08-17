@@ -127,6 +127,9 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/privacy-rights"><span>◫</span>{ar ? "عمليات حقوق الخصوصية" : "Privacy-rights operations"}</a>
         <a className="admin-verification-link" href="/admin/health-content"><span>▤</span>{ar ? "حوكمة المحتوى الصحي" : "Health-content governance"}</a>
         <a className="admin-verification-link" href="/admin/emergency-profile"><span>✚</span>{ar ? "حوكمة ملف الطوارئ" : "Emergency-profile governance"}</a>
+        <a className="admin-verification-link" href="/admin/health-profile"><span>♡</span>{ar ? "حوكمة الملف الصحي" : "Health-profile governance"}</a>
+        <a className="admin-verification-link" href="/admin/consents"><span>✓</span>{ar ? "حوكمة الموافقات" : "Consent governance"}</a>
+        <a className="admin-verification-link" href="/admin/complaints"><span>!</span>{ar ? "عمليات الشكاوى" : "Complaints operations"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>
