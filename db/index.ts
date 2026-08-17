@@ -19,8 +19,11 @@ import * as emergencyProfileSchema from "./emergency-profile-schema";
 import * as personalHealthProfileSchema from "./personal-health-profile-schema";
 import * as consentCenterSchema from "./consent-center-schema";
 import * as complaintsSchema from "./complaints-schema";
+import * as accountSecuritySchema from "./account-security-schema";
+import * as notificationPreferencesModuleSchema from "./notification-preferences-schema";
+import * as catalogueGovernanceSchema from "./catalogue-governance-schema";
 
-const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema };
+const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema };
 
 export async function getDb() {
   const { env } = await import("cloudflare:workers");

@@ -130,6 +130,9 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/health-profile"><span>♡</span>{ar ? "حوكمة الملف الصحي" : "Health-profile governance"}</a>
         <a className="admin-verification-link" href="/admin/consents"><span>✓</span>{ar ? "حوكمة الموافقات" : "Consent governance"}</a>
         <a className="admin-verification-link" href="/admin/complaints"><span>!</span>{ar ? "عمليات الشكاوى" : "Complaints operations"}</a>
+        <a className="admin-verification-link" href="/admin/account-security"><span>⌾</span>{ar ? "حوكمة أمان الحساب" : "Account security governance"}</a>
+        <a className="admin-verification-link" href="/admin/notification-preferences"><span>◉</span>{ar ? "حوكمة تفضيلات الإشعارات" : "Notification preference governance"}</a>
+        <a className="admin-verification-link" href="/admin/catalogue"><span>▦</span>{ar ? "حوكمة الكتالوج" : "Catalogue governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>
