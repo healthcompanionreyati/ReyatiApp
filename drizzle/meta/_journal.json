@@ -414,6 +414,13 @@
       "when": 1786922329876,
       "tag": "0058_long_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "6",
+      "when": 1786944124962,
+      "tag": "0059_empty_patch",
+      "breakpoints": true
     }
   ]
 }

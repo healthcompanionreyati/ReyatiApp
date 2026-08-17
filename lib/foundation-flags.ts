@@ -58,6 +58,20 @@ export const foundationFlags = {
   homeCareExternalDelivery: false,
   homeCareLiveLocationTracking: false,
   homeCareAutomaticAssignment: false,
+  encounterNoteOverwrite: false,
+  encounterExternalClinicalDelivery: false,
+  pharmacyAutomaticRefillApproval: false,
+  pharmacyUncertainOcrActions: false,
+  pharmacyInventoryIntegration: false,
+  pharmacyControlledDrugSystem: false,
+  pharmacyPaymentIntegration: false,
+  pharmacyCourierTracking: false,
+  pharmacyExternalIntegration: false,
+  sampleCollectionLocationTracking: false,
+  sampleCollectionExternalCourier: false,
+  sampleCollectionAutomaticAssignment: false,
+  sampleCollectionAutomaticResultInterpretation: false,
+  sampleCollectionCriticalResultSubstitution: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

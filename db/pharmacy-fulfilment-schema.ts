@@ -1,0 +1,33 @@
+import { type AnySQLiteColumn, index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { appointments, organizations, patientProfiles, providerProfiles, users } from "./schema";
+
+const timestamps = { createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(), updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull() };
+
+export const pharmacyProfiles = sqliteTable("pharmacy_profiles", {
+  organizationId: text("organization_id").primaryKey().references(() => organizations.id, { onDelete: "restrict" }),
+  approvalStatus: text("approval_status").notNull().default("pending"), pickupEnabled: integer("pickup_enabled", { mode: "boolean" }).notNull().default(true), deliveryEnabled: integer("delivery_enabled", { mode: "boolean" }).notNull().default(false), serviceAreaLabel: text("service_area_label"), ...timestamps,
+}, table => [index("idx_pharmacy_profiles_approval_updated").on(table.approvalStatus, table.updatedAt)]);
+
+export const pharmacyPrescriptionOrders = sqliteTable("pharmacy_prescription_orders", {
+  id: text("id").primaryKey(), appointmentId: text("appointment_id").notNull().references(() => appointments.id, { onDelete: "restrict" }), patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }), providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }),
+  medicationLabel: text("medication_label").notNull(), directions: text("directions").notNull(), quantityLabel: text("quantity_label").notNull(), repeatsAuthorized: integer("repeats_authorized").notNull().default(0), repeatsRemaining: integer("repeats_remaining").notNull().default(0), validUntil: integer("valid_until", { mode: "timestamp_ms" }).notNull(),
+  source: text("source").notNull().default("provider_issued"), approvalStatus: text("approval_status").notNull().default("approved"), attestationVersion: text("attestation_version").notNull(), issuedByUserId: text("issued_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), issuedAt: integer("issued_at", { mode: "timestamp_ms" }).notNull(), status: text("status").notNull().default("available"), version: integer("version").notNull().default(1), ...timestamps,
+}, table => [index("idx_pharmacy_orders_patient_status_updated").on(table.patientId, table.status, table.updatedAt), index("idx_pharmacy_orders_provider_status_updated").on(table.providerId, table.status, table.updatedAt), index("idx_pharmacy_orders_appointment").on(table.appointmentId)]);
+
+export const pharmacyFulfilments = sqliteTable("pharmacy_fulfilments", {
+  id: text("id").primaryKey(), prescriptionOrderId: text("prescription_order_id").notNull().references(() => pharmacyPrescriptionOrders.id, { onDelete: "restrict" }), patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }), pharmacyOrganizationId: text("pharmacy_organization_id").notNull().references(() => organizations.id, { onDelete: "restrict" }),
+  refillRequestId: text("refill_request_id").references((): AnySQLiteColumn => pharmacyRefillRequests.id, { onDelete: "restrict" }),
+  method: text("method").notNull(), consentVersion: text("consent_version").notNull(), consentedAt: integer("consented_at", { mode: "timestamp_ms" }).notNull(), status: text("status").notNull().default("submitted"), clarificationMessage: text("clarification_message"), rejectionReasonCode: text("rejection_reason_code"), cancelledReasonCode: text("cancelled_reason_code"), version: integer("version").notNull().default(1), completedAt: integer("completed_at", { mode: "timestamp_ms" }), ...timestamps,
+}, table => [index("idx_pharmacy_fulfilments_patient_updated").on(table.patientId, table.updatedAt), index("idx_pharmacy_fulfilments_org_status_updated").on(table.pharmacyOrganizationId, table.status, table.updatedAt), index("idx_pharmacy_fulfilments_order").on(table.prescriptionOrderId), uniqueIndex("idx_pharmacy_fulfilments_refill_request").on(table.refillRequestId)]);
+
+export const pharmacyRefillRequests = sqliteTable("pharmacy_refill_requests", {
+  id: text("id").primaryKey(), prescriptionOrderId: text("prescription_order_id").notNull().references(() => pharmacyPrescriptionOrders.id, { onDelete: "restrict" }), patientId: text("patient_id").notNull().references(() => patientProfiles.id, { onDelete: "restrict" }), providerId: text("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "restrict" }), requestType: text("request_type").notNull(), patientNote: text("patient_note").notNull(), status: text("status").notNull().default("pending_provider_review"), providerDecisionReason: text("provider_decision_reason"), reviewedByUserId: text("reviewed_by_user_id").references(() => users.id, { onDelete: "restrict" }), reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }), version: integer("version").notNull().default(1), ...timestamps,
+}, table => [index("idx_pharmacy_refills_patient_updated").on(table.patientId, table.updatedAt), index("idx_pharmacy_refills_provider_status_updated").on(table.providerId, table.status, table.updatedAt)]);
+
+export const pharmacyWorkflowEvents = sqliteTable("pharmacy_workflow_events", {
+  id: text("id").primaryKey(), resourceType: text("resource_type").notNull(), resourceId: text("resource_id").notNull(), actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), action: text("action").notNull(), previousStatus: text("previous_status"), nextStatus: text("next_status").notNull(), metadataJson: text("metadata_json").notNull().default("{}"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, table => [index("idx_pharmacy_events_resource_created").on(table.resourceType, table.resourceId, table.createdAt)]);
+
+export const pharmacyRehearsals = sqliteTable("pharmacy_rehearsals", {
+  id: text("id").primaryKey(), suiteVersion: text("suite_version").notNull(), scenarioCount: integer("scenario_count").notNull(), passedScenarios: integer("passed_scenarios").notNull(), failedScenarios: integer("failed_scenarios").notNull(), ordersCreated: integer("orders_created").notNull(), fulfilmentsCreated: integer("fulfilments_created").notNull(), refillsApproved: integer("refills_approved").notNull(), externalRequestsSent: integer("external_requests_sent").notNull(), result: text("result").notNull(), dataMode: text("data_mode").notNull(), executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }), executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, table => [index("idx_pharmacy_rehearsals_result_executed").on(table.result, table.executedAt)]);

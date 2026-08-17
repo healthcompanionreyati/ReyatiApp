@@ -108,6 +108,8 @@ export default function ProviderConsole() {
         <a className="provider-nav-link" href="/provider/waitlist"><span>◷</span>{ar ? "قائمة الانتظار" : "Waitlist"}</a>
         <a className="provider-nav-link" href="/provider/queue"><span>⌁</span>{ar ? "قائمة الوصول" : "Check-in queue"}</a>
         <a className="provider-nav-link" href="/provider/laboratory"><span>△</span>{ar ? "طلبات المختبر" : "Laboratory orders"}</a>
+        <a className="provider-nav-link" href="/provider/pharmacy"><span>✚</span>{ar ? "الصيدلية والتجديد" : "Pharmacy & refills"}</a>
+        <a className="provider-nav-link" href="/provider/encounter-continuity"><span>↺</span>{ar ? "تعديلات الزيارة" : "Encounter amendments"}</a>
         <a className="provider-nav-link" href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}</a>
         <a className="provider-nav-link" href="/provider/documents"><span>▤</span>{ar ? "المستندات المشتركة" : "Shared documents"}</a>
         <a className="provider-nav-link" href="/provider/prescription-review"><span>◎</span>{ar ? "مراجعة الوصفات" : "Prescription review"}</a>

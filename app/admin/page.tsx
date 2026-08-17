@@ -114,6 +114,9 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/queue"><span>⌁</span>{ar ? "حوكمة الوصول" : "Queue governance"}</a>
         <a className="admin-verification-link" href="/admin/laboratory"><span>△</span>{ar ? "حوكمة المختبر" : "Laboratory governance"}</a>
         <a className="admin-verification-link" href="/admin/home-care"><span>⌂</span>{ar ? "حوكمة الرعاية المنزلية" : "Home-care governance"}</a>
+        <a className="admin-verification-link" href="/admin/pharmacy"><span>✚</span>{ar ? "حوكمة الصيدلية" : "Pharmacy governance"}</a>
+        <a className="admin-verification-link" href="/admin/sample-collection"><span>◌</span>{ar ? "حوكمة جمع العينات" : "Sample-collection governance"}</a>
+        <a className="admin-verification-link" href="/admin/encounter-continuity"><span>↺</span>{ar ? "حوكمة تعديلات الزيارة" : "Encounter continuity governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>
