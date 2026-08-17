@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/admin/integration-change": "Integration change governance", "/admin/integration-change-governance": "Integration change posture",
   "/admin/integration-resilience": "Integration resilience and failover", "/admin/integration-resilience-governance": "Integration resilience posture",
   "/admin/integration-traffic": "Integration traffic and abuse controls", "/admin/integration-traffic-governance": "Traffic-control posture",
   "/admin/integration-payload-security": "Integration payload security", "/admin/integration-payload-security-governance": "Payload protection posture",
@@ -36,6 +37,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/admin/integration-change": "حوكمة تغيير التكامل ونوافذ الإصدار", "/admin/integration-change-governance": "حالة تغييرات التكامل",
   "/admin/integration-resilience": "حوكمة مرونة التكامل والتحويل الاحتياطي", "/admin/integration-resilience-governance": "حالة مرونة التكامل",
   "/admin/integration-traffic": "حوكمة حركة التكامل ومنع الإساءة", "/admin/integration-traffic-governance": "حالة التحكم في الحركة",
   "/admin/integration-payload-security": "حوكمة أمن حمولة التكامل", "/admin/integration-payload-security-governance": "حالة حماية الحمولة",

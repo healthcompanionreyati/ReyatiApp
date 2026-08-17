@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationChangeDeploymentExecution: false,
+  integrationChangeConfigurationMutation: false,
+  integrationChangeMaintenanceWindowActivation: false,
+  integrationChangeNoticeDelivery: false,
+  integrationChangeExternalContact: false,
   integrationResilienceHealthProbing: false,
   integrationResilienceTrafficRerouting: false,
   integrationResilienceFailoverExecution: false,
