@@ -561,6 +561,13 @@
       "when": 1786985001119,
       "tag": "0079_flowery_khan",
       "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "6",
+      "when": 1786985423852,
+      "tag": "0080_perfect_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

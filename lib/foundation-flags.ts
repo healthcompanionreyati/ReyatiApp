@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  exchangeExternalEventReplay: false,
+  exchangeAutomaticStateCorrection: false,
+  exchangePartnerCallbackDelivery: false,
+  exchangeClinicalPayloadDisclosure: false,
+  exchangeAutomaticCaseClosure: false,
   integrationApiCredentialIssuance: false,
   integrationWebhookActivation: false,
   integrationPartnerCertification: false,
