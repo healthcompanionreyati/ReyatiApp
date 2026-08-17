@@ -161,6 +161,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/integration-change"><span>△</span>{ar ? "تغيير التكامل" : "Integration changes"}</a>
         <a className="admin-verification-link" href="/admin/integration-observability"><span>⌁</span>{ar ? "مراقبة التكامل" : "Integration observability"}</a>
         <a className="admin-verification-link" href="/admin/integration-residency"><span>⌂</span>{ar ? "إقامة بيانات التكامل" : "Data residency"}</a>
+        <a className="admin-verification-link" href="/admin/integration-access-reviews"><span>♢</span>{ar ? "إعادة اعتماد الوصول" : "Access recertification"}</a>
         <a className="admin-verification-link" href="/admin/partner-governance"><span>◇</span>{ar ? "حوكمة الشركاء والتسوية" : "Partner & settlement governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>

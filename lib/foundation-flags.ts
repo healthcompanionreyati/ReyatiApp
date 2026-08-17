@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationAccessReviewCredentialIssuance: false,
+  integrationAccessReviewScopeMutation: false,
+  integrationAccessReviewAccessRevocation: false,
+  integrationAccessReviewSessionTermination: false,
+  integrationAccessReviewExternalContact: false,
   integrationResidencyDataExport: false,
   integrationResidencyCrossBorderTransfer: false,
   integrationResidencyPayloadInspection: false,
