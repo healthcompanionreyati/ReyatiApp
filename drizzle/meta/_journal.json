@@ -603,6 +603,13 @@
       "when": 1786989721024,
       "tag": "0085_rapid_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "6",
+      "when": 1786990078067,
+      "tag": "0086_fast_deathstrike",
+      "breakpoints": true
     }
   ]
 }
