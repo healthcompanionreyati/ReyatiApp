@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  healthWalletFileAcceptance: false,
+  healthWalletAutomaticOcr: false,
+  healthWalletProviderAccessGrant: false,
+  healthWalletAutomaticClinicalCorrection: false,
+  healthWalletExternalExchange: false,
   personalTrackingProviderAccess: false,
   personalTrackingClinicalInterpretation: false,
   personalTrackingAutomaticRecommendations: false,
