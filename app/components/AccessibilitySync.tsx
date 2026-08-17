@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/admin/integration-certificates": "Certificate and trust governance", "/admin/integration-certificates-governance": "Certificate governance posture",
   "/admin/integration-secrets": "Secrets and key rotation", "/admin/integration-secrets-governance": "Secret governance posture",
   "/admin/api-contracts": "API contract versions", "/admin/api-deprecations": "API deprecation plans", "/admin/integration-retention": "Integration data retention", "/admin/partner-sla": "Partner service levels", "/admin/exchange-purposes": "Exchange purpose mappings", "/admin/integration-lifecycle": "Integration lifecycle governance",
   "/admin/exchange-reconciliation": "Integration exchange reconciliation",
@@ -31,6 +32,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/admin/integration-certificates": "حوكمة الشهادات والثقة", "/admin/integration-certificates-governance": "حالة حوكمة الشهادات",
   "/admin/integration-secrets": "حوكمة الأسرار وتدوير المفاتيح", "/admin/integration-secrets-governance": "حالة حوكمة الأسرار",
   "/admin/api-contracts": "إصدارات عقود الواجهة", "/admin/api-deprecations": "خطط إيقاف الواجهات", "/admin/integration-retention": "الاحتفاظ ببيانات التكامل", "/admin/partner-sla": "مستويات خدمة الشركاء", "/admin/exchange-purposes": "تعيين أغراض التبادل", "/admin/integration-lifecycle": "حوكمة دورة حياة التكامل",
   "/admin/exchange-reconciliation": "مطابقة أحداث التكامل",
