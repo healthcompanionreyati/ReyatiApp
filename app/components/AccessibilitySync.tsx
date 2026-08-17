@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/admin/integration-payload-security": "Integration payload security", "/admin/integration-payload-security-governance": "Payload protection posture",
   "/admin/integration-network": "Integration network boundaries", "/admin/integration-network-governance": "Network boundary posture",
   "/admin/integration-certificates": "Certificate and trust governance", "/admin/integration-certificates-governance": "Certificate governance posture",
   "/admin/integration-secrets": "Secrets and key rotation", "/admin/integration-secrets-governance": "Secret governance posture",
@@ -33,6 +34,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/admin/integration-payload-security": "حوكمة أمن حمولة التكامل", "/admin/integration-payload-security-governance": "حالة حماية الحمولة",
   "/admin/integration-network": "حوكمة حدود شبكة التكامل", "/admin/integration-network-governance": "حالة حدود الشبكة",
   "/admin/integration-certificates": "حوكمة الشهادات والثقة", "/admin/integration-certificates-governance": "حالة حوكمة الشهادات",
   "/admin/integration-secrets": "حوكمة الأسرار وتدوير المفاتيح", "/admin/integration-secrets-governance": "حالة حوكمة الأسرار",
