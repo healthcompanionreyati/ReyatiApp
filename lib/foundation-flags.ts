@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  partnerGovernanceExternalVerification: false,
+  partnerGovernanceAutomaticActivation: false,
+  partnerGovernanceRuntimeRoleGrant: false,
+  partnerSettlementExternalMoneyMovement: false,
+  partnerGovernanceClinicalDataAccess: false,
   providerAccessOutboundInvitationDelivery: false,
   providerAccessRuntimeRoleMutation: false,
   providerAccessAutomaticApproval: false,
