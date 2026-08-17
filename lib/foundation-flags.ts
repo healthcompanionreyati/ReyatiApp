@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  personalTrackingProviderAccess: false,
+  personalTrackingClinicalInterpretation: false,
+  personalTrackingAutomaticRecommendations: false,
+  personalTrackingDeviceImport: false,
+  personalTrackingExternalSharing: false,
   appointmentJourneyClinicalDecisionAutomation: false,
   appointmentJourneyAppointmentMutation: false,
   appointmentJourneyExternalDelivery: false,

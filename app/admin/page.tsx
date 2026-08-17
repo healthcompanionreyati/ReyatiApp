@@ -145,6 +145,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/workforce-governance"><span>♙</span>{ar ? "حوكمة القوى العاملة" : "Workforce governance"}</a>
         <a className="admin-verification-link" href="/admin/coverage-governance"><span>↔</span>{ar ? "حوكمة التغطية" : "Coverage governance"}</a>
         <a className="admin-verification-link" href="/admin/appointment-journeys"><span>◎</span>{ar ? "حوكمة رحلة الموعد" : "Appointment journey governance"}</a>
+        <a className="admin-verification-link" href="/admin/personal-health-tracking"><span>♡</span>{ar ? "حوكمة السجلات الشخصية" : "Personal tracking governance"}</a>
         <a className="admin-verification-link" href="/admin/partner-governance"><span>◇</span>{ar ? "حوكمة الشركاء والتسوية" : "Partner & settlement governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
