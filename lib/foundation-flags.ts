@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  releaseTwoExternalExchange: false,
+  releaseTwoDeviceImport: false,
+  releaseTwoProfileActivation: false,
+  releaseTwoAutomaticDataRepair: false,
+  releaseTwoTenantRuntimeApply: false,
   healthWalletFileAcceptance: false,
   healthWalletAutomaticOcr: false,
   healthWalletProviderAccessGrant: false,

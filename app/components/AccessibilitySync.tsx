@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/connections": "External health connections", "/device-connections": "Wearable connections", "/admin/interoperability": "Interoperability profiles", "/admin/data-quality-operations": "Data-quality operations", "/admin/tenant-experience": "Tenant experience governance", "/admin/release-two-readiness": "Release 2 readiness governance",
   "/document-capture": "Document capture drafts", "/record-index": "Health record index", "/sharing-directives": "Sharing directives", "/access-history": "Wallet access history", "/data-quality": "Data quality concerns", "/admin/health-wallet-operations": "Health Wallet operations governance",
   "/immunizations": "Immunization history", "/screening-history": "Preventive screening history", "/health-measurements": "Health measurements", "/symptom-journal": "Symptom journal", "/wellness-journal": "Wellness journal", "/admin/personal-health-tracking": "Personal health tracking governance",
   "/pre-visit-intake": "Pre-visit intake", "/appointment-preparation": "Appointment preparation", "/appointment-accommodations": "Appointment accommodations", "/post-visit-actions": "Post-visit actions", "/care-timeline": "Care journey timeline", "/provider/pre-visit-intake": "Provider intake review", "/provider/preparation-guides": "Preparation guides", "/provider/accommodation-requests": "Accommodation requests", "/provider/follow-up-actions": "Follow-up actions", "/admin/appointment-journeys": "Appointment journey governance",
@@ -25,6 +26,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/connections": "اتصالات السجلات الخارجية", "/device-connections": "اتصالات الأجهزة القابلة للارتداء", "/admin/interoperability": "ملفات التشغيل البيني", "/admin/data-quality-operations": "عمليات جودة البيانات", "/admin/tenant-experience": "حوكمة تجربة المؤسسة", "/admin/release-two-readiness": "حوكمة جاهزية الإصدار الثاني",
   "/document-capture": "مسودات التقاط المستندات", "/record-index": "فهرس السجلات الصحية", "/sharing-directives": "توجيهات المشاركة", "/access-history": "سجل الوصول للمحفظة", "/data-quality": "ملاحظات جودة البيانات", "/admin/health-wallet-operations": "حوكمة عمليات المحفظة الصحية",
   "/immunizations": "سجل التطعيمات", "/screening-history": "سجل الفحوصات الوقائية", "/health-measurements": "القياسات الصحية", "/symptom-journal": "مفكرة الأعراض", "/wellness-journal": "مفكرة العافية", "/admin/personal-health-tracking": "حوكمة السجلات الصحية الشخصية",
   "/pre-visit-intake": "بيانات ما قبل الزيارة", "/appointment-preparation": "الاستعداد للموعد", "/appointment-accommodations": "تسهيلات الموعد", "/post-visit-actions": "إجراءات ما بعد الزيارة", "/care-timeline": "الخط الزمني لرحلة الرعاية", "/provider/pre-visit-intake": "مراجعة بيانات ما قبل الزيارة", "/provider/preparation-guides": "إرشادات الاستعداد", "/provider/accommodation-requests": "طلبات التسهيلات", "/provider/follow-up-actions": "إجراءات المتابعة", "/admin/appointment-journeys": "حوكمة رحلة الموعد",
