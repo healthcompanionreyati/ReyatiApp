@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  coverageAutomaticAppointmentReassignment: false,
+  coverageAutomaticScheduleMutation: false,
+  coverageAutomaticPatientNotification: false,
+  coverageRuntimePrivilegeDelegation: false,
+  coverageClinicalHandoverContent: false,
   workforceExternalRegistryLookup: false,
   workforceAutomaticCredentialVerification: false,
   workforceRuntimePrivilegeGrant: false,

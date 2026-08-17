@@ -127,6 +127,8 @@ export default function ProviderConsole() {
         <a className="provider-nav-link" href="/provider/organization-verification"><span>▣</span>{ar ? "تحقق المؤسسة والموقع" : "Organization verification"}</a>
         <a className="provider-nav-link" href="/provider/workforce-credentials"><span>♙</span>{ar ? "اعتماد القوى العاملة" : "Workforce credentials"}</a>
         <a className="provider-nav-link" href="/provider/clinical-privileges"><span>◇</span>{ar ? "الصلاحيات السريرية" : "Clinical privileges"}</a>
+        <a className="provider-nav-link" href="/provider/leave-planning"><span>◷</span>{ar ? "تخطيط الإجازة" : "Leave planning"}</a>
+        <a className="provider-nav-link" href="/provider/coverage-assignments"><span>↔</span>{ar ? "تغطية البديل" : "Substitute coverage"}</a>
         <a className="provider-nav-link" href="/provider/insights"><span>↗</span>{ar ? "الإحصاءات" : "Insights"}</a>
         <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>
       </nav>

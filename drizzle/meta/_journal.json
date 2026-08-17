@@ -512,6 +512,13 @@
       "when": 1786977205272,
       "tag": "0072_crazy_captain_midlands",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "6",
+      "when": 1786978373342,
+      "tag": "0073_cheerful_senator_kelly",
+      "breakpoints": true
     }
   ]
 }
