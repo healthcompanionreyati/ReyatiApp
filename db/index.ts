@@ -25,8 +25,11 @@ import * as catalogueGovernanceSchema from "./catalogue-governance-schema";
 import * as accessibilitySettingsModuleSchema from "./accessibility-settings-schema";
 import * as facilityDirectorySchema from "./facility-directory-schema";
 import * as releaseControlsSchema from "./release-controls-schema";
+import * as patientProfileSettingsModuleSchema from "./patient-profile-settings-schema";
+import * as tenantConfigurationSchema from "./tenant-configuration-schema";
+import * as policyTemplatesSchema from "./policy-templates-schema";
 
-const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema, ...accessibilitySettingsModuleSchema, ...facilityDirectorySchema, ...releaseControlsSchema };
+const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema, ...accessibilitySettingsModuleSchema, ...facilityDirectorySchema, ...releaseControlsSchema, ...patientProfileSettingsModuleSchema, ...tenantConfigurationSchema, ...policyTemplatesSchema };
 
 export async function getDb() {
   const { env } = await import("cloudflare:workers");

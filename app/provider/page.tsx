@@ -120,6 +120,7 @@ export default function ProviderConsole() {
         <a className="provider-nav-link" href="/provider/report-review"><span>▧</span>{ar ? "مراجعة التقارير" : "Report review"}</a>
         <a className="provider-nav-link" href="/provider/services"><span>◇</span>{ar ? "الخدمات" : "Services"}</a>
         <a className="provider-nav-link" href="/provider/facility-profile"><span>⌂</span>{ar ? "ملف المنشأة" : "Facility profile"}</a>
+        <a className="provider-nav-link" href="/provider/organization-settings"><span>⚙</span>{ar ? "إعدادات المؤسسة" : "Organization settings"}</a>
         <a className="provider-nav-link" href="/provider/insights"><span>↗</span>{ar ? "الإحصاءات" : "Insights"}</a>
         <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>
       </nav>

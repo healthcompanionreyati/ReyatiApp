@@ -1,0 +1,13 @@
+import { AuthorizationDeniedError } from "@/lib/authorization";
+import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
+import { reportOperationalError } from "@/lib/observability";
+import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
+import { getOrganizationTenantConfiguration, saveTenantConfigurationDraft, submitTenantConfiguration, TenantConfigurationConflictError, TenantConfigurationIndependenceError, TenantConfigurationValidationError } from "@/lib/tenant-configuration";
+
+export const dynamic = "force-dynamic";
+const noStore = { "Cache-Control": "private, no-store" };
+
+export async function GET() { return handle((userId) => getOrganizationTenantConfiguration(userId)); }
+export async function POST(request: Request) { const body = await request.json().catch(() => null) as Record<string, unknown> | null; return handle(async (userId) => { if (!body) throw new TenantConfigurationValidationError("A JSON object is required"); if (body.action === "save_draft") return saveTenantConfigurationDraft(userId, body); if (body.action === "submit") return submitTenantConfiguration(userId, body); throw new TenantConfigurationValidationError("action is invalid"); }, "provider.organization-settings"); }
+
+async function handle(operation: (userId: string) => Promise<unknown>, rateScope?: string) { try { const user = await getOrCreateCurrentUser(); if (user.status !== "active") throw new AuthorizationDeniedError(); if (rateScope) await enforceWriteRateLimit(user.id, rateScope, { limit: 20 }); return Response.json({ data: await operation(user.id) }, { headers: noStore }); } catch (error) { const limited = rateLimitResponse(error, noStore); if (limited) return limited; if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: noStore }); if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore }); if (error instanceof TenantConfigurationValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore }); if (error instanceof TenantConfigurationIndependenceError) return Response.json({ error: "independence_violation", message: error.message }, { status: 403, headers: noStore }); if (error instanceof TenantConfigurationConflictError) return Response.json({ error: "configuration_conflict", message: error.message }, { status: 409, headers: noStore }); reportOperationalError("provider.organization-settings.failed", error); return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } }); } }
