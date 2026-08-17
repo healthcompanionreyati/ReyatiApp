@@ -152,6 +152,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/integration-assurance"><span>✓</span>{ar ? "ضمان التكامل" : "Integration assurance"}</a>
         <a className="admin-verification-link" href="/admin/exchange-reconciliation"><span>↺</span>{ar ? "مطابقة أحداث التكامل" : "Exchange reconciliation"}</a>
         <a className="admin-verification-link" href="/admin/integration-lifecycle"><span>◷</span>{ar ? "دورة حياة التكامل" : "Integration lifecycle"}</a>
+        <a className="admin-verification-link" href="/admin/integration-secrets"><span>⌾</span>{ar ? "الأسرار وتدوير المفاتيح" : "Secrets & key rotation"}</a>
         <a className="admin-verification-link" href="/admin/partner-governance"><span>◇</span>{ar ? "حوكمة الشركاء والتسوية" : "Partner & settlement governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>

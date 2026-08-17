@@ -575,6 +575,13 @@
       "when": 1786986125510,
       "tag": "0081_pink_blue_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "6",
+      "when": 1786986627646,
+      "tag": "0082_famous_tomorrow_man",
+      "breakpoints": true
     }
   ]
 }

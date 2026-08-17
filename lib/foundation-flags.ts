@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationSecretValueStorage: false,
+  integrationSecretCredentialIssuance: false,
+  integrationSecretRotationExecution: false,
+  integrationSecretRevocationExecution: false,
+  integrationSecretExternalContact: false,
   lifecycleContractPublication: false,
   lifecycleAutomaticTrafficRouting: false,
   lifecycleAutomaticDataDeletion: false,
