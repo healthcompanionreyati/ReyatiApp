@@ -477,6 +477,13 @@
       "when": 1786961981518,
       "tag": "0067_illegal_thundra",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "6",
+      "when": 1786968037514,
+      "tag": "0068_lame_wonder_man",
+      "breakpoints": true
     }
   ]
 }

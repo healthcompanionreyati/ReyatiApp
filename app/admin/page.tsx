@@ -139,6 +139,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/patient-profiles"><span>♙</span>{ar ? "حوكمة ملفات المرضى" : "Patient-profile governance"}</a>
         <a className="admin-verification-link" href="/admin/tenant-configuration"><span>⚙</span>{ar ? "حوكمة إعدادات المؤسسات" : "Tenant configuration"}</a>
         <a className="admin-verification-link" href="/admin/policy-templates"><span>▤</span>{ar ? "قوالب السياسات والاتصالات" : "Policy & communication templates"}</a>
+        <a className="admin-verification-link" href="/admin/service-status"><span>●</span>{ar ? "اتصالات حالة الخدمة" : "Service-status communications"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>

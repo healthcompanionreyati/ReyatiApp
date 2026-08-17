@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  serviceStatusAutomaticIncidentDisclosure: false,
+  serviceStatusExternalProviderSync: false,
+  serviceStatusAutomaticPublishing: false,
+  serviceStatusSecurityDetailDisclosure: false,
+  serviceStatusGuaranteedAvailability: false,
   patientProfileIdentityMutation: false,
   patientProfileAutomaticVerification: false,
   patientProfileExternalSync: false,
