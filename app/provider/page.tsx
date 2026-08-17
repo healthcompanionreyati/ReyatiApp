@@ -129,6 +129,10 @@ export default function ProviderConsole() {
         <a className="provider-nav-link" href="/provider/clinical-privileges"><span>◇</span>{ar ? "الصلاحيات السريرية" : "Clinical privileges"}</a>
         <a className="provider-nav-link" href="/provider/leave-planning"><span>◷</span>{ar ? "تخطيط الإجازة" : "Leave planning"}</a>
         <a className="provider-nav-link" href="/provider/coverage-assignments"><span>↔</span>{ar ? "تغطية البديل" : "Substitute coverage"}</a>
+        <a className="provider-nav-link" href="/provider/pre-visit-intake"><span>▤</span>{ar ? "بيانات ما قبل الزيارة" : "Pre-visit intake"}</a>
+        <a className="provider-nav-link" href="/provider/preparation-guides"><span>✓</span>{ar ? "إرشادات الاستعداد" : "Preparation guides"}</a>
+        <a className="provider-nav-link" href="/provider/accommodation-requests"><span>◐</span>{ar ? "طلبات التسهيلات" : "Accommodation requests"}</a>
+        <a className="provider-nav-link" href="/provider/follow-up-actions"><span>↺</span>{ar ? "إجراءات المتابعة" : "Follow-up actions"}</a>
         <a className="provider-nav-link" href="/provider/insights"><span>↗</span>{ar ? "الإحصاءات" : "Insights"}</a>
         <a className="provider-nav-link" href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a>
       </nav>

@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  appointmentJourneyClinicalDecisionAutomation: false,
+  appointmentJourneyAppointmentMutation: false,
+  appointmentJourneyExternalDelivery: false,
+  appointmentJourneyClinicalRecordDisclosure: false,
+  appointmentJourneyInferredAccessibilityNeeds: false,
   coverageAutomaticAppointmentReassignment: false,
   coverageAutomaticScheduleMutation: false,
   coverageAutomaticPatientNotification: false,
