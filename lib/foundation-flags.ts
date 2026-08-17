@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationResidencyDataExport: false,
+  integrationResidencyCrossBorderTransfer: false,
+  integrationResidencyPayloadInspection: false,
+  integrationResidencyStorageLocationMutation: false,
+  integrationResidencyExternalProcessorContact: false,
   integrationObservabilityTelemetryCollection: false,
   integrationObservabilityPayloadInspection: false,
   integrationObservabilityExternalTelemetryExport: false,

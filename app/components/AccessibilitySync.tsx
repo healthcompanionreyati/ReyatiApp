@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/admin/integration-residency": "Integration data residency", "/admin/integration-residency-governance": "Integration residency posture",
   "/admin/integration-observability": "Integration observability governance", "/admin/integration-observability-governance": "Integration observability posture",
   "/admin/integration-change": "Integration change governance", "/admin/integration-change-governance": "Integration change posture",
   "/admin/integration-resilience": "Integration resilience and failover", "/admin/integration-resilience-governance": "Integration resilience posture",
@@ -38,6 +39,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/admin/integration-residency": "حوكمة إقامة بيانات التكامل ونقلها", "/admin/integration-residency-governance": "حالة إقامة بيانات التكامل",
   "/admin/integration-observability": "حوكمة مراقبة التكامل والتتبع", "/admin/integration-observability-governance": "حالة مراقبة التكامل",
   "/admin/integration-change": "حوكمة تغيير التكامل ونوافذ الإصدار", "/admin/integration-change-governance": "حالة تغييرات التكامل",
   "/admin/integration-resilience": "حوكمة مرونة التكامل والتحويل الاحتياطي", "/admin/integration-resilience-governance": "حالة مرونة التكامل",
