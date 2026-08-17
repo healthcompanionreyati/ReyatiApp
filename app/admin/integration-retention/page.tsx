@@ -1,0 +1,1 @@
+import IntegrationLifecycleWorkspace from"@/app/components/IntegrationLifecycleWorkspace";export const dynamic="force-dynamic";export default function Page(){return <IntegrationLifecycleWorkspace module="integration_retention"/>}

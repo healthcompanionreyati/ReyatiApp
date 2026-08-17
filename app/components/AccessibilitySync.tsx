@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/admin/api-contracts": "API contract versions", "/admin/api-deprecations": "API deprecation plans", "/admin/integration-retention": "Integration data retention", "/admin/partner-sla": "Partner service levels", "/admin/exchange-purposes": "Exchange purpose mappings", "/admin/integration-lifecycle": "Integration lifecycle governance",
   "/admin/exchange-reconciliation": "Integration exchange reconciliation",
   "/admin/api-clients": "API client governance", "/admin/webhook-endpoints": "Webhook endpoint governance", "/admin/partner-conformance": "Partner conformance", "/admin/terminology-sets": "Terminology governance", "/admin/patient-match-exceptions": "Patient-match exceptions", "/admin/integration-assurance": "Integration assurance governance",
   "/admin/integration-vendors": "Integration vendor registry", "/admin/connection-onboarding": "Connection onboarding", "/admin/data-mappings": "Data mapping governance", "/admin/migration-rehearsals": "Migration rehearsals", "/admin/integration-incidents": "Integration incidents", "/admin/integration-operations": "Integration operations governance",
@@ -29,6 +30,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/admin/api-contracts": "إصدارات عقود الواجهة", "/admin/api-deprecations": "خطط إيقاف الواجهات", "/admin/integration-retention": "الاحتفاظ ببيانات التكامل", "/admin/partner-sla": "مستويات خدمة الشركاء", "/admin/exchange-purposes": "تعيين أغراض التبادل", "/admin/integration-lifecycle": "حوكمة دورة حياة التكامل",
   "/admin/exchange-reconciliation": "مطابقة أحداث التكامل",
   "/admin/api-clients": "حوكمة عملاء واجهة البرمجة", "/admin/webhook-endpoints": "حوكمة نقاط استقبال الأحداث", "/admin/partner-conformance": "مطابقة الشركاء", "/admin/terminology-sets": "حوكمة المصطلحات", "/admin/patient-match-exceptions": "استثناءات مطابقة المرضى", "/admin/integration-assurance": "حوكمة ضمان التكامل",
   "/admin/integration-vendors": "سجل موردي التكامل", "/admin/connection-onboarding": "إعداد الاتصال", "/admin/data-mappings": "حوكمة تعيين البيانات", "/admin/migration-rehearsals": "تمارين ترحيل البيانات", "/admin/integration-incidents": "حوادث التكامل", "/admin/integration-operations": "حوكمة عمليات التكامل",

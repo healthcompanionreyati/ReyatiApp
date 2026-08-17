@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  lifecycleContractPublication: false,
+  lifecycleAutomaticTrafficRouting: false,
+  lifecycleAutomaticDataDeletion: false,
+  lifecycleAutomaticSlaEnforcement: false,
+  lifecycleConsentRuntimeEnforcement: false,
   exchangeExternalEventReplay: false,
   exchangeAutomaticStateCorrection: false,
   exchangePartnerCallbackDelivery: false,
