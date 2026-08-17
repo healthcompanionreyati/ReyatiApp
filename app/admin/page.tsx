@@ -120,6 +120,9 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/benefits"><span>◇</span>{ar ? "حوكمة المزايا" : "Benefit governance"}</a>
         <a className="admin-verification-link" href="/admin/reviews"><span>☆</span>{ar ? "إشراف المراجعات" : "Review moderation"}</a>
         <a className="admin-verification-link" href="/admin/finance-controls"><span>Q</span>{ar ? "الضوابط المالية" : "Finance controls"}</a>
+        <a className="admin-verification-link" href="/admin/care-plans"><span>✓</span>{ar ? "حوكمة خطط الرعاية" : "Care-plan governance"}</a>
+        <a className="admin-verification-link" href="/admin/diagnostic-imaging"><span>◈</span>{ar ? "حوكمة التصوير" : "Imaging governance"}</a>
+        <a className="admin-verification-link" href="/admin/insurance"><span>▣</span>{ar ? "حوكمة التأمين" : "Insurance governance"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>

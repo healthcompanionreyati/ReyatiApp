@@ -88,6 +88,23 @@ export const foundationFlags = {
   financeSettlements: false,
   financePayouts: false,
   financeCardStorage: false,
+  carePlanAutonomousRecommendations: false,
+  carePlanDeviceIntegration: false,
+  carePlanExternalMessaging: false,
+  carePlanClinicalAutomation: false,
+  carePlanPatientClinicalInstructionEditing: false,
+  diagnosticImagingPacsRisDicomIntegration: false,
+  diagnosticImagingImageUploadOrViewer: false,
+  diagnosticImagingAutomaticInterpretation: false,
+  diagnosticImagingAutomaticUrgentEscalation: false,
+  insuranceExternalPayerApi: false,
+  insuranceClaimAdjudication: false,
+  insuranceGuaranteeOfCoverageOrPayment: false,
+  insurancePremiumCollection: false,
+  insuranceAutomatedEligibility: false,
+  insuranceAutomatedAuthorization: false,
+  insuranceClinicalDecision: false,
+  insuranceCardStorage: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

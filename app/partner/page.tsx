@@ -54,6 +54,8 @@ export default function PartnerPortal() {
         <a href="/partner/pharmacy"><span>✚</span>{ar ? "تنفيذ الصيدلية" : "Pharmacy fulfilment"}</a>
         <a href="/partner/sample-collection"><span>◌</span>{ar ? "جمع العينات" : "Sample collection"}</a>
         <a href="/partner/benefits"><span>◇</span>{ar ? "مزايا الموظفين" : "Employee benefits"}</a>
+        <a href="/partner/diagnostic-imaging"><span>◈</span>{ar ? "تنفيذ التصوير" : "Imaging fulfilment"}</a>
+        <a href="/partner/insurance"><span>▣</span>{ar ? "قرارات التأمين" : "Insurance decisions"}</a>
         <span><i>○</i>{ar ? "الأعضاء والأهلية" : "Members & eligibility"}</span>
         <span><i>○</i>{ar ? "التمويل والفواتير" : "Funding & invoices"}</span>
         <span><i>○</i>{ar ? "إعداد البرنامج" : "Programme setup"}</span>

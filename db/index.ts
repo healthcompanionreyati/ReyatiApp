@@ -9,8 +9,11 @@ import * as sampleCollectionSchema from "./sample-collection-schema";
 import * as employerBenefitsSchema from "./employer-benefits-schema";
 import * as patientReviewsSchema from "./patient-reviews-schema";
 import * as financeControlsSchema from "./finance-controls-schema";
+import * as carePlansSchema from "./care-plans-schema";
+import * as diagnosticImagingSchema from "./diagnostic-imaging-schema";
+import * as insuranceAuthorizationSchema from "./insurance-authorization-schema";
 
-const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema };
+const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema };
 
 export async function getDb() {
   const { env } = await import("cloudflare:workers");
