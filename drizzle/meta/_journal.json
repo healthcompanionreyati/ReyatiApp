@@ -610,6 +610,13 @@
       "when": 1786990078067,
       "tag": "0086_fast_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "6",
+      "when": 1786993135539,
+      "tag": "0087_left_sharon_carter",
+      "breakpoints": true
     }
   ]
 }
