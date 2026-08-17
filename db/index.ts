@@ -29,8 +29,9 @@ import * as patientProfileSettingsModuleSchema from "./patient-profile-settings-
 import * as tenantConfigurationSchema from "./tenant-configuration-schema";
 import * as policyTemplatesSchema from "./policy-templates-schema";
 import * as serviceStatusSchema from "./service-status-schema";
+import * as providerOperationsSchema from "./provider-operations-schema";
 
-const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema, ...accessibilitySettingsModuleSchema, ...facilityDirectorySchema, ...releaseControlsSchema, ...patientProfileSettingsModuleSchema, ...tenantConfigurationSchema, ...policyTemplatesSchema, ...serviceStatusSchema };
+const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema, ...accessibilitySettingsModuleSchema, ...facilityDirectorySchema, ...releaseControlsSchema, ...patientProfileSettingsModuleSchema, ...tenantConfigurationSchema, ...policyTemplatesSchema, ...serviceStatusSchema, ...providerOperationsSchema };
 
 export async function getDb() {
   const { env } = await import("cloudflare:workers");
