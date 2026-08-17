@@ -626,8 +626,10 @@ test("ships a live role-gated admin overview without duplicate synthetic queues"
   assert.match(route, /Cache-Control.*no-store/);
   assert.match(page, /fetch\("\/api\/admin\/overview"/);
   assert.match(page, /This overview does not perform administrative decisions/);
-  assert.match(page, /Settlement and refund operations are not connected yet/);
-  assert.match(page, /No review source is connected yet/);
+  assert.match(page, /Payment-support cases use dual review and append-only adjustment records/);
+  assert.match(page, /Completed-appointment reviews with human decisions, appeals/);
+  assert.match(page, /\/admin\/finance-controls/);
+  assert.match(page, /\/admin\/reviews/);
   assert.match(page, /\/admin\/organizations/);
   assert.match(page, /\/admin\/verification/);
   assert.match(page, /\/admin\/cases/);

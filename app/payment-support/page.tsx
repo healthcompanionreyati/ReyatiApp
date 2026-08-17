@@ -1,0 +1,30 @@
+"use client";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import styles from "./finance-controls.module.css";
+
+type Ledger={id:string;appointmentId:string;amountQar:number;currency:string;status:string;refundAmountQar:number|null;statusUpdatedAt:string};
+type FinanceCase={id:string;ledgerEntryId:string;requestType:string;reasonCode:string;requestedAmountQar:number|null;status:string;patientStatusNote:string;version:number;createdAt:string;updatedAt:string};
+type Data={ledger:Ledger[];cases:FinanceCase[];boundaries:Record<string,unknown>};
+async function api(init?:RequestInit){const response=await fetch("/api/payment-support",{cache:"no-store",...init});const payload=await response.json();if(response.status===401){location.assign("/signin-with-chatgpt?return_to=/payment-support");throw new Error("Sign in required")}if(!response.ok)throw new Error(payload.message||payload.error||"Payment support is unavailable");return payload.data}
+
+export default function PaymentSupportPage(){
+  const[data,setData]=useState<Data|null>(null),[error,setError]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
+  const load=useCallback(()=>api().then(setData),[]);useEffect(()=>{queueMicrotask(()=>void load().catch(e=>setError(e.message)))},[load]);
+  async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();const values=new FormData(event.currentTarget);setBusy(true);setError("");try{await api({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_case",ledgerEntryId:values.get("ledger"),requestType:values.get("type"),reasonCode:values.get("reason"),requestedAmountQar:values.get("amount"),patientSummary:values.get("summary")})});setNotice("Your request was submitted for controlled review. / تم إرسال طلبك للمراجعة.");event.currentTarget.reset();await load()}catch(e){setError(e instanceof Error?e.message:"Unable to submit request")}finally{setBusy(false)}}
+  async function cancel(item:FinanceCase){setBusy(true);setError("");try{await api({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"cancel_case",caseId:item.id,version:item.version})});await load()}catch(e){setError(e instanceof Error?e.message:"Unable to cancel case")}finally{setBusy(false)}}
+  return <main className={styles.shell}>
+    <header className={styles.top}><a href="/"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/payments">Payment history</a><span aria-hidden="true">•</span><b>العربية · English</b></nav></header>
+    <section className={styles.hero}><small>PAYMENT SUPPORT · دعم المدفوعات</small><h1>Clear answers for every payment concern.</h1><h2 dir="rtl">إجابات واضحة لكل استفسار مالي.</h2><p>Link a request to your own Reyati ledger entry and follow every review step. Reyati records decisions and evidence here—it does not move money or store card details.</p></section>
+    <section className={styles.body}>{error&&<p className={styles.error}>{error}</p>}{notice&&<p className={styles.notice}>{notice}</p>}<div className={styles.layout}>
+      <article className={styles.panel}><span className={styles.eyebrow}>NEW REQUEST · طلب جديد</span><h2>Ask finance to review an entry</h2><p className={styles.boundary}>No automatic refunds, gateway calls, settlements, payouts, or card storage. / لا توجد مبالغ مستردة تلقائية أو تخزين لبيانات البطاقة.</p><form className={styles.form} onSubmit={submit}>
+        <label>Ledger entry · قيد الدفع<select name="ledger" required><option value="">Choose your entry</option>{data?.ledger.map(item=><option value={item.id} key={item.id}>{item.amountQar} {item.currency} · {item.status.replaceAll("_"," ")} · {new Date(item.statusUpdatedAt).toLocaleDateString()}</option>)}</select></label>
+        <label>Request · نوع الطلب<select name="type" required><option value="payment_issue">Payment issue · مشكلة دفع</option><option value="refund_request">Refund review · مراجعة استرداد</option></select></label>
+        <label>Reason · السبب<select name="reason" required><option value="duplicate_charge">Duplicate charge · خصم مكرر</option><option value="service_cancelled">Service cancelled · خدمة ملغاة</option><option value="service_not_received">Service not received · الخدمة غير مستلمة</option><option value="amount_disputed">Amount disputed · اعتراض على المبلغ</option><option value="refund_not_visible">Refund not visible · الاسترداد غير ظاهر</option><option value="other">Other · أخرى</option></select></label>
+        <label>Requested amount (QAR) · المبلغ المطلوب<input name="amount" type="number" min="1" step="1" inputMode="numeric"/></label>
+        <label>What happened? · ماذا حدث؟<textarea name="summary" required maxLength={1200}/></label>
+        <button className={styles.primary} disabled={busy||!data?.ledger.length}>Submit controlled request · إرسال الطلب</button>
+      </form></article>
+      <section className={styles.list}><div className={styles.sectionTitle}><div><span className={styles.eyebrow}>TRANSPARENT STATUS</span><h2>Your finance cases · طلباتك المالية</h2></div><span>{data?.cases.length??0} cases</span></div>{data?.cases.map(item=><article className={styles.card} key={item.id}><header><div><small>{item.requestType.replaceAll("_"," ")} · {item.reasonCode.replaceAll("_"," ")}</small><h3>{item.requestedAmountQar?`${item.requestedAmountQar} QAR requested`:"Payment entry review"}</h3></div><em className={styles.status}>{item.status.replaceAll("_"," ")}</em></header><p className={styles.statusNote}>{item.patientStatusNote}</p><footer><span>Updated {new Date(item.updatedAt).toLocaleString()}</span>{["submitted","triaged"].includes(item.status)&&<button className={styles.danger} disabled={busy} onClick={()=>void cancel(item)}>Cancel · إلغاء</button>}</footer></article>)}{data&&!data.cases.length&&<div className={styles.empty}>No payment support cases yet. / لا توجد طلبات دعم مالي بعد.</div>}</section>
+    </div></section>
+  </main>;
+}

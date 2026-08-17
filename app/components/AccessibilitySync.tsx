@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/benefits": "My benefits", "/partner/benefits": "Employer benefit operations", "/admin/benefits": "Benefit governance", "/reviews": "My reviews", "/provider/reviews": "Provider reviews", "/admin/reviews": "Review moderation", "/payment-support": "Payment support", "/admin/finance-controls": "Finance controls",
   "/encounter-follow-up": "Visit amendments and follow-up", "/provider/encounter-continuity": "Encounter amendments", "/admin/encounter-continuity": "Encounter continuity governance", "/pharmacy": "Pharmacy fulfilment", "/provider/pharmacy": "Provider pharmacy review", "/partner/pharmacy": "Pharmacy operations", "/admin/pharmacy": "Pharmacy governance", "/sample-collection": "Home sample collection", "/partner/sample-collection": "Sample-collection operations", "/admin/sample-collection": "Sample-collection governance",
   "/queue": "Digital check-in", "/provider/queue": "Queue operations", "/admin/queue": "Queue governance", "/laboratory": "Laboratory orders", "/provider/laboratory": "Provider laboratory orders", "/partner/laboratory": "Laboratory fulfilment", "/admin/laboratory": "Laboratory governance", "/home-care": "Home care", "/partner/home-care": "Home-care fulfilment", "/admin/home-care": "Home-care governance",
   "/waitlist": "Appointment waitlist", "/provider/waitlist": "Provider waitlist", "/admin/waitlist": "Waitlist governance",
@@ -18,6 +19,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/benefits": "مزاياي", "/partner/benefits": "عمليات مزايا صاحب العمل", "/admin/benefits": "حوكمة المزايا", "/reviews": "مراجعاتي", "/provider/reviews": "مراجعات مقدم الرعاية", "/admin/reviews": "إشراف المراجعات", "/payment-support": "دعم المدفوعات", "/admin/finance-controls": "الضوابط المالية",
   "/encounter-follow-up": "تعديلات الزيارة والمتابعة", "/provider/encounter-continuity": "تعديلات سجل الزيارة", "/admin/encounter-continuity": "حوكمة استمرارية الزيارة", "/pharmacy": "تنفيذ خدمات الصيدلية", "/provider/pharmacy": "مراجعة الصيدلية لمقدم الرعاية", "/partner/pharmacy": "عمليات الصيدلية", "/admin/pharmacy": "حوكمة الصيدلية", "/sample-collection": "جمع العينات من المنزل", "/partner/sample-collection": "عمليات جمع العينات", "/admin/sample-collection": "حوكمة جمع العينات",
   "/queue": "تسجيل الوصول الرقمي", "/provider/queue": "عمليات قائمة الانتظار", "/admin/queue": "حوكمة قائمة الانتظار الرقمية", "/laboratory": "طلبات المختبر", "/provider/laboratory": "طلبات المختبر لمقدم الرعاية", "/partner/laboratory": "تنفيذ خدمات المختبر", "/admin/laboratory": "حوكمة المختبر", "/home-care": "الرعاية المنزلية", "/partner/home-care": "تنفيذ الرعاية المنزلية", "/admin/home-care": "حوكمة الرعاية المنزلية",
   "/waitlist": "قائمة الانتظار", "/provider/waitlist": "قائمة انتظار مقدم الرعاية", "/admin/waitlist": "حوكمة قائمة الانتظار",

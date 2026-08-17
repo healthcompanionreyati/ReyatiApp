@@ -72,6 +72,22 @@ export const foundationFlags = {
   sampleCollectionAutomaticAssignment: false,
   sampleCollectionAutomaticResultInterpretation: false,
   sampleCollectionCriticalResultSubstitution: false,
+  employerBenefitsExternalMoneyMovement: false,
+  employerBenefitsClaimsProcessing: false,
+  employerBenefitsClinicalDataAccess: false,
+  employerBenefitsEmployeeIdentityDisclosure: false,
+  employerBenefitsAutomaticEligibilityDecision: false,
+  patientReviewsAutomatedModerationDecisions: false,
+  patientReviewsPublicClinicalClaims: false,
+  patientReviewsPatientIdentityDisclosure: false,
+  patientReviewsAggregateBelowMinimum: false,
+  patientReviewsExternalPublishing: false,
+  financeGatewayIntegration: false,
+  financeExternalMoneyMovement: false,
+  financeAutomaticRefunds: false,
+  financeSettlements: false,
+  financePayouts: false,
+  financeCardStorage: false,
 } as const;
 
 export function assertFoundationCapabilityDisabled(capability: keyof typeof foundationFlags) {

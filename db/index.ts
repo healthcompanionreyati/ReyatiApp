@@ -6,8 +6,11 @@ import * as laboratorySchema from "./laboratory-schema";
 import * as encounterContinuitySchema from "./encounter-continuity-schema";
 import * as pharmacyFulfilmentSchema from "./pharmacy-fulfilment-schema";
 import * as sampleCollectionSchema from "./sample-collection-schema";
+import * as employerBenefitsSchema from "./employer-benefits-schema";
+import * as patientReviewsSchema from "./patient-reviews-schema";
+import * as financeControlsSchema from "./finance-controls-schema";
 
-const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema };
+const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema };
 
 export async function getDb() {
   const { env } = await import("cloudflare:workers");
