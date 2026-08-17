@@ -22,8 +22,11 @@ import * as complaintsSchema from "./complaints-schema";
 import * as accountSecuritySchema from "./account-security-schema";
 import * as notificationPreferencesModuleSchema from "./notification-preferences-schema";
 import * as catalogueGovernanceSchema from "./catalogue-governance-schema";
+import * as accessibilitySettingsModuleSchema from "./accessibility-settings-schema";
+import * as facilityDirectorySchema from "./facility-directory-schema";
+import * as releaseControlsSchema from "./release-controls-schema";
 
-const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema };
+const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema, ...accessibilitySettingsModuleSchema, ...facilityDirectorySchema, ...releaseControlsSchema };
 
 export async function getDb() {
   const { env } = await import("cloudflare:workers");

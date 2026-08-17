@@ -133,6 +133,9 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/account-security"><span>⌾</span>{ar ? "حوكمة أمان الحساب" : "Account security governance"}</a>
         <a className="admin-verification-link" href="/admin/notification-preferences"><span>◉</span>{ar ? "حوكمة تفضيلات الإشعارات" : "Notification preference governance"}</a>
         <a className="admin-verification-link" href="/admin/catalogue"><span>▦</span>{ar ? "حوكمة الكتالوج" : "Catalogue governance"}</a>
+        <a className="admin-verification-link" href="/admin/accessibility-settings"><span>◐</span>{ar ? "حوكمة إمكانية الوصول" : "Accessibility governance"}</a>
+        <a className="admin-verification-link" href="/admin/facility-directory"><span>⌂</span>{ar ? "حوكمة دليل المنشآت" : "Facility directory governance"}</a>
+        <a className="admin-verification-link" href="/admin/release-controls"><span>⚑</span>{ar ? "ضوابط الإصدار" : "Release controls"}</a>
         <a className="admin-verification-link" href="/admin/access"><span>♙</span>{ar ? "وصول المنصة" : "Platform access"}</a>
         <a className="admin-verification-link" href="/admin/audit"><span>▤</span>{ar ? "سجل التدقيق" : "Audit ledger"}</a>
       </nav>
