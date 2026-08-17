@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  savedCareAlgorithmicRecommendation: false,
+  savedCareClinicalQualityRanking: false,
+  savedCareSponsoredRankingInfluence: false,
+  savedCareProviderFavouriteDisclosure: false,
+  savedCareExternalProfileImport: false,
   independentAuthentication: false,
   outboundEmailDelivery: false,
   outboundSmsDelivery: false,

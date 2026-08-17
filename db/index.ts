@@ -12,8 +12,9 @@ import * as financeControlsSchema from "./finance-controls-schema";
 import * as carePlansSchema from "./care-plans-schema";
 import * as diagnosticImagingSchema from "./diagnostic-imaging-schema";
 import * as insuranceAuthorizationSchema from "./insurance-authorization-schema";
+import * as savedCareSchema from "./saved-care-schema";
 
-const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema };
+const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema };
 
 export async function getDb() {
   const { env } = await import("cloudflare:workers");
