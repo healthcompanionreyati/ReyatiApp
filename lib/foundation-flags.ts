@@ -1,4 +1,9 @@
 export const foundationFlags = {
+  integrationApiCredentialIssuance: false,
+  integrationWebhookActivation: false,
+  integrationPartnerCertification: false,
+  integrationTerminologyPublication: false,
+  integrationAutomaticPatientMerge: false,
   integrationExternalVendorApproval: false,
   integrationConnectionActivation: false,
   integrationMappingRuntimeApply: false,

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/admin/api-clients": "API client governance", "/admin/webhook-endpoints": "Webhook endpoint governance", "/admin/partner-conformance": "Partner conformance", "/admin/terminology-sets": "Terminology governance", "/admin/patient-match-exceptions": "Patient-match exceptions", "/admin/integration-assurance": "Integration assurance governance",
   "/admin/integration-vendors": "Integration vendor registry", "/admin/connection-onboarding": "Connection onboarding", "/admin/data-mappings": "Data mapping governance", "/admin/migration-rehearsals": "Migration rehearsals", "/admin/integration-incidents": "Integration incidents", "/admin/integration-operations": "Integration operations governance",
   "/connections": "External health connections", "/device-connections": "Wearable connections", "/admin/interoperability": "Interoperability profiles", "/admin/data-quality-operations": "Data-quality operations", "/admin/tenant-experience": "Tenant experience governance", "/admin/release-two-readiness": "Release 2 readiness governance",
   "/document-capture": "Document capture drafts", "/record-index": "Health record index", "/sharing-directives": "Sharing directives", "/access-history": "Wallet access history", "/data-quality": "Data quality concerns", "/admin/health-wallet-operations": "Health Wallet operations governance",
@@ -27,6 +28,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/admin/api-clients": "حوكمة عملاء واجهة البرمجة", "/admin/webhook-endpoints": "حوكمة نقاط استقبال الأحداث", "/admin/partner-conformance": "مطابقة الشركاء", "/admin/terminology-sets": "حوكمة المصطلحات", "/admin/patient-match-exceptions": "استثناءات مطابقة المرضى", "/admin/integration-assurance": "حوكمة ضمان التكامل",
   "/admin/integration-vendors": "سجل موردي التكامل", "/admin/connection-onboarding": "إعداد الاتصال", "/admin/data-mappings": "حوكمة تعيين البيانات", "/admin/migration-rehearsals": "تمارين ترحيل البيانات", "/admin/integration-incidents": "حوادث التكامل", "/admin/integration-operations": "حوكمة عمليات التكامل",
   "/connections": "اتصالات السجلات الخارجية", "/device-connections": "اتصالات الأجهزة القابلة للارتداء", "/admin/interoperability": "ملفات التشغيل البيني", "/admin/data-quality-operations": "عمليات جودة البيانات", "/admin/tenant-experience": "حوكمة تجربة المؤسسة", "/admin/release-two-readiness": "حوكمة جاهزية الإصدار الثاني",
   "/document-capture": "مسودات التقاط المستندات", "/record-index": "فهرس السجلات الصحية", "/sharing-directives": "توجيهات المشاركة", "/access-history": "سجل الوصول للمحفظة", "/data-quality": "ملاحظات جودة البيانات", "/admin/health-wallet-operations": "حوكمة عمليات المحفظة الصحية",
