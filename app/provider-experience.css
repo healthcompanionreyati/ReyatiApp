@@ -1,0 +1,318 @@
+/* Provider workspace — shared operational foundation. */
+.provider-live-shell {
+  --provider-nav: 272px;
+  background: #f4f8fa;
+  color: #082a43;
+}
+
+.provider-live-shell .provider-sidebar {
+  width: var(--provider-nav);
+  padding: 22px 16px;
+  background: linear-gradient(180deg, #063d56 0%, #052f45 100%);
+  border-inline-end: 1px solid rgba(255,255,255,.08);
+  box-shadow: 18px 0 50px rgba(8,42,67,.12);
+}
+
+.provider-live-shell .provider-main { margin-inline-start: var(--provider-nav); }
+.provider-live-shell .provider-logo img { width: 102px; }
+.provider-live-shell .provider-logo span,
+.provider-live-shell .facility-chip small,
+.provider-live-shell .sidebar-bottom p { font-size: 12px; line-height: 1.45; }
+.provider-live-shell .facility-chip { margin-block: 24px 16px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.08); }
+.provider-live-shell .facility-chip b { font-size: 14px; }
+.provider-live-shell .provider-nav { gap: 4px; padding-inline: 0; }
+.provider-live-shell .provider-nav-link {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #c8dde4;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.provider-live-shell .provider-nav-link:hover { color: #fff; background: rgba(255,255,255,.08); }
+.provider-live-shell .provider-nav-link.active { color: #063d56; background: #70d8df; box-shadow: 0 8px 24px rgba(20,171,193,.2); }
+.provider-live-shell .provider-nav-link span { font-size: 17px; }
+.provider-live-shell .provider-topbar {
+  min-height: 74px;
+  padding: 12px 28px;
+  background: rgba(255,255,255,.94);
+  border-bottom: 1px solid #d9e6ea;
+  backdrop-filter: blur(18px);
+}
+.provider-live-shell .provider-context b,
+.provider-live-shell .provider-actions b { font-size: 14px; }
+.provider-live-shell .provider-context small,
+.provider-live-shell .provider-actions small,
+.provider-live-shell .provider-live-notifications { font-size: 12px; }
+.provider-live-shell .provider-actions button,
+.provider-live-shell .provider-live-notifications { min-height: 40px; display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 999px; }
+.provider-live-shell .provider-workspace { width: min(1180px, calc(100% - 48px)); margin-inline: auto; padding-block: 34px 96px; }
+.provider-live-shell .provider-welcome h1 { font-size: clamp(32px,4vw,48px); line-height: 1.08; letter-spacing: -.035em; }
+.provider-live-shell .provider-welcome p { font-size: 12px; letter-spacing: .1em; }
+.provider-live-shell .provider-welcome span { font-size: 16px; line-height: 1.6; }
+.provider-live-shell .provider-live-primary { min-height: 46px; display: inline-flex; align-items: center; font-size: 14px; padding-inline: 18px; }
+
+@media (max-width: 900px) {
+  .provider-live-shell .provider-sidebar { display: none; }
+  .provider-live-shell .provider-main { margin-inline-start: 0; }
+  .provider-live-shell .provider-topbar { padding-inline: 18px; }
+  .provider-live-shell .provider-workspace { width: min(100% - 28px,1180px); }
+}
+
+/* Harmonize every core provider surface without changing its data contract. */
+.provider-patients-shell,
+.services-shell,
+.insights-shell,
+.settings-shell {
+  --provider-nav: 272px;
+  min-height: 100vh;
+  background: #f4f8fa;
+  color: #082a43;
+}
+
+:where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) {
+  width: var(--provider-nav) !important;
+  padding: 22px 16px !important;
+  background: linear-gradient(180deg,#063d56 0%,#052f45 100%) !important;
+  border-inline-end: 1px solid rgba(255,255,255,.08);
+  box-shadow: 18px 0 50px rgba(8,42,67,.12);
+}
+
+:where(.patient-provider-main,.services-main,.insights-main,.settings-main) {
+  margin-inline-start: var(--provider-nav) !important;
+  min-width: 0;
+}
+
+:where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) .provider-logo img { width: 102px; }
+:where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) .provider-logo span { font-size: 12px; }
+:where(.patient-facility,.services-facility,.insights-facility,.settings-facility) {
+  margin-block: 24px 16px !important;
+  padding: 12px !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.08) !important;
+}
+:where(.patient-facility,.services-facility,.insights-facility,.settings-facility) b { font-size: 14px !important; }
+:where(.patient-facility,.services-facility,.insights-facility,.settings-facility) small { font-size: 12px !important; line-height: 1.4; }
+
+:where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) nav { gap: 4px !important; }
+:where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) nav a {
+  min-height: 44px;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  color: #c8dde4 !important;
+  font-size: 13px !important;
+  line-height: 1.35;
+}
+:where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) nav a:hover { color: #fff !important; background: rgba(255,255,255,.08) !important; }
+:where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) nav a.active {
+  color: #063d56 !important;
+  background: #70d8df !important;
+  box-shadow: 0 8px 24px rgba(20,171,193,.2);
+}
+
+:where(.patient-sidebar-bottom,.services-side-bottom,.insights-side-bottom,.settings-side-bottom) :where(a,p) { font-size: 12px !important; line-height: 1.45; }
+
+:where(.patient-provider-top,.services-top,.insights-top,.settings-top) {
+  min-height: 74px !important;
+  padding: 12px 28px !important;
+  background: rgba(255,255,255,.94) !important;
+  border-bottom: 1px solid #d9e6ea !important;
+  backdrop-filter: blur(18px);
+}
+:where(.patient-provider-top,.services-top,.insights-top,.settings-top) b { font-size: 14px !important; }
+:where(.patient-provider-top,.services-top,.insights-top,.settings-top) small { font-size: 12px !important; }
+:where(.patient-provider-top,.services-top,.insights-top,.settings-top) button,
+:where(.patient-provider-top,.services-top,.insights-top,.settings-top) a {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+}
+
+:where(.patient-provider-workspace,.services-workspace,.insights-workspace,.settings-workspace) {
+  width: min(1180px,calc(100% - 48px)) !important;
+  margin-inline: auto !important;
+  padding-block: 34px 96px !important;
+}
+
+:where(.patient-workspace-heading,.services-heading,.insights-heading,.settings-heading) p,
+.provider-welcome p {
+  color: #087a91 !important;
+  font-size: 12px !important;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+:where(.patient-workspace-heading,.services-heading,.insights-heading,.settings-heading) h1,
+.provider-welcome h1 {
+  font-size: clamp(32px,4vw,48px) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.035em;
+}
+:where(.patient-workspace-heading,.services-heading,.insights-heading,.settings-heading) > div > span,
+.provider-welcome > div > span { font-size: 16px !important; line-height: 1.6 !important; color: #587482 !important; }
+:where(.patient-workspace-heading,.services-heading,.insights-heading,.settings-heading) > button,
+:where(.patient-workspace-heading,.services-heading,.insights-heading,.settings-heading) > a,
+.provider-live-primary {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px !important;
+  padding-inline: 18px !important;
+  font-size: 14px !important;
+  font-weight: 800;
+}
+
+/* Dashboard and schedule */
+.provider-live-shell .metric-grid { gap: 14px; margin-block: 26px; }
+.provider-live-shell .metric-grid article {
+  min-height: 126px;
+  padding: 20px;
+  border-radius: 20px;
+  border-color: #d8e6ea;
+  box-shadow: 0 10px 30px rgba(8,42,67,.05);
+}
+.provider-live-shell .metric-grid small,
+.provider-live-shell .metric-grid p { font-size: 13px; line-height: 1.4; }
+.provider-live-shell .metric-grid b { font-size: 30px; }
+.provider-live-shell .metric-icon { width: 46px; height: 46px; border-radius: 14px; font-size: 18px; }
+.provider-live-shell .provider-live-tabs button { min-height: 42px; padding-inline: 15px; font-size: 13px; }
+.provider-live-shell .provider-live-card { border-radius: 20px; box-shadow: 0 12px 34px rgba(8,42,67,.05); overflow: hidden; }
+.provider-live-shell .card-title h2 { font-size: 20px; }
+.provider-live-shell .card-title :where(p,small,button) { font-size: 13px; }
+.provider-live-shell .appointment-list article { min-height: 82px; padding: 16px 18px; }
+.provider-live-shell .appointment-list :where(p,small,i,button) { font-size: 13px; line-height: 1.45; }
+.provider-live-shell .appointment-list b { font-size: 16px; }
+.provider-live-shell .provider-live-state :where(h2,p),
+.provider-live-shell :where(.provider-live-error,.provider-live-notice) { font-size: 14px; line-height: 1.55; }
+.provider-live-shell .appointment-drawer { width: min(560px,100%); padding: 30px; }
+.provider-live-shell .appointment-drawer > p,
+.provider-live-shell .appointment-drawer :where(dt,dd,small),
+.provider-live-shell .provider-lifecycle-note :where(b,p),
+.provider-live-shell .drawer-footnote { font-size: 13px; line-height: 1.5; }
+.provider-live-shell .appointment-drawer h2 { font-size: 26px; }
+.provider-live-shell .provider-live-actions :where(button,a) { min-height: 46px; font-size: 14px; }
+
+/* Patient directory */
+.patient-metrics { gap: 14px !important; margin-block: 24px !important; }
+.patient-metrics article {
+  min-height: 118px;
+  padding: 20px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(8,42,67,.05);
+}
+.patient-metrics :where(small,p) { font-size: 13px !important; line-height: 1.45; }
+.patient-metrics b { font-size: 29px !important; }
+.patient-tools { gap: 10px; }
+.patient-tools :where(input,select,button) { min-height: 46px; font-size: 14px !important; border-radius: 12px !important; }
+.patient-directory { border-radius: 20px !important; box-shadow: 0 12px 34px rgba(8,42,67,.05); overflow: hidden; }
+.patient-directory-head :where(h2,p) { font-size: 14px !important; }
+.directory-person { min-height: 86px; padding: 16px 18px !important; }
+.directory-person :where(p,small,span,button) { font-size: 13px !important; line-height: 1.45; }
+.directory-person b { font-size: 16px !important; }
+:where(.patient-access-note,.patient-limit-note,.patient-state) { font-size: 14px !important; line-height: 1.55 !important; }
+
+/* Services and availability */
+.services-metrics { gap: 14px !important; margin-block: 24px !important; }
+.services-metrics article { min-height: 118px; padding: 20px !important; border-radius: 20px !important; box-shadow: 0 10px 30px rgba(8,42,67,.05); }
+.services-metrics :where(small,p) { font-size: 13px !important; }
+.services-metrics b { font-size: 29px !important; }
+.catalog-tools :where(button,select,input) { min-height: 44px; font-size: 14px !important; border-radius: 12px !important; }
+.service-catalog { border-radius: 20px !important; box-shadow: 0 12px 34px rgba(8,42,67,.05); overflow: hidden; }
+.service-head :where(h2,p,button),
+.service-live-row :where(p,small,span,b,button) { font-size: 13px !important; line-height: 1.45; }
+.service-live-row { min-height: 84px; padding: 16px 18px !important; }
+.service-live-row h3 { font-size: 17px !important; }
+.service-drawer { width: min(620px,100%) !important; padding: 30px !important; }
+.service-drawer > p,
+.service-drawer :where(label,small,p,b) { font-size: 13px !important; line-height: 1.5; }
+.service-drawer h2 { font-size: 27px !important; }
+.service-drawer :where(input,select,button) { min-height: 44px; font-size: 14px !important; }
+.availability-editor > div { gap: 8px !important; }
+:where(.provider-setup-message,.provider-setup-state,.publish-warning,.price-truth) { font-size: 14px !important; line-height: 1.55 !important; }
+
+/* Aggregate insights */
+.insights-controls :where(button,select) { min-height: 44px; padding-inline: 14px !important; font-size: 14px !important; }
+.insights-metrics { gap: 14px !important; margin-block: 24px !important; }
+.insights-metrics article { min-height: 126px; padding: 20px !important; border-radius: 20px !important; box-shadow: 0 10px 30px rgba(8,42,67,.05); }
+.insights-metrics :where(small,p) { font-size: 13px !important; line-height: 1.45; }
+.insights-metrics b { font-size: 29px !important; }
+.live-insights-grid { gap: 18px !important; }
+:where(.booking-chart,.aggregate-card) { border-radius: 20px !important; padding: 22px !important; box-shadow: 0 12px 34px rgba(8,42,67,.05); }
+.panel-title :where(h2,p,small),
+.aggregate-list :where(b,span,small),
+:where(.privacy-banner,.insights-boundary,.insights-state) { font-size: 13px !important; line-height: 1.55 !important; }
+
+/* Organization and access settings */
+.organization-switcher :where(label,select,small) { font-size: 13px !important; }
+.organization-switcher select { min-height: 44px; border-radius: 12px !important; }
+.team-summary { gap: 14px !important; margin-block: 24px !important; }
+.team-summary article { min-height: 118px; padding: 20px !important; border-radius: 20px !important; box-shadow: 0 10px 30px rgba(8,42,67,.05); }
+.team-summary :where(small,p) { font-size: 13px !important; }
+.team-summary b { font-size: 29px !important; }
+.team-card { border-radius: 20px !important; box-shadow: 0 12px 34px rgba(8,42,67,.05); overflow: hidden; }
+.team-head :where(h2,p,button),
+.team-tools :where(input,select,button),
+.team-table :where(th,td,button,small) { font-size: 13px !important; line-height: 1.45; }
+.team-tools :where(input,select,button) { min-height: 44px; border-radius: 12px !important; }
+.team-table tr { min-height: 68px; }
+.settings-drawer { width: min(560px,100%) !important; padding: 30px !important; }
+.settings-drawer > p,
+.settings-drawer :where(label,small,p,b,span) { font-size: 13px !important; line-height: 1.5; }
+.settings-drawer h2 { font-size: 27px !important; }
+.settings-drawer :where(input,select,button) { min-height: 44px; font-size: 14px !important; }
+:where(.settings-live-message,.settings-live-state,.settings-warning,.access-note) { font-size: 14px !important; line-height: 1.55 !important; }
+
+@media (max-width: 1100px) {
+  .provider-live-shell,
+  .provider-patients-shell,
+  .services-shell,
+  .insights-shell,
+  .settings-shell { --provider-nav: 238px; }
+  :where(.patient-provider-workspace,.services-workspace,.insights-workspace,.settings-workspace),
+  .provider-live-shell .provider-workspace { width: min(100% - 36px,1180px) !important; }
+}
+
+@media (max-width: 900px) {
+  :where(.patient-provider-sidebar,.services-sidebar,.insights-sidebar,.settings-sidebar) { display: none !important; }
+  :where(.patient-provider-main,.services-main,.insights-main,.settings-main) { margin-inline-start: 0 !important; }
+  :where(.patient-provider-top,.services-top,.insights-top,.settings-top) { padding-inline: 18px !important; }
+  :where(.patient-provider-workspace,.services-workspace,.insights-workspace,.settings-workspace) { width: min(100% - 28px,1180px) !important; }
+  .provider-live-shell .metric-grid,
+  .patient-metrics,
+  .services-metrics,
+  .insights-metrics,
+  .team-summary { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+}
+
+@media (max-width: 640px) {
+  :where(.patient-provider-top,.services-top,.insights-top,.settings-top),
+  .provider-live-shell .provider-topbar { min-height: 64px !important; padding: 10px 14px !important; }
+  :where(.patient-provider-top,.services-top,.insights-top,.settings-top) > div:first-child small,
+  .provider-live-shell .provider-context small,
+  .provider-live-shell .provider-actions > div { display: none; }
+  :where(.patient-workspace-heading,.services-heading,.insights-heading,.settings-heading),
+  .provider-live-shell .provider-welcome { align-items: stretch !important; flex-direction: column !important; gap: 16px !important; }
+  :where(.patient-workspace-heading,.services-heading,.insights-heading,.settings-heading) h1,
+  .provider-live-shell .provider-welcome h1 { font-size: 34px !important; }
+  .provider-live-shell .metric-grid,
+  .patient-metrics,
+  .services-metrics,
+  .insights-metrics,
+  .team-summary { grid-template-columns: 1fr !important; }
+  .patient-tools,
+  .catalog-tools,
+  .insights-controls,
+  .team-tools { align-items: stretch !important; flex-direction: column !important; }
+  .directory-person,
+  .service-live-row { grid-template-columns: 52px minmax(0,1fr) !important; gap: 12px !important; }
+  .directory-person > :last-child,
+  .service-live-row > :last-child { grid-column: 1/-1 !important; justify-self: stretch !important; }
+  .team-table { overflow-x: auto; display: block; }
+  .service-form-grid { grid-template-columns: 1fr !important; }
+  .service-drawer,
+  .settings-drawer,
+  .provider-live-shell .appointment-drawer { padding: 24px 18px !important; }
+}
