@@ -11,7 +11,12 @@
   border-inline-end: 1px solid rgba(255,255,255,.08);
   box-shadow: 18px 0 50px rgba(8,42,67,.14);
 }
-.live-admin-shell .admin-main { margin-inline-start: var(--ops-nav); width: calc(100% - var(--ops-nav)); }
+.live-admin-shell .admin-main {
+  margin-inline-start: 0 !important;
+  width: 100% !important;
+  min-width: 0;
+  display: block;
+}
 .live-admin-shell .admin-role { margin-block: 24px 16px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.08); }
 .live-admin-shell .admin-role b { font-size: 14px; }
 .live-admin-shell .admin-role small { font-size: 12px; }
@@ -28,6 +33,12 @@
 .live-admin-sidebar nav a.admin-verification-link.active { color: #06283e; background: #70d8df; box-shadow: 0 8px 24px rgba(20,171,193,.2); }
 .live-admin-shell .admin-topbar { min-height: 74px; padding: 12px 28px; background: rgba(255,255,255,.94); backdrop-filter: blur(18px); }
 .live-admin-shell .admin-workspace { width: min(1380px,calc(100% - 56px)); margin-inline: auto; padding-block: 36px 96px; }
+.live-admin-shell .admin-workspace {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: clamp(18px, 4vw, 36px);
+}
 .live-admin-shell .admin-heading h1 { font-size: clamp(34px,4vw,50px); line-height: 1.08; letter-spacing: -.035em; }
 .live-admin-shell .admin-heading p { font-size: 12px; letter-spacing: .1em; }
 .live-admin-shell .admin-heading span { font-size: 16px; line-height: 1.6; }
