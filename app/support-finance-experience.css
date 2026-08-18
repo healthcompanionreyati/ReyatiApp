@@ -1,0 +1,766 @@
+.documents-shell,
+.payments-shell,
+.message-shell,
+.navigator-shell,
+.experience-shell,
+.payment-support-experience,
+.service-status-experience {
+  --exp-ink: #082a43;
+  --exp-navy: #063d56;
+  --exp-cyan: #14abc1;
+  --exp-mint: #dff6f2;
+  --exp-line: #d7e5ea;
+  min-height: 100vh;
+  color: var(--exp-ink);
+  background:
+    radial-gradient(circle at 90% 0%, rgba(20, 171, 193, .13), transparent 24rem),
+    radial-gradient(circle at 0% 0%, rgba(7, 61, 86, .08), transparent 20rem),
+    linear-gradient(180deg, #fff 0 10rem, #f4f8fa 32rem 100%);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.documents-shell :is(button, a, input, select, textarea),
+.payments-shell :is(button, a, input, select, textarea),
+.message-shell :is(button, a, input, select, textarea),
+.navigator-shell :is(button, a, input, select, textarea),
+.experience-shell :is(button, a, input, select, textarea),
+.payment-support-experience :is(button, a, input, select, textarea),
+.service-status-experience :is(button, a, input, select, textarea) {
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease, transform .18s ease, opacity .18s ease;
+}
+
+.documents-shell :is(button, a, input, select, textarea):focus-visible,
+.payments-shell :is(button, a, input, select, textarea):focus-visible,
+.message-shell :is(button, a, input, select, textarea):focus-visible,
+.navigator-shell :is(button, a, input, select, textarea):focus-visible,
+.experience-shell :is(button, a, input, select, textarea):focus-visible,
+.payment-support-experience :is(button, a, input, select, textarea):focus-visible,
+.service-status-experience :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgb(20 171 193 / 30%);
+  outline-offset: 3px;
+}
+
+.documents-shell > header,
+.payments-shell > header,
+.message-shell > header,
+.navigator-shell > header,
+.experience-shell > header,
+.payment-support-experience > header,
+.service-status-experience > header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 72px;
+  padding-inline: max(24px, calc((100vw - 1240px) / 2));
+  border-bottom: 1px solid rgb(8 42 67 / 8%);
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 10px 30px rgb(8 42 67 / 5%);
+  backdrop-filter: blur(18px);
+}
+
+.documents-shell > header img,
+.payments-shell > header img,
+.message-shell > header img,
+.navigator-shell > header img,
+.experience-shell > header img,
+.payment-support-experience > header img,
+.service-status-experience > header img {
+  width: auto;
+  height: 34px;
+}
+
+.documents-shell .documents-header,
+.payments-shell .payments-header,
+.message-shell .message-header,
+.navigator-shell .navigator-header,
+.experience-shell .experience-header,
+.payment-support-experience .top,
+.service-status-experience .top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 72px;
+  background: rgb(255 255 255 / 92%);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgb(8 42 67 / 5%);
+}
+
+.documents-shell .documents-header,
+.payments-shell .payments-header,
+.message-shell .message-header,
+.navigator-shell .navigator-header,
+.experience-shell .experience-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 clamp(20px, 5vw, 72px);
+  border-bottom: 1px solid rgb(8 42 67 / 8%);
+}
+
+.documents-shell .documents-header a,
+.documents-shell .documents-header button,
+.payments-shell .payments-header a,
+.payments-shell .payments-header button,
+.message-shell .message-header a,
+.message-shell .message-header button,
+.navigator-shell .navigator-header a,
+.navigator-shell .navigator-header button,
+.experience-shell .experience-header a,
+.experience-shell .experience-header button {
+  border-radius: 999px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.documents-shell .documents-header nav,
+.payments-shell .payments-header nav,
+.message-shell .message-header nav,
+.navigator-shell .navigator-header nav,
+.experience-shell .experience-header nav,
+.payment-support-experience .top nav,
+.service-status-experience .top nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.documents-shell .documents-header nav a,
+.documents-shell .documents-header-actions a,
+.payments-shell .payments-header nav a,
+.payments-shell .payments-header div a,
+.message-shell .message-header nav a,
+.navigator-shell .navigator-header nav a,
+.experience-shell .experience-header nav a,
+.payment-support-experience .top a,
+.service-status-experience .top a {
+  color: #174c68;
+  border: 1px solid #d4e2e7;
+  background: #fff;
+  padding: 10px 14px;
+  font-weight: 780;
+  text-decoration: none;
+  box-shadow: 0 10px 20px rgb(8 42 67 / 4%);
+}
+
+.documents-shell .documents-header nav a.active,
+.payments-shell .payments-header nav a.active,
+.message-shell .message-header nav a.active,
+.navigator-shell .navigator-header nav a.active,
+.experience-shell .experience-header nav a.active {
+  color: #fff;
+  border-color: #0b6f84;
+  background: linear-gradient(135deg, #0b5f73, #0d8ca4);
+}
+
+.documents-shell .documents-header-actions,
+.payments-shell .payments-header div,
+.message-shell .message-header button,
+.navigator-shell .navigator-header div,
+.experience-shell .experience-header button,
+.payment-support-experience .top nav,
+.service-status-experience .top nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.documents-shell .lang,
+.payments-shell .lang,
+.message-shell button,
+.navigator-shell button,
+.experience-shell button,
+.payment-support-experience button,
+.service-status-experience button {
+  border: 1px solid #cbdde4;
+  background: #fff;
+  color: #0b5670;
+  font-weight: 800;
+}
+
+.documents-shell .documents-hero,
+.payments-shell .payments-hero,
+.message-shell .message-hero,
+.navigator-shell .navigator-hero,
+.experience-shell .experience-hero,
+.payment-support-experience .hero,
+.service-status-experience .hero {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px clamp(20px, 5vw, 72px) 30px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.documents-shell .documents-hero > div,
+.payments-shell .payments-hero > div,
+.message-shell .message-hero > div,
+.navigator-shell .navigator-hero > div,
+.experience-shell .experience-hero > div,
+.payment-support-experience .hero > div,
+.service-status-experience .hero > div {
+  position: relative;
+  overflow: hidden;
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #063d56 0%, #07576a 62%, #0d8ca4 100%);
+  color: #fff;
+  box-shadow: 0 24px 60px rgba(7, 61, 86, .18);
+}
+
+.documents-shell .documents-hero p,
+.payments-shell .payments-hero p,
+.message-shell .message-hero p,
+.navigator-shell .navigator-hero p,
+.experience-shell .experience-hero p,
+.payment-support-experience .hero p,
+.service-status-experience .hero p {
+  color: #d8eef3;
+}
+
+.documents-shell .documents-hero h1,
+.payments-shell .payments-hero h1,
+.message-shell .message-hero h1,
+.navigator-shell .navigator-hero h1,
+.experience-shell .experience-hero h1,
+.payment-support-experience .hero h1,
+.service-status-experience .hero h1 {
+  margin: 12px 0 16px;
+  font: 800 clamp(34px, 5vw, 60px)/1.02 var(--font-display, "Sora", sans-serif);
+  letter-spacing: -.05em;
+}
+
+.documents-shell .documents-hero span,
+.payments-shell .payments-hero span,
+.message-shell .message-hero span,
+.navigator-shell .navigator-hero span,
+.experience-shell .experience-hero span,
+.payment-support-experience .hero span,
+.service-status-experience .hero span {
+  display: inline-block;
+  max-width: 74ch;
+  line-height: 1.75;
+}
+
+.documents-shell .documents-boundary,
+.documents-shell .documents-notice,
+.documents-shell .documents-error,
+.payments-shell .payment-safety,
+.payments-shell .payments-delegated-note,
+.payments-shell .payments-live-error,
+.payments-shell .payments-live-state,
+.message-shell .message-alert,
+.message-shell .message-boundary,
+.message-shell .message-empty,
+.message-shell .message-closed,
+.navigator-shell .navigator-alert,
+.navigator-shell .navigator-result,
+.navigator-shell .navigator-boundary,
+.experience-shell .experience-alert,
+.experience-shell .experience-empty,
+.experience-shell .experience-boundary,
+.service-status-experience .error,
+.service-status-experience .empty,
+.payment-support-experience .boundary,
+.payment-support-experience .error,
+.payment-support-experience .notice {
+  width: min(1200px, calc(100% - 40px));
+  margin: 16px auto 0;
+  border-radius: 18px;
+  border: 1px solid #bfe1e9;
+  background: linear-gradient(180deg, rgba(231, 246, 248, .96), rgba(243, 250, 251, .98));
+  box-shadow: 0 16px 32px rgba(7, 61, 86, .05);
+}
+
+.documents-shell .documents-grid,
+.payments-shell .payments-workspace,
+.message-shell .message-workspace,
+.navigator-shell .navigator-workspace,
+.experience-shell .experience-content,
+.payment-support-experience .body,
+.service-status-experience .content {
+  width: min(1200px, calc(100% - 40px));
+  margin: 24px auto 0;
+  padding-bottom: 72px;
+}
+
+.documents-shell .documents-card,
+.payments-shell .payment-panel,
+.message-shell .message-panel,
+.navigator-shell .navigator-form,
+.navigator-shell .navigator-boundary,
+.experience-shell .experience-form,
+.experience-shell .experience-history,
+.payment-support-experience .panel,
+.payment-support-experience .list,
+.service-status-experience .panel,
+.service-status-experience .card {
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid rgba(213, 228, 234, .92);
+  border-radius: 24px;
+  box-shadow: 0 18px 48px rgba(7, 61, 86, .08);
+  backdrop-filter: blur(10px);
+}
+
+.documents-shell .documents-card,
+.payments-shell .payment-panel,
+.message-shell .message-panel,
+.navigator-shell .navigator-form,
+.navigator-shell .navigator-boundary,
+.experience-shell .experience-form,
+.experience-shell .experience-history,
+.payment-support-experience .panel,
+.payment-support-experience .list,
+.service-status-experience .panel {
+  padding: 24px;
+}
+
+.documents-shell .documents-card-head,
+.payments-shell .panel-title,
+.message-shell .message-panel-head,
+.navigator-shell .navigator-hero,
+.experience-shell .experience-form-head,
+.service-status-experience .heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.documents-shell .documents-status,
+.payments-shell .payment-metrics article span,
+.message-shell .message-panel-head i,
+.navigator-shell .navigator-result-mark,
+.experience-shell .experience-opportunities button span,
+.payment-support-experience .status,
+.service-status-experience .overall {
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.documents-shell .documents-list,
+.payments-shell .payments-live-list,
+.message-shell .message-stream,
+.experience-shell .experience-history,
+.service-status-experience .grid {
+  display: grid;
+  gap: 14px;
+}
+
+.documents-shell .documents-list article,
+.payments-shell .payments-live-list button,
+.message-shell .message-stream article,
+.experience-shell .experience-history article,
+.service-status-experience .card {
+  border: 1px solid #d9e7eb;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff, #fbfeff);
+  box-shadow: 0 10px 26px rgba(7, 61, 86, .05);
+}
+
+.documents-shell .documents-list article,
+.message-shell .message-stream article,
+.experience-shell .experience-history article,
+.service-status-experience .card {
+  padding: 18px;
+}
+
+.documents-shell .documents-list article:hover,
+.payments-shell .payments-live-list button:hover,
+.message-shell .message-stream article:hover,
+.experience-shell .experience-history article:hover,
+.service-status-experience .card:hover {
+  transform: translateY(-2px);
+  border-color: #b9dfe6;
+  box-shadow: 0 18px 36px rgba(7, 61, 86, .09);
+}
+
+.documents-shell .documents-empty,
+.payments-shell .payments-live-state,
+.message-shell .message-empty,
+.navigator-shell .navigator-empty,
+.experience-shell .experience-empty,
+.service-status-experience .empty {
+  min-height: 180px;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 8px;
+  color: #607e89;
+}
+
+.documents-shell .documents-empty span,
+.payments-shell .payments-live-state span,
+.message-shell .message-empty span,
+.navigator-shell .navigator-result-mark,
+.experience-shell .experience-empty span,
+.service-status-experience .overall i {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  margin-inline: auto;
+  background: #e6f5ef;
+  color: #16805b;
+}
+
+.documents-shell .documents-dialog-layer,
+.payments-shell .checkout-layer {
+  position: fixed;
+  inset: 0;
+  background: rgb(5 21 31 / 42%);
+  backdrop-filter: blur(12px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 40;
+}
+
+.documents-shell .documents-dialog,
+.payments-shell .receipt-dialog {
+  width: min(720px, 100%);
+  background: #fff;
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 32px 90px rgb(7 61 86 / 18%);
+}
+
+.documents-shell .documents-dialog-close,
+.payments-shell .drawer-close {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+}
+
+.payments-shell .payments-workspace,
+.payment-support-experience .body {
+  display: grid;
+  gap: 22px;
+}
+
+.payments-shell .payment-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.payments-shell .payment-metrics article,
+.service-status-experience .overall {
+  padding: 18px;
+  border: 1px solid #d8e6eb;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 14px 32px rgba(7, 61, 86, .07);
+}
+
+.payments-shell .payments-live-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.payments-shell .payments-live-toolbar button,
+.message-shell .message-compose button,
+.navigator-shell .navigator-submit,
+.experience-shell .experience-submit,
+.payment-support-experience .primary,
+.payment-support-experience .danger,
+.service-status-experience .card button {
+  border: 0;
+  border-radius: 14px;
+  min-height: 44px;
+  background: linear-gradient(135deg, #0a5f74, #0d8ca4);
+  color: #fff;
+  font-weight: 900;
+  box-shadow: 0 14px 24px rgba(10, 95, 116, .18);
+}
+
+.payments-shell .payments-live-toolbar button.active,
+.payments-shell .payments-live-toolbar button:hover,
+.message-shell .message-compose button:hover,
+.navigator-shell .navigator-submit:hover,
+.experience-shell .experience-submit:hover,
+.payment-support-experience .primary:hover,
+.service-status-experience .card button:hover {
+  transform: translateY(-1px);
+}
+
+.message-shell .message-workspace,
+.navigator-shell .navigator-workspace,
+.experience-shell .experience-content {
+  display: grid;
+  grid-template-columns: minmax(280px, .78fr) minmax(0, 1.22fr);
+  gap: 20px;
+}
+
+.message-shell .message-list,
+.navigator-shell .navigator-boundary,
+.experience-shell .experience-opportunities,
+.experience-shell .experience-history {
+  padding: 20px;
+}
+
+.message-shell .message-list button,
+.experience-shell .experience-opportunities button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid #d8e6eb;
+  border-radius: 16px;
+  background: #fff;
+  color: #082a43;
+}
+
+.message-shell .message-list button.selected,
+.experience-shell .experience-opportunities button.selected,
+.message-shell .message-list button:hover,
+.experience-shell .experience-opportunities button:hover {
+  border-color: #b6dce3;
+  box-shadow: 0 10px 24px rgba(7, 61, 86, .08);
+}
+
+.navigator-shell .navigator-form,
+.navigator-shell .navigator-result {
+  padding: 24px;
+}
+
+.navigator-shell .navigator-flags,
+.navigator-shell .navigator-categories,
+.navigator-shell .navigator-fields,
+.navigator-shell .navigator-plan,
+.navigator-shell .navigator-actions,
+.experience-shell .experience-ratings,
+.experience-shell .experience-tags,
+.experience-shell .experience-actions {
+  display: grid;
+  gap: 14px;
+}
+
+.navigator-shell .navigator-categories,
+.experience-shell .experience-tags > div {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.navigator-shell .navigator-result {
+  padding: 24px;
+  text-align: center;
+}
+
+.navigator-shell .navigator-actions,
+.experience-shell .experience-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.service-status-experience .hero {
+  align-items: center;
+}
+
+.service-status-experience .overall {
+  min-width: 240px;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+.service-status-experience .components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.service-status-experience .components span {
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #d8e6eb;
+  box-shadow: 0 10px 22px rgba(7, 61, 86, .05);
+}
+
+.service-status-experience .note {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #eaf6f8, #f7fbfc);
+}
+
+.payment-support-experience .hero {
+  align-items: center;
+}
+
+.payment-support-experience .panel,
+.payment-support-experience .list {
+  padding: 24px;
+}
+
+.payment-support-experience .form,
+.documents-shell .documents-dialog form,
+.payments-shell .receipt-dialog dl,
+.message-shell .message-compose,
+.navigator-shell .navigator-form,
+.experience-shell .experience-form {
+  display: grid;
+  gap: 14px;
+}
+
+.payment-support-experience .form label,
+.documents-shell .documents-dialog label,
+.message-shell .message-compose label,
+.navigator-shell .navigator-form label,
+.experience-shell .experience-form label {
+  display: grid;
+  gap: 8px;
+  font-weight: 750;
+  color: #234e63;
+}
+
+.payment-support-experience .form :is(input, select, textarea),
+.documents-shell .documents-dialog :is(input, select, textarea),
+.payments-shell .payments-live-toolbar input,
+.message-shell :is(input, textarea),
+.navigator-shell :is(input, select, textarea),
+.experience-shell :is(input, select, textarea),
+.service-status-experience :is(input, select, textarea) {
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid #c9dbe1;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--exp-ink);
+}
+
+.documents-shell .documents-dialog-actions,
+.payments-shell .payments-live-detail a,
+.payment-support-experience .primary,
+.payment-support-experience .danger,
+.message-shell .message-compose button,
+.navigator-shell .navigator-actions button,
+.experience-shell .experience-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-shell .message-boundary,
+.navigator-shell .navigator-boundary,
+.experience-shell .experience-history,
+.payment-support-experience .boundary,
+.service-status-experience .note {
+  border: 1px solid #d8e6eb;
+}
+
+@media (max-width: 980px) {
+  .documents-shell .documents-hero,
+  .payments-shell .payments-hero,
+  .message-shell .message-hero,
+  .navigator-shell .navigator-hero,
+  .experience-shell .experience-hero,
+  .payment-support-experience .hero,
+  .service-status-experience .hero,
+  .message-shell .message-workspace,
+  .navigator-shell .navigator-workspace,
+  .experience-shell .experience-content {
+    grid-template-columns: 1fr;
+  }
+
+  .payments-shell .payment-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .navigator-shell .navigator-categories,
+  .experience-shell .experience-tags > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .documents-shell > header,
+  .payments-shell > header,
+  .message-shell > header,
+  .navigator-shell > header,
+  .experience-shell > header,
+  .payment-support-experience > header,
+  .service-status-experience > header {
+    min-height: 64px;
+    padding-inline: 16px;
+  }
+
+  .documents-shell .documents-header nav,
+  .payments-shell .payments-header nav,
+  .message-shell .message-header nav,
+  .navigator-shell .navigator-header nav,
+  .experience-shell .experience-header nav,
+  .payment-support-experience .top nav,
+  .service-status-experience .top nav {
+    max-width: 60vw;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .documents-shell .documents-hero,
+  .payments-shell .payments-hero,
+  .message-shell .message-hero,
+  .navigator-shell .navigator-hero,
+  .experience-shell .experience-hero,
+  .payment-support-experience .hero,
+  .service-status-experience .hero {
+    padding: 40px 16px 20px;
+  }
+
+  .documents-shell .documents-grid,
+  .payments-shell .payments-workspace,
+  .message-shell .message-workspace,
+  .navigator-shell .navigator-workspace,
+  .experience-shell .experience-content,
+  .payment-support-experience .body,
+  .service-status-experience .content {
+    width: min(100% - 20px, 1200px);
+  }
+
+  .documents-shell .documents-card,
+  .payments-shell .payment-panel,
+  .message-shell .message-panel,
+  .navigator-shell .navigator-form,
+  .navigator-shell .navigator-boundary,
+  .experience-shell .experience-form,
+  .experience-shell .experience-history,
+  .payment-support-experience .panel,
+  .payment-support-experience .list,
+  .service-status-experience .panel {
+    padding: 18px;
+  }
+
+  .documents-shell .documents-dialog,
+  .payments-shell .receipt-dialog {
+    padding: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .documents-shell *,
+  .payments-shell *,
+  .message-shell *,
+  .navigator-shell *,
+  .experience-shell *,
+  .payment-support-experience *,
+  .service-status-experience * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
