@@ -1,0 +1,264 @@
+/* Partner and platform operations — shared visual foundation. */
+.live-admin-shell {
+  --ops-nav: 284px;
+  background: #f3f7f9;
+  color: #082a43;
+}
+.live-admin-shell .live-admin-sidebar {
+  width: var(--ops-nav);
+  padding: 22px 16px;
+  background: linear-gradient(180deg,#082f48 0%,#061f32 100%);
+  border-inline-end: 1px solid rgba(255,255,255,.08);
+  box-shadow: 18px 0 50px rgba(8,42,67,.14);
+}
+.live-admin-shell .admin-main { margin-inline-start: var(--ops-nav); width: calc(100% - var(--ops-nav)); }
+.live-admin-shell .admin-role { margin-block: 24px 16px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.08); }
+.live-admin-shell .admin-role b { font-size: 14px; }
+.live-admin-shell .admin-role small { font-size: 12px; }
+.live-admin-sidebar nav { gap: 4px; }
+.live-admin-sidebar nav a.admin-verification-link {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #c8dde4;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.live-admin-sidebar nav a.admin-verification-link:hover { color: #fff; background: rgba(255,255,255,.08); }
+.live-admin-sidebar nav a.admin-verification-link.active { color: #06283e; background: #70d8df; box-shadow: 0 8px 24px rgba(20,171,193,.2); }
+.live-admin-shell .admin-topbar { min-height: 74px; padding: 12px 28px; background: rgba(255,255,255,.94); backdrop-filter: blur(18px); }
+.live-admin-shell .admin-workspace { width: min(1380px,calc(100% - 56px)); margin-inline: auto; padding-block: 36px 96px; }
+.live-admin-shell .admin-heading h1 { font-size: clamp(34px,4vw,50px); line-height: 1.08; letter-spacing: -.035em; }
+.live-admin-shell .admin-heading p { font-size: 12px; letter-spacing: .1em; }
+.live-admin-shell .admin-heading span { font-size: 16px; line-height: 1.6; }
+
+@media (max-width: 900px) {
+  .live-admin-shell .live-admin-sidebar { display: none; }
+  .live-admin-shell .admin-main { margin-inline-start: 0; width: 100%; }
+  .live-admin-shell .admin-workspace { width: min(100% - 28px,1380px); }
+}
+
+/* Partner operations */
+.live-partner-shell {
+  --partner-nav: 284px;
+  background: #f3f8fa;
+  color: #082a43;
+}
+.live-partner-shell .partner-sidebar {
+  width: var(--partner-nav) !important;
+  padding: 22px 16px !important;
+  background: linear-gradient(180deg,#063d56 0%,#052f45 100%) !important;
+  border-inline-end: 1px solid rgba(255,255,255,.08);
+  box-shadow: 18px 0 50px rgba(8,42,67,.13);
+}
+.live-partner-shell .partner-main { margin-inline-start: var(--partner-nav) !important; width: calc(100% - var(--partner-nav)) !important; }
+.live-partner-shell .partner-brand img { width: 102px; }
+.live-partner-shell .partner-brand span,
+.live-partner-shell .partner-links a,
+.live-partner-shell .partner-side-note :where(b,p) { font-size: 12px !important; line-height: 1.5; }
+.live-partner-shell .partner-org { margin-block: 24px 16px !important; padding: 12px !important; border-radius: 16px !important; }
+.live-partner-shell .partner-org b { font-size: 14px !important; }
+.live-partner-shell .partner-org small { font-size: 12px !important; line-height: 1.4; }
+.live-partner-shell .partner-boundary-nav { gap: 4px !important; }
+.live-partner-shell .partner-boundary-nav a,
+.live-partner-shell .partner-boundary-nav > span {
+  min-height: 44px;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  color: #c8dde4 !important;
+  font-size: 13px !important;
+  line-height: 1.35;
+}
+.live-partner-shell .partner-boundary-nav a:hover { color: #fff !important; background: rgba(255,255,255,.08) !important; }
+.live-partner-shell .partner-boundary-nav a.active { color: #063d56 !important; background: #70d8df !important; box-shadow: 0 8px 24px rgba(20,171,193,.2); }
+.live-partner-shell .partner-top {
+  min-height: 74px !important;
+  padding: 12px 28px !important;
+  background: rgba(255,255,255,.94) !important;
+  border-bottom: 1px solid #d9e6ea !important;
+  backdrop-filter: blur(18px);
+}
+.live-partner-shell .partner-top :where(b,span,a,button) { font-size: 12px !important; }
+.live-partner-shell .partner-top :where(a,button) { min-height: 40px; display: inline-flex; align-items: center; padding: 8px 12px !important; border-radius: 999px !important; }
+.live-partner-workspace { width: min(1240px,calc(100% - 56px)) !important; margin-inline: auto !important; padding-block: 36px 96px !important; }
+.live-partner-shell .partner-heading { margin-bottom: 24px; }
+.live-partner-shell .partner-heading p { font-size: 12px !important; letter-spacing: .1em; }
+.live-partner-shell .partner-heading h1 { font-size: clamp(34px,4vw,50px) !important; line-height: 1.08 !important; letter-spacing: -.035em; }
+.live-partner-shell .partner-heading > div > span { font-size: 16px !important; line-height: 1.6 !important; color: #587482 !important; }
+.live-partner-shell .partner-heading > a { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; padding-inline: 18px !important; border-radius: 12px !important; font-size: 14px !important; }
+.partner-boundary-banner,
+.partner-source-panel,
+.partner-activation,
+.partner-health-boundary {
+  padding: 20px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(8,42,67,.05);
+}
+.partner-boundary-banner :where(b,p,i),
+.partner-panel-heading :where(h2,p,span),
+.partner-source-grid :where(b,small,i),
+.partner-activation :where(h2,p,li),
+.partner-health-boundary :where(h2,p),
+.partner-live-state :where(h2,p,a,button) { font-size: 13px !important; line-height: 1.55 !important; }
+.partner-boundary-summary { gap: 14px !important; margin-block: 18px !important; }
+.partner-boundary-summary article { min-height: 126px; padding: 20px !important; border-radius: 20px !important; box-shadow: 0 10px 30px rgba(8,42,67,.05); }
+.partner-boundary-summary :where(span,small) { font-size: 13px !important; }
+.partner-boundary-summary b { font-size: 25px !important; }
+.partner-source-grid { gap: 12px !important; }
+.partner-source-grid article { min-height: 84px; padding: 15px !important; border-radius: 16px !important; }
+.partner-source-grid article > span { width: 42px !important; height: 42px !important; font-size: 12px !important; }
+.partner-activation ol { gap: 12px !important; }
+.partner-activation li { min-height: 92px; padding: 15px !important; border-radius: 16px !important; }
+
+/* Shared platform operations surfaces */
+:where(.verify-sidebar,.orgops-sidebar,.cases-sidebar,.finance-sidebar,.audit-sidebar,.ops-health-side) {
+  width: 284px !important;
+  padding: 22px 16px !important;
+  background: linear-gradient(180deg,#082f48 0%,#061f32 100%) !important;
+  border-inline-end: 1px solid rgba(255,255,255,.08);
+  box-shadow: 18px 0 50px rgba(8,42,67,.14);
+}
+:where(.verify-main,.orgops-main,.cases-main,.finance-main,.audit-main,.ops-health-main) {
+  margin-inline-start: 284px !important;
+  width: calc(100% - 284px) !important;
+  min-width: 0;
+}
+:where(.verify-role,.cases-side-note,.finance-role,.audit-role,.ops-health-role) {
+  margin-block: 24px 16px !important;
+  padding: 12px !important;
+  border-radius: 16px !important;
+}
+:where(.verify-role,.finance-role,.audit-role,.ops-health-role) b { font-size: 14px !important; }
+:where(.verify-role,.finance-role,.audit-role,.ops-health-role) small { font-size: 12px !important; line-height: 1.4; }
+:where(.verify-sidebar,.orgops-sidebar,.cases-sidebar,.finance-sidebar,.audit-sidebar,.ops-health-side) nav { gap: 4px !important; }
+:where(.verify-sidebar,.orgops-sidebar,.cases-sidebar,.finance-sidebar,.audit-sidebar,.ops-health-side) nav a {
+  min-height: 44px;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  color: #c8dde4 !important;
+  font-size: 13px !important;
+  line-height: 1.35;
+}
+:where(.verify-sidebar,.orgops-sidebar,.cases-sidebar,.finance-sidebar,.audit-sidebar,.ops-health-side) nav a:hover { color: #fff !important; background: rgba(255,255,255,.08) !important; }
+:where(.verify-sidebar,.orgops-sidebar,.cases-sidebar,.finance-sidebar,.audit-sidebar,.ops-health-side) nav a.active { color: #06283e !important; background: #70d8df !important; }
+
+:where(.verify-top,.cases-top,.finance-top,.audit-top,.ops-health-top) {
+  min-height: 74px !important;
+  padding: 12px 28px !important;
+  background: rgba(255,255,255,.94) !important;
+  border-bottom: 1px solid #d9e6ea !important;
+  backdrop-filter: blur(18px);
+}
+:where(.verify-top,.cases-top,.finance-top,.audit-top,.ops-health-top) :where(b,small,a,button) { font-size: 12px !important; }
+:where(.verify-top,.cases-top,.finance-top,.audit-top,.ops-health-top) :where(a,button) { min-height: 40px; padding: 8px 12px !important; border-radius: 999px !important; }
+
+:where(.verify-workspace,.orgops-content,.cases-workspace,.finance-workspace,.audit-workspace,.ops-health-workspace) {
+  width: min(1380px,calc(100% - 56px)) !important;
+  max-width: none !important;
+  margin-inline: auto !important;
+  padding-block: 36px 96px !important;
+}
+:where(.verify-heading,.orgops-title,.cases-heading,.finance-heading,.audit-heading,.ops-health-heading) p { font-size: 12px !important; letter-spacing: .1em; }
+:where(.verify-heading,.orgops-title,.cases-heading,.finance-heading,.audit-heading,.ops-health-heading) h1 { font-size: clamp(34px,4vw,50px) !important; line-height: 1.08 !important; letter-spacing: -.035em; }
+:where(.verify-heading,.orgops-title,.cases-heading,.finance-heading,.audit-heading,.ops-health-heading) > div > span,
+:where(.verify-heading,.orgops-title,.cases-heading,.finance-heading,.audit-heading,.ops-health-heading) > span { font-size: 16px !important; line-height: 1.6 !important; color: #587482 !important; }
+:where(.verify-heading,.orgops-title,.cases-heading,.finance-heading,.audit-heading,.ops-health-heading) :where(button,a) { min-height: 46px; font-size: 14px !important; border-radius: 12px !important; }
+
+/* Admin overview */
+.live-admin-shell .admin-security-note { padding: 16px 18px; border-radius: 16px; }
+.live-admin-shell .admin-security-note :where(b,p) { font-size: 14px !important; line-height: 1.55; }
+.live-admin-shell .live-admin-metrics { gap: 14px; }
+.live-admin-shell .live-admin-metrics > a { min-height: 132px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(8,42,67,.05); }
+.live-admin-shell .live-admin-metrics b { font-size: 30px; }
+.live-admin-shell .live-admin-metrics :where(p,small) { font-size: 13px; line-height: 1.45; }
+.live-admin-shell .live-admin-grid { gap: 18px; }
+.live-admin-shell .admin-panel,
+.live-admin-shell .admin-coverage > div { border-radius: 20px; box-shadow: 0 12px 34px rgba(8,42,67,.05); }
+.live-admin-shell .admin-panel-head { padding: 20px 22px; }
+.live-admin-shell .admin-panel-head :where(h2,p,a),
+.live-admin-shell .platform-state-grid :where(b,p),
+.live-admin-shell .admin-activity-list :where(b,small,time),
+.live-admin-shell .admin-coverage :where(h2,p,a),
+.live-admin-shell .admin-live-foot :where(p,time) { font-size: 13px; line-height: 1.5; }
+
+/* Review queues, organizations, cases, finance, audit, and system health */
+:where(.verify-security,.cases-banner,.finance-banner,.audit-banner,.ops-health-banner,.orgops-bootstrap) {
+  padding: 16px 18px !important;
+  border-radius: 16px !important;
+}
+:where(.verify-security,.cases-banner,.finance-banner,.audit-banner,.ops-health-banner,.orgops-bootstrap) :where(b,p,span,a,button) { font-size: 14px !important; line-height: 1.55 !important; }
+:where(.cases-metrics,.finance-metrics,.audit-metrics,.ops-health-metrics) { gap: 14px !important; margin-block: 22px !important; }
+:where(.cases-metrics,.finance-metrics,.audit-metrics,.ops-health-metrics) article,
+:where(.cases-metrics,.finance-metrics,.audit-metrics,.ops-health-metrics) > div {
+  min-height: 122px;
+  padding: 20px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(8,42,67,.05);
+}
+:where(.cases-metrics,.finance-metrics,.audit-metrics,.ops-health-metrics) :where(small,p,span) { font-size: 13px !important; line-height: 1.45; }
+:where(.cases-metrics,.finance-metrics,.audit-metrics,.ops-health-metrics) b { font-size: 28px !important; }
+
+:where(.queue-panel,.review-panel,.orgops-list,.case-queue,.live-ledger-panel,.event-panel,.ops-health-panel,.pilot-readiness) {
+  border-radius: 20px !important;
+  box-shadow: 0 12px 34px rgba(8,42,67,.05);
+  overflow: hidden;
+}
+:where(.verify-tools,.case-tools,.audit-live-filters,.ops-health-controls) :where(input,select,button,a),
+.finance-heading-actions :where(a,button) { min-height: 44px; font-size: 14px !important; border-radius: 12px !important; }
+:where(.verify-table,.orgops-list,.case-table,.live-ledger-table,.event-table) :where(th,td,b,p,small,span,button,a,code,i,em) { font-size: 13px !important; line-height: 1.45; }
+:where(.verify-table,.case-table,.live-ledger-table,.event-table) tr,
+:where(.verify-table,.case-table,.live-ledger-table,.event-table) > button { min-height: 68px; }
+.orgops-grid { gap: 16px !important; }
+.orgops-list > button,
+.orgops-list > article { min-height: 78px; padding: 16px 18px !important; }
+.orgops-list :where(h2,h3,b,p,small,span,button,a) { font-size: 13px !important; line-height: 1.45; }
+:where(.verify-live-state,.orgops-state,.appointment-live-state,.finance-live-state,.audit-live-state,.ops-health-state) { border-radius: 20px !important; padding: 48px 24px !important; }
+:where(.verify-live-state,.orgops-state,.appointment-live-state,.finance-live-state,.audit-live-state,.ops-health-state) :where(h2,p,a,button) { font-size: 14px !important; line-height: 1.55 !important; }
+
+:where(.review-panel,.case-detail,.event-detail,.orgops-modal,.orgops-create,.orgops-invite) { padding: 28px !important; }
+:where(.review-panel,.case-detail,.event-detail,.orgops-modal,.orgops-create,.orgops-invite) :where(h2,h3,b,p,small,span,label,dt,dd,button,a,input,select,textarea) { font-size: 13px !important; line-height: 1.5; }
+:where(.review-panel,.case-detail,.event-detail,.orgops-modal,.orgops-create,.orgops-invite) :where(input,select,textarea,button) { min-height: 44px; border-radius: 11px !important; }
+.review-actions :where(button,a),
+.case-actions :where(button,a) { min-height: 46px; font-size: 14px !important; }
+.ops-health-grid { gap: 18px !important; }
+.ops-health-panel-head :where(h2,p,a,button),
+.ops-health-signals :where(b,p,small,span),
+.pilot-readiness :where(h2,h3,b,p,small,span,a,button),
+:where(.finance-boundaries,.finance-footer,.audit-side-note,.verify-side-note,.cases-side-note,.ops-health-privacy,.ops-health-foot) :where(b,p,small,span,a) { font-size: 13px !important; line-height: 1.55 !important; }
+
+@media (max-width: 1100px) {
+  .live-admin-shell { --ops-nav: 244px; }
+  .live-partner-shell { --partner-nav: 244px; }
+  :where(.verify-sidebar,.orgops-sidebar,.cases-sidebar,.finance-sidebar,.audit-sidebar,.ops-health-side) { width: 244px !important; }
+  :where(.verify-main,.orgops-main,.cases-main,.finance-main,.audit-main,.ops-health-main) { margin-inline-start: 244px !important; width: calc(100% - 244px) !important; }
+}
+
+@media (max-width: 900px) {
+  .live-partner-shell .partner-sidebar,
+  :where(.verify-sidebar,.orgops-sidebar,.cases-sidebar,.finance-sidebar,.audit-sidebar,.ops-health-side) { display: none !important; }
+  .live-partner-shell .partner-main,
+  :where(.verify-main,.orgops-main,.cases-main,.finance-main,.audit-main,.ops-health-main) { margin-inline-start: 0 !important; width: 100% !important; }
+  .live-partner-workspace,
+  :where(.verify-workspace,.orgops-content,.cases-workspace,.finance-workspace,.audit-workspace,.ops-health-workspace) { width: min(100% - 28px,1380px) !important; }
+  :where(.cases-metrics,.finance-metrics,.audit-metrics,.ops-health-metrics) { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+}
+
+@media (max-width: 680px) {
+  .live-partner-shell .partner-top,
+  .live-admin-shell .admin-topbar,
+  :where(.verify-top,.cases-top,.finance-top,.audit-top,.ops-health-top) { min-height: 64px !important; padding: 10px 14px !important; }
+  .live-partner-shell .partner-heading,
+  .live-admin-shell .admin-heading,
+  :where(.verify-heading,.orgops-title,.cases-heading,.finance-heading,.audit-heading,.ops-health-heading) { align-items: stretch !important; flex-direction: column !important; gap: 16px !important; }
+  .live-partner-shell .partner-heading h1,
+  .live-admin-shell .admin-heading h1,
+  :where(.verify-heading,.orgops-title,.cases-heading,.finance-heading,.audit-heading,.ops-health-heading) h1 { font-size: 34px !important; }
+  .partner-boundary-summary,
+  .partner-source-grid,
+  .partner-activation ol,
+  .live-admin-shell .live-admin-metrics,
+  :where(.cases-metrics,.finance-metrics,.audit-metrics,.ops-health-metrics) { grid-template-columns: 1fr !important; }
+  :where(.verify-tools,.case-tools,.audit-live-filters,.ops-health-controls,.finance-heading-actions) { align-items: stretch !important; flex-direction: column !important; }
+  :where(.verify-table,.case-table,.live-ledger-table,.event-table) { overflow-x: auto; display: block; }
+  :where(.review-panel,.case-detail,.event-detail,.orgops-modal,.orgops-create,.orgops-invite) { padding: 22px 18px !important; }
+}
