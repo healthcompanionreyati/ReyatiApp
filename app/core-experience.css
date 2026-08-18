@@ -398,3 +398,290 @@
     gap: 14px;
   }
 }
+
+.appointments-shell .appointments-content,
+.notification-shell .notification-content,
+.wallet-shell .wallet-content,
+.support-shell .support-workspace,
+.message-shell .message-workspace,
+.navigator-shell .navigator-workspace {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(18px, 4vw, 42px);
+  padding-bottom: 72px;
+}
+
+.appointments-shell .appointments-content,
+.notification-shell .notification-content,
+.wallet-shell .wallet-content,
+.support-shell .support-workspace,
+.message-shell .message-workspace,
+.navigator-shell .navigator-workspace {
+  display: grid;
+  gap: 22px;
+}
+
+.appointments-shell .appointments-content,
+.notification-shell .notification-content,
+.wallet-shell .wallet-content {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.appointments-shell .appointments-content > *,
+.notification-shell .notification-content > *,
+.wallet-shell .wallet-content > *,
+.support-shell .support-workspace > *,
+.message-shell .message-workspace > *,
+.navigator-shell .navigator-workspace > * {
+  min-width: 0;
+}
+
+.appointments-shell .appointments-content > *,
+.notification-shell .notification-content > *,
+.wallet-shell .wallet-content > *,
+.support-shell .support-workspace > *,
+.message-shell .message-workspace > *,
+.navigator-shell .navigator-workspace > * {
+  border-radius: 28px;
+}
+
+.appointments-shell .appointments-hero > a,
+.notification-shell .notification-hero > button,
+.wallet-shell .wallet-hero-actions a,
+.support-shell .support-hero a,
+.message-shell .message-hero a,
+.navigator-shell .navigator-hero a,
+.navigator-shell .navigator-hero button,
+.appointments-shell .appointments-content button,
+.notification-shell .notification-content button,
+.wallet-shell .wallet-content button,
+.support-shell .support-workspace button,
+.message-shell .message-workspace button,
+.navigator-shell .navigator-workspace button {
+  box-shadow: 0 12px 28px rgba(7, 49, 73, .10);
+}
+
+.appointments-shell .appointments-hero a,
+.notification-shell .notification-hero button,
+.wallet-shell .wallet-hero-actions a,
+.support-shell .support-hero a,
+.message-shell .message-hero a,
+.navigator-shell .navigator-hero a,
+.navigator-shell .navigator-hero button {
+  min-height: 46px;
+  padding-inline: 18px;
+  font-weight: 780;
+}
+
+.appointments-shell .appointments-delegated-note,
+.notification-shell .notification-privacy,
+.wallet-shell .wallet-notice,
+.wallet-shell .wallet-delegated-note,
+.support-shell .emergency-banner,
+.support-shell .routing-note,
+.message-shell .message-boundary,
+.message-shell .message-empty,
+.navigator-shell .navigator-boundary,
+.navigator-shell .navigator-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(8, 42, 67, .10);
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(244,248,250,.88));
+}
+
+.appointments-shell .appointments-delegated-note b,
+.notification-shell .notification-privacy b,
+.wallet-shell .wallet-notice b,
+.wallet-shell .wallet-delegated-note b,
+.support-shell .emergency-banner b,
+.support-shell .routing-note b,
+.message-shell .message-boundary b,
+.navigator-shell .navigator-boundary b {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ui-navy);
+}
+
+.appointments-shell .appointments-live-list,
+.notification-shell .notification-inbox,
+.wallet-shell .wallet-live-list,
+.support-shell .support-grid,
+.message-shell .message-list,
+.navigator-shell .navigator-form {
+  display: grid;
+  gap: 16px;
+}
+
+.appointments-shell .appointments-live-list article,
+.notification-shell .notice-list article,
+.wallet-shell .wallet-live-list article,
+.support-shell .case-card button,
+.message-shell .message-list button,
+.navigator-shell .navigator-categories label,
+.navigator-shell .navigator-flags fieldset,
+.navigator-shell .navigator-result,
+.navigator-shell .navigator-form section {
+  border-radius: 22px;
+  border: 1px solid rgba(8, 42, 67, .10);
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 10px 28px rgba(7, 49, 73, .08);
+}
+
+.appointments-shell .appointment-tabs,
+.notification-shell .inbox-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.appointments-shell .appointment-tabs button,
+.notification-shell .inbox-tabs button {
+  min-height: 42px;
+  padding-inline: 14px;
+  border-radius: 999px;
+}
+
+.appointments-shell .appointment-live-list,
+.appointments-shell .appointment-detail-list,
+.wallet-shell .wallet-live-list,
+.message-shell .message-stream,
+.navigator-shell .navigator-result,
+.support-shell .case-thread {
+  overflow-wrap: anywhere;
+}
+
+.appointments-shell .appointment-live-list article,
+.wallet-shell .wallet-live-list article,
+.support-shell .case-card button,
+.message-shell .message-list button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px 18px;
+}
+
+.appointments-shell .appointment-live-list article:hover,
+.wallet-shell .wallet-live-list article:hover,
+.support-shell .case-card button:hover,
+.message-shell .message-list button:hover,
+.navigator-shell .navigator-categories label:hover,
+.navigator-shell .navigator-flags fieldset:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(7, 49, 73, .12);
+}
+
+.appointments-shell .appointment-live-state,
+.notification-shell .empty-inbox,
+.wallet-shell .wallet-live-state,
+.support-shell .case-detail,
+.message-shell .message-panel,
+.message-shell .message-closed,
+.navigator-shell .navigator-result,
+.navigator-shell .navigator-form {
+  padding: 22px;
+}
+
+.notification-shell .notice-list article,
+.notification-shell .empty-inbox,
+.notification-shell .notification-toast,
+.notification-shell .notification-error {
+  border-radius: 20px;
+  padding: 16px 18px;
+}
+
+.notification-shell .notice-copy,
+.notification-shell .inbox-head,
+.wallet-shell .wallet-live-heading,
+.support-shell .support-section-head,
+.message-shell .message-panel-head,
+.navigator-shell .navigator-step {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.wallet-shell .wallet-live-list article {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+}
+
+.wallet-shell .wallet-record-main h2,
+.support-shell .case-card p,
+.message-shell .message-panel h2,
+.navigator-shell .navigator-result h2 {
+  overflow-wrap: anywhere;
+}
+
+.support-shell .support-grid {
+  grid-template-columns: minmax(0, 1.12fr) minmax(300px, .88fr);
+}
+
+.support-shell .support-topics,
+.navigator-shell .navigator-categories,
+.navigator-shell .navigator-flags,
+.navigator-shell .navigator-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.support-shell .support-topics button,
+.navigator-shell .navigator-categories label,
+.navigator-shell .navigator-flags fieldset {
+  padding: 16px 18px;
+}
+
+.message-shell .message-workspace {
+  grid-template-columns: minmax(260px, .95fr) minmax(0, 1.3fr);
+}
+
+.message-shell .message-list,
+.message-shell .message-panel {
+  min-width: 0;
+}
+
+.message-shell .message-stream article {
+  max-width: 68ch;
+  line-height: 1.7;
+}
+
+.navigator-shell .navigator-form {
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+}
+
+.navigator-shell .navigator-form section,
+.navigator-shell .navigator-boundary {
+  padding: 22px;
+}
+
+.navigator-shell .navigator-flags,
+.navigator-shell .navigator-categories {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .support-shell .support-grid,
+  .message-shell .message-workspace,
+  .navigator-shell .navigator-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .appointments-shell .appointment-live-list article,
+  .wallet-shell .wallet-live-list article,
+  .support-shell .case-card button,
+  .message-shell .message-list button {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .support-shell .support-topics button,
+  .navigator-shell .navigator-categories label,
+  .navigator-shell .navigator-flags fieldset {
+    padding: 14px 16px;
+  }
+}
