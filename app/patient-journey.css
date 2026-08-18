@@ -1,0 +1,359 @@
+/* Patient journey — shared visual and interaction layer.
+   Loaded after legacy route styles so the connected care experience stays
+   readable, consistent, and touch-friendly without changing route behavior. */
+
+.providers-shell,
+.appointments-shell,
+.wallet-shell,
+.notification-shell,
+.support-shell {
+  background: var(--reyati-surface, #f4fafb);
+  color: var(--reyati-ink, #082a43);
+}
+
+.provider-search-hero,
+.appointments-hero,
+.wallet-hero,
+.notification-hero,
+.support-hero {
+  padding-block: clamp(42px, 5vw, 68px);
+  padding-inline: max(5vw, 24px);
+  background: linear-gradient(125deg, #063d56 0%, #074963 72%, #08647a 100%);
+  isolation: isolate;
+}
+
+.provider-search-hero::after,
+.support-hero::after,
+.notification-hero::after {
+  opacity: .8;
+  filter: saturate(.9);
+}
+
+.provider-search-hero p,
+.appointments-hero p,
+.wallet-hero p,
+.notification-hero p,
+.support-hero p {
+  color: #70d8df;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: .11em;
+}
+
+.provider-search-hero h1,
+.appointments-hero h1,
+.wallet-hero h1,
+.notification-hero h1,
+.support-hero h1 {
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -.035em;
+}
+
+.provider-search-hero > div > span,
+.appointments-hero > div > span,
+.wallet-hero > div > span,
+.notification-hero > div > span,
+.support-hero > div > span {
+  display: block;
+  max-width: 720px;
+  color: #d7e9ee;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.providers-workspace,
+.appointments-content,
+.wallet-content,
+.notification-content,
+.support-workspace {
+  width: min(1180px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.patient-context-nav {
+  width: min(1180px, calc(100% - 40px));
+  margin: 14px auto 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.patient-context-nav a {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #cbdde4;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: #006a8e;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+/* Care discovery */
+.provider-search-hero label {
+  min-height: 62px;
+  padding: 8px 8px 8px 18px;
+  border: 1px solid rgba(255,255,255,.38);
+  border-radius: 18px;
+}
+
+.provider-search-hero input,
+.provider-search-hero label > b,
+.provider-search-hero label > button,
+.filter-row select,
+.filter-row button,
+.results-head p,
+.results-head label,
+.results-head select {
+  font-size: 14px;
+}
+
+.provider-search-hero label > button,
+.filter-row select,
+.filter-row button,
+.results-head select {
+  min-height: 44px;
+}
+
+.providers-workspace { padding-block: 28px 100px; }
+.filter-row { gap: 10px; }
+.filter-row select,
+.filter-row button { padding-inline: 16px; }
+.results-head { margin-block: 28px 16px; }
+.results-head h2 { font-size: 24px; }
+.provider-results { grid-template-columns: minmax(0,1fr) 280px; gap: 20px; }
+.provider-list { gap: 14px; }
+.provider-result {
+  grid-template-columns: 84px minmax(0,1fr) 205px;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 12px 34px rgba(8,42,67,.06);
+}
+.provider-photo { width: 76px; height: 84px; font-size: 19px; }
+.provider-info > p,
+.provider-info h3,
+.provider-info > span,
+.provider-tags i,
+.provider-tags small,
+.provider-result aside small,
+.provider-result aside b,
+.trust-panel > p,
+.trust-panel li b,
+.trust-panel li small,
+.trust-panel a { font-size: 13px; line-height: 1.5; }
+.provider-name { font-size: 19px; line-height: 1.3; }
+.provider-tags { gap: 7px; margin-top: 12px; }
+.provider-tags i { padding: 6px 9px; }
+.provider-result aside strong { font-size: 18px; }
+.provider-result aside > button,
+.profile-book button,
+.profile-slots button {
+  min-height: 44px;
+  font-size: 14px;
+}
+.trust-panel { padding: 24px; border-radius: 20px; }
+.trust-panel h2 { font-size: 18px; }
+.provider-profile { width: min(600px,100%); }
+.profile-head p,
+.profile-head > div > span,
+.profile-head small,
+.verification-strip b,
+.verification-strip p,
+.verification-strip button,
+.profile-about > p,
+.profile-about article b,
+.profile-about article small,
+.profile-location p b,
+.profile-location p small,
+.profile-location strong small,
+.profile-slots > div:first-child > span,
+.profile-book small,
+.profile-confirmed > b,
+.profile-confirmed > small,
+.catalog-state p,
+.catalog-state a,
+.service-location-select,
+.slot-state,
+.booking-error { font-size: 13px; }
+.profile-head h2 { font-size: 27px; }
+.provider-profile h3 { font-size: 16px; }
+.profile-book b { font-size: 18px; }
+
+/* Appointment lifecycle */
+.appointments-hero > a,
+.wallet-hero-actions a,
+.notification-hero > button {
+  position: relative;
+  z-index: 1;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+}
+.appointments-content { padding-block: 28px 92px; }
+.appointment-tabs { gap: 8px; }
+.appointment-tabs button,
+.appointment-tabs a { min-height: 44px; font-size: 14px; }
+.appointment-live-list article {
+  padding: 20px;
+  border-radius: 20px;
+  grid-template-columns: 72px minmax(260px,1fr) 110px auto;
+  box-shadow: 0 10px 32px rgba(8,42,67,.05);
+}
+.appointment-live-provider p { font-size: 13px; }
+.appointment-live-provider h2 { font-size: 19px; }
+.appointment-live-provider small,
+.appointment-live-state p,
+.appointment-cancel-warning p { font-size: 14px; line-height: 1.55; }
+.appointment-live-list article > i { font-size: 12px; }
+.appointment-live-actions button,
+.appointment-live-actions a { min-height: 42px; font-size: 13px; display: inline-flex; align-items: center; }
+
+/* Patient-owned records */
+.wallet-notice,
+.wallet-delegated-note { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
+.wallet-notice p,
+.wallet-delegated-note { font-size: 14px; line-height: 1.6; }
+.wallet-content { padding-bottom: 92px; }
+.wallet-live-heading p,
+.wallet-live-heading > div > span,
+.wallet-live-heading input,
+.wallet-live-error,
+.wallet-record-main p,
+.wallet-record-main > span,
+.wallet-record-main small,
+.wallet-record-date span,
+.wallet-live-list article > button,
+.wallet-instructions > p,
+.wallet-record-boundary p { font-size: 13px; }
+.wallet-live-heading h2 { font-size: 25px; }
+.wallet-live-heading label { min-height: 46px; }
+.wallet-live-list article {
+  grid-template-columns: 72px 48px minmax(0,1fr) auto;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 10px 32px rgba(8,42,67,.05);
+}
+.wallet-record-main h2 { font-size: 18px; }
+.wallet-live-list article > button { min-height: 42px; padding-inline: 14px; }
+.wallet-instructions > div { font-size: 15px; }
+
+/* Notifications */
+.notification-content { padding-block: 20px 92px; }
+.notification-privacy { max-width: 980px; margin-inline: auto; }
+.notification-privacy p,
+.notification-inbox.live .notice-copy p,
+.notification-inbox.live .notice-copy a { font-size: 14px; line-height: 1.55; }
+.notification-inbox.live .notice-copy h3 { font-size: 17px; line-height: 1.35; }
+.notification-inbox.live .notice-copy i,
+.notification-inbox.live .notice-copy time { font-size: 12px; }
+.notification-inbox.live .inbox-head h2 { font-size: 24px; }
+.notification-inbox.live .inbox-head p,
+.notification-inbox.live .inbox-head button,
+.notification-inbox.live .inbox-tabs button { font-size: 14px; min-height: 42px; }
+
+/* Support */
+.support-workspace { padding-block: 24px 92px; }
+.emergency-banner { padding: 16px 18px; }
+.emergency-banner b,
+.emergency-banner p,
+.emergency-banner a,
+.support-section-head p,
+.support-topics b,
+.support-topics small,
+.case-card p,
+.case-card b,
+.case-card small,
+.support-promise li,
+.support-modal > p,
+.case-detail > p,
+.modal-emergency p,
+.support-modal label,
+.support-modal label > small,
+.routing-note p,
+.case-status b,
+.case-status small,
+.case-thread article b,
+.case-thread article small,
+.case-thread article p,
+.case-footnote { font-size: 13px; line-height: 1.5; }
+.support-grid { grid-template-columns: minmax(0,1.5fr) 340px; gap: 20px; }
+.support-section-head h2 { font-size: 21px; }
+.support-topics { gap: 12px; }
+.support-topics > button { min-height: 96px; padding: 17px; border-radius: 18px; }
+.support-topics > button > span { width: 42px; height: 42px; }
+.case-card h2,
+.support-promise h2 { font-size: 16px; }
+.case-card > button { min-height: 70px; padding: 14px; }
+.support-modal,
+.case-detail { width: min(560px,100%); padding: 30px; }
+.support-modal > h2,
+.case-detail > h2 { font-size: 26px; }
+.support-modal textarea,
+.support-modal input,
+.support-modal select,
+.case-reply textarea { min-height: 46px; font-size: 14px; }
+.submit-support,
+.case-reply button { min-height: 46px; font-size: 14px; }
+
+@media (max-width: 900px) {
+  .provider-results,
+  .support-grid { grid-template-columns: 1fr; }
+  .provider-result { grid-template-columns: 74px minmax(0,1fr) 180px; }
+  .trust-panel { display: block; }
+  .appointment-live-list article { grid-template-columns: 64px minmax(0,1fr); }
+  .appointment-live-list article > i { grid-column: 1; }
+  .appointment-live-actions { grid-column: 2; flex-wrap: wrap; }
+}
+
+@media (max-width: 680px) {
+  .provider-search-hero,
+  .appointments-hero,
+  .wallet-hero,
+  .notification-hero,
+  .support-hero { padding: 34px 18px; }
+  .provider-search-hero h1,
+  .appointments-hero h1,
+  .wallet-hero h1,
+  .notification-hero h1,
+  .support-hero h1 { font-size: 34px; }
+  .providers-workspace,
+  .appointments-content,
+  .wallet-content,
+  .notification-content,
+  .support-workspace,
+  .wallet-notice,
+  .wallet-delegated-note,
+  .patient-context-nav { width: min(100% - 28px,1180px); }
+  .patient-context-nav { justify-content: stretch; overflow-x: auto; }
+  .patient-context-nav a { flex: 0 0 auto; }
+  .provider-search-hero label { align-items: stretch; }
+  .provider-result { grid-template-columns: 58px minmax(0,1fr); padding: 16px; }
+  .provider-photo { width: 54px; height: 62px; }
+  .provider-result > aside { grid-column: 1/-1; padding-inline-start: 0; }
+  .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 14px; }
+  .filter-row select,
+  .filter-row button { flex: 0 0 auto; }
+  .filter-row .clear { margin-inline-start: 0; }
+  .results-head { align-items: stretch; flex-direction: column; }
+  .appointments-hero,
+  .wallet-hero,
+  .notification-hero { align-items: flex-start; flex-direction: column; gap: 18px; }
+  .appointment-live-list article { grid-template-columns: 54px minmax(0,1fr); padding: 15px; }
+  .appointment-live-actions { grid-column: 1/-1; }
+  .wallet-live-list article { grid-template-columns: 58px minmax(0,1fr); padding: 15px; }
+  .wallet-record-avatar { display: none; }
+  .wallet-record-main,
+  .wallet-live-list article > button { grid-column: 2; }
+  .support-topics { grid-template-columns: 1fr; }
+  .support-topics > button.safety { grid-column: auto; }
+  .emergency-banner { align-items: flex-start; flex-wrap: wrap; }
+  .emergency-banner a { margin-inline-start: 42px; }
+}

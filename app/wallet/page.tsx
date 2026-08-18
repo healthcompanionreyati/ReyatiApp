@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import PatientHeader from "@/app/components/PatientHeader";
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 
 type VisitRecord = {
@@ -70,7 +71,7 @@ export default function Wallet() {
   }, [query, records]);
 
   return <main className={`wallet-shell wallet-live-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"} id="main-content">
-    <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav><a href="/providers">{ar ? "ابحث عن رعاية" : "Find care"}</a><a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a><a className="active" href="/wallet">{ar ? "السجلات الصحية" : "Health records"}</a><a href="/payments">{ar ? "المدفوعات" : "Payments"}</a><a href="/support">{ar ? "الدعم" : "Support"}</a></nav><div><button className="lang" type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a className="wallet-live-notifications" href="/notifications">{ar ? "الإشعارات" : "Notifications"}</a><span className="avatar">RY</span></div></header>
+    <PatientHeader ar={ar} displayName={ar ? "عضو رعايتي" : "Reyati member"} onLocaleChange={() => setLang(ar ? "en" : "ar")} active="health" />
     <section className="wallet-hero"><div><p>{ar ? "سجلات زيارة مملوكة للمريض" : "Patient-owned visit records"}</p><h1>{ar ? "سجلاتي الصحية" : "My Health Records"}</h1><span>{ar ? "راجع معلومات الزيارة النهائية التي أصدرها مقدمو الرعاية إلى حسابك." : "Review finalized visit information released to your account by your care providers."}</span></div><div className="wallet-hero-actions"><a href="/documents">{ar ? "المستندات الطبية" : "Medical documents"}</a><a className="secondary" href="/medication-reminders">{ar ? "تذكيرات الدواء" : "Medication reminders"}</a></div></section>
     <section className="wallet-notice"><span>i</span><p><b>{ar ? "سجلاتك خاصة بحسابك المسجّل." : "Your records are private to your signed-in account."}</b> {ar ? "يتضمن هذا العرض هوية مقدم الرعاية ومصدر الزيارة وتعليمات المريض المعتمدة. لا تظهر الملاحظات الداخلية للتاريخ والتقييم والخطة هنا." : "This view includes provider identity, visit provenance, and approved patient instructions. Internal history, assessment, and plan notes are not exposed here."}</p></section>
     {delegated && <section className="wallet-delegated-note">{ar ? "أنت تعرض السجلات من خلال علاقة رعاية نشطة ومحددة. هذا الوصول قابل للإلغاء ومدقق." : "You are viewing records through an active, scoped care relationship. This access is revocable and audited."}</section>}

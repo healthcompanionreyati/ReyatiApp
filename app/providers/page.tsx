@@ -1,6 +1,7 @@
 "use client";
 
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+import PatientHeader from "@/app/components/PatientHeader";
 import { reyatiDate, reyatiNumber } from "@/lib/reyati-i18n";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -191,15 +192,7 @@ export default function ProviderDiscovery() {
   }
 
   return <main className={`providers-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
-    <header className="providers-header">
-      <a className="brand" href="/"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
-      <nav aria-label={ar ? "التنقل الرئيسي" : "Main navigation"}>
-        <a className="active" href="/providers">{ar ? "ابحث عن رعاية" : "Find care"}</a>
-        <a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a>
-        <a href="/wallet">{ar ? "المحفظة الصحية" : "Health wallet"}</a>
-      </nav>
-      <div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label={ar ? "الإشعارات" : "Notifications"}>●</a><span>MA</span></div>
-    </header>
+    <PatientHeader ar={ar} displayName={ar ? "عضو رعايتي" : "Reyati member"} onLocaleChange={() => setLang(ar ? "en" : "ar")} active="care" />
 
     {subjectUserId && <div className="providers-delegated-note"><b>{ar ? "الحجز بموافقة مفوّضة." : "Booking with delegated consent."}</b> {ar ? "سينتمي هذا الطلب إلى المريض الذي منح صلاحية المواعيد. سيتم إخطار المريض ومقدم الرعاية وحسابك وتدقيق الإجراء." : "This request will belong to the patient who granted appointment access. The patient, provider, and your account will be notified, and the action will be audited."}</div>}
 

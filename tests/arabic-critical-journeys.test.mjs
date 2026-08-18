@@ -40,7 +40,10 @@ test("patient booking and appointments localize delegated, date, number, and mod
   assert.match(discovery, /slotLabel\(item\.scheduledStart\)/);
   assert.match(discovery, /reyatiNumber\(service\.feeQar, lang\)/);
   assert.match(appointments, /reyatiDate, reyatiLabel/);
-  assert.match(appointments, /aria-label=\{ar \? "الإشعارات" : "Notifications"\}/);
+  assert.match(appointments, /PatientHeader/);
+  const patientHeader = await source("app/components/PatientHeader.tsx");
+  assert.match(patientHeader, /href: "\/notifications"/);
+  assert.match(patientHeader, /ar: "التحديثات"/);
   assert.match(appointments, /locale=\{lang\}/);
 });
 

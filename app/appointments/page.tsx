@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ConfirmActionDialog from "@/app/components/ConfirmActionDialog";
+import PatientHeader from "@/app/components/PatientHeader";
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 import { reyatiDate, reyatiLabel } from "@/lib/reyati-i18n";
 
@@ -83,7 +84,7 @@ export default function Appointments() {
   }
 
   return <main className={`appointments-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"} id="main-content">
-    <header className="wallet-header"><a href="/" className="brand"><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><nav aria-label={ar ? "تنقل المريض" : "Patient navigation"}><a href={providersPath}>{ar ? "ابحث عن رعاية" : "Find care"}</a><a className="active" href="/appointments">{ar ? "المواعيد" : "Appointments"}</a><a href="/virtual-care">{ar ? "الرعاية الافتراضية" : "Virtual care"}</a><a href="/messages">{ar ? "الرسائل" : "Messages"}</a><a href="/referrals">{ar ? "الإحالات" : "Referrals"}</a><a href="/experience">{ar ? "تجربتي" : "My experience"}</a><a href="/wallet">{ar ? "المحفظة الصحية" : "Health wallet"}</a><a href="/payments">{ar ? "المدفوعات" : "Payments"}</a><a href="/support">{ar ? "الدعم" : "Support"}</a></nav><div><button className="lang" type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" className="appointment-notification-link" aria-label={ar ? "الإشعارات" : "Notifications"}>●</a><span className="avatar">RY</span></div></header>
+    <PatientHeader ar={ar} displayName={ar ? "عضو رعايتي" : "Reyati member"} onLocaleChange={() => setLang(ar ? "en" : "ar")} active="appointments" />
     <section className="appointments-hero"><div><p>{ar ? "رحلة رعايتك" : "Your care journey"}</p><h1>{ar ? "المواعيد" : "Appointments"}</h1><span>{ar ? "حجوزات مملوكة لحسابك وحالتها الحالية وضوابط آمنة لدورة حياتها." : "Account-owned bookings, current status, and safe lifecycle controls."}</span></div><a href={providersPath}>＋ {ar ? "حجز موعد جديد" : "Book new appointment"}</a></section>
     {delegated && <div className="appointments-delegated-note"><b>{ar ? "إدارة المواعيد بموافقة." : "Managing appointments with consent."}</b> {ar ? "يمكنك العرض والحجز والإلغاء فقط أثناء سريان إذن الموعد القابل للإلغاء. يتم تدقيق كل إجراء مفوّض." : "You can view, book, and cancel only while this revocable appointment permission remains active. Every delegated action is audited."}</div>}
     <section className="appointments-content">

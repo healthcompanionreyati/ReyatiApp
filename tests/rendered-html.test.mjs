@@ -1195,9 +1195,10 @@ test("keeps notification and authentication text readable without compressing he
   assert.match(readability, /\.trust-panel > p,[\s\S]*?font-size: 10px !important/);
   assert.match(readability, /\.admin-heading, \.orgops-title\) > div > p \{[\s\S]*?font-size: 11px !important/);
   assert.doesNotMatch(navigation, /\.notification-header\) > div > a:first-child/);
-  assert.match(notifications, /className="notification-header-actions"/);
-  assert.match(notifications, /aria-label=\{ar \? "تنقل المريض" : "Patient navigation"\}/);
+  assert.match(notifications, /PatientHeader/);
+  assert.match(notifications, /className="patient-context-nav"/);
   const patientHeader = await readFile(new URL("../app/components/PatientHeader.tsx", import.meta.url), "utf8");
+  assert.match(patientHeader, /aria-label=\{ar \? "التنقل الرئيسي" : "Primary navigation"\}/);
   assert.match(patientHeader, /className="app-locale"/);
   assert.match(patientHeader, /className="app-account"/);
 });

@@ -55,6 +55,7 @@ import "./documents.css";
 import "./rtl.css";
 import "./design-system.css";
 import "./home-experience.css";
+import "./patient-journey.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";
