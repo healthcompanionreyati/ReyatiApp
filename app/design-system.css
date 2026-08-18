@@ -1,0 +1,159 @@
+:root {
+  --ry-navy: #082a43;
+  --ry-navy-light: #123f5d;
+  --ry-cyan: #08a8d8;
+  --ry-cyan-accessible: #006a8e;
+  --ry-teal: #18bfa0;
+  --ry-sand: #d4af67;
+  --ry-cloud: #f4fafc;
+  --ry-mist: #e5f3f7;
+  --ry-ink: #557184;
+  --ry-success: #117a65;
+  --ry-warning: #936b1f;
+  --ry-error: #c03d54;
+  --ry-border: #d7e6eb;
+  --ry-shadow-card: 0 14px 44px rgba(8, 42, 67, 0.08);
+  --ry-shadow-float: 0 22px 64px rgba(8, 42, 67, 0.14);
+  --ry-control-radius: 12px;
+  --ry-card-radius: 20px;
+  --ry-hero-radius: 28px;
+  --ry-ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+body {
+  background: var(--ry-cloud);
+  color: var(--ry-navy);
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+}
+
+:where(button, input, select, textarea, a):focus-visible {
+  outline: 3px solid var(--ry-sand);
+  outline-offset: 3px;
+}
+
+.arabic,
+[dir="rtl"] { font-family: "IBM Plex Sans Arabic", Manrope, Arial, sans-serif; }
+
+.app-header.patient-app-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 60;
+  width: 100%;
+  height: 76px;
+  min-height: 76px;
+  padding-inline: clamp(20px, 4vw, 64px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(20px, 3vw, 44px);
+  border-bottom: 1px solid rgba(8, 42, 67, 0.09);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 30px rgba(8, 42, 67, 0.05);
+  backdrop-filter: blur(22px) saturate(150%);
+}
+
+.app-brand { width: 116px; height: 42px; display: flex; align-items: center; }
+.app-brand img { width: 112px; height: auto; display: block; }
+
+.app-primary-nav {
+  justify-self: center;
+  width: max-content;
+  max-width: 100%;
+  height: 46px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid rgba(8, 42, 67, 0.06);
+  border-radius: 999px;
+  background: rgba(229, 243, 247, 0.68);
+}
+
+.app-primary-nav a {
+  height: 34px;
+  padding-inline: clamp(12px, 1.3vw, 19px);
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ry-ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 160ms var(--ry-ease), background 160ms var(--ry-ease), box-shadow 160ms var(--ry-ease);
+}
+
+.app-primary-nav a:hover { color: var(--ry-navy); background: rgba(255, 255, 255, 0.72); }
+.app-primary-nav a.active { color: var(--ry-navy); background: #fff; box-shadow: 0 4px 15px rgba(8, 42, 67, 0.11); }
+.app-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.app-locale { min-height: 42px; padding-inline: 13px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--ry-cyan-accessible); font-size: 13px; font-weight: 700; }
+.app-locale:hover { background: var(--ry-mist); }
+.app-account { min-height: 46px; padding: 5px 13px 5px 5px; display: flex; align-items: center; gap: 9px; border: 1px solid rgba(8, 42, 67, 0.1); border-radius: 999px; background: #fff; color: var(--ry-navy); font-size: 13px; font-weight: 700; text-decoration: none; }
+[dir="rtl"] .app-account { padding: 5px 5px 5px 13px; }
+.app-account:hover { box-shadow: 0 8px 24px rgba(8, 42, 67, 0.09); }
+.app-avatar { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--ry-navy); color: #fff; font-size: 11px; }
+
+@media (max-width: 940px) {
+  .app-header.patient-app-header { grid-template-columns: auto 1fr; }
+  .app-primary-nav { display: none; }
+}
+
+@media (max-width: 560px) {
+  .app-header.patient-app-header { height: 66px; min-height: 66px; padding-inline: 14px; gap: 10px; }
+  .app-brand { width: 98px; }
+  .app-brand img { width: 96px; }
+  .app-locale { padding-inline: 9px; font-size: 12px; }
+  .app-account { padding: 5px; }
+  .app-account > span:last-child { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) { .app-primary-nav a { transition: none; } }
+
+/* Role workspaces share one readable navigation rhythm while their domain layouts remain intact. */
+:where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
+  .program-sidebar, .verify-sidebar, .finance-sidebar, .cases-sidebar, .moderation-sidebar, .audit-sidebar,
+  .admin-sidebar, .partner-sidebar, .orgops-sidebar) nav :where(a, button) {
+  min-height: 48px !important;
+  height: auto !important;
+  padding-block: 10px !important;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+}
+
+:where(.provider-topbar, .services-top, .insights-top, .settings-top, .patient-provider-top,
+  .partner-top, .program-top, .admin-topbar, .verify-top, .finance-top, .cases-top,
+  .moderation-top, .audit-top, .orgops-main > header) :where(b, strong) { font-size: 14px !important; }
+
+@media (max-width: 720px) {
+  .mobile-dock a { gap: 4px !important; }
+  .mobile-dock a span { width: 23px; height: 23px; display: grid; place-items: center; border-radius: 8px; background: transparent; color: currentColor; font: 800 10px Sora, sans-serif !important; }
+  .mobile-dock a b { font-size: 11px !important; line-height: 1.1; }
+  .mobile-dock a.active span { background: #fff; color: var(--ry-cyan-accessible); }
+}
+
+/* Authentication uses the same readable product scale as the signed-in shell. */
+.auth-story-copy h1 { font-size: clamp(44px, 4.8vw, 68px) !important; line-height: 1.04 !important; }
+.auth-story-copy > span { max-width: 620px; color: #d7e9ee !important; font-size: 16px !important; line-height: 1.65 !important; }
+.auth-principles b { font-size: 13px !important; line-height: 1.4 !important; }
+.auth-principles small { color: #c3d9e0 !important; font-size: 12px !important; line-height: 1.5 !important; }
+.auth-legal { color: #c2d8df !important; font-size: 11px !important; }
+.auth-stage > header :where(a, button) { font-size: 13px !important; }
+.auth-card { border-radius: var(--ry-card-radius) !important; box-shadow: var(--ry-shadow-float) !important; }
+.auth-success > p, .auth-heading > p { font-size: 11px !important; }
+.auth-success > small, .auth-heading > span { color: #4d6d7c !important; font-size: 13px !important; line-height: 1.6 !important; }
+.identity-card b { font-size: 14px !important; }
+.identity-card small, .identity-card > i { font-size: 12px !important; }
+.auth-security-note p, .auth-security-note b { font-size: 12px !important; line-height: 1.55 !important; }
+.role-picker.detailed a { min-height: 68px; }
+.role-picker.detailed a b { font-size: 13px !important; }
+.role-picker.detailed a small { font-size: 12px !important; line-height: 1.45 !important; }
+.auth-actions > a, .auth-primary { min-height: 46px; font-size: 13px !important; }
+.auth-switch { font-size: 12px !important; }
+
+@media (max-width: 820px) {
+  .auth-story-copy > span { font-size: 15px !important; }
+}

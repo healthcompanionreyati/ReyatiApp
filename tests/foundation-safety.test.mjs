@@ -232,7 +232,7 @@ test("Arabic and RTL preferences persist across critical journeys", async () => 
   assert.match(rtl, /margin-right:250px/);
   assert.match(accessibility, /arabicRouteTitles/);
   for (const page of ["app/page.tsx", "app/providers/page.tsx", "app/appointments/page.tsx", "app/wallet/page.tsx", "app/documents/page.tsx", "app/family/page.tsx", "app/payments/page.tsx", "app/support/page.tsx", "app/notifications/page.tsx", "app/settings/communications/page.tsx", "app/provider/page.tsx", "app/provider/documents/page.tsx", "app/provider/encounter/page.tsx", "app/admin/access/page.tsx", "app/admin/audit/page.tsx", "app/admin/cases/page.tsx", "app/admin/communications/page.tsx", "app/admin/operations/page.tsx", "app/admin/organizations/page.tsx"]) {
-    const contents = await source(page);
+    const contents = await source(page) + (page === "app/page.tsx" ? await source("app/components/PatientHeader.tsx") : "");
     assert.match(contents, /useReyatiLocale/);
     assert.match(contents, /dir=\{ar \? "rtl" : "ltr"\}|dir=\{ar\?"rtl":"ltr"\}/);
     assert.match(contents, /العربية/);

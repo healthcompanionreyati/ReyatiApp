@@ -5,38 +5,36 @@ import { useReyatiLocale } from "./useReyatiLocale";
 
 type DockItem = { href: string; icon: string; label: string; exact?: boolean; aliases?: string[] };
 
-const patientRoutes = ["/", "/navigator", "/providers", "/appointments", "/wallet", "/family", "/payments", "/support", "/notifications"];
-
 const patientItems: DockItem[] = [
-  { href: "/", icon: "⌂", label: "Home", exact: true },
-  { href: "/navigator", icon: "◇", label: "Care guide" },
-  { href: "/appointments", icon: "◉", label: "Visits" },
-  { href: "/wallet", icon: "▤", label: "Records" },
-  { href: "/journeys", icon: "•••", label: "More", aliases: ["/providers", "/family", "/payments", "/support", "/notifications"] },
+  { href: "/", icon: "H", label: "Home", exact: true },
+  { href: "/providers", icon: "C", label: "Find care", aliases: ["/navigator", "/facilities", "/saved-care"] },
+  { href: "/appointments", icon: "A", label: "Visits", aliases: ["/queue", "/pre-visit-intake", "/appointment-preparation", "/appointment-accommodations", "/post-visit-actions"] },
+  { href: "/wallet", icon: "R", label: "My health", aliases: ["/laboratory", "/diagnostic-imaging", "/pharmacy", "/care-plan", "/health-profile", "/emergency-profile", "/immunizations", "/screening-history", "/health-measurements", "/symptom-journal", "/wellness-journal", "/document-capture", "/record-index", "/care-timeline"] },
+  { href: "/journeys", icon: "M", label: "More", aliases: ["/family", "/payments", "/support", "/notifications", "/account", "/privacy-rights", "/consents", "/benefits", "/insurance", "/reviews", "/complaints", "/settings", "/notification-preferences", "/service-status", "/health-library", "/connections", "/device-connections"] },
 ];
 
 const providerItems: DockItem[] = [
-  { href: "/provider", icon: "⌂", label: "Today", exact: true },
-  { href: "/provider/patients", icon: "♙", label: "Patients" },
-  { href: "/provider/services", icon: "◇", label: "Services" },
-  { href: "/provider/insights", icon: "↗", label: "Insights" },
-  { href: "/provider/settings", icon: "⚙", label: "Settings" },
+  { href: "/provider", icon: "T", label: "Today", exact: true },
+  { href: "/provider/patients", icon: "P", label: "Patients" },
+  { href: "/provider/services", icon: "S", label: "Services" },
+  { href: "/provider/insights", icon: "I", label: "Insights" },
+  { href: "/provider/settings", icon: "A", label: "Account" },
 ];
 
 const adminItems: DockItem[] = [
-  { href: "/admin", icon: "⌂", label: "Overview", exact: true },
-  { href: "/admin/verification", icon: "✓", label: "Verify" },
-  { href: "/admin/finance", icon: "◫", label: "Finance" },
-  { href: "/admin/cases", icon: "!", label: "Cases" },
-  { href: "/admin/audit", icon: "⌘", label: "Audit" },
+  { href: "/admin", icon: "O", label: "Overview", exact: true },
+  { href: "/admin/verification", icon: "V", label: "Verify" },
+  { href: "/admin/finance", icon: "F", label: "Finance" },
+  { href: "/admin/cases", icon: "C", label: "Cases" },
+  { href: "/admin/audit", icon: "A", label: "Audit" },
 ];
 
 const partnerItems: DockItem[] = [
-  { href: "/partner", icon: "⌂", label: "Status", exact: true },
-  { href: "/partner/program", icon: "◇", label: "Programme" },
-  { href: "/support", icon: "?", label: "Support" },
-  { href: "/journeys", icon: "↗", label: "Directory" },
-  { href: "/auth", icon: "◎", label: "Account" },
+  { href: "/partner", icon: "O", label: "Overview", exact: true },
+  { href: "/partner/program", icon: "W", label: "Work" },
+  { href: "/support", icon: "S", label: "Support" },
+  { href: "/journeys", icon: "D", label: "Directory" },
+  { href: "/auth", icon: "A", label: "Account" },
 ];
 
 const arabicLabels: Record<string, string> = {
@@ -62,7 +60,7 @@ export default function MobileDock() {
 
   let items: DockItem[] | null = null;
   let label = ar ? "تنقل المريض" : "Patient navigation";
-  if (patientRoutes.includes(path) || path === "/journeys") items = patientItems;
+  if (path && !path.startsWith("/provider") && !path.startsWith("/admin") && !path.startsWith("/partner") && !path.startsWith("/auth") && !path.startsWith("/signin") && !path.startsWith("/demo")) items = patientItems;
   if (path.startsWith("/provider")) { items = providerItems; label = ar ? "تنقل مقدم الرعاية" : "Provider navigation"; }
   if (path.startsWith("/admin")) { items = adminItems; label = ar ? "تنقل الإدارة" : "Administration navigation"; }
   if (path.startsWith("/partner")) { items = partnerItems; label = ar ? "تنقل الشريك" : "Partner navigation"; }

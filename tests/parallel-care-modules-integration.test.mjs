@@ -20,7 +20,7 @@ test("shared product navigation exposes each role-owned workspace", async () => 
   const [home, provider, partner, admin, titles] = await Promise.all([
     read("app/page.tsx"), read("app/provider/page.tsx"), read("app/partner/page.tsx"), read("app/admin/page.tsx"), read("app/components/AccessibilitySync.tsx"),
   ]);
-  for (const path of ["/queue", "/laboratory", "/home-care"]) assert.match(home, new RegExp(`href=\"${path}\"`));
+  for (const path of ["/queue", "/laboratory", "/home-care"]) assert.match(home, new RegExp(`href(?::|=)\\s*[\"']${path}[\"']`));
   for (const path of ["/provider/queue", "/provider/laboratory"]) assert.match(provider, new RegExp(`href=\"${path}\"`));
   for (const path of ["/partner/laboratory", "/partner/home-care"]) assert.match(partner, new RegExp(`href=\"${path}\"`));
   for (const path of ["/admin/queue", "/admin/laboratory", "/admin/home-care"]) assert.match(admin, new RegExp(`href=\"${path}\"`));

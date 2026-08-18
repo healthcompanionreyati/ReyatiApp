@@ -40,8 +40,8 @@ test("renders the branded Reyati patient experience", async () => {
   assert.match(html, /Welcome to Reyati/);
   assert.match(html, /Care, intelligently connected\./);
   assert.match(html, /src="\/brand\/reyati-logo\.svg"/);
-  assert.match(html, /Every destination below uses authenticated, account-owned data/);
-  assert.match(html, /No information is invented on this page/);
+  assert.match(html, /Everything you need, organized around you/);
+  assert.match(html, /Only real account activity/);
   assert.doesNotMatch(html, /codex-preview|Building your site|react-loading-skeleton|Dr\. Laila|Mariam Ahmed|prototype journeys|synthetic data/i);
 });
 
@@ -108,7 +108,7 @@ test("keeps starter preview infrastructure out of the product", async () => {
   assert.match(layout, /<AccessibilitySync\/>/);
   assert.match(page, /fetch\("\/api\/me"/);
   assert.match(page, /fetch\("\/api\/appointments"/);
-  assert.match(page, /No information is invented on this page/);
+  assert.match(page, /Reyati does not invent information for this page/);
   assert.doesNotMatch(layout, /codex-preview|_sites-preview/);
   assert.doesNotMatch(page, /SkeletonPreview|_sites-preview/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
@@ -757,9 +757,9 @@ test("uses explicit shared navigation mappings and accessible dialog behavior", 
     readFile(new URL("../app/auth.css", import.meta.url), "utf8"),
   ]);
 
-  assert.match(dock, /aliases: \["\/providers", "\/family", "\/payments", "\/support", "\/notifications"\]/);
-  assert.match(dock, /label: "Status"/);
-  assert.match(dock, /label: "Programme"/);
+  assert.match(dock, /href: "\/providers"[\s\S]*?aliases: \["\/navigator", "\/facilities", "\/saved-care"\]/);
+  assert.match(dock, /label: "Overview"/);
+  assert.match(dock, /label: "Work"/);
   assert.match(dock, /label: "Directory"/);
   assert.doesNotMatch(dock, /href: "\/payments".*label: "Payments"/);
   assert.match(accessibility, /انتقل إلى المحتوى الرئيسي/);
@@ -963,14 +963,14 @@ test("coalesces shared accessibility scans during dynamic page updates", async (
 test("keeps homepage API failures retryable and distinct from confirmed empty data", async () => {
   const home = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 
-  assert.match(home, /const loadWorkspace=useCallback/);
+  assert.match(home, /const loadWorkspace\s*=\s*useCallback/);
   assert.match(home, /new AbortController\(\)/);
-  assert.match(home, /identityResponse\.json\(\)\.catch\(\(\)=>\(\{\}\)\)/);
-  assert.match(home, /appointmentResponse\.json\(\)\.catch\(\(\)=>\(\{\}\)\)/);
-  assert.match(home, /onClick=\{\(\)=>void loadWorkspace\(\)\}>\{ar\?.*?:"Try again"\}/);
-  assert.match(home, /error\?<div className="appointment-live-state error"/);
+  assert.match(home, /identityResponse\.json\(\)\.catch\(\(\)\s*=>\s*\(\{\}\)\)/);
+  assert.match(home, /appointmentResponse\.json\(\)\.catch\(\(\)\s*=>\s*\(\{\}\)\)/);
+  assert.match(home, /onClick=\{\(\)\s*=>\s*void loadWorkspace\(\)\}>\{ar\s*\?.*?:\s*"Try again"\}/);
+  assert.match(home, /error \? <div className="home-state error"/);
   assert.match(home, /Appointment status unavailable/);
-  assert.match(home, /:nextAppointment\?<section className="next-appt"/);
+  assert.match(home, /: nextAppointment \? <div className="home-next-appointment"/);
 });
 
 test("keeps the provider schedule recoverable across authentication and response failures", async () => {
@@ -1178,12 +1178,11 @@ test("keeps premium navigation and mobile account actions reliable", async () =>
 });
 
 test("keeps notification and authentication text readable without compressing header actions", async () => {
-  const [layout, readability, navigation, notifications, home] = await Promise.all([
+  const [layout, readability, navigation, notifications] = await Promise.all([
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/readability-fixes.css", import.meta.url), "utf8"),
     readFile(new URL("../app/premium-navigation.css", import.meta.url), "utf8"),
     readFile(new URL("../app/notifications/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
   ]);
 
   assert.match(layout, /readability-fixes\.css/);
@@ -1198,5 +1197,7 @@ test("keeps notification and authentication text readable without compressing he
   assert.doesNotMatch(navigation, /\.notification-header\) > div > a:first-child/);
   assert.match(notifications, /className="notification-header-actions"/);
   assert.match(notifications, /aria-label=\{ar \? "تنقل المريض" : "Patient navigation"\}/);
-  assert.match(home, /className="bell"[\s\S]*?<svg aria-hidden="true"/);
+  const patientHeader = await readFile(new URL("../app/components/PatientHeader.tsx", import.meta.url), "utf8");
+  assert.match(patientHeader, /className="app-locale"/);
+  assert.match(patientHeader, /className="app-account"/);
 });
