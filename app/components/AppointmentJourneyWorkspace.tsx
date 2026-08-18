@@ -17,6 +17,84 @@ const copy = {
   care_timeline: { en: "Care journey timeline", ar: "الخط الزمني لرحلة الرعاية", introEn: "A source-labelled history of your Reyati appointment journey.", introAr: "سجل موضح المصدر لرحلة مواعيدك في ريّاتي." },
 } as const;
 
+type HeroDetail = {
+  badgeEn: string;
+  badgeAr: string;
+  summaryEn: string;
+  summaryAr: string;
+  chipsEn: string[];
+  chipsAr: string[];
+  stats: Array<{ labelEn: string; labelAr: string; valueEn: string; valueAr: string }>;
+};
+
+const heroDetails: Record<Module, HeroDetail> = {
+  pre_visit_intake: {
+    badgeEn: "Patient prep",
+    badgeAr: "استعداد المريض",
+    summaryEn: "Capture the context a care team needs before the visit so the appointment begins with clarity, not guesswork.",
+    summaryAr: "اجمع السياق الذي يحتاجه فريق الرعاية قبل الموعد حتى تبدأ الزيارة بوضوح لا بتخمين.",
+    chipsEn: ["Structured", "Appointment-linked", "Safety-first"],
+    chipsAr: ["منظم", "مرتبط بالموعد", "السلامة أولاً"],
+    stats: [
+      { labelEn: "Input type", labelAr: "نوع الإدخال", valueEn: "Structured only", valueAr: "منظم فقط" },
+      { labelEn: "Audience", labelAr: "الجهة", valueEn: "Care team review", valueAr: "مراجعة فريق الرعاية" },
+      { labelEn: "Boundaries", labelAr: "الحدود", valueEn: "One appointment", valueAr: "زيارة واحدة" },
+    ],
+  },
+  preparation_guides: {
+    badgeEn: "Provider guidance",
+    badgeAr: "إرشاد مقدم الرعاية",
+    summaryEn: "Present bilingual preparation instructions in a clean, reviewable format and let patients acknowledge receipt.",
+    summaryAr: "اعرض إرشادات الاستعداد بثنائية لغة وبصيغة واضحة قابلة للمراجعة، ثم اسمح للمريض بتأكيد الاستلام.",
+    chipsEn: ["Bilingual", "Provider-authored", "Acknowledgeable"],
+    chipsAr: ["ثنائي اللغة", "من مقدم الرعاية", "قابل للتأكيد"],
+    stats: [
+      { labelEn: "Source", labelAr: "المصدر", valueEn: "Provider authored", valueAr: "منشور من مقدم الرعاية" },
+      { labelEn: "Format", labelAr: "الصيغة", valueEn: "Bilingual guidance", valueAr: "إرشاد ثنائي اللغة" },
+      { labelEn: "Control", labelAr: "التحكم", valueEn: "Receipt confirmation", valueAr: "تأكيد الاستلام" },
+    ],
+  },
+  accommodation_requests: {
+    badgeEn: "Access support",
+    badgeAr: "دعم الوصول",
+    summaryEn: "Ask for practical accessibility support without making assumptions about needs, schedules, or approvals.",
+    summaryAr: "اطلب دعماً عملياً لإمكانية الوصول دون افتراض الاحتياجات أو الجداول أو الموافقات.",
+    chipsEn: ["Practical", "Accessibility-first", "No assumptions"],
+    chipsAr: ["عملي", "أولوية الوصول", "من دون افتراضات"],
+    stats: [
+      { labelEn: "Support type", labelAr: "نوع الدعم", valueEn: "Practical support", valueAr: "دعم عملي" },
+      { labelEn: "Response", labelAr: "الاستجابة", valueEn: "Needs review", valueAr: "بحاجة لمراجعة" },
+      { labelEn: "Default", labelAr: "الافتراضي", valueEn: "No auto approval", valueAr: "لا موافقة تلقائية" },
+    ],
+  },
+  post_visit_actions: {
+    badgeEn: "Care follow-through",
+    badgeAr: "متابعة الرعاية",
+    summaryEn: "Keep next steps visible after the appointment so the care plan feels guided and easy to complete.",
+    summaryAr: "أبقِ الخطوات التالية واضحة بعد الموعد حتى تبدو خطة الرعاية موجهة وسهلة الإكمال.",
+    chipsEn: ["Linked", "Due windows", "Completion tracking"],
+    chipsAr: ["مرتبط", "نافذة زمنية", "متابعة الإكمال"],
+    stats: [
+      { labelEn: "Workflow", labelAr: "المسار", valueEn: "Follow-up tracked", valueAr: "المتابعة متتبعة" },
+      { labelEn: "Timing", labelAr: "التوقيت", valueEn: "Due window visible", valueAr: "نافذة ظاهرة" },
+      { labelEn: "Action", labelAr: "الإجراء", valueEn: "Mark complete", valueAr: "وضع علامة مكتمل" },
+    ],
+  },
+  care_timeline: {
+    badgeEn: "Source history",
+    badgeAr: "سجل موضح المصدر",
+    summaryEn: "See the finalized visit trail with amendments linked back to the original record instead of scattered fragments.",
+    summaryAr: "اعرض أثر الزيارات النهائية مع ربط التعديلات بالسجل الأصلي بدل الأجزاء المتناثرة.",
+    chipsEn: ["Finalized", "Linked amendments", "Source-labelled"],
+    chipsAr: ["نهائي", "تعديلات مرتبطة", "موضح المصدر"],
+    stats: [
+      { labelEn: "Record type", labelAr: "نوع السجل", valueEn: "Finalized visits", valueAr: "زيارات نهائية" },
+      { labelEn: "Traceability", labelAr: "قابلية التتبع", valueEn: "Linked history", valueAr: "تاريخ مرتبط" },
+      { labelEn: "Integrity", labelAr: "السلامة", valueEn: "Amendments preserved", valueAr: "التعديلات محفوظة" },
+    ],
+  },
+};
+
 function inner(row: Row): Row {
   for (const value of Object.values(row)) if (value && typeof value === "object" && !Array.isArray(value) && "id" in value) return value as Row;
   return row;
@@ -41,6 +119,7 @@ export default function AppointmentJourneyWorkspace({ module, role }: { module: 
     if (role === "provider" && module === "post_visit_actions") return { action: "create", labels: ar ? ["نوع الإجراء", "العنوان بالإنجليزية", "العنوان بالعربية"] : ["Action type", "English title", "Arabic title"], defaults: ["book_follow_up", "", ""] };
     return null;
   }, [role, module, ar]);
+  const hero = heroDetails[module];
 
   async function send(body: Row) { setSaving(true); setError(""); setNotice(""); try { const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const payload = await response.json().catch(() => ({})) as { message?: string }; if (!response.ok) throw new Error(payload.message || (ar ? "تعذر حفظ التغيير." : "The change could not be saved.")); setNotice(ar ? "تم حفظ التغيير بأمان." : "The change was saved safely."); await load(); } catch (caught) { setError(caught instanceof Error ? caught.message : (ar ? "تعذر الحفظ." : "Unable to save.")); } finally { setSaving(false); } }
   async function submit(event: FormEvent) { event.preventDefault(); if (!formConfig || !selectedAppointmentId) return; let body: Row = { action: formConfig.action, appointmentId: selectedAppointmentId };
@@ -61,7 +140,22 @@ export default function AppointmentJourneyWorkspace({ module, role }: { module: 
 
   return <main className={`${styles.shell} ${role === "patient" && module === "care_timeline" ? "health-hub-shell care-timeline-experience" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <header className={styles.top}><a href={role === "provider" ? "/provider" : "/"}><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><div className={styles.topActions}><button type="button" className={styles.lang} onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "EN" : "العربية"}</button><a href={role === "provider" ? "/provider" : "/appointments"}>{ar ? "رجوع" : "Back"}</a></div></header>
-    <section className={styles.hero}><span>{role === "provider" ? (ar ? "مساحة عمل مقدم الرعاية" : "PROVIDER WORKSPACE") : (ar ? "رحلة الموعد" : "APPOINTMENT JOURNEY")}</span><h1>{ar ? c.ar : c.en}</h1><p>{ar ? c.introAr : c.introEn}</p></section>
+    <section className={styles.hero}>
+      <div className={styles.heroCopy}>
+        <span>{role === "provider" ? (ar ? "مساحة عمل مقدم الرعاية" : "PROVIDER WORKSPACE") : (ar ? "رحلة الموعد" : "APPOINTMENT JOURNEY")}</span>
+        <h1>{ar ? c.ar : c.en}</h1>
+        <p>{ar ? c.introAr : c.introEn}</p>
+        <div className={styles.heroChips}>{(ar ? hero.chipsAr : hero.chipsEn).map((chip) => <span key={chip}>{chip}</span>)}</div>
+      </div>
+      <aside className={styles.heroCard}>
+        <small>{ar ? hero.badgeAr : hero.badgeEn}</small>
+        <h2>{ar ? c.ar : c.en}</h2>
+        <p>{ar ? hero.summaryAr : hero.summaryEn}</p>
+        <dl className={styles.heroStats}>
+          {hero.stats.map((stat) => <div key={stat.labelEn}><dt>{ar ? stat.labelAr : stat.labelEn}</dt><dd>{ar ? stat.valueAr : stat.valueEn}</dd></div>)}
+        </dl>
+      </aside>
+    </section>
     <section className={styles.boundary}><b>{ar ? "مساحة آمنة ومحددة" : "Protected, bounded workspace"}</b><span>{ar ? "لا تشخيص آلي، ولا تغيير للمواعيد، ولا إرسال خارجي، ولا استنتاج للاحتياجات." : "No automated diagnosis, appointment changes, external delivery, or inferred needs."}</span></section>
     {error && <div className={styles.error} role="alert">{error} <button type="button" onClick={() => void load()}>{ar ? "إعادة المحاولة" : "Retry"}</button></div>}
     {notice && <div className={styles.notice} role="status">{notice}</div>}
