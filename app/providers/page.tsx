@@ -140,6 +140,11 @@ export default function ProviderDiscovery() {
     }), [providers, specialty, gender, query, sort]);
 
   const activeService = selected?.services.find((service) => service.id === serviceId) ?? null;
+  const discoveryStats = [
+    { label: ar ? "موثّقون" : "Verified", value: `${providers.length}` },
+    { label: ar ? "خيارات مباشرة" : "Live options", value: `${filtered.length}` },
+    { label: ar ? "شفافية" : "Transparency", value: ar ? "سعر + توفر" : "Price + availability" },
+  ];
 
   function openProvider(provider: Provider) {
     setSelected(provider);
@@ -202,6 +207,7 @@ export default function ProviderDiscovery() {
         <h1>{ar ? "اعثر على الرعاية المناسبة لك" : "Find care that fits you"}</h1>
         <span>{ar ? "قارن مقدمي الرعاية الموثّقين والأسعار والتوفر الفعلي بثقة." : "Compare verified providers, transparent prices, and real availability with confidence."}</span>
         <label><i>⌕</i><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "الطبيب أو التخصص أو المنشأة" : "Doctor, specialty, or facility"} aria-label={ar ? "البحث عن الرعاية" : "Search care"} /><b>⌖ {ar ? "الدوحة" : "Doha"}</b><button type="button">{ar ? "بحث" : "Search"}</button></label>
+        <div className="provider-search-stats">{discoveryStats.map((item) => <article key={item.label}><small>{item.label}</small><b>{item.value}</b></article>)}</div>
       </div>
     </section>
 

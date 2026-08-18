@@ -1,0 +1,239 @@
+.audit-shell,
+.recovery-shell,
+.experience-console {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(21,172,194,.09), transparent 20rem),
+    radial-gradient(circle at 0% 0%, rgba(6,59,86,.08), transparent 16rem),
+    linear-gradient(180deg,#fff 0%,#f2f6f8 42%,#edf2f5 100%);
+}
+
+.audit-shell .audit-main,
+.recovery-shell .recovery-main,
+.experience-console .experience-main {
+  min-width: 0;
+}
+
+.audit-shell .audit-top,
+.recovery-shell .recovery-main > header,
+.experience-console .experience-main > header {
+  min-height: 76px;
+  height: auto;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgba(7,49,73,.05);
+  border-bottom: 1px solid rgba(8,42,67,.08);
+}
+
+.audit-shell .audit-workspace,
+.recovery-shell .recovery-workspace,
+.experience-console .experience-workspace {
+  padding-top: 34px;
+}
+
+.audit-shell .audit-heading,
+.recovery-shell .recovery-heading,
+.experience-console .experience-heading {
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(8,42,67,.10);
+  box-shadow: 0 14px 34px rgba(7,49,73,.06);
+}
+
+.audit-shell .audit-heading h1,
+.recovery-shell .recovery-heading h1,
+.experience-console .experience-heading h1 {
+  font-size: clamp(32px,4vw,48px);
+  line-height: 1.04;
+  letter-spacing: -.04em;
+}
+
+.audit-shell .audit-heading span,
+.recovery-shell .recovery-heading span,
+.experience-console .experience-heading > span {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #587482;
+}
+
+.audit-shell .audit-banner,
+.recovery-shell .recovery-summary article,
+.recovery-shell .recovery-summary > div,
+.experience-console .experience-admin-metrics article,
+.experience-console .experience-governance article,
+.experience-console .experience-rehearsals {
+  box-shadow: 0 14px 34px rgba(7,49,73,.06);
+}
+
+.audit-shell .audit-banner {
+  padding: 14px 16px;
+  background: #ecfaf4;
+  border-color: #d7ede2;
+  border-radius: 18px;
+}
+
+.audit-shell .audit-metrics,
+.experience-console .experience-admin-metrics {
+  gap: 12px;
+}
+
+.audit-shell .audit-metrics article,
+.experience-console .experience-admin-metrics article {
+  padding: 14px 16px;
+  border-radius: 16px;
+}
+
+.audit-shell .audit-metrics b,
+.experience-console .experience-admin-metrics article > span {
+  font-size: 18px;
+}
+
+.audit-shell .event-panel,
+.audit-shell .event-detail,
+.audit-shell .alerts-panel,
+.audit-shell .alert-rules,
+.audit-shell .access-layout > article,
+.audit-shell .access-layout > aside,
+.audit-shell .exports-layout > article,
+.audit-shell .exports-layout > aside,
+.recovery-shell .recovery-plan,
+.recovery-shell .recovery-list,
+.recovery-shell .recovery-detail,
+.experience-console .experience-governance article,
+.experience-console .experience-rehearsals {
+  border-radius: 20px;
+}
+
+.audit-shell .event-tools,
+.recovery-shell .recovery-plan,
+.recovery-shell .recovery-detail,
+.experience-console .experience-governance article,
+.experience-console .experience-rehearsals {
+  padding: 24px;
+}
+
+.audit-shell .event-detail {
+  top: 92px;
+  padding: 18px;
+}
+
+.audit-shell .event-table > header {
+  padding: 11px 14px;
+  font-size: 8px;
+}
+
+.audit-shell .event-table > button {
+  padding: 13px 14px;
+}
+
+.audit-shell .audit-live-filters,
+.recovery-shell .recovery-summary article,
+.recovery-shell .recovery-summary > div {
+  border-radius: 18px;
+}
+
+.audit-shell .audit-live-filters {
+  padding: 14px 16px;
+}
+
+.audit-shell .audit-live-filters label {
+  font-size: 9px;
+}
+
+.audit-shell .audit-live-filters input,
+.audit-shell .audit-live-filters select,
+.recovery-shell .recovery-plan input,
+.recovery-shell .recovery-plan select,
+.recovery-shell .recovery-detail input,
+.recovery-shell .recovery-detail select,
+.recovery-shell .recovery-detail textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.audit-shell .audit-live-filters button,
+.audit-shell .audit-more,
+.recovery-shell .recovery-plan button,
+.recovery-shell .recovery-detail form button,
+.experience-console .experience-governance button {
+  min-height: 42px;
+  border-radius: 10px;
+}
+
+.recovery-shell .recovery-heading,
+.experience-console .experience-heading {
+  padding: 18px 22px;
+}
+
+.recovery-shell .recovery-summary article b {
+  font-size: 30px;
+}
+
+.recovery-shell .recovery-list > button {
+  padding: 15px 16px;
+  grid-template-columns: 36px 1fr auto;
+}
+
+.experience-console .experience-quick-launch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 22px;
+}
+
+.experience-console .experience-quick-launch a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 84px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(8,42,67,.10);
+  background: rgba(255,255,255,.94);
+  text-decoration: none;
+  color: #082a43;
+  box-shadow: 0 10px 26px rgba(7,49,73,.04);
+}
+
+.experience-console .experience-quick-launch a span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(112,216,223,.16);
+  color: #063d56;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.experience-console .experience-quick-launch a div {
+  display: grid;
+  gap: 4px;
+}
+
+.experience-console .experience-quick-launch b,
+.experience-console .experience-quick-launch small {
+  overflow-wrap: anywhere;
+}
+
+.experience-console .experience-quick-launch b {
+  font-size: 14px;
+}
+
+.experience-console .experience-quick-launch small {
+  color: #587482;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .experience-console .experience-quick-launch {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .experience-console .experience-quick-launch {
+    grid-template-columns: 1fr;
+  }
+}

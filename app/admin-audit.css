@@ -4,3 +4,61 @@
 @media(max-width:1100px){.audit-layout{grid-template-columns:1fr}.event-detail{position:static}.alerts-layout,.access-layout,.exports-layout{grid-template-columns:1fr}}
 @media(max-width:800px){.audit-sidebar{width:205px}.audit-main{margin-inline-start:205px;width:calc(100% - 205px)}.audit-metrics{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:720px){.audit-sidebar{display:none}.audit-main{margin:0;width:100%}.audit-top{padding:0 14px}.audit-top>div:first-child b{display:none}.audit-workspace{padding:22px 14px}.audit-heading{align-items:flex-start;gap:12px}.audit-heading h1{font-size:24px}.audit-banner i{display:none}.audit-live-filters{grid-template-columns:1fr}.audit-tabs{overflow:auto;gap:12px}.audit-tabs button{white-space:nowrap}.event-tools{flex-direction:column;align-items:flex-start;gap:8px}.event-tools label{width:100%}.event-table>header{display:none}.event-table>button{grid-template-columns:78px 90px 1fr 8px}.event-table>button>span,.event-table code,.event-table>button>i,.event-table>button>em{display:none}.alert-row{grid-template-columns:25px 1fr 55px}.alert-row>i,.alert-row>em{display:none}.access-table header{display:none}.access-table>div{grid-template-columns:1fr 50px 70px 10px}.access-table>div span:nth-of-type(2),.access-table>div strong{display:none}.export-form>div:nth-of-type(1){grid-template-columns:1fr}.audit-footer a{display:none}}
+
+.audit-shell{background:
+  radial-gradient(circle at 100% 0%, rgba(21,172,194,.09), transparent 20rem),
+  radial-gradient(circle at 0% 0%, rgba(6,59,86,.08), transparent 16rem),
+  linear-gradient(180deg,#fff 0%,#f2f6f8 42%,#edf2f5 100%)}
+.audit-main{background:transparent}
+.audit-workspace{padding-top:34px}
+.audit-heading,.audit-banner,.audit-live-state,.audit-live-filters,.event-panel,.event-detail,.alerts-panel,.alert-rules,.access-layout>article,.access-layout>aside,.exports-layout>article,.exports-layout>aside{box-shadow:0 14px 34px rgba(7,49,73,.06)}
+.audit-heading,.audit-banner,.audit-live-state,.audit-live-filters{border-radius:18px}
+.audit-heading{padding:18px 22px;background:rgba(255,255,255,.92);border:1px solid rgba(8,42,67,.10)}
+.audit-heading h1{font-size:clamp(32px,4vw,48px);line-height:1.04;letter-spacing:-.04em}
+.audit-heading span{font-size:13px;line-height:1.6;color:#587482}
+.audit-banner{padding:14px 16px;background:#ecfaf4;border-color:#d7ede2}
+.audit-metrics{gap:12px}
+.audit-metrics article{padding:14px 16px;border-radius:16px}
+.audit-metrics b{font-size:18px}
+.event-panel,.event-detail,.alerts-panel,.alert-rules,.access-layout>article,.access-layout>aside,.exports-layout>article,.exports-layout>aside{border-radius:20px}
+.event-tools{padding:16px 16px 14px}
+.event-table>header{padding:11px 14px;font-size:8px}
+.event-table>button{padding:13px 14px}
+.event-detail{top:92px;padding:18px}
+.event-detail-head h2{font-size:18px}
+.actor-card,.hash-proof,.audit-footer{border-radius:12px}
+.alert-row,.access-table>div,.package-row{padding-inline:12px}
+.audit-live-filters{padding:14px 16px}
+.audit-live-filters label{font-size:9px}
+.audit-live-filters input,.audit-live-filters select{padding:10px;border-radius:10px}
+.audit-live-filters button,.audit-more{min-height:42px;border-radius:10px}
+.audit-footer,.audit-toast{box-shadow:0 14px 34px rgba(7,49,73,.10)}
+.audit-shell{background:
+  radial-gradient(circle at 100% 0%, rgba(21,172,194,.09), transparent 20rem),
+  radial-gradient(circle at 0% 0%, rgba(6,59,86,.08), transparent 16rem),
+  linear-gradient(180deg,#fff 0%,#f2f6f8 42%,#edf2f5 100%)}
+.audit-main{background:transparent}
+.audit-top{min-height:76px;height:auto;background:rgba(255,255,255,.88);backdrop-filter:blur(18px);box-shadow:0 10px 30px rgba(7,49,73,.05);padding-inline:clamp(18px,4vw,36px);border-bottom:1px solid rgba(8,42,67,.08)}
+.audit-workspace{padding-top:34px}
+.audit-heading,.audit-banner,.audit-live-state,.audit-live-filters,.event-panel,.event-detail,.alerts-panel,.alert-rules,.access-layout>article,.access-layout>aside,.exports-layout>article,.exports-layout>aside{box-shadow:0 14px 34px rgba(7,49,73,.06)}
+.audit-heading,.audit-banner,.audit-live-state,.audit-live-filters{border-radius:18px}
+.audit-heading{padding:18px 22px;background:rgba(255,255,255,.92);border:1px solid rgba(8,42,67,.10)}
+.audit-heading h1{font-size:clamp(32px,4vw,48px);line-height:1.04;letter-spacing:-.04em}
+.audit-heading span{font-size:13px;line-height:1.6;color:#587482}
+.audit-banner{padding:14px 16px;background:#ecfaf4;border-color:#d7ede2}
+.audit-metrics{gap:12px}
+.audit-metrics article{padding:14px 16px;border-radius:16px}
+.audit-metrics b{font-size:18px}
+.event-panel,.event-detail,.alerts-panel,.alert-rules,.access-layout>article,.access-layout>aside,.exports-layout>article,.exports-layout>aside{border-radius:20px}
+.event-tools{padding:16px 16px 14px}
+.event-table>header{padding:11px 14px;font-size:8px}
+.event-table>button{padding:13px 14px}
+.event-detail{top:92px;padding:18px}
+.event-detail-head h2{font-size:18px}
+.actor-card,.hash-proof,.audit-footer{border-radius:12px}
+.alert-row,.access-table>div,.package-row{padding-inline:12px}
+.audit-live-filters{padding:14px 16px}
+.audit-live-filters label{font-size:9px}
+.audit-live-filters input,.audit-live-filters select{padding:10px;border-radius:10px}
+.audit-live-filters button,.audit-more{min-height:42px;border-radius:10px}
+.audit-footer,.audit-toast{box-shadow:0 14px 34px rgba(7,49,73,.10)}

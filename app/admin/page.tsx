@@ -68,6 +68,14 @@ export default function Admin() {
     { value: overview.metrics.openSupportCases, label: ar ? "حالات الدعم المفتوحة" : "Open support cases", detail: overview.metrics.criticalSupportCases ? `${overview.metrics.criticalSupportCases} ${ar ? "حرجة" : "critical"}` : (ar ? "لا توجد حالات حرجة" : "No critical cases"), href: "/admin/cases", icon: "◇" },
     { value: overview.metrics.pendingPlatformInvitations, label: ar ? "دعوات المنصة" : "Platform invitations", detail: ar ? "دعوات صالحة معلّقة" : "Valid invitations awaiting acceptance", href: "/admin/access", icon: "♙" },
   ] : [];
+  const quickLaunch = [
+    { href: "/admin/verification", icon: "✓", en: "Review providers", ar: "راجع مقدمي الرعاية", detailEn: "Clear verified onboarding backlog", detailAr: "صفِّ طابور التحقق" },
+    { href: "/admin/cases", icon: "◇", en: "Open support", ar: "افتح الدعم", detailEn: "Work on active high-priority cases", detailAr: "تعامل مع الحالات النشطة" },
+    { href: "/admin/audit", icon: "▤", en: "Audit ledger", ar: "سجل التدقيق", detailEn: "Inspect recent protected activity", detailAr: "راجع النشاط المحمي" },
+    { href: "/admin/operations", icon: "◉", en: "System health", ar: "صحة النظام", detailEn: "Check current operational posture", detailAr: "تحقق من الوضع التشغيلي" },
+    { href: "/admin/incidents", icon: "!", en: "Incidents", ar: "الحوادث", detailEn: "See active safety events", detailAr: "راجع الأحداث النشطة" },
+    { href: "/admin/pilot-review", icon: "◆", en: "Pilot review", ar: "مراجعة الإطلاق", detailEn: "Review readiness and cohort status", detailAr: "راجع الجاهزية والحالة" },
+  ];
 
   return <main className={`admin-shell live-admin-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="admin-sidebar live-admin-sidebar">
@@ -174,6 +182,10 @@ export default function Admin() {
       <div className="admin-workspace">
         <div className="admin-heading"><div><p>{ar ? "مركز التحكم في المنصة" : "PLATFORM CONTROL CENTER"}</p><h1>{ar ? "نظرة عامة على العمليات" : "Operations overview"}</h1><span>{ar ? "إجماليات حقيقية ومسارات مباشرة إلى مساحات العمل المصرّح بها." : "Live totals and direct routes into the authorized operational workspaces."}</span></div><button type="button" disabled={loading} onClick={() => void refresh()}>↻ {ar ? "تحديث" : "Refresh"}</button></div>
         <div className="admin-security-note"><span>▣</span><p><b>{ar ? "لا توجد قرارات إدارية في هذه الصفحة" : "This overview does not perform administrative decisions"}</b>{ar ? " استخدم مساحة العمل المخصصة لكل مهمة. كل قراءة وتغيير مهم يُسجل في سجل التدقيق." : " Use the dedicated workspace for each task. Material reads and changes are recorded in the audit ledger."}</p></div>
+
+        {overview && <section className="admin-quick-launch live-admin-launch" aria-label={ar ? "روابط سريعة" : "Quick launch"}>
+          {quickLaunch.map((item) => <a key={item.href} href={item.href}><span>{item.icon}</span><div><b>{ar ? item.ar : item.en}</b><small>{ar ? item.detailAr : item.detailEn}</small></div><i>→</i></a>)}
+        </section>}
 
         {loading && !overview ? <section className="admin-live-state" aria-live="polite"><span>◌</span><h2>{ar ? "جارٍ تحميل العمليات المحمية" : "Loading protected operations"}</h2><p>{ar ? "يتم التحقق من دور مسؤول المنصة." : "Verifying the platform administrator role."}</p></section> : error ? <section className="admin-live-state" role="alert"><span>!</span><h2>{error === "auth" ? (ar ? "يلزم تسجيل الدخول" : "Sign in required") : error === "forbidden" ? (ar ? "دور مسؤول المنصة مطلوب" : "Platform administrator access required") : (ar ? "تعذر تحميل النظرة العامة" : "Overview could not be loaded")}</h2><p>{error === "forbidden" ? (ar ? "يجب تعيين دور مسؤول منصة نشط لهذا الحساب." : "This account must have an active platform administrator role.") : (ar ? "أعد المحاولة أو افتح الدعم." : "Try again or open support if the problem continues.")}</p><a href={error === "auth" ? "/auth" : error === "forbidden" ? "/admin/access" : "/support"}>{error === "auth" ? (ar ? "تسجيل الدخول" : "Sign in") : error === "forbidden" ? (ar ? "مراجعة الوصول" : "Review access") : (ar ? "فتح الدعم" : "Open support")}</a></section> : overview && <>
           <section className="admin-metrics live-admin-metrics">{queueCards.map((card) => <a href={card.href} key={card.href}><span className="admin-metric-icon">{card.icon}</span><div><b>{card.value}</b><p>{card.label}</p><small>{card.detail} →</small></div></a>)}</section>

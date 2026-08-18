@@ -74,6 +74,12 @@ export default function ProviderConsole() {
     confirmed: appointments.filter((item) => item.status === "confirmed").length,
     completed: appointments.filter((item) => item.status === "completed").length,
   };
+  const quickLaunch = [
+    { href: "/provider/services", icon: "◇", en: "Manage availability", ar: "إدارة التوفر", detailEn: "Update services and slots", detailAr: "حدّث الخدمات والمواعيد" },
+    { href: "/provider/messages", icon: "✦", en: "Follow-up messages", ar: "رسائل المتابعة", detailEn: "Reply inside Reyati only", detailAr: "أجب داخل رعايتي فقط" },
+    { href: "/provider/patients", icon: "♙", en: "Patient directory", ar: "دليل المرضى", detailEn: "Open your current caseload", detailAr: "افتح قائمة المرضى الحالية" },
+    { href: "/provider/insights", icon: "↗", en: "Insights", ar: "الإحصاءات", detailEn: "Review appointment aggregates", detailAr: "راجع إجماليات المواعيد" },
+  ];
 
   async function updateAppointment(action: Action) {
     if (!selected) return;
@@ -144,6 +150,7 @@ export default function ProviderConsole() {
 
       <div className="provider-workspace">
         <div className="provider-welcome"><div><p>{ar ? "عمليات المواعيد" : "Appointment operations"}</p><h1>{ar ? "جدولك السريري" : "Your clinical schedule"}</h1><span>{ar ? "راجع طلبات المرضى الحقيقية وانقل كل حجز عبر دورة حياة قابلة للتدقيق." : "Review real patient requests and move each booking through an auditable lifecycle."}</span></div><a href="/provider/services" className="provider-live-primary">{ar ? "إدارة التوفر" : "Manage availability"}</a></div>
+        <section className="provider-quick-launch" aria-label={ar ? "إجراءات سريعة" : "Quick actions"}>{quickLaunch.map((item) => <a key={item.href} href={item.href}><span>{item.icon}</span><div><b>{ar ? item.ar : item.en}</b><small>{ar ? item.detailAr : item.detailEn}</small></div><i>→</i></a>)}</section>
 
         <div className="metric-grid">
           <article><span className="metric-icon sand">!</span><div><small>{ar ? "تحتاج قراراً" : "Needs a decision"}</small><b>{reyatiNumber(counts.attention, lang)}</b><p>{ar ? "طلبات معلقة" : "pending requests"}</p></div></article>

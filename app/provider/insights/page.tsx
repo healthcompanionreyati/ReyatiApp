@@ -40,6 +40,11 @@ export default function ProviderInsights() {
   const [insights, setInsights] = useState<Insights | null>(null);
   const [error, setError] = useState<"auth" | "forbidden" | "unavailable" | null>(null);
   const ar = lang === "ar";
+  const quickActions = [
+    { href: "/provider", label: ar ? "المواعيد" : "Appointments", detail: ar ? "عودة إلى الجدول" : "Back to schedule" },
+    { href: "/provider/messages", label: ar ? "الرسائل" : "Messages", detail: ar ? "متابعة آمنة" : "Secure follow-up" },
+    { href: "/provider/services", label: ar ? "الخدمات" : "Services", detail: ar ? "الملف المنشور" : "Published services" },
+  ];
 
   useEffect(() => {
     const controller = new AbortController();
@@ -104,7 +109,16 @@ export default function ProviderInsights() {
     <section className="insights-main">
       <header className="insights-top"><div><span>⌖</span><div><b>{insights?.organizationName ?? (ar ? "مساحة مقدم الرعاية" : "Provider workspace")}</b><small>{ar ? "إجماليات مرتبطة بحساب مقدم الرعاية" : "Provider-account appointment aggregates"}</small></div></div><div><button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label={ar ? "الإشعارات" : "Notifications"}>●</a><span>{providerInitials}</span></div></header>
       <div className="insights-workspace">
-        <div className="insights-heading"><div><p>{ar ? "أداء المواعيد" : "APPOINTMENT PERFORMANCE"}</p><h1>{ar ? "التقارير والرؤى" : "Insights & analytics"}</h1><span>{ar ? "اتجاهات تشغيلية من المواعيد المرتبطة بملفك فقط، دون بيانات سريرية أو مالية." : "Operational trends from appointments linked only to your provider profile—without clinical or financial data."}</span></div><button type="button" onClick={exportAggregate} disabled={!insights}>⇩ {ar ? "تصدير CSV" : "Export CSV"}</button></div>
+        <section className="insights-overview">
+          <div className="insights-heading"><div><p>{ar ? "رؤية تشغيلية" : "OPERATIONAL VIEW"}</p><h1>{ar ? "التقارير والرؤى" : "Insights & analytics"}</h1><span>{ar ? "اتجاهات من مواعيدك فقط، مع إخفاء التفاصيل الصغيرة لحماية الخصوصية." : "Trends from your appointments only, with smaller details suppressed to protect privacy."}</span></div><button type="button" onClick={exportAggregate} disabled={!insights}>⇩ {ar ? "تصدير CSV" : "Export CSV"}</button></div>
+          <div className="insights-meta">
+            <article><small>{ar ? "الحساب" : "Account"}</small><b>{insights?.providerName ?? (ar ? "مقدم رعاية موثّق" : "Verified provider")}</b></article>
+            <article><small>{ar ? "المؤسسة" : "Organization"}</small><b>{insights?.organizationName ?? (ar ? "مساحة مقدم الرعاية" : "Provider workspace")}</b></article>
+            <article><small>{ar ? "الفترة" : "Range"}</small><b>{insights ? `${insights.range.days} ${ar ? "يوم" : "days"}` : "30 days"}</b></article>
+            <article><small>{ar ? "العتبة" : "Threshold"}</small><b>{insights?.privacyThreshold ?? 10}+</b></article>
+          </div>
+          <div className="insights-quick-actions">{quickActions.map((item) => <a key={item.href} href={item.href}><span>↗</span><div><b>{item.label}</b><small>{item.detail}</small></div></a>)}</div>
+        </section>
         <div className="privacy-banner"><span>♙</span><p><b>{ar ? "إجماليات تحافظ على الخصوصية" : "Privacy-safe appointment aggregates"}</b>{ar ? `لا تظهر هوية المريض أو حالته السريرية. تُخفى تفاصيل الشرائح التي تقل عن ${insights?.privacyThreshold ?? 10} مواعيد.` : `No patient identity or clinical context is included. Breakdown segments below ${insights?.privacyThreshold ?? 10} appointments are suppressed.`}</p><i>{ar ? "لا توجد بيانات مرضى" : "NO PATIENT DATA"}</i></div>
         <div className="insights-controls"><div>{([7, 30, 90] as Range[]).map((value) => <button type="button" key={value} className={range === value ? "active" : ""} onClick={() => changeRange(value)}>{value} {ar ? "يوم" : "days"}</button>)}</div><small>{insights ? `${ar ? "أُنشئ" : "Generated"} ${new Intl.DateTimeFormat(ar ? "ar-QA" : "en-QA", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Qatar" }).format(new Date(insights.generatedAt))}` : (ar ? "جارٍ التحقق من النطاق" : "Verifying scope")}</small></div>
 
