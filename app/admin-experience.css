@@ -721,6 +721,8 @@
 
 .live-admin-shell .admin-main {
   display: block;
+  margin-inline-start: 0;
+  width: 100%;
   min-width: 0;
 }
 
