@@ -4,47 +4,275 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 import styles from "./health-profile.module.css";
 
-type Category="allergy"|"condition"|"medicine"|"accessibility_need";
-type Entry={id:string;category:Category;label:string;details:string|null;status:"active"|"removed";version:number;updatedAt:string;removedAt:string|null;source:{label:string;verification:string}};
-type Workspace={profile:{id:string;version:number;updatedAt:string;source:{label:string;verification:string}}|null;entries:Entry[];guidance:string};
-const categories:Category[]=["allergy","condition","medicine","accessibility_need"];
-const copy:Record<Category,{en:string;ar:string;hintEn:string;hintAr:string;detailEn:string;detailAr:string;icon:string}>={
-  allergy:{en:"Allergies",ar:"الحساسيات",hintEn:"Substance or trigger",hintAr:"المادة أو المحفز",detailEn:"Reaction or note (optional)",detailAr:"رد الفعل أو ملاحظة (اختياري)",icon:"A"},
-  condition:{en:"Conditions",ar:"الحالات الصحية",hintEn:"Condition name",hintAr:"اسم الحالة",detailEn:"Your note (optional)",detailAr:"ملاحظتك (اختياري)",icon:"C"},
-  medicine:{en:"Medicines",ar:"الأدوية",hintEn:"Medicine name",hintAr:"اسم الدواء",detailEn:"Dose or schedule (optional)",detailAr:"الجرعة أو الجدول (اختياري)",icon:"M"},
-  accessibility_need:{en:"Accessibility needs",ar:"احتياجات سهولة الوصول",hintEn:"Need or accommodation",hintAr:"الاحتياج أو التسهيل",detailEn:"Helpful detail (optional)",detailAr:"تفاصيل مفيدة (اختياري)",icon:"✓"},
+type Category = "allergy" | "condition" | "medicine" | "accessibility_need";
+type Entry = {
+  id: string;
+  category: Category;
+  label: string;
+  details: string | null;
+  status: "active" | "removed";
+  version: number;
+  updatedAt: string;
+  removedAt: string | null;
+  source: { label: string; verification: string };
+};
+type Workspace = {
+  profile: { id: string; version: number; updatedAt: string; source: { label: string; verification: string } } | null;
+  entries: Entry[];
+  guidance: string;
 };
 
-export default function HealthProfilePage(){
-  const[lang,setLang]=useReyatiLocale(),ar=lang==="ar";
-  const[data,setData]=useState<Workspace|null>(null),[selected,setSelected]=useState<Category>("allergy"),[showRemoved,setShowRemoved]=useState(false),[label,setLabel]=useState(""),[details,setDetails]=useState(""),[editing,setEditing]=useState<Entry|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");
-  const load=useCallback(async()=>{try{const response=await fetch("/api/health-profile",{cache:"no-store"});const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.error);setData(payload.data);setError("")}catch{setError(ar?"تعذر تحميل ملفك الصحي. حاول مرة أخرى.":"Your health profile could not be loaded. Please try again.")}},[ar]);
-  useEffect(()=>{queueMicrotask(()=>void load())},[load]);
-  const entries=useMemo(()=>data?.entries.filter(item=>item.category===selected&&item.status===(showRemoved?"removed":"active"))??[],[data,selected,showRemoved]);
-  const counts=useMemo(()=>Object.fromEntries(categories.map(item=>[item,data?.entries.filter(entry=>entry.category===item&&entry.status==="active").length??0])) as Record<Category,number>,[data]);
-  function startEdit(entry:Entry){setEditing(entry);setLabel(entry.label);setDetails(entry.details??"");setSelected(entry.category);setShowRemoved(false);setMessage("");setError("")}
-  function resetForm(){setEditing(null);setLabel("");setDetails("")}
-  async function mutate(body:Record<string,unknown>,successEn:string,successAr:string){setBusy(true);setError("");setMessage("");try{const response=await fetch("/api/health-profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.message||payload.error);resetForm();await load();setMessage(ar?successAr:successEn)}catch(reason){setError(reason instanceof Error?reason.message:(ar?"تعذر حفظ التغيير.":"The change could not be saved."))}finally{setBusy(false)}}
-  function save(){if(!label.trim()){setError(ar?"أدخل اسماً أو وصفاً موجزاً.":"Enter a name or short description.");return}const base={profileVersion:data?.profile?.version??0,category:selected,label,details:details||null};if(editing)void mutate({action:"update_entry",entryId:editing.id,entryVersion:editing.version,...base},"Entry updated.","تم تحديث المعلومة.");else void mutate({action:"add_entry",...base},"Entry added to your private profile.","تمت إضافة المعلومة إلى ملفك الخاص.")}
-  function changeStatus(entry:Entry,status:"active"|"removed"){void mutate({action:"change_entry_status",entryId:entry.id,entryVersion:entry.version,profileVersion:data?.profile?.version??0,status},status==="removed"?"Entry moved to removed items.":"Entry restored.",status==="removed"?"تم نقل المعلومة إلى العناصر المحذوفة.":"تمت استعادة المعلومة.")}
-  return <main className={`${styles.shell} health-hub-shell health-profile-experience`} dir={ar?"rtl":"ltr"}>
-    <header className={styles.top}><a href="/"><img src="/brand/reyati-logo-primary.svg" alt="Reyati"/></a><nav><a href="/">{ar?"الرئيسية":"Home"}</a><a href="/appointments">{ar?"المواعيد":"Appointments"}</a><button type="button" onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button></nav></header>
-    <section className={styles.hero}><div><span className={styles.eyebrow}>{ar?"مرجع خاص تديره بنفسك":"Your private, self-managed reference"}</span><h1>{ar?"ملفي الصحي الشخصي":"My personal health profile"}</h1><p>{ar?"احتفظ بقائمة منظمة لما تريد تذكره ومشاركته بنفسك عند الحاجة. أنت وحدك من يضيف المعلومات أو يعدلها أو يزيلها.":"Keep a structured list of what you want to remember and share yourself when needed. Only you can add, edit, remove, or restore these entries."}</p></div><div className={styles.heroMark}><b>{data?.entries.filter(item=>item.status==="active").length??0}</b><span>{ar?"معلومة نشطة":"active entries"}</span></div></section>
-    <div className={styles.content}>
-      <section className={styles.boundary}><span className={styles.shield}>✓</span><div><strong>{ar?"أدخلتها أنت · لم يتم التحقق منها":"Entered by you · Unverified"}</strong><p>{ar?"هذا ليس سجلاً طبياً. لا يراه مقدم الرعاية ولا يُستخدم تلقائياً لاتخاذ قرار سريري. تحقق من المعلومات مباشرة مع مختص مؤهل.":"This is not a medical record. Providers cannot access it and Reyati never uses it automatically for clinical decisions. Verify information directly with a qualified professional."}</p></div><span className={styles.private}>{ar?"خاص":"PRIVATE"}</span></section>
-      {message&&<p className={styles.status} role="status">{message}</p>}{error&&<p className={`${styles.status} ${styles.error}`} role="alert">{error}</p>}
-      <div className={styles.layout}>
-        <aside className={styles.categories} aria-label={ar?"فئات الملف الصحي":"Health profile categories"}>
-          <div className={styles.categoryTitle}><span>{ar?"الفئات":"Categories"}</span><small>{ar?"حتى 12 معلومة نشطة لكل فئة":"Up to 12 active entries per category"}</small></div>
-          {categories.map(item=><button type="button" className={selected===item?styles.categoryActive:""} key={item} onClick={()=>{setSelected(item);setShowRemoved(false);resetForm()}}><i>{copy[item].icon}</i><span>{ar?copy[item].ar:copy[item].en}</span><b>{counts[item]}</b></button>)}
-          <div className={styles.safety}><strong>{ar?"حدود مهمة":"Important boundary"}</strong><p>{ar?"لا تشخيصات أو توصيات أو استيراد خارجي أو مشاركة تلقائية.":"No diagnosis, recommendations, external import, or automatic sharing."}</p></div>
+const categories: Category[] = ["allergy", "condition", "medicine", "accessibility_need"];
+
+const copy: Record<Category, { en: string; ar: string; hintEn: string; hintAr: string; detailEn: string; detailAr: string; icon: string }> = {
+  allergy: { en: "Allergies", ar: "الحساسيات", hintEn: "Substance or trigger", hintAr: "المادة أو المحفز", detailEn: "Reaction or note (optional)", detailAr: "رد الفعل أو ملاحظة (اختياري)", icon: "A" },
+  condition: { en: "Conditions", ar: "الحالات الصحية", hintEn: "Condition name", hintAr: "اسم الحالة", detailEn: "Your note (optional)", detailAr: "ملاحظتك (اختياري)", icon: "C" },
+  medicine: { en: "Medicines", ar: "الأدوية", hintEn: "Medicine name", hintAr: "اسم الدواء", detailEn: "Dose or schedule (optional)", detailAr: "الجرعة أو الجدول (اختياري)", icon: "M" },
+  accessibility_need: { en: "Accessibility needs", ar: "احتياجات سهولة الوصول", hintEn: "Need or accommodation", hintAr: "الاحتياج أو التسهيل", detailEn: "Helpful detail (optional)", detailAr: "تفاصيل مفيدة (اختياري)", icon: "✓" },
+};
+
+export default function HealthProfilePage() {
+  const [lang, setLang] = useReyatiLocale();
+  const ar = lang === "ar";
+  const [data, setData] = useState<Workspace | null>(null);
+  const [selected, setSelected] = useState<Category>("allergy");
+  const [showRemoved, setShowRemoved] = useState(false);
+  const [label, setLabel] = useState("");
+  const [details, setDetails] = useState("");
+  const [editing, setEditing] = useState<Entry | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const response = await fetch("/api/health-profile", { cache: "no-store" });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error);
+      setData(payload.data);
+      setError("");
+    } catch {
+      setError(ar ? "تعذر تحميل ملفك الصحي. حاول مرة أخرى." : "Your health profile could not be loaded. Please try again.");
+    }
+  }, [ar]);
+
+  useEffect(() => {
+    queueMicrotask(() => void load());
+  }, [load]);
+
+  const entries = useMemo(() => data?.entries.filter((item) => item.category === selected && item.status === (showRemoved ? "removed" : "active")) ?? [], [data, selected, showRemoved]);
+  const counts = useMemo(() => Object.fromEntries(categories.map((item) => [item, data?.entries.filter((entry) => entry.category === item && entry.status === "active").length ?? 0])) as Record<Category, number>, [data]);
+  const activeCount = data?.entries.filter((item) => item.status === "active").length ?? 0;
+  const removedCount = data?.entries.filter((item) => item.status === "removed").length ?? 0;
+
+  function startEdit(entry: Entry) {
+    setEditing(entry);
+    setLabel(entry.label);
+    setDetails(entry.details ?? "");
+    setSelected(entry.category);
+    setShowRemoved(false);
+    setMessage("");
+    setError("");
+  }
+
+  function resetForm() {
+    setEditing(null);
+    setLabel("");
+    setDetails("");
+  }
+
+  async function mutate(body: Record<string, unknown>, successEn: string, successAr: string) {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/health-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || payload.error);
+      resetForm();
+      await load();
+      setMessage(ar ? successAr : successEn);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : ar ? "تعذر حفظ التغيير." : "The change could not be saved.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function save() {
+    if (!label.trim()) {
+      setError(ar ? "أدخل اسماً أو وصفاً موجزاً." : "Enter a name or short description.");
+      return;
+    }
+    const base = { profileVersion: data?.profile?.version ?? 0, category: selected, label, details: details || null };
+    if (editing) void mutate({ action: "update_entry", entryId: editing.id, entryVersion: editing.version, ...base }, "Entry updated.", "تم تحديث المعلومة.");
+    else void mutate({ action: "add_entry", ...base }, "Entry added to your private profile.", "تمت إضافة المعلومة إلى ملفك الخاص.");
+  }
+
+  function changeStatus(entry: Entry, status: "active" | "removed") {
+    void mutate({ action: "change_entry_status", entryId: entry.id, entryVersion: entry.version, profileVersion: data?.profile?.version ?? 0, status }, status === "removed" ? "Entry moved to removed items." : "Entry restored.", status === "removed" ? "تم نقل المعلومة إلى العناصر المحذوفة." : "تمت استعادة المعلومة.");
+  }
+
+  return (
+    <main className={`${styles.shell} health-hub-shell health-profile-experience`} dir={ar ? "rtl" : "ltr"}>
+      <header className={styles.top}>
+        <a href="/"><img src="/brand/reyati-logo-primary.svg" alt="Reyati" /></a>
+        <nav>
+          <a href="/">{ar ? "الرئيسية" : "Home"}</a>
+          <a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a>
+          <button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button>
+        </nav>
+      </header>
+
+      <section className={styles.hero}>
+        <div className={styles.heroCopy}>
+          <span className={styles.eyebrow}>{ar ? "مرجع خاص تديره بنفسك" : "Your private, self-managed reference"}</span>
+          <h1>{ar ? "ملفي الصحي الشخصي" : "My personal health profile"}</h1>
+          <p>{ar ? "احتفظ بقائمة منظمة لما تريد تذكره ومشاركته بنفسك عند الحاجة. أنت وحدك من يضيف المعلومات أو يعدلها أو يزيلها." : "Keep a structured list of what you want to remember and share yourself when needed. Only you can add, edit, remove, or restore these entries."}</p>
+          <div className={styles.heroChips}>
+            <span>{ar ? "مدخل من المريض" : "Patient entered"}</span>
+            <span>{ar ? "غير متحقق" : "Unverified"}</span>
+            <span>{ar ? "خاص بالكامل" : "Fully private"}</span>
+          </div>
+        </div>
+        <aside className={styles.heroCard}>
+          <small>{ar ? "ملخص الملف" : "PROFILE SUMMARY"}</small>
+          <h2>{ar ? "سجل شخصي واضح ومتماسك" : "A clear, consistent personal record"}</h2>
+          <p>{ar ? "يظل ما تضيفه هنا مرئياً لك فقط، مع حدود واضحة تمنع الخلط بينه وبين السجل السريري." : "Everything you add here stays visible only to you, with firm boundaries that keep it separate from the clinical record."}</p>
+          <dl className={styles.heroStats}>
+            <div>
+              <dt>{ar ? "نشطة" : "Active"}</dt>
+              <dd>{activeCount}</dd>
+            </div>
+            <div>
+              <dt>{ar ? "محذوفة" : "Removed"}</dt>
+              <dd>{removedCount}</dd>
+            </div>
+            <div>
+              <dt>{ar ? "المصدر" : "Source"}</dt>
+              <dd>{data?.profile?.source.label ?? "Reyati"}</dd>
+            </div>
+          </dl>
         </aside>
-        <section className={styles.workspace}>
-          <div className={styles.workspaceHead}><div><span className={styles.sectionIcon}>{copy[selected].icon}</span><div><h2>{ar?copy[selected].ar:copy[selected].en}</h2><p>{ar?"معلوماتك بكلماتك أنت":"Your information, in your own words"}</p></div></div><div className={styles.toggle}><button type="button" className={!showRemoved?styles.on:""} onClick={()=>setShowRemoved(false)}>{ar?"نشط":"Active"}</button><button type="button" className={showRemoved?styles.on:""} onClick={()=>{setShowRemoved(true);resetForm()}}>{ar?"محذوف":"Removed"}</button></div></div>
-          {!showRemoved&&<section className={styles.editor} aria-label={editing?(ar?"تعديل المعلومة":"Edit entry"):(ar?"إضافة معلومة":"Add entry")}><div className={styles.editorTitle}><strong>{editing?(ar?"تعديل المعلومة":"Edit entry"):(ar?"إضافة معلومة جديدة":"Add a new entry")}</strong>{editing&&<button type="button" onClick={resetForm}>{ar?"إلغاء":"Cancel"}</button>}</div><div className={styles.fields}><label>{ar?copy[selected].hintAr:copy[selected].hintEn}<input maxLength={120} value={label} onChange={event=>setLabel(event.target.value)} placeholder={ar?copy[selected].hintAr:copy[selected].hintEn}/></label><label>{ar?copy[selected].detailAr:copy[selected].detailEn}<input maxLength={240} value={details} onChange={event=>setDetails(event.target.value)} placeholder={ar?copy[selected].detailAr:copy[selected].detailEn}/></label><button type="button" disabled={busy} onClick={save}>{busy?(ar?"جارٍ الحفظ…":"Saving…"):(editing?(ar?"حفظ":"Save"):(ar?"إضافة":"Add"))}</button></div><small>{ar?"سيظهر بوضوح أنه مدخل بواسطتك وغير متحقق منه.":"It will always be clearly marked as entered by you and unverified."}</small></section>}
-          <div className={styles.list}>{entries.length===0?<div className={styles.empty}><span>✓</span><h3>{showRemoved?(ar?"لا توجد عناصر محذوفة":"No removed entries"):(ar?"لا توجد معلومات في هذه الفئة":"Nothing in this category yet")}</h3><p>{showRemoved?(ar?"ستظهر هنا المعلومات التي تزيلها ويمكنك استعادتها.":"Entries you remove will appear here and can be restored."):(ar?"أضف فقط المعلومات التي تريد الاحتفاظ بها كمرجع شخصي.":"Add only what you want to keep as your personal reference.")}</p></div>:entries.map(entry=><article className={styles.card} key={entry.id}><div className={styles.cardTop}><span className={styles.cardIcon}>{copy[entry.category].icon}</span><div><h3>{entry.label}</h3>{entry.details&&<p>{entry.details}</p>}</div></div><div className={styles.cardFoot}><div><span className={styles.provenance}>{ar?"أدخلتها أنت · غير متحقق منها":"Entered by you · Unverified"}</span><small>{new Date(entry.updatedAt).toLocaleDateString(ar?"ar-QA":"en-QA")}</small></div>{entry.status==="active"?<div className={styles.cardActions}><button type="button" onClick={()=>startEdit(entry)}>{ar?"تعديل":"Edit"}</button><button type="button" className={styles.remove} disabled={busy} onClick={()=>changeStatus(entry,"removed")}>{ar?"إزالة":"Remove"}</button></div>:<button type="button" className={styles.restore} disabled={busy} onClick={()=>changeStatus(entry,"active")}>{ar?"استعادة":"Restore"}</button>}</div></article>)}</div>
+      </section>
+
+      <div className={styles.content}>
+        <section className={styles.boundary}>
+          <span className={styles.shield}>✓</span>
+          <div>
+            <strong>{ar ? "أدخلتها أنت · لم يتم التحقق منها" : "Entered by you · Unverified"}</strong>
+            <p>{ar ? "هذا ليس سجلاً طبياً. لا يراه مقدم الرعاية ولا يُستخدم تلقائياً لاتخاذ قرار سريري. تحقق من المعلومات مباشرة مع مختص مؤهل." : "This is not a medical record. Providers cannot access it and Reyati never uses it automatically for clinical decisions. Verify information directly with a qualified professional."}</p>
+          </div>
+          <span className={styles.private}>{ar ? "خاص" : "PRIVATE"}</span>
         </section>
+
+        {message && <p className={styles.status} role="status">{message}</p>}
+        {error && <p className={`${styles.status} ${styles.error}`} role="alert">{error}</p>}
+
+        <div className={styles.layout}>
+          <aside className={styles.categories} aria-label={ar ? "فئات الملف الصحي" : "Health profile categories"}>
+            <div className={styles.categoryTitle}>
+              <span>{ar ? "الفئات" : "Categories"}</span>
+              <small>{ar ? "حتى 12 معلومة نشطة لكل فئة" : "Up to 12 active entries per category"}</small>
+            </div>
+
+            {categories.map((item) => (
+              <button
+                type="button"
+                className={selected === item ? styles.categoryActive : ""}
+                key={item}
+                onClick={() => {
+                  setSelected(item);
+                  setShowRemoved(false);
+                  resetForm();
+                }}
+              >
+                <i>{copy[item].icon}</i>
+                <span>{ar ? copy[item].ar : copy[item].en}</span>
+                <b>{counts[item]}</b>
+              </button>
+            ))}
+
+            <div className={styles.safety}>
+              <strong>{ar ? "حدود مهمة" : "Important boundary"}</strong>
+              <p>{ar ? "لا تشخيصات أو توصيات أو استيراد خارجي أو مشاركة تلقائية." : "No diagnosis, recommendations, external import, or automatic sharing."}</p>
+            </div>
+          </aside>
+
+          <section className={styles.workspace}>
+            <div className={styles.workspaceHead}>
+              <div>
+                <span className={styles.sectionIcon}>{copy[selected].icon}</span>
+                <div>
+                  <h2>{ar ? copy[selected].ar : copy[selected].en}</h2>
+                  <p>{ar ? "معلوماتك بكلماتك أنت" : "Your information, in your own words"}</p>
+                </div>
+              </div>
+              <div className={styles.toggle}>
+                <button type="button" className={!showRemoved ? styles.on : ""} onClick={() => setShowRemoved(false)}>{ar ? "نشط" : "Active"}</button>
+                <button type="button" className={showRemoved ? styles.on : ""} onClick={() => { setShowRemoved(true); resetForm(); }}>{ar ? "محذوف" : "Removed"}</button>
+              </div>
+            </div>
+
+            {!showRemoved && (
+              <section className={styles.editor} aria-label={editing ? (ar ? "تعديل المعلومة" : "Edit entry") : (ar ? "إضافة معلومة" : "Add entry")}>
+                <div className={styles.editorTitle}>
+                  <strong>{editing ? (ar ? "تعديل المعلومة" : "Edit entry") : (ar ? "إضافة معلومة جديدة" : "Add a new entry")}</strong>
+                  {editing && <button type="button" onClick={resetForm}>{ar ? "إلغاء" : "Cancel"}</button>}
+                </div>
+
+                <div className={styles.fields}>
+                  <label>{ar ? copy[selected].hintAr : copy[selected].hintEn}<input maxLength={120} value={label} onChange={(event) => setLabel(event.target.value)} placeholder={ar ? copy[selected].hintAr : copy[selected].hintEn} /></label>
+                  <label>{ar ? copy[selected].detailAr : copy[selected].detailEn}<input maxLength={240} value={details} onChange={(event) => setDetails(event.target.value)} placeholder={ar ? copy[selected].detailAr : copy[selected].detailEn} /></label>
+                  <button type="button" disabled={busy} onClick={save}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : (editing ? (ar ? "حفظ" : "Save") : (ar ? "إضافة" : "Add"))}</button>
+                </div>
+
+                <small>{ar ? "سيظهر بوضوح أنه مدخل بواسطتك وغير متحقق منه." : "It will always be clearly marked as entered by you and unverified."}</small>
+              </section>
+            )}
+
+            <div className={styles.list}>
+              {entries.length === 0 ? (
+                <div className={styles.empty}>
+                  <span>✓</span>
+                  <h3>{showRemoved ? (ar ? "لا توجد عناصر محذوفة" : "No removed entries") : (ar ? "لا توجد معلومات في هذه الفئة" : "Nothing in this category yet")}</h3>
+                  <p>{showRemoved ? (ar ? "ستظهر هنا المعلومات التي تزيلها ويمكنك استعادتها." : "Entries you remove will appear here and can be restored.") : (ar ? "أضف فقط المعلومات التي تريد الاحتفاظ بها كمرجع شخصي." : "Add only what you want to keep as your personal reference.")}</p>
+                </div>
+              ) : (
+                entries.map((entry) => (
+                  <article className={styles.card} key={entry.id}>
+                    <div className={styles.cardTop}>
+                      <span className={styles.cardIcon}>{copy[entry.category].icon}</span>
+                      <div>
+                        <h3>{entry.label}</h3>
+                        {entry.details && <p>{entry.details}</p>}
+                      </div>
+                    </div>
+                    <div className={styles.cardFoot}>
+                      <div>
+                        <span className={styles.provenance}>{ar ? "أدخلتها أنت · غير متحقق منها" : "Entered by you · Unverified"}</span>
+                        <small>{new Date(entry.updatedAt).toLocaleDateString(ar ? "ar-QA" : "en-QA")}</small>
+                      </div>
+                      {entry.status === "active" ? (
+                        <div className={styles.cardActions}>
+                          <button type="button" onClick={() => startEdit(entry)}>{ar ? "تعديل" : "Edit"}</button>
+                          <button type="button" className={styles.remove} disabled={busy} onClick={() => changeStatus(entry, "removed")}>{ar ? "إزالة" : "Remove"}</button>
+                        </div>
+                      ) : (
+                        <button type="button" className={styles.restore} disabled={busy} onClick={() => changeStatus(entry, "active")}>{ar ? "استعادة" : "Restore"}</button>
+                      )}
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
+  );
 }
