@@ -40,7 +40,7 @@ export default function AccessibilitySettingsPage() {
     finally { setSaving(false); }
   }
   const toggle = (key: "reducedMotion" | "screenReaderAssistance" | "keyboardAssistance" | "plainLanguage") => setForm((current) => ({ ...current, [key]: !current[key] }));
-  return <main className={styles.shell} dir={ar ? "rtl" : "ltr"}>
+  return <main className={`${styles.shell} trust-center-shell accessibility-settings-experience`} dir={ar ? "rtl" : "ltr"}>
     <header className={styles.top}><a href="/"><img src="/brand/reyati-logo-primary.svg" alt="Reyati" /></a><nav aria-label={ar ? "التنقل الرئيسي" : "Primary navigation"}><a href="/account/security">{ar ? "أمان الحساب" : "Account security"}</a><a href="/notification-preferences">{ar ? "الإشعارات" : "Notifications"}</a><button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button></nav></header>
     <section className={styles.hero}><div><span>{ar ? "تجربة مصممة لك" : "AN EXPERIENCE SHAPED BY YOU"}</span><h1>{ar ? "اللغة وإمكانية الوصول" : "Language & accessibility"}</h1><p>{ar ? "احفظ الطريقة التي تفضل بها قراءة واستخدام رياتي وطلب المساعدة. تبقى اختياراتك تحت سيطرتك." : "Save how you prefer to read, navigate, and ask for help in Reyati. Your choices stay under your control."}</p></div><aside><i aria-hidden="true">Aa</i><b>{ar ? "اختيارات واضحة" : "Clear choices"}</b><small>{ar ? "دون افتراض احتياجاتك" : "No inferred needs"}</small></aside></section>
     <div className={styles.content}>

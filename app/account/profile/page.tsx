@@ -30,7 +30,7 @@ export default function PatientProfilePage() {
     finally { setSaving(false); }
   }
   const patch = <K extends keyof Settings>(key: K, value: Settings[K]) => setForm((current) => current ? { ...current, [key]: value } : current);
-  return <main className={styles.shell} dir={ar ? "rtl" : "ltr"}>
+  return <main className={`${styles.shell} trust-center-shell account-profile-experience`} dir={ar ? "rtl" : "ltr"}>
     <header className={styles.top}><a href="/"><img src="/brand/reyati-logo-primary.svg" alt="Reyati" /></a><nav aria-label={ar ? "التنقل الرئيسي" : "Primary navigation"}><a href="/account/security">{ar ? "أمان الحساب" : "Security"}</a><a href="/settings/accessibility">{ar ? "إمكانية الوصول" : "Accessibility"}</a><button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button></nav></header>
     <section className={styles.hero}><div><span>{ar ? "ملفك تحت سيطرتك" : "YOUR PROFILE, UNDER YOUR CONTROL"}</span><h1>{ar ? "الملف الشخصي وبيانات الاتصال" : "Profile & contact details"}</h1><p>{ar ? "اختر كيف تظهر داخل رياتي وكيف يمكننا دعم تواصلك، دون تغيير هويتك في ChatGPT." : "Choose how you appear inside Reyati and how we can support your communication—without changing your ChatGPT identity."}</p></div><aside><i aria-hidden="true">{form?.completionState === "complete" ? "✓" : "···"}</i><b>{form?.completionState === "complete" ? (ar ? "مكتمل" : "Complete") : (ar ? "قيد الإعداد" : "In progress")}</b><small>{ar ? "حالة الملف" : "Profile status"}</small></aside></section>
     <div className={styles.content}>
