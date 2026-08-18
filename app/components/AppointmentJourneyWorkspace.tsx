@@ -59,7 +59,7 @@ export default function AppointmentJourneyWorkspace({ module, role }: { module: 
     return null;
   }
 
-  return <main className={styles.shell} dir={ar ? "rtl" : "ltr"}>
+  return <main className={`${styles.shell} ${role === "patient" && module === "care_timeline" ? "health-hub-shell care-timeline-experience" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <header className={styles.top}><a href={role === "provider" ? "/provider" : "/"}><img src="/brand/reyati-logo.svg" alt="Reyati"/></a><div className={styles.topActions}><button type="button" className={styles.lang} onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "EN" : "العربية"}</button><a href={role === "provider" ? "/provider" : "/appointments"}>{ar ? "رجوع" : "Back"}</a></div></header>
     <section className={styles.hero}><span>{role === "provider" ? (ar ? "مساحة عمل مقدم الرعاية" : "PROVIDER WORKSPACE") : (ar ? "رحلة الموعد" : "APPOINTMENT JOURNEY")}</span><h1>{ar ? c.ar : c.en}</h1><p>{ar ? c.introAr : c.introEn}</p></section>
     <section className={styles.boundary}><b>{ar ? "مساحة آمنة ومحددة" : "Protected, bounded workspace"}</b><span>{ar ? "لا تشخيص آلي، ولا تغيير للمواعيد، ولا إرسال خارجي، ولا استنتاج للاحتياجات." : "No automated diagnosis, appointment changes, external delivery, or inferred needs."}</span></section>

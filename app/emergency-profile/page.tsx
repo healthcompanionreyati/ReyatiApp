@@ -24,7 +24,7 @@ export default function EmergencyProfilePage(){
   const updateCondition=(index:number,field:keyof Condition,value:string)=>setConditions(current=>current.map((item,i)=>i===index?{...item,[field]:value}:item));
   const updateMedicine=(index:number,field:keyof Medicine,value:string)=>setMedicines(current=>current.map((item,i)=>i===index?{...item,[field]:value}:item));
   const lastUpdated=data?.profile?.updatedAt?new Date(data.profile.updatedAt).toLocaleDateString(lang==="ar"?"ar-QA":"en-QA"):null;
-  return <main className={styles.shell} dir={ar?"rtl":"ltr"}>
+  return <main className={`${styles.shell} health-hub-shell emergency-profile-experience`} dir={ar?"rtl":"ltr"}>
     <header className={styles.top}><a href="/"><img src="/brand/reyati-logo-primary.svg" alt="Reyati"/></a><nav><a href="/documents">{ar?"السجلات الصحية":"Health records"}</a><a href="/family">{ar?"وصول العائلة":"Family access"}</a><button type="button" onClick={()=>setLang(ar?"en":"ar")}>{ar?"English":"العربية"}</button></nav></header>
     <section className={styles.hero}><span className={styles.eyebrow}>{ar?"معلوماتك • تحت سيطرتك":"Your information • your control"}</span><h1>{ar?"ملف طوارئ واضح عندما تكون كل ثانية مهمة":"A clear emergency profile when every second matters"}</h1><p>{ar?"احتفظ بملخص منظم للمعلومات الحرجة التي تدخلها بنفسك. هذه المعلومات غير موثقة سريرياً ولا تُشارك تلقائياً.":"Keep a structured summary of critical information you enter yourself. It is not clinically verified and is never shared automatically."}</p></section>
     <div className={styles.content}>

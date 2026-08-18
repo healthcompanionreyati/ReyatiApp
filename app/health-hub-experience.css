@@ -1,0 +1,145 @@
+/* Unified personal-health visual system. Route logic and privacy boundaries
+   remain owned by each feature module. */
+.health-hub-shell {
+  --hub-ink: #082a43;
+  --hub-navy: #063d56;
+  --hub-cyan: #14abc1;
+  --hub-mint: #dff6f2;
+  --hub-line: #d7e5ea;
+  min-height: 100vh;
+  color: var(--hub-ink);
+  background:
+    radial-gradient(circle at 88% 4%, rgb(20 171 193 / 10%), transparent 30rem),
+    linear-gradient(180deg, #fff 0 10rem, #f4f8fa 32rem 100%);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.health-hub-shell :is(button, a, input, select, textarea) { transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease, transform .18s ease; }
+.health-hub-shell :is(button, a, input, select, textarea):focus-visible { outline: 3px solid rgb(20 171 193 / 30%); outline-offset: 3px; }
+
+.health-hub-shell > header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 72px;
+  padding-inline: max(24px, calc((100vw - 1240px) / 2));
+  border-bottom: 1px solid rgb(8 42 67 / 8%);
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 10px 30px rgb(8 42 67 / 5%);
+  backdrop-filter: blur(18px);
+}
+.health-hub-shell > header img { width: auto; height: 34px; }
+
+.health-hub-shell > section:first-of-type {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(54px, 7vw, 92px) max(24px, calc((100vw - 1180px) / 2));
+  background: radial-gradient(circle at 82% 20%, rgb(112 216 223 / 34%), transparent 22rem), linear-gradient(122deg, var(--hub-navy), #075a70 68%, #07859a);
+  color: #fff;
+}
+.health-hub-shell > section:first-of-type h1 { max-width: 18ch; margin: .55rem 0 .9rem; color: #fff; font-size: clamp(2.3rem, 5vw, 4.7rem); line-height: 1; letter-spacing: -.055em; }
+.health-hub-shell > section:first-of-type p { max-width: 66ch; color: rgb(255 255 255 / 82%); font-size: clamp(1rem, 1.7vw, 1.18rem); }
+
+.health-hub-shell article { border-color: var(--hub-line) !important; border-radius: 18px !important; background: rgb(255 255 255 / 97%) !important; box-shadow: 0 16px 44px rgb(8 42 67 / 7%) !important; }
+.health-hub-shell article:hover { border-color: #b7d7df !important; box-shadow: 0 22px 58px rgb(8 42 67 / 11%) !important; }
+.health-hub-shell :is(h2, h3, h4) { color: var(--hub-ink); letter-spacing: -.025em; }
+
+.health-hub-shell :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { min-height: 48px; padding: 11px 13px; border: 1px solid #c9dbe1; border-radius: 12px; background: #fff; color: var(--hub-ink); font: inherit; }
+.health-hub-shell textarea { min-height: 112px; resize: vertical; }
+.health-hub-shell :is(input, select, textarea):focus { border-color: var(--hub-cyan); box-shadow: 0 0 0 4px rgb(20 171 193 / 12%); }
+.health-hub-shell button:not([aria-label]) { min-height: 44px; border-radius: 11px; font-weight: 760; }
+
+.health-hub-shell > :is(div, section:not(:first-of-type)) {
+  width: min(1180px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.health-hub-shell > section:not(:first-of-type) { margin-top: 24px; }
+
+.health-hub-shell > section:nth-of-type(2),
+.health-hub-shell > div:first-of-type {
+  margin-top: 28px;
+}
+
+.health-hub-shell > section:nth-of-type(2):not(:has(article)),
+.health-hub-shell > div:first-of-type:not(:has(form)):not(:has(article)) {
+  padding: 16px 18px;
+  border: 1px solid #b9dde5;
+  border-radius: 16px;
+  background: #eaf7f9;
+  color: #24566a;
+  box-shadow: 0 10px 30px rgb(8 42 67 / 5%);
+}
+
+.health-hub-shell form,
+.health-hub-shell > div > aside,
+.health-hub-shell > div > section {
+  border-color: var(--hub-line) !important;
+  border-radius: 20px !important;
+  background-color: rgb(255 255 255 / 97%) !important;
+  box-shadow: 0 18px 50px rgb(8 42 67 / 7%) !important;
+}
+
+.health-hub-shell form { padding: clamp(18px, 3vw, 28px); }
+.health-hub-shell form label { color: #31596b; font-size: .9rem; font-weight: 720; }
+.health-hub-shell form label + label { margin-top: 14px; }
+
+.health-hub-shell form button[type="submit"],
+.health-hub-shell form > button:last-child {
+  min-height: 48px;
+  padding: 11px 18px;
+  border: 1px solid transparent;
+  background: var(--hub-navy);
+  color: #fff;
+  cursor: pointer;
+}
+.health-hub-shell form button:hover:not(:disabled) { background: #075a70; box-shadow: 0 10px 24px rgb(6 61 86 / 20%); transform: translateY(-1px); }
+.health-hub-shell button:disabled { cursor: not-allowed; opacity: .55; }
+
+.health-hub-shell article :is(small, time) { color: #607e8d; }
+.health-hub-shell article > span,
+.health-hub-shell article header > span { border-radius: 999px; font-weight: 760; }
+
+.personal-tracking-experience > div:last-child,
+.wallet-operations-experience > div:last-child,
+.care-timeline-experience > div:last-child {
+  display: grid;
+  gap: 24px;
+  margin-top: 26px;
+  padding-bottom: 72px;
+}
+
+.health-profile-experience > div:last-child,
+.emergency-profile-experience > div:last-child,
+.health-library-experience > div:last-child { padding-bottom: 72px; }
+
+.medication-reminders-experience .wallet-content { padding-bottom: 72px; }
+.medication-reminders-experience .wallet-notice { margin-top: 28px; border-radius: 16px; box-shadow: 0 10px 30px rgb(8 42 67 / 6%); }
+.medication-reminders-experience .lifecycle-editor { border-radius: 20px; box-shadow: 0 18px 50px rgb(8 42 67 / 7%); }
+.medication-reminders-experience .lifecycle-classes button { min-height: 76px; border-radius: 14px; }
+.medication-reminders-experience .lifecycle-classes button:hover { background: #f1f9fa; }
+.medication-reminders-experience .lifecycle-classes button.active { box-shadow: inset 4px 0 var(--hub-cyan); }
+[dir="rtl"].medication-reminders-experience .lifecycle-classes button.active { box-shadow: inset -4px 0 var(--hub-cyan); }
+
+.health-library-experience article a,
+.health-library-experience article button { min-height: 44px; }
+
+@supports not selector(:has(*)) {
+  .health-hub-shell > section:nth-of-type(2) { padding: 16px 18px; border-radius: 16px; }
+}
+
+@media (max-width: 820px) {
+  .health-hub-shell > header { min-height: 64px; padding-inline: 16px; }
+  .health-hub-shell > header nav { max-width: 60vw; overflow-x: auto; white-space: nowrap; }
+  .health-hub-shell > section:first-of-type { padding: 44px 20px 50px; }
+  .health-hub-shell > section:first-of-type h1 { font-size: clamp(2.15rem, 11vw, 3.4rem); }
+  .health-hub-shell > :is(div, section:not(:first-of-type)) { width: min(100% - 24px, 1180px); }
+  .health-hub-shell > div { grid-template-columns: minmax(0, 1fr) !important; }
+  .health-hub-shell form { padding: 18px; }
+  .health-hub-shell article { min-width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .health-hub-shell *, .health-hub-shell *::before, .health-hub-shell *::after { scroll-behavior: auto !important; transition: none !important; }
+}
