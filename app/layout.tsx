@@ -78,7 +78,7 @@ export const metadata: Metadata = {
   },
   description: "Discover verified healthcare providers, compare real availability, and book care with confidence.",
   applicationName: "Reyati",
-  metadataBase: new URL("https://reyati-care-prototype.amaanmalik12.chatgpt.site"),
+  metadataBase: new URL(process.env.REYATI_APP_URL ?? "https://reyati-app.vercel.app"),
   alternates: { canonical: "/" },
   manifest: "/manifest.webmanifest",
   icons: { icon: "/favicon.svg" },
