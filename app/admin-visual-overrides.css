@@ -237,3 +237,172 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Admin information architecture: searchable workspaces instead of a flat module wall. */
+.live-admin-shell {
+  display: block !important;
+  width: 100% !important;
+  min-height: 100dvh;
+  padding: 0 !important;
+  background: #f3f7f9;
+}
+
+.live-admin-sidebar {
+  position: fixed !important;
+  inset-block: 0 !important;
+  inset-inline-start: 0 !important;
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: 284px !important;
+  height: 100dvh !important;
+  padding: 22px 16px 16px !important;
+  overflow: hidden !important;
+  z-index: 40;
+}
+
+.live-admin-sidebar .provider-logo {
+  min-height: 58px;
+  padding: 2px 8px 13px !important;
+}
+
+.live-admin-sidebar .admin-role {
+  margin: 13px 0 14px !important;
+}
+
+.admin-navigation {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(175, 215, 229, .35) transparent;
+  padding: 1px 3px 14px 0;
+}
+
+.admin-nav-search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border: 1px solid rgba(211, 237, 245, .14);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .075);
+  backdrop-filter: blur(18px);
+}
+
+.admin-nav-search:focus-within {
+  border-color: rgba(76, 204, 235, .48);
+  background: rgba(255, 255, 255, .11);
+  box-shadow: 0 0 0 3px rgba(8, 168, 216, .11);
+}
+
+.admin-nav-search > span { color: #8ccfe1; font-size: 17px; }
+.admin-nav-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font: 650 12px/1.2 Manrope, sans-serif;
+}
+.admin-nav-search input::placeholder { color: rgba(222, 239, 245, .55); }
+
+.admin-nav-primary,
+.admin-nav-groups details > div {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-navigation .admin-verification-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  text-align: start !important;
+  width: 100%;
+  min-height: 42px !important;
+  height: auto !important;
+  padding: 6px 9px !important;
+  gap: 10px !important;
+  border-radius: 12px !important;
+}
+
+.admin-navigation .admin-verification-link > span {
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px !important;
+  border-radius: 9px;
+}
+
+.admin-navigation .admin-verification-link > b {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.admin-nav-groups {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+}
+
+.admin-nav-groups details {
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .025);
+}
+
+.admin-nav-groups summary {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: rgba(225, 239, 245, .67);
+  font: 750 10px/1.25 Manrope, sans-serif;
+  letter-spacing: .045em;
+  list-style: none;
+  text-transform: uppercase;
+}
+.admin-nav-groups summary::-webkit-details-marker { display: none; }
+.admin-nav-groups summary i { font-style: normal; transition: transform .18s ease; }
+.admin-nav-groups details[open] summary i { transform: rotate(180deg); }
+.admin-nav-groups details > div { padding: 0 5px 6px; }
+.admin-nav-empty { padding: 18px 10px; color: rgba(225, 239, 245, .6); font-size: 12px; text-align: center; }
+
+.live-admin-sidebar .admin-sidebar-foot {
+  position: static !important;
+  margin: 10px 0 0 !important;
+  padding: 11px 10px 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, .09);
+  background: transparent !important;
+}
+.live-admin-sidebar .admin-sidebar-foot p { display: none; }
+
+@media (min-width: 1001px) {
+  .live-admin-shell .admin-main {
+    width: calc(100% - 284px) !important;
+    margin-inline-start: 284px !important;
+    min-width: 0;
+  }
+  .live-admin-shell .admin-workspace {
+    width: min(100% - clamp(32px, 5vw, 80px), 1440px) !important;
+    margin-inline: auto !important;
+    padding-block: clamp(28px, 4vw, 54px) 72px !important;
+  }
+}
+
+@media (max-width: 1000px) {
+  .live-admin-sidebar { display: none !important; }
+  .live-admin-shell .admin-main { width: 100% !important; margin-inline-start: 0 !important; }
+}

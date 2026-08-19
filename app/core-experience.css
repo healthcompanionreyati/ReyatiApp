@@ -728,11 +728,14 @@
 .providers-shell .provider-search-hero > div:first-child {
   padding: 24px;
   border-radius: 34px;
-  background: rgba(255, 255, 255, .72);
-  border: 1px solid rgba(8, 42, 67, .10);
+  background: linear-gradient(145deg, rgba(5, 52, 74, .88), rgba(7, 75, 97, .78));
+  border: 1px solid rgba(167, 224, 234, .2);
   box-shadow: var(--ui-shadow-strong);
   backdrop-filter: blur(18px);
 }
+
+.providers-shell .provider-search-hero > div:first-child h1 { color: #fff; }
+.providers-shell .provider-search-hero > div:first-child > span { color: #d7e9ee !important; }
 
 .providers-shell .filter-row {
   display: flex;

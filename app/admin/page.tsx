@@ -3,6 +3,7 @@
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 
 import { useEffect, useState } from "react";
+import AdminNavigation from "@/app/components/AdminNavigation";
 
 type Overview = {
   operatorName: string;
@@ -81,7 +82,8 @@ export default function Admin() {
     <aside className="admin-sidebar live-admin-sidebar">
       <a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "عمليات المنصة" : "Platform operations"}</span></a>
       <div className="admin-role"><span>{avatar}</span><div><b>{overview?.operatorName ?? (ar ? "مسؤول المنصة" : "Platform administrator")}</b><small>{ar ? "وصول إداري محمي" : "Protected administrator access"}</small></div></div>
-      <nav>
+      <AdminNavigation ar={ar}/>
+      <nav hidden aria-hidden="true">
         <a className="admin-verification-link active" href="/admin"><span>◫</span>{ar ? "نظرة عامة" : "Overview"}</a>
         <a className="admin-verification-link" href="/admin/organizations"><span>▣</span>{ar ? "المؤسسات" : "Organizations"}</a>
         <a className="admin-verification-link" href="/admin/verification"><span>✓</span>{ar ? "التحقق" : "Verification"}</a>
