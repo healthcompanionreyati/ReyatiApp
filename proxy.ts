@@ -21,6 +21,10 @@ const withClerk = clerkMiddleware(async (_auth, request) => {
   }
 
   return NextResponse.next();
+}, {
+  frontendApiProxy: {
+    enabled: true,
+  },
 });
 
 export default clerkEnabled
@@ -31,6 +35,7 @@ export default clerkEnabled
 
 export const config = {
   matcher: [
+    "/__clerk/(.*)",
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
