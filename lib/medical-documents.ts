@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, desc, eq, gt, inArray, lt, ne } from "drizzle-orm";
 import { getDb } from "@/db";
 import { appointments, auditEvents, consents, documentRecords, documentShares, documentUploadSessions, organizations, patientProfiles, providerProfiles, users } from "@/db/schema";
@@ -47,7 +48,7 @@ function documentCategory(value: unknown) {
 }
 
 async function uploadReadiness() {
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const storageConfigured = await protectedDocumentStorageConfigured();
   const malwareScannerConfigured = Boolean(env.DOCUMENT_SCAN_PROVIDER?.trim() && env.DOCUMENT_SCAN_SIGNING_SECRET?.trim() && env.DOCUMENT_SCAN_SIGNING_SECRET.trim().length >= 32);
   return { uploadEnabled: foundationFlags.medicalDocumentUploads && foundationFlags.documentScanCallbacks && storageConfigured && malwareScannerConfigured, storageConfigured, malwareScannerConfigured };

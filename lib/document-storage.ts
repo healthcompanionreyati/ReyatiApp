@@ -1,3 +1,5 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
+import { createR2S3Store } from "@/lib/r2-s3";
 const OBJECT_KEY_PATTERN = /^documents\/\d{4}\/\d{2}\/[0-9a-f-]{36}$/;
 
 export class DocumentStorageUnavailableError extends Error {
@@ -24,9 +26,16 @@ export function assertPrivateDocumentObjectKey(value: string) {
 }
 
 async function storageBinding() {
-  const { env } = await import("cloudflare:workers");
-  if (!env.DOCUMENTS) throw new DocumentStorageUnavailableError();
-  return env.DOCUMENTS;
+  const env = await getRuntimeEnv();
+  if (env.DOCUMENTS) return env.DOCUMENTS;
+  const endpoint = env.CLOUDFLARE_R2_ENDPOINT?.trim();
+  const bucket = env.CLOUDFLARE_R2_BUCKET?.trim();
+  const accessKeyId = env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim();
+  const secretAccessKey = env.CLOUDFLARE_R2_SECRET_ACCESS_KEY?.trim();
+  if (endpoint && bucket && accessKeyId && secretAccessKey) {
+    return createR2S3Store({ endpoint, bucket, accessKeyId, secretAccessKey });
+  }
+  throw new DocumentStorageUnavailableError();
 }
 
 async function sha256(value: string) {
@@ -35,8 +44,13 @@ async function sha256(value: string) {
 }
 
 export async function protectedDocumentStorageConfigured() {
-  const { env } = await import("cloudflare:workers");
-  return Boolean(env.DOCUMENTS);
+  const env = await getRuntimeEnv();
+  return Boolean(env.DOCUMENTS || (
+    env.CLOUDFLARE_R2_ENDPOINT?.trim() &&
+    env.CLOUDFLARE_R2_BUCKET?.trim() &&
+    env.CLOUDFLARE_R2_ACCESS_KEY_ID?.trim() &&
+    env.CLOUDFLARE_R2_SECRET_ACCESS_KEY?.trim()
+  ));
 }
 
 export async function inspectPrivateDocumentObject(objectKey: string) {

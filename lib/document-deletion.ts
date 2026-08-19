@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, eq, lt, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, documentAccessGrants, documentDeletionJobs, documentRecords, documentShares } from "@/db/schema";
@@ -29,7 +30,7 @@ async function verifyInvocation(rawBody: string, headers: Headers) {
   if (!runId || !timestampText || !signature) throw new DocumentDeletionError("signature_required", 401);
   const timestamp = Number(timestampText);
   if (!Number.isSafeInteger(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > MAX_CLOCK_SKEW_SECONDS) throw new DocumentDeletionError("signature_expired", 401);
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const secret = env.DOCUMENT_DELETION_SIGNING_SECRET?.trim();
   if (!secret || secret.length < 32) throw new DocumentDeletionError("deletion_processor_not_configured", 503);
   let signatureBytes: ArrayBuffer;

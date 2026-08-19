@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, asc, eq, gt, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
@@ -24,7 +25,7 @@ function normalizedEmail(value: unknown) {
 }
 
 async function configuredBootstrapEmail() {
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const value = (env as unknown as { PLATFORM_BOOTSTRAP_EMAIL?: unknown }).PLATFORM_BOOTSTRAP_EMAIL;
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }

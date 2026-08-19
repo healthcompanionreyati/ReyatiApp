@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { count, desc } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, emailDeliverySuppressions, outboundMessages, webhookReceipts } from "@/db/schema";
@@ -8,7 +9,7 @@ import { foundationFlags } from "@/lib/foundation-flags";
 const statusOrder = ["pending", "processing", "retry", "sent", "delayed", "delivered", "bounced", "complained", "failed", "suppressed"];
 
 async function readiness() {
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   let secureAppUrl = false;
   try { secureAppUrl = new URL(env.REYATI_APP_URL ?? "").protocol === "https:"; } catch { /* Not configured. */ }
   return {

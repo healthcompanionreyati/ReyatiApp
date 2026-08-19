@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
@@ -19,7 +20,7 @@ type ResendMessage = {
 
 export async function sendWithResend(message: ResendMessage) {
   if (!foundationFlags.outboundEmailDelivery) throw new ResendDeliveryError("delivery_disabled", false);
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const apiKey = env.RESEND_API_KEY?.trim();
   const from = env.RESEND_FROM_EMAIL?.trim();
   if (!apiKey || !from) throw new ResendDeliveryError("provider_not_configured", false);

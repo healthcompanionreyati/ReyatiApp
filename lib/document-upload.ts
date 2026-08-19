@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, eq, gt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, documentProcessingEvents, documentRecords, documentUploadSessions } from "@/db/schema";
@@ -46,7 +47,7 @@ export async function completePrivateDocumentUpload(input: { userId: string; ses
   try {
     const stored = await stagePrivateDocumentObject({ objectKey: session.objectKey, body: input.bytes, contentType: input.contentType, ownerReference: input.userId, expectedSizeBytes: session.expectedSizeBytes, checksumSha256 });
     if (stored.size !== session.expectedSizeBytes) throw new Error("Stored object size differs from upload session");
-    const completedAt = new Date(); const { env } = await import("cloudflare:workers"); const scannerProvider = env.DOCUMENT_SCAN_PROVIDER?.trim() ?? null;
+    const completedAt = new Date(); const env = await getRuntimeEnv(); const scannerProvider = env.DOCUMENT_SCAN_PROVIDER?.trim() ?? null;
     await db.batch([
       db.insert(documentRecords).values({ id: documentId, ownerUserId: input.userId, sourceOrganizationId: null, objectKey: session.objectKey, category: session.category, verificationStatus: "unverified", contentType: session.expectedContentType, sizeBytes: session.expectedSizeBytes, checksumSha256, status: "scanning", pageCount: null, capturedAt: null, malwareScanStatus: "pending", quarantineReasonCode: null, retentionState: "active", deletionEligibleAt: null, deletedAt: null, version: 1, createdAt: completedAt, updatedAt: completedAt }),
       db.update(documentUploadSessions).set({ documentId, status: "uploaded", completedAt, version: session.version + 2, updatedAt: completedAt }).where(and(eq(documentUploadSessions.id, session.id), eq(documentUploadSessions.ownerUserId, input.userId), eq(documentUploadSessions.status, "uploading"), eq(documentUploadSessions.version, session.version + 1))),

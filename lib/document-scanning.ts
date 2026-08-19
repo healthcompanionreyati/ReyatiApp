@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, documentProcessingEvents, documentRecords } from "@/db/schema";
@@ -27,7 +28,7 @@ async function verifySignature(rawBody: string, headers: Headers) {
   if (!eventId || !timestampText || !signature) throw new DocumentScanWebhookError("signature_required", 401);
   const timestamp = Number(timestampText);
   if (!Number.isSafeInteger(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > MAX_CLOCK_SKEW_SECONDS) throw new DocumentScanWebhookError("signature_expired", 401);
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const secret = env.DOCUMENT_SCAN_SIGNING_SECRET?.trim();
   if (!secret || secret.length < 32) throw new DocumentScanWebhookError("scanner_not_configured", 503);
   let signatureBytes: ArrayBuffer;
@@ -52,7 +53,7 @@ export async function processDocumentScanWebhook(rawBody: string, headers: Heade
   const providerReference = payload.providerReference === undefined ? null : boundedString(payload.providerReference, 200);
   const suppliedReason = payload.reasonCode === undefined ? null : boundedString(payload.reasonCode, 80);
   if (!documentId || !reportedStatus || !acceptedStatuses.has(reportedStatus) || (payload.providerReference !== undefined && !providerReference) || (payload.reasonCode !== undefined && !suppliedReason)) throw new DocumentScanWebhookError("invalid_payload", 400);
-  const { env } = await import("cloudflare:workers"); const provider = env.DOCUMENT_SCAN_PROVIDER?.trim();
+  const env = await getRuntimeEnv(); const provider = env.DOCUMENT_SCAN_PROVIDER?.trim();
   if (!provider) throw new DocumentScanWebhookError("scanner_not_configured", 503);
   const dedupeKey = `${provider}:${providerEventId}`; const db = await getDb(); const now = new Date();
   const duplicate = await db.select({ id: documentProcessingEvents.id }).from(documentProcessingEvents).where(eq(documentProcessingEvents.dedupeKey, dedupeKey)).limit(1);

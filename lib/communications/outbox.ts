@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, asc, eq, inArray, lt, lte } from "drizzle-orm";
 import { getDb } from "@/db";
 import { contactMethods, messageDeliveryEvents, notificationPreferences, outboundMessages } from "@/db/schema";
@@ -63,7 +64,7 @@ export async function dispatchTransactionalEmail(messageId: string) {
     const recipient = row.message.recipientAddress ?? row.contactRecipient;
     if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) throw new ResendDeliveryError("invalid_recipient", false);
     if (row.message.recipientContactMethodId && row.message.templateId !== "email_verification" && row.contactStatus !== "verified") throw new ResendDeliveryError("recipient_suppressed", false);
-    const { env } = await import("cloudflare:workers");
+    const env = await getRuntimeEnv();
     let rendered;
     try {
       rendered = renderTransactionalEmail(row.message.templateId as TransactionalEmailTemplateId, row.message.locale === "ar" ? "ar" : "en", { actionPath }, env.REYATI_APP_URL ?? "");

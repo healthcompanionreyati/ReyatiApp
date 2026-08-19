@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { useReyatiLocale } from "@/app/components/ReyatiLocaleProvider";
+import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 import styles from "@/app/appointment-journey.module.css";
 
 type Module = "immunizations" | "screening_history" | "health_measurements" | "symptom_journal" | "wellness_journal";

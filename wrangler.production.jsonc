@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "reyati-production-resources",
+  "compatibility_date": "2026-08-14",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "reyati-production",
+      "database_id": "e07e50a2-6b11-4ff9-bc7d-617fb80f3f6c",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "DOCUMENTS_BUCKET",
+      "bucket_name": "reyati-production-documents"
+    }
+  ]
+}

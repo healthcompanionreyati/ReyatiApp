@@ -1,4 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
+import { D1RestDatabase } from "./d1-rest";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import * as coreSchema from "./schema";
 import * as digitalQueueSchema from "./digital-queue-schema";
 import * as homeCareSchema from "./home-care-schema";
@@ -56,12 +58,13 @@ import * as integrationAccessReviewSchema from "./integration-access-review-sche
 const schema = { ...coreSchema, ...digitalQueueSchema, ...homeCareSchema, ...laboratorySchema, ...encounterContinuitySchema, ...pharmacyFulfilmentSchema, ...sampleCollectionSchema, ...employerBenefitsSchema, ...patientReviewsSchema, ...financeControlsSchema, ...carePlansSchema, ...diagnosticImagingSchema, ...insuranceAuthorizationSchema, ...savedCareSchema, ...privacyRightsSchema, ...healthContentSchema, ...emergencyProfileSchema, ...personalHealthProfileSchema, ...consentCenterSchema, ...complaintsSchema, ...accountSecuritySchema, ...notificationPreferencesModuleSchema, ...catalogueGovernanceSchema, ...accessibilitySettingsModuleSchema, ...facilityDirectorySchema, ...releaseControlsSchema, ...patientProfileSettingsModuleSchema, ...tenantConfigurationSchema, ...policyTemplatesSchema, ...serviceStatusSchema, ...providerOperationsSchema, ...partnerGovernanceSchema, ...verificationLifecycleSchema, ...workforceGovernanceSchema, ...providerCoverageSchema, ...appointmentJourneySchema, ...personalTrackingSchema, ...healthWalletOperationsSchema, ...releaseTwoReadinessSchema, ...integrationOperationsSchema, ...integrationAssuranceSchema, ...exchangeReconciliationSchema, ...integrationLifecycleSchema, ...integrationSecretsSchema, ...integrationCertificatesSchema, ...integrationNetworkSchema, ...integrationPayloadSecuritySchema, ...integrationTrafficSchema, ...integrationResilienceSchema, ...integrationChangeSchema, ...integrationObservabilitySchema, ...integrationResidencySchema, ...integrationAccessReviewSchema };
 
 export async function getDb() {
-  const { env } = await import("cloudflare:workers");
-  if (!env.DB) {
-    throw new Error(
-      "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let your control plane inject the real binding values before using the database."
-    );
+  const env = await getRuntimeEnv();
+  if (env.DB) return drizzle(env.DB, { schema });
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID?.trim();
+  const databaseId = env.CLOUDFLARE_D1_DATABASE_ID?.trim();
+  const apiToken = env.CLOUDFLARE_D1_API_TOKEN?.trim();
+  if (accountId && databaseId && apiToken) {
+    return drizzle(new D1RestDatabase(accountId, databaseId, apiToken) as unknown as D1Database, { schema });
   }
-
-  return drizzle(env.DB, { schema });
+  throw new Error("Database access is unavailable. Configure the Sites DB binding or the scoped Cloudflare D1 REST credentials for Vercel.");
 }

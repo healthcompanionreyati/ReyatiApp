@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, desc, eq, lt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, contactMethods, contactVerificationChallenges, outboundMessages } from "@/db/schema";
@@ -15,7 +16,7 @@ function base64Url(bytes: ArrayBuffer) {
 }
 
 async function signingKey() {
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const value = env.CONTACT_VERIFICATION_SIGNING_KEY?.trim();
   if (!value || value.length < 32) throw new EmailVerificationError("verification_not_configured", 503);
   return crypto.subtle.importKey("raw", new TextEncoder().encode(value), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
@@ -24,7 +25,7 @@ async function signingKey() {
 export async function emailVerificationAvailable() {
   if (!foundationFlags.outboundEmailDelivery) return false;
   try {
-    const { env } = await import("cloudflare:workers");
+    const env = await getRuntimeEnv();
     const appUrl = new URL(env.REYATI_APP_URL ?? "");
     if (appUrl.protocol !== "https:" || !env.RESEND_API_KEY?.trim() || !env.RESEND_FROM_EMAIL?.trim()) return false;
     await signingKey();

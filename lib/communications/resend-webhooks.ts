@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { contactMethods, emailDeliverySuppressions, messageDeliveryEvents, outboundMessages, webhookReceipts } from "@/db/schema";
@@ -35,7 +36,7 @@ async function verifySignature(rawBody: string, headers: Headers) {
   if (!eventId || !timestampText || !signatures || eventId.length > 160) throw new ResendWebhookError("signature_required", 401);
   const timestamp = Number(timestampText);
   if (!Number.isSafeInteger(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > MAX_CLOCK_SKEW_SECONDS) throw new ResendWebhookError("signature_expired", 401);
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const secret = env.RESEND_WEBHOOK_SIGNING_SECRET?.trim();
   if (!secret) throw new ResendWebhookError("webhook_not_configured", 503);
   const key = await crypto.subtle.importKey("raw", secretBytes(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);

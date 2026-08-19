@@ -6,6 +6,7 @@ export type ChatGPTUser = {
   displayName: string;
   email: string;
   fullName: string | null;
+  provider: "clerk" | "sites_chatgpt";
 };
 
 const USER_ID_HEADER = "oai-authenticated-user-id";
@@ -19,6 +20,27 @@ const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
+  if (clerkConfigured()) {
+    const { auth, currentUser } = await import("@clerk/nextjs/server");
+    const { userId } = await auth();
+    if (!userId) return null;
+
+    const user = await currentUser();
+    const primaryEmail = user?.emailAddresses.find(
+      (candidate) => candidate.id === user.primaryEmailAddressId,
+    ) ?? user?.emailAddresses[0];
+    if (!user || !primaryEmail || primaryEmail.verification?.status !== "verified") return null;
+
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ") || null;
+    return {
+      userId,
+      displayName: fullName ?? primaryEmail.emailAddress,
+      email: primaryEmail.emailAddress,
+      fullName,
+      provider: "clerk",
+    };
+  }
+
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
@@ -36,6 +58,7 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
     displayName: fullName ?? email,
     email,
     fullName,
+    provider: "sites_chatgpt",
   };
 }
 
@@ -50,12 +73,18 @@ export async function requireChatGPTUser(
 
 export function chatGPTSignInPath(returnTo: string): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
+  if (clerkConfigured()) return `/sign-in?redirect_url=${encodeURIComponent(safeReturnTo)}`;
   return `${SIGN_IN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
 export function chatGPTSignOutPath(returnTo = "/"): string {
   const safeReturnTo = safeRelativeReturnPath(returnTo);
+  if (clerkConfigured()) return `/sign-out?redirect_url=${encodeURIComponent(safeReturnTo)}`;
   return `${SIGN_OUT_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+}
+
+function clerkConfigured() {
+  return Boolean(process.env.CLERK_SECRET_KEY && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 }
 
 function safeRelativeReturnPath(value: string): string {

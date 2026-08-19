@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 function base64Url(bytes: ArrayBuffer) {
@@ -5,7 +6,7 @@ function base64Url(bytes: ArrayBuffer) {
 }
 
 async function signingKey() {
-  const { env } = await import("cloudflare:workers");
+  const env = await getRuntimeEnv();
   const value = env.FAMILY_INVITATION_SIGNING_KEY?.trim();
   if (!value || value.length < 32) throw new Error("family_invitation_not_configured");
   return crypto.subtle.importKey("raw", new TextEncoder().encode(value), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
@@ -14,7 +15,7 @@ async function signingKey() {
 export async function familyInvitationDeliveryAvailable() {
   if (!foundationFlags.outboundEmailDelivery) return false;
   try {
-    const { env } = await import("cloudflare:workers");
+    const env = await getRuntimeEnv();
     const appUrl = new URL(env.REYATI_APP_URL ?? "");
     if (appUrl.protocol !== "https:" || !env.RESEND_API_KEY?.trim() || !env.RESEND_FROM_EMAIL?.trim()) return false;
     await signingKey();

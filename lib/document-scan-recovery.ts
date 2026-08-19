@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, eq, inArray, lt, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { auditEvents, documentProcessingEvents, documentRecords } from "@/db/schema";
@@ -29,7 +30,7 @@ async function verifyInvocation(rawBody: string, headers: Headers) {
   if (!runId || !timestampText || !signature) throw new DocumentScanRecoveryError("signature_required", 401);
   const timestamp = Number(timestampText);
   if (!Number.isSafeInteger(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > MAX_CLOCK_SKEW_SECONDS) throw new DocumentScanRecoveryError("signature_expired", 401);
-  const { env } = await import("cloudflare:workers"); const secret = env.DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET?.trim();
+  const env = await getRuntimeEnv(); const secret = env.DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET?.trim();
   if (!secret || secret.length < 32) throw new DocumentScanRecoveryError("scan_recovery_not_configured", 503);
   let signatureBytes: ArrayBuffer;
   try { signatureBytes = Uint8Array.from(atob(signature), (character) => character.charCodeAt(0)).buffer as ArrayBuffer; }
