@@ -6,6 +6,7 @@ type D1RestResult = {
 };
 
 type D1StatementPayload = { sql: string; params: unknown[] };
+type D1BatchPayload = { batch: D1StatementPayload[] };
 
 class D1RestPreparedStatement {
   constructor(
@@ -49,7 +50,9 @@ export class D1RestDatabase {
   }
 
   async batch(statements: D1RestPreparedStatement[]) {
-    return this.request(statements.map((statement) => ({ sql: statement.sql, params: statement.params })));
+    return this.request({
+      batch: statements.map((statement) => ({ sql: statement.sql, params: statement.params })),
+    });
   }
 
   async exec(sql: string) {
@@ -62,7 +65,7 @@ export class D1RestDatabase {
     return results[0];
   }
 
-  private async request(payload: D1StatementPayload | D1StatementPayload[]) {
+  private async request(payload: D1StatementPayload | D1BatchPayload) {
     const response = await fetch(this.endpoint, {
       method: "POST",
       headers: {
