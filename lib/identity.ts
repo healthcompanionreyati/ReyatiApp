@@ -18,16 +18,9 @@ export async function getOrCreateCurrentUser() {
   const now = new Date();
   const normalizedEmail = identity.email.trim().toLowerCase();
   const linked = await db.select({
-    user: users,
     identityId: authIdentities.id,
-    contactMethodId: contactMethods.id,
+    userId: authIdentities.userId,
   }).from(authIdentities)
-    .innerJoin(users, eq(users.id, authIdentities.userId))
-    .leftJoin(contactMethods, and(
-      eq(contactMethods.userId, users.id),
-      eq(contactMethods.kind, "email"),
-      eq(contactMethods.normalizedValue, normalizedEmail),
-    ))
     .where(and(
       eq(authIdentities.provider, identity.provider),
       eq(authIdentities.providerSubject, identity.userId),
@@ -35,18 +28,28 @@ export async function getOrCreateCurrentUser() {
     )).limit(1);
 
   if (linked[0]) {
-    const current = linked[0];
-    await db.update(authIdentities).set({ lastAuthenticatedAt: now, updatedAt: now }).where(eq(authIdentities.id, current.identityId));
-    if (!current.contactMethodId) await addContactMethod(current.user.id, normalizedEmail, identity.email, now);
-    if (current.user.email !== identity.email || current.user.displayName !== identity.displayName) {
-      await db.update(users).set({ email: identity.email, displayName: identity.displayName, updatedAt: now }).where(eq(users.id, current.user.id));
+    const currentIdentity = linked[0];
+    const [currentUser, contactMethod] = await Promise.all([
+      db.select().from(users).where(eq(users.id, currentIdentity.userId)).limit(1),
+      db.select({ id: contactMethods.id }).from(contactMethods).where(and(
+        eq(contactMethods.userId, currentIdentity.userId),
+        eq(contactMethods.kind, "email"),
+        eq(contactMethods.normalizedValue, normalizedEmail),
+      )).limit(1),
+    ]);
+    const current = currentUser[0];
+    if (!current) throw new Error("Linked Reyati user is unavailable");
+    await db.update(authIdentities).set({ lastAuthenticatedAt: now, updatedAt: now }).where(eq(authIdentities.id, currentIdentity.identityId));
+    if (!contactMethod[0]) await addContactMethod(current.id, normalizedEmail, identity.email, now);
+    if (current.email !== identity.email || current.displayName !== identity.displayName) {
+      await db.update(users).set({ email: identity.email, displayName: identity.displayName, updatedAt: now }).where(eq(users.id, current.id));
     }
-    return { ...current.user, email: identity.email, displayName: identity.displayName };
+    return { ...current, email: identity.email, displayName: identity.displayName };
   }
 
   // A verified Clerk email links to the existing Reyati account so appointments,
   // roles, records, and audit history survive the hosting-provider cutover.
-  const accountMatch = await db.select({ user: users, contactMethodId: contactMethods.id }).from(users)
+  const accountMatch = await db.select({ userId: users.id, contactMethodId: contactMethods.id }).from(users)
     .leftJoin(contactMethods, and(
       eq(contactMethods.userId, users.id),
       eq(contactMethods.kind, "email"),
@@ -59,16 +62,18 @@ export async function getOrCreateCurrentUser() {
     )).limit(1);
 
   if (accountMatch[0]) {
-    const current = accountMatch[0];
+    const matched = accountMatch[0];
+    const current = (await db.select().from(users).where(eq(users.id, matched.userId)).limit(1))[0];
+    if (!current) throw new Error("Matched Reyati user is unavailable");
     await db.batch([
-      db.insert(authIdentities).values({ id: crypto.randomUUID(), userId: current.user.id, provider: identity.provider, providerSubject: identity.userId, status: "active", linkedAt: now, lastAuthenticatedAt: now, createdAt: now, updatedAt: now }).onConflictDoNothing(),
-      db.insert(authEvents).values({ id: crypto.randomUUID(), userId: current.user.id, actorUserId: current.user.id, eventType: "identity.platform_linked", outcome: "success", channel: identity.provider, createdAt: now }),
+      db.insert(authIdentities).values({ id: crypto.randomUUID(), userId: current.id, provider: identity.provider, providerSubject: identity.userId, status: "active", linkedAt: now, lastAuthenticatedAt: now, createdAt: now, updatedAt: now }).onConflictDoNothing(),
+      db.insert(authEvents).values({ id: crypto.randomUUID(), userId: current.id, actorUserId: current.id, eventType: "identity.platform_linked", outcome: "success", channel: identity.provider, createdAt: now }),
     ]);
-    if (!current.contactMethodId) await addContactMethod(current.user.id, normalizedEmail, identity.email, now);
-    if (current.user.email !== identity.email || current.user.displayName !== identity.displayName) {
-      await db.update(users).set({ email: identity.email, displayName: identity.displayName, updatedAt: now }).where(eq(users.id, current.user.id));
+    if (!matched.contactMethodId) await addContactMethod(current.id, normalizedEmail, identity.email, now);
+    if (current.email !== identity.email || current.displayName !== identity.displayName) {
+      await db.update(users).set({ email: identity.email, displayName: identity.displayName, updatedAt: now }).where(eq(users.id, current.id));
     }
-    return { ...current.user, email: identity.email, displayName: identity.displayName };
+    return { ...current, email: identity.email, displayName: identity.displayName };
   }
 
   const user = {
