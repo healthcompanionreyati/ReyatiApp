@@ -15,12 +15,15 @@ async function routeFiles(directory) {
   return files.flat();
 }
 
-test("Phase 1A external capabilities remain hard-disabled", async () => {
+test("external capabilities fail closed unless an approved production gate is enabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundEmailDelivery", "outboundSmsDelivery", "communicationsWebhooks", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery", "documentUploadCleanup", "documentScanRecovery"]) {
+  for (const capability of ["independentAuthentication", "outboundSmsDelivery", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery", "documentUploadCleanup", "documentScanRecovery"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
+  assert.match(flags, /outboundEmailDelivery: productionFlag\("QIVAYA_OUTBOUND_EMAIL_DELIVERY"\)/);
+  assert.match(flags, /communicationsWebhooks: productionFlag\("QIVAYA_COMMUNICATIONS_WEBHOOKS"\)/);
+  assert.match(flags, /=== "true"/);
 });
 
 test("API routes use the privacy-safe operational logger", async () => {
@@ -42,7 +45,7 @@ test("capability registry declares ownership and activation boundaries", async (
     assert.match(registry, new RegExp(field));
   }
   assert.match(registry, /id: "independent_authentication"[\s\S]*?status: "foundation"/);
-  assert.match(registry, /id: "outbound_communications"[\s\S]*?status: "foundation"/);
+  assert.match(registry, /id: "outbound_communications"[\s\S]*?status: "role_gated"/);
   assert.match(registry, /id: "operational_observability"[\s\S]*?status: "foundation"/);
   assert.match(registry, /id: "medical_document_foundation"[\s\S]*?status: "foundation"/);
 });
@@ -168,24 +171,29 @@ test("medical documents remain metadata-only, consent-scoped, and upload-gated",
 
 test("platform identity is separated without claiming independent email verification", async () => {
   const identity = await source("lib/identity.ts");
-  assert.match(identity, /provider: SITES_IDENTITY_PROVIDER/);
+  assert.match(identity, /provider: identity\.provider/);
   assert.match(identity, /status: "provider_asserted"/);
   assert.doesNotMatch(identity, /status: "verified"/);
   assert.match(identity, /identity\.platform_linked/);
 });
 
-test("Resend delivery is idempotent, fixed-origin, and unreachable while disabled", async () => {
+test("Resend delivery is idempotent, fixed-origin, and reachable only through approved gates", async () => {
   const adapter = await source("lib/communications/resend.ts");
   const outbox = await source("lib/communications/outbox.ts");
   const flags = await source("lib/foundation-flags.ts");
   assert.match(adapter, /https:\/\/api\.resend\.com\/emails/);
   assert.match(adapter, /"Idempotency-Key"/);
   assert.doesNotMatch(adapter, /response\.text|error\.message/);
-  assert.match(flags, /outboundEmailDelivery: false/);
+  assert.match(flags, /outboundEmailDelivery: productionFlag\("QIVAYA_OUTBOUND_EMAIL_DELIVERY"\)/);
   assert.match(outbox, /if \(!foundationFlags\.outboundEmailDelivery\)/);
 
+  const scheduledRoute = await source("app/api/internal/communications/dispatch/route.ts");
+  assert.match(scheduledRoute, /CRON_SECRET/);
+  assert.match(scheduledRoute, /authorization/);
+  assert.match(scheduledRoute, /processDueTransactionalEmails\(25\)/);
+
   const routes = await routeFiles(path.join(root, "app", "api"));
-  const runtimeFiles = [...routes, path.join(root, "worker", "index.ts")];
+  const runtimeFiles = [...routes.filter((file) => !file.endsWith(path.join("internal", "communications", "dispatch", "route.ts"))), path.join(root, "worker", "index.ts")];
   for (const file of runtimeFiles) {
     const contents = await readFile(file, "utf8");
     assert.doesNotMatch(contents, /dispatchTransactionalEmail|sendWithResend/);
@@ -241,7 +249,7 @@ test("Arabic and RTL preferences persist across critical journeys", async () => 
   const authExperience = await source("app/auth/AuthExperience.tsx");
   assert.match(authExperience, /useReyatiLocale/);
   assert.match(authExperience, /dir=\{ar \? "rtl" : "ltr"\}/);
-  assert.match(authExperience, /تسجيل الدخول باستخدام ChatGPT/);
+  assert.match(authExperience, /تسجيل الدخول الآمن/);
 });
 
 test("real workflow events record suppressed email intents without calling delivery", async () => {
@@ -303,7 +311,7 @@ test("Resend webhooks are signature-verified, replay-safe, privacy-minimized, an
   assert.match(handler, /emailDeliverySuppressions/);
 });
 
-test("the outbox processor leases bounded due work and remains unreachable while disabled", async () => {
+test("the outbox processor leases bounded work and reports scheduled-trigger readiness", async () => {
   const outbox = await source("lib/communications/outbox.ts");
   const operations = await source("lib/communications/operations.ts");
   const route = await source("app/api/admin/communications/route.ts");
@@ -314,7 +322,7 @@ test("the outbox processor leases bounded due work and remains unreachable while
   assert.match(outbox, /status: "processing"/);
   assert.match(outbox, /lte\(outboundMessages\.nextAttemptAt, now\)/);
   assert.match(operations, /requirePlatformRole\(userId, \["platform_admin"\]\)/);
-  assert.match(operations, /scheduledTriggerConfigured: false/);
+  assert.match(operations, /scheduledTriggerConfigured: Boolean\(env\.CRON_SECRET\?\.trim\(\)\)/);
   assert.match(route, /getOrCreateCurrentUser\(\)/);
   assert.match(page, /No recipient address, message body, invitation token, or webhook payload/);
 });

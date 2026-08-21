@@ -20,7 +20,7 @@ async function readiness() {
     verificationSigningConfigured: Boolean(env.CONTACT_VERIFICATION_SIGNING_KEY?.trim() && env.CONTACT_VERIFICATION_SIGNING_KEY.trim().length >= 32),
     invitationSigningConfigured: Boolean(env.FAMILY_INVITATION_SIGNING_KEY?.trim() && env.FAMILY_INVITATION_SIGNING_KEY.trim().length >= 32),
     webhookSigningConfigured: Boolean(env.RESEND_WEBHOOK_SIGNING_SECRET?.trim()),
-    scheduledTriggerConfigured: false,
+    scheduledTriggerConfigured: Boolean(env.CRON_SECRET?.trim()),
   };
 }
 

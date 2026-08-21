@@ -1,3 +1,5 @@
+const productionFlag = (name: string) => process.env[name]?.trim().toLowerCase() === "true";
+
 export const foundationFlags = {
   integrationAccessReviewCredentialIssuance: false,
   integrationAccessReviewScopeMutation: false,
@@ -205,9 +207,9 @@ export const foundationFlags = {
   savedCareProviderFavouriteDisclosure: false,
   savedCareExternalProfileImport: false,
   independentAuthentication: false,
-  outboundEmailDelivery: false,
+  outboundEmailDelivery: productionFlag("QIVAYA_OUTBOUND_EMAIL_DELIVERY"),
   outboundSmsDelivery: false,
-  communicationsWebhooks: false,
+  communicationsWebhooks: productionFlag("QIVAYA_COMMUNICATIONS_WEBHOOKS"),
   medicalDocumentUploads: false,
   documentScanCallbacks: false,
   documentDeletionProcessor: false,
