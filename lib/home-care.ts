@@ -96,7 +96,7 @@ export async function getPatientHomeCare(userId: string) {
       assignedWorker: limitedWorker(worker), concerns: concerns.filter((item) => item.requestId === request.id),
     })),
     boundaries: HOME_CARE_BOUNDARIES,
-    safetyNotice: "Verify the assigned professional shown in Reyati before allowing entry. Raise an identity mismatch or safety concern immediately.",
+    safetyNotice: "Verify the assigned professional shown in Qivaya before allowing entry. Raise an identity mismatch or safety concern immediately.",
   };
 }
 

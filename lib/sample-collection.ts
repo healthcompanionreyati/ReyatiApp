@@ -214,7 +214,7 @@ export async function updatePartnerSampleCollection(userId: string, body: Record
   const changed = await db.update(sampleCollectionRequests).set(patch).where(and(eq(sampleCollectionRequests.id, requestId), eq(sampleCollectionRequests.assignedOrganizationId, partner.organizationId), eq(sampleCollectionRequests.version, expectedVersion), eq(sampleCollectionRequests.status, current.status))).returning({ id: sampleCollectionRequests.id });
   if (!changed[0]) throw new SampleCollectionConflictError();
   await event({ requestId, actorUserId: userId, organizationId: partner.organizationId, action: eventAction, previousStatus: current.status, nextStatus, reasonCode, metadata: { transitionDeclaredByPartner: true } });
-  await notifyPatient(current.patientId, requestId, nextStatus === "safety_hold" ? "Collection visit placed on hold" : "Collection request updated", nextStatus === "safety_hold" ? "Your home sample collection is paused for a controlled review. Open Reyati for next steps." : `Your home sample collection is now ${nextStatus}.`, `${eventAction}:${expectedVersion + 1}`);
+  await notifyPatient(current.patientId, requestId, nextStatus === "safety_hold" ? "Collection visit placed on hold" : "Collection request updated", nextStatus === "safety_hold" ? "Your home sample collection is paused for a controlled review. Open Qivaya for next steps." : `Your home sample collection is now ${nextStatus}.`, `${eventAction}:${expectedVersion + 1}`);
   return { id: requestId, status: nextStatus, version: expectedVersion + 1, locationTracking: false, externalCourier: false };
 }
 

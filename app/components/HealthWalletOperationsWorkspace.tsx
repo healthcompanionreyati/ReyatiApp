@@ -12,7 +12,7 @@ const info = {
   document_capture: { path: "document-capture", en: "Document capture drafts", ar: "مسودات التقاط المستندات", intro: "Review and confirm manually entered document details before they become wallet metadata." },
   record_index: { path: "record-index", en: "Health record index", ar: "فهرس السجلات الصحية", intro: "Build a private, searchable index of where your health information came from." },
   sharing_directives: { path: "sharing-directives", en: "Sharing directives", ar: "توجيهات المشاركة", intro: "Record a future sharing preference without granting access to anyone." },
-  access_history: { path: "access-history", en: "Wallet access history", ar: "سجل الوصول للمحفظة", intro: "Review account-owned Reyati wallet activity and its recorded outcome." },
+  access_history: { path: "access-history", en: "Wallet access history", ar: "سجل الوصول للمحفظة", intro: "Review account-owned Qivaya wallet activity and its recorded outcome." },
   data_quality: { path: "data-quality", en: "Data quality concerns", ar: "ملاحظات جودة البيانات", intro: "Flag a record detail for human review without altering a clinical source record." },
 } as const;
 
@@ -46,8 +46,8 @@ const heroDetails = {
     badgeAr: "أثر مملوك للحساب",
     chipsEn: ["Recorded activity", "No extra disclosure", "Outcome visible"],
     chipsAr: ["نشاط مسجل", "لا إفصاح إضافي", "النتيجة ظاهرة"],
-    summaryEn: "See the Reyati wallet actions tied to your account and the outcome that was recorded.",
-    summaryAr: "اعرض أفعال محفظة رعايتي المرتبطة بحسابك والنتيجة التي تم تسجيلها.",
+    summaryEn: "See the Qivaya wallet actions tied to your account and the outcome that was recorded.",
+    summaryAr: "اعرض أفعال محفظة كيفايا المرتبطة بحسابك والنتيجة التي تم تسجيلها.",
   },
   data_quality: {
     badgeEn: "Human review",
@@ -156,7 +156,7 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
   return (
     <main className={`${styles.shell} health-hub-shell wallet-operations-experience ${module.replaceAll("_", "-")}-experience`} dir={ar ? "rtl" : "ltr"}>
       <header className={styles.top}>
-        <a href="/"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
+        <a href="/"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya" /></a>
         <div className={styles.topActions}>
           <button className={styles.lang} onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "EN" : "العربية"}</button>
           <a href="/wallet">{ar ? "السجلات الصحية" : "Health records"}</a>
@@ -181,7 +181,7 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
             </div>
             <div>
               <dt>{ar ? "المصدر" : "Source"}</dt>
-              <dd>{data?.source ?? "Reyati"}</dd>
+              <dd>{data?.source ?? "Qivaya"}</dd>
             </div>
             <div>
               <dt>{ar ? "الحدود" : "Boundary"}</dt>
@@ -261,7 +261,7 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
             <span>{recordCount}</span>
           </div>
 
-          <p>{ar ? "هذه الشاشة تعرض نشاط رعايتي المسجل فقط." : data?.notice}</p>
+          <p>{ar ? "هذه الشاشة تعرض نشاط كيفايا المسجل فقط." : data?.notice}</p>
 
           {loading ? (
             <div className={styles.empty}>{ar ? "جارٍ التحميل…" : "Loading…"}</div>

@@ -68,8 +68,8 @@ export async function getPublicServiceStatus() {
   return {
     overallStatus: active.some((item) => item.severity === "partial_outage") ? "partial_outage" : active.some((item) => item.severity === "degraded") ? "degraded" : active.some((item) => item.severity === "maintenance") ? "maintenance" : "operational",
     active, history: notices.filter((item) => item.status === "resolved").slice(0, 20), components,
-    checkedAt: new Date(), source: "Human-reviewed Reyati operational notices", boundaries: SERVICE_STATUS_BOUNDARIES,
-    disclaimer: "This page reports known Reyati service conditions. It does not guarantee uninterrupted availability and does not disclose internal security or patient information.",
+    checkedAt: new Date(), source: "Human-reviewed Qivaya operational notices", boundaries: SERVICE_STATUS_BOUNDARIES,
+    disclaimer: "This page reports known Qivaya service conditions. It does not guarantee uninterrupted availability and does not disclose internal security or patient information.",
   };
 }
 

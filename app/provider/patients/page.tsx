@@ -84,7 +84,7 @@ export default function ProviderPatients() {
 
   return <main className={`provider-patients-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="patient-provider-sidebar">
-      <a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
+      <a href="/" className="provider-logo"><img src="/brand/qivaya-logo-reversed.png" alt="Qivaya"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
       <div className="patient-facility"><span>{providerInitials}</span><div><b>{directory?.organizationName ?? (ar ? "مساحة مقدم الرعاية" : "Provider workspace")}</b><small>{directory?.providerName ?? (ar ? "حساب موثّق" : "Verified account")}</small></div></div>
       <nav>
         <a href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}</a>

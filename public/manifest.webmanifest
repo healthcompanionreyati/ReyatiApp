@@ -1,12 +1,12 @@
 {
-  "name": "Reyati",
-  "short_name": "Reyati",
-  "description": "Find trusted care in Qatar and manage your care journey.",
+  "name": "Qivaya | Connected Health",
+  "short_name": "Qivaya",
+  "description": "A clearer way through care.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f4fafb",
-  "theme_color": "#082a43",
+  "background_color": "#F7F9FA",
+  "theme_color": "#133B45",
   "icons": [
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "/brand/qivaya-app-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
   ]
 }

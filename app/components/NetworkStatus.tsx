@@ -26,7 +26,7 @@ export default function NetworkStatus() {
 
   if (online && !restored) return null;
   if (!online) return <aside className="network-status offline" role="alert" aria-live="assertive">
-    <span aria-hidden="true">!</span><p><b>You are offline</b>Reyati cannot confirm new saves or status updates until your connection returns.</p>
+    <span aria-hidden="true">!</span><p><b>You are offline</b>Qivaya cannot confirm new saves or status updates until your connection returns.</p>
   </aside>;
   return <aside className="network-status restored" role="status" aria-live="polite">
     <span aria-hidden="true">✓</span><p><b>Connection restored</b>Reload live data before relying on appointment, payment, or access status.</p><button type="button" onClick={() => window.location.reload()}>Reload live data</button>

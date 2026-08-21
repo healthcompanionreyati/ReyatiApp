@@ -1,0 +1,129 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap");
+
+:root {
+  --qivaya-cyan: #009eb8;
+  --qivaya-cyan-accessible: #007a8f;
+  --qivaya-amber: #ffb03b;
+  --qivaya-ink: #133b45;
+  --qivaya-mist: #b4c3cd;
+  --qivaya-porcelain: #f7f9fa;
+  --qivaya-success: #147a67;
+  --qivaya-warning: #9a641a;
+  --qivaya-error: #c8445a;
+  --qivaya-info: #007a8f;
+
+  /* Compatibility tokens keep established modules stable during the rebrand. */
+  --ink: var(--qivaya-ink);
+  --teal: var(--qivaya-cyan-accessible);
+  --deep: var(--qivaya-ink);
+  --mint: #e7f4f6;
+  --cream: var(--qivaya-porcelain);
+  --sand: #e8eef1;
+  --coral: var(--qivaya-amber);
+  --muted: #5f7580;
+  --ui-ink: var(--qivaya-ink);
+  --ui-cyan: var(--qivaya-cyan-accessible);
+}
+
+html { background: var(--qivaya-porcelain); }
+body {
+  background: var(--qivaya-porcelain);
+  color: var(--qivaya-ink);
+  font-family: Manrope, "Segoe UI", Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, .display-heading {
+  font-family: Sora, Manrope, "Segoe UI", sans-serif;
+  letter-spacing: -.035em;
+}
+
+button, input, select, textarea { font-family: inherit; }
+.arabic, [dir="rtl"] { font-family: "IBM Plex Sans Arabic", Tahoma, sans-serif; }
+.arabic h1, .arabic h2, .arabic h3,
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 { font-family: "IBM Plex Sans Arabic", Tahoma, sans-serif; letter-spacing: 0; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--qivaya-cyan) 68%, white); outline-offset: 3px; }
+::selection { background: rgba(0, 158, 184, .2); color: var(--qivaya-ink); }
+
+.app-header.patient-app-header {
+  width: min(1440px, 100%);
+  max-width: none;
+  min-height: 80px;
+  height: auto;
+  padding-block: 12px;
+  background: rgba(255, 255, 255, .92);
+  border-color: rgba(19, 59, 69, .1);
+  box-shadow: 0 12px 34px rgba(19, 59, 69, .07);
+}
+
+.app-header .app-brand img {
+  width: clamp(150px, 15vw, 206px);
+  height: auto;
+  max-height: 56px;
+  object-fit: contain;
+}
+
+.app-header .app-primary-nav {
+  background: #eef5f7;
+  border-color: rgba(19, 59, 69, .09);
+  box-shadow: none;
+}
+
+.app-header .app-primary-nav a { color: #496773; }
+.app-header .app-primary-nav a.active,
+.app-header .app-primary-nav a[aria-current="page"] {
+  background: var(--qivaya-ink);
+  color: white;
+  box-shadow: 0 8px 20px rgba(19, 59, 69, .2);
+}
+
+.app-header .app-locale,
+.app-header .app-account {
+  border-color: rgba(19, 59, 69, .12);
+  box-shadow: none;
+}
+
+.app-header .app-avatar {
+  background: var(--qivaya-amber);
+  color: var(--qivaya-ink);
+}
+
+.live-admin-sidebar,
+.provider-sidebar,
+.provider-side,
+.virtual-provider-nav {
+  background-color: var(--qivaya-ink) !important;
+  background-image: linear-gradient(rgba(19, 59, 69, .96), rgba(19, 59, 69, .98)), url("/brand/qivaya-pattern-dark.png") !important;
+  background-size: auto, 480px auto !important;
+}
+
+.live-admin-sidebar .provider-logo img,
+.provider-sidebar .provider-logo img,
+.provider-side .provider-logo img,
+.virtual-provider-nav .provider-logo img {
+  width: min(190px, 100%) !important;
+  height: auto !important;
+  max-height: 58px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.admin-navigation .admin-verification-link.active {
+  background: var(--qivaya-cyan) !important;
+  color: var(--qivaya-ink) !important;
+}
+
+.admin-nav-search:focus-within { border-color: var(--qivaya-cyan); }
+.primary, .search-button, button[type="submit"] { border-radius: 10px; }
+
+@media (max-width: 1040px) {
+  .app-header .app-brand img { width: 150px; }
+  .app-header .app-primary-nav a { padding-inline: 12px; }
+}
+
+@media (max-width: 760px) {
+  .app-header.patient-app-header { min-height: 68px; padding-block: 9px; }
+  .app-header .app-brand img { width: 132px; max-height: 44px; }
+  .app-header .app-primary-nav { display: none; }
+  .app-header .app-account > span:last-child { display: none; }
+}

@@ -115,7 +115,7 @@ export async function getEmergencyProfile(userId: string) {
   const profile = (await db.select().from(emergencyProfiles).where(and(eq(emergencyProfiles.userId, userId), eq(emergencyProfiles.status, "active"))).limit(1))[0] ?? null;
   return {
     profile: publicProfile(profile), boundaries: EMERGENCY_PROFILE_BOUNDARIES,
-    emergency: { country: "Qatar", number: "999", instruction: "For an emergency in Qatar, call 999 immediately. Reyati does not contact emergency services." },
+    emergency: { country: "Qatar", number: "999", instruction: "For an emergency in Qatar, call 999 immediately. Qivaya does not contact emergency services." },
     guidance: "This information is entered by you and remains unverified. Keep it accurate and show it directly when you choose; clinicians must verify it independently.",
   };
 }

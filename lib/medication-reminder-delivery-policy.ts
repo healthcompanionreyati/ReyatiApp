@@ -5,7 +5,7 @@ import { requirePlatformRole } from "@/lib/authorization";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 export const REMINDER_DELIVERY_POLICY_VERSION = "reminder-delivery-policy-2026-08-16";
-export const REMINDER_TEMPLATE_EN = "A reminder you configured may be due. Open Reyati to review your plan.";
+export const REMINDER_TEMPLATE_EN = "A reminder you configured may be due. Open Qivaya to review your plan.";
 export const REMINDER_TEMPLATE_AR = "قد يكون موعد تذكير قمت بإعداده. افتح ريّاتي لمراجعة خطتك.";
 export class ReminderDeliveryPolicyValidationError extends Error { constructor(message: string) { super(message); this.name = "ReminderDeliveryPolicyValidationError"; } }
 export class ReminderDeliveryPolicyConflictError extends Error { constructor() { super("This reminder delivery policy changed. Refresh and try again."); this.name = "ReminderDeliveryPolicyConflictError"; } }

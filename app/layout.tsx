@@ -66,6 +66,7 @@ import "./trust-center-experience.css";
 import "./support-finance-experience.css";
 import "./core-experience.css";
 import "./admin-visual-overrides.css";
+import "./qivaya-brand.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";
@@ -73,30 +74,30 @@ import UnsavedChangesGuard from "./components/UnsavedChangesGuard";
 
 export const metadata: Metadata = {
   title: {
-    default: "Reyati — Find trusted care in Qatar",
-    template: "%s · Reyati",
+    default: "Qivaya — A clearer way through care",
+    template: "%s · Qivaya",
   },
-  description: "Discover verified healthcare providers, compare real availability, and book care with confidence.",
-  applicationName: "Reyati",
-  metadataBase: new URL(process.env.REYATI_APP_URL ?? "https://reyati-app.vercel.app"),
+  description: "Connected health that helps people find, access, and continue care with confidence.",
+  applicationName: "Qivaya",
+  metadataBase: new URL(process.env.REYATI_APP_URL ?? "https://qivaya.com"),
   alternates: { canonical: "/" },
   manifest: "/manifest.webmanifest",
-  icons: { icon: "/favicon.svg" },
+  icons: { icon: "/brand/qivaya-app-icon.png", apple: "/brand/qivaya-app-icon.png" },
   robots: { index: false, follow: false },
   openGraph: {
-    title: "Reyati · رعايتي",
-    description: "Clearer care. A simpler journey.",
+    title: "Qivaya | Connected Health",
+    description: "A clearer way through care.",
     url: "/",
-    siteName: "Reyati",
+    siteName: "Qivaya",
     locale: "en_QA",
     type: "website",
-    images: [{ url: "/og.png", width: 1080, height: 1080 }],
+    images: [{ url: "/brand/qivaya-og.png", width: 1063, height: 591 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Reyati · رعايتي",
-    description: "Clearer care. A simpler journey.",
-    images: ["/og.png"],
+    title: "Qivaya | Connected Health",
+    description: "A clearer way through care.",
+    images: ["/brand/qivaya-og.png"],
   },
 };
 

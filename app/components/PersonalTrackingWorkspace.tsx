@@ -155,7 +155,7 @@ export default function PersonalTrackingWorkspace({ module }: { module: Module }
   return (
     <main className={`${styles.shell} health-hub-shell personal-tracking-experience ${module.replaceAll("_", "-")}-experience`} dir={ar ? "rtl" : "ltr"}>
       <header className={styles.top}>
-        <a href="/"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
+        <a href="/"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya" /></a>
         <div className={styles.topActions}>
           <button className={styles.lang} type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "EN" : "العربية"}</button>
           <a href="/health-profile">{ar ? "الملف الصحي" : "Health profile"}</a>
@@ -180,7 +180,7 @@ export default function PersonalTrackingWorkspace({ module }: { module: Module }
             </div>
             <div>
               <dt>{ar ? "المصدر" : "Source"}</dt>
-              <dd>{data?.source ?? "Reyati"}</dd>
+              <dd>{data?.source ?? "Qivaya"}</dd>
             </div>
             <div>
               <dt>{ar ? "الحدود" : "Boundary"}</dt>

@@ -43,11 +43,11 @@ export default function PartnerProgramme() {
 
   return <main className={`program-shell live-program-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="program-sidebar">
-      <a className="partner-brand" href="/"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "مساحة الشركاء" : "Partner workspace"}</span></a>
+      <a className="partner-brand" href="/"><img src="/brand/qivaya-logo-reversed.png" alt="Qivaya"/><span>{ar ? "مساحة الشركاء" : "Partner workspace"}</span></a>
       <div className="program-org inactive-program-org"><span>—</span><div><b>{ar ? "لا يوجد برنامج متصل" : "No programme connected"}</b><small>{ar ? "الإعداد غير مفعّل" : "Setup is not enabled"}</small></div></div>
       <nav><a href="/partner"><span>◇</span>{ar ? "حالة المساحة" : "Workspace status"}</a><a className="active" href="/partner/program"><span>⚙</span>{ar ? "إعداد البرنامج" : "Programme setup"}</a><span className="disabled-program-nav"><i>○</i>{ar ? "الخطط والمزايا" : "Plans & benefits"}</span><span className="disabled-program-nav"><i>○</i>{ar ? "قواعد الأهلية" : "Eligibility rules"}</span><span className="disabled-program-nav"><i>○</i>{ar ? "التسجيل والقائمة" : "Enrollment & roster"}</span></nav>
       <div className="program-privacy"><span>♙</span><p><b>{ar ? "بيانات صحية ممنوعة" : "Health data is prohibited"}</b>{ar ? "لا يجوز استخدام التشخيص أو الزيارة أو المزود أو المطالبة لتحديد أهلية العمل أو المزايا." : "Diagnosis, visit, provider, and claim data must never determine employment or benefit eligibility."}</p></div>
-      <div className="program-links"><a href="/support">? {ar ? "مناقشة التفعيل" : "Discuss activation"}</a><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/">← {ar ? "العودة إلى ريّاتي" : "Back to Reyati"}</a></div>
+      <div className="program-links"><a href="/support">? {ar ? "مناقشة التفعيل" : "Discuss activation"}</a><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/">← {ar ? "العودة إلى ريّاتي" : "Back to Qivaya"}</a></div>
     </aside>
 
     <section className="program-main">

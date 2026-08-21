@@ -5,19 +5,19 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in securely to your Reyati healthcare workspace.",
+  description: "Sign in securely to your Qivaya healthcare workspace.",
   alternates: { canonical: "/sign-in" },
 };
 
 export default function SignInPage() {
   return <main className="clerk-auth-shell" id="main-content">
     <a className="clerk-auth-brand" href="/">
-      <img src="/brand/reyati-logo.svg" alt="Reyati" />
+      <img src="/brand/qivaya-logo-primary.png" alt="Qivaya" />
       <span>Care, intelligently connected</span>
     </a>
     <section className="clerk-auth-intro">
       <span>SECURE ACCOUNT ACCESS</span>
-      <h1>Welcome to Reyati</h1>
+      <h1>Welcome to Qivaya</h1>
       <p>Continue to your private healthcare workspace.</p>
     </section>
     <SignIn

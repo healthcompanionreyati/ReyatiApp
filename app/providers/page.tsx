@@ -197,7 +197,7 @@ export default function ProviderDiscovery() {
   }
 
   return <main className={`providers-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
-    <PatientHeader ar={ar} displayName={ar ? "عضو رعايتي" : "Reyati member"} onLocaleChange={() => setLang(ar ? "en" : "ar")} active="care" />
+    <PatientHeader ar={ar} displayName={ar ? "عضو كيفايا" : "Qivaya member"} onLocaleChange={() => setLang(ar ? "en" : "ar")} active="care" />
 
     {subjectUserId && <div className="providers-delegated-note"><b>{ar ? "الحجز بموافقة مفوّضة." : "Booking with delegated consent."}</b> {ar ? "سينتمي هذا الطلب إلى المريض الذي منح صلاحية المواعيد. سيتم إخطار المريض ومقدم الرعاية وحسابك وتدقيق الإجراء." : "This request will belong to the patient who granted appointment access. The patient, provider, and your account will be notified, and the action will be audited."}</div>}
 
@@ -240,7 +240,7 @@ export default function ProviderDiscovery() {
             </article>;
           })}
         </section>
-        <aside className="trust-panel"><span>♙</span><h2>{ar ? "كيف نبني الثقة" : "How Reyati builds trust"}</h2><p>{ar ? "نعرض فقط الملفات المنشورة لمقدمي الرعاية والمنشآت النشطين بعد التحقق." : "Only published profiles belonging to active, verified providers and organizations appear here."}</p><ul><li><b>{ar ? "ترخيص موثّق" : "Verified licence"}</b><small>{ar ? "قبل نشر الملف" : "Before profile publication"}</small></li><li><b>{ar ? "سعر واضح" : "Clear price"}</b><small>{ar ? "من إعداد المنشأة" : "Published by the organization"}</small></li><li><b>{ar ? "توفر فعلي" : "Real availability"}</b><small>{ar ? "مع منع الحجز المزدوج" : "Protected against double booking"}</small></li></ul></aside>
+        <aside className="trust-panel"><span>♙</span><h2>{ar ? "كيف نبني الثقة" : "How Qivaya builds trust"}</h2><p>{ar ? "نعرض فقط الملفات المنشورة لمقدمي الرعاية والمنشآت النشطين بعد التحقق." : "Only published profiles belonging to active, verified providers and organizations appear here."}</p><ul><li><b>{ar ? "ترخيص موثّق" : "Verified licence"}</b><small>{ar ? "قبل نشر الملف" : "Before profile publication"}</small></li><li><b>{ar ? "سعر واضح" : "Clear price"}</b><small>{ar ? "من إعداد المنشأة" : "Published by the organization"}</small></li><li><b>{ar ? "توفر فعلي" : "Real availability"}</b><small>{ar ? "مع منع الحجز المزدوج" : "Protected against double booking"}</small></li></ul></aside>
       </div>
     </section>
 

@@ -76,7 +76,7 @@ export default function ProviderConsole() {
   };
   const quickLaunch = [
     { href: "/provider/services", icon: "◇", en: "Manage availability", ar: "إدارة التوفر", detailEn: "Update services and slots", detailAr: "حدّث الخدمات والمواعيد" },
-    { href: "/provider/messages", icon: "✦", en: "Follow-up messages", ar: "رسائل المتابعة", detailEn: "Reply inside Reyati only", detailAr: "أجب داخل رعايتي فقط" },
+    { href: "/provider/messages", icon: "✦", en: "Follow-up messages", ar: "رسائل المتابعة", detailEn: "Reply inside Qivaya only", detailAr: "أجب داخل كيفايا فقط" },
     { href: "/provider/patients", icon: "♙", en: "Patient directory", ar: "دليل المرضى", detailEn: "Open your current caseload", detailAr: "افتح قائمة المرضى الحالية" },
     { href: "/provider/insights", icon: "↗", en: "Insights", ar: "الإحصاءات", detailEn: "Review appointment aggregates", detailAr: "راجع إجماليات المواعيد" },
   ];
@@ -103,7 +103,7 @@ export default function ProviderConsole() {
 
   return <main className={`provider-shell provider-live-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="provider-sidebar">
-      <a href="/provider" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
+      <a href="/provider" className="provider-logo"><img src="/brand/qivaya-logo-reversed.png" alt="Qivaya"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
       <div className="facility-chip"><span>RC</span><div><b>{ar ? "مساحة مقدم الرعاية" : "Provider workspace"}</b><small>{ar ? "عرض ممارس موثّق" : "Authenticated practitioner view"}</small></div></div>
       <nav className="provider-nav">
         <a className="provider-nav-link active" href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}{counts.attention > 0 && <em>{counts.attention}</em>}</a>

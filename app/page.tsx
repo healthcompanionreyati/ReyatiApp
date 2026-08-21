@@ -53,7 +53,7 @@ const serviceGroups: ServiceGroup[] = [
       { href: "/document-capture", code: "DC", en: "Document capture", ar: "مسودات المستندات", descriptionEn: "Human-reviewed drafts", descriptionAr: "مسودات بمراجعة بشرية" },
       { href: "/record-index", code: "RI", en: "Record index", ar: "فهرس السجلات", descriptionEn: "Private source-labelled index", descriptionAr: "فهرس خاص موضح المصدر" },
       { href: "/sharing-directives", code: "SD", en: "Sharing directives", ar: "توجيهات المشاركة", descriptionEn: "Preferences without access grants", descriptionAr: "تفضيلات دون منح الوصول" },
-      { href: "/access-history", code: "AH", en: "Access history", ar: "سجل الوصول", descriptionEn: "Recorded Reyati activity", descriptionAr: "نشاط رعايتي المسجل" },
+      { href: "/access-history", code: "AH", en: "Access history", ar: "سجل الوصول", descriptionEn: "Recorded Qivaya activity", descriptionAr: "نشاط كيفايا المسجل" },
       { href: "/data-quality", code: "DQ", en: "Data quality", ar: "جودة البيانات", descriptionEn: "Flag an issue for review", descriptionAr: "أشر إلى مشكلة للمراجعة" },
       { href: "/connections", code: "HC", en: "Health connections", ar: "اتصالات السجلات", descriptionEn: "Future connection requests", descriptionAr: "طلبات اتصال مستقبلية" },
       { href: "/device-connections", code: "WD", en: "Wearable connections", ar: "اتصالات الأجهزة", descriptionEn: "Consent-bound requests", descriptionAr: "طلبات مرتبطة بالموافقة" },
@@ -62,7 +62,7 @@ const serviceGroups: ServiceGroup[] = [
   {
     en: "Account and support", ar: "الحساب والدعم", descriptionEn: "Manage access, preferences, payments, and help.", descriptionAr: "أدر الوصول والتفضيلات والمدفوعات والمساعدة.",
     services: [
-      { href: "/account/profile", code: "MP", en: "My profile", ar: "ملفي الشخصي", descriptionEn: "Reyati profile details", descriptionAr: "بيانات ملف رعايتي" },
+      { href: "/account/profile", code: "MP", en: "My profile", ar: "ملفي الشخصي", descriptionEn: "Qivaya profile details", descriptionAr: "بيانات ملف كيفايا" },
       { href: "/family", code: "FA", en: "Family access", ar: "وصول العائلة", descriptionEn: "Revocable delegated access", descriptionAr: "وصول مفوض قابل للسحب" },
       { href: "/insurance", code: "IN", en: "Insurance", ar: "التأمين", descriptionEn: "Eligibility and authorization", descriptionAr: "الأهلية والموافقات" },
       { href: "/benefits", code: "BE", en: "Benefits", ar: "مزاياي", descriptionEn: "Consent-bound eligibility", descriptionAr: "أهلية مرتبطة بالموافقة" },
@@ -70,7 +70,7 @@ const serviceGroups: ServiceGroup[] = [
       { href: "/payment-support", code: "PS", en: "Payment support", ar: "دعم المدفوعات", descriptionEn: "Track recorded issues", descriptionAr: "تابع المشكلات المسجلة" },
       { href: "/consents", code: "CN", en: "Consent Center", ar: "مركز الموافقات", descriptionEn: "Purpose-specific consent", descriptionAr: "موافقات محددة الغرض" },
       { href: "/privacy-rights", code: "PR", en: "Privacy rights", ar: "حقوق الخصوصية", descriptionEn: "Export and correction requests", descriptionAr: "طلبات التصدير والتصحيح" },
-      { href: "/account/security", code: "AS", en: "Account security", ar: "أمان الحساب", descriptionEn: "Review Reyati sessions", descriptionAr: "راجع جلسات رعايتي" },
+      { href: "/account/security", code: "AS", en: "Account security", ar: "أمان الحساب", descriptionEn: "Review Qivaya sessions", descriptionAr: "راجع جلسات كيفايا" },
       { href: "/notification-preferences", code: "NP", en: "Notification preferences", ar: "تفضيلات الإشعارات", descriptionEn: "Controls by category and channel", descriptionAr: "تحكم حسب الفئة والقناة" },
       { href: "/settings/accessibility", code: "LA", en: "Language and accessibility", ar: "اللغة وإمكانية الوصول", descriptionEn: "Personal experience preferences", descriptionAr: "تفضيلات التجربة الشخصية" },
       { href: "/support", code: "SU", en: "Support", ar: "الدعم", descriptionEn: "Create and track requests", descriptionAr: "أنشئ الطلبات وتابعها" },
@@ -107,12 +107,12 @@ export default function Home() {
       }
       const identity = await identityResponse.json().catch(() => ({})) as { user?: User; error?: string };
       const schedule = await appointmentResponse.json().catch(() => ({})) as { appointments?: Appointment[]; error?: string };
-      if (!identityResponse.ok) throw new Error(identity.error || "Your Reyati identity is temporarily unavailable");
+      if (!identityResponse.ok) throw new Error(identity.error || "Your Qivaya identity is temporarily unavailable");
       if (!appointmentResponse.ok) throw new Error(schedule.error || "Appointments are temporarily unavailable");
       setUser(identity.user || null); setAppointments(schedule.appointments || []);
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") return;
-      setError(caught instanceof Error ? caught.message : "Reyati is temporarily unavailable");
+      setError(caught instanceof Error ? caught.message : "Qivaya is temporarily unavailable");
     } finally { if (!signal?.aborted) setLoading(false); }
   }, []);
 
@@ -132,7 +132,7 @@ export default function Home() {
     return serviceGroups.map((group) => ({ ...group, services: group.services.filter((service) => `${service.en} ${service.ar} ${service.descriptionEn} ${service.descriptionAr}`.toLocaleLowerCase().includes(query)) })).filter((group) => group.services.length);
   }, [lang, serviceQuery]);
 
-  const displayName = user?.displayName || (ar ? "عضو رعايتي" : "Reyati member");
+  const displayName = user?.displayName || (ar ? "عضو كيفايا" : "Qivaya member");
 
   return <main id="main-content" className={`home-experience${ar ? " arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <PatientHeader ar={ar} displayName={displayName} onLocaleChange={() => setLang(ar ? "en" : "ar")} active="home" />
@@ -140,7 +140,7 @@ export default function Home() {
     <section className="home-hero-v2">
       <div className="home-hero-copy">
         <p className="home-kicker">{ar ? "رعاية مترابطة بذكاء" : "CARE, INTELLIGENTLY CONNECTED"}</p>
-        <h1>{loading ? (ar ? "مرحباً بك في رعايتي" : "Welcome to Reyati") : (ar ? `مرحباً، ${displayName}` : `Welcome, ${displayName}`)}</h1>
+        <h1>{loading ? (ar ? "مرحباً بك في كيفايا" : "Welcome to Qivaya") : (ar ? `مرحباً، ${displayName}` : `Welcome, ${displayName}`)}</h1>
         <p className="home-lead">{ar ? "رعايتك ومواعيدك وسجلاتك في مساحة آمنة وواضحة، مصممة لتساعدك على معرفة الخطوة التالية." : "Your care, appointments, and records in one secure, clear workspace—designed to make the next step easy to understand."}</p>
         <div className="home-primary-actions">
           <a className="home-button primary" href="/providers">{ar ? "ابحث عن رعاية" : "Find care"}</a>
@@ -188,7 +188,7 @@ export default function Home() {
 
       <section className="home-service-catalogue">
         <div className="home-catalogue-heading">
-          <div><span>{ar ? "جميع الخدمات" : "ALL SERVICES"}</span><h2>{ar ? "ابحث عن أي خدمة في رعايتي" : "Find any Reyati service"}</h2><p>{ar ? "الخدمات المتخصصة مجمّعة حسب ما تريد إنجازه." : "Specialist services are grouped by what you want to accomplish."}</p></div>
+          <div><span>{ar ? "جميع الخدمات" : "ALL SERVICES"}</span><h2>{ar ? "ابحث عن أي خدمة في كيفايا" : "Find any Qivaya service"}</h2><p>{ar ? "الخدمات المتخصصة مجمّعة حسب ما تريد إنجازه." : "Specialist services are grouped by what you want to accomplish."}</p></div>
           <label className="home-service-search"><span className="sr-only">{ar ? "البحث في الخدمات" : "Search services"}</span><input type="search" value={serviceQuery} onChange={(event) => setServiceQuery(event.target.value)} placeholder={ar ? "ابحث في الخدمات…" : "Search services…"} /></label>
         </div>
         <div className="home-service-groups">
@@ -199,9 +199,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="home-trust-strip"><span aria-hidden="true">i</span><div><b>{ar ? "بيانات حقيقية فقط" : "Only real account activity"}</b><p>{ar ? "لا تخترع رعايتي معلومات لهذه الصفحة. تبقى الحالات الفارغة فارغة حتى تنشئ نشاطاً عبر مسارات رعايتي الآمنة." : "Reyati does not invent information for this page. Empty states remain empty until activity is created through secure Reyati workflows."}</p></div><a href="/privacy-rights">{ar ? "الخصوصية" : "Privacy"}</a></section>
+      <section className="home-trust-strip"><span aria-hidden="true">i</span><div><b>{ar ? "بيانات حقيقية فقط" : "Only real account activity"}</b><p>{ar ? "لا تخترع كيفايا معلومات لهذه الصفحة. تبقى الحالات الفارغة فارغة حتى تنشئ نشاطاً عبر مسارات كيفايا الآمنة." : "Qivaya does not invent information for this page. Empty states remain empty until activity is created through secure Qivaya workflows."}</p></div><a href="/privacy-rights">{ar ? "الخصوصية" : "Privacy"}</a></section>
     </section>
 
-    <footer className="home-footer-v2"><div><img src="/brand/reyati-logo.svg" alt="Reyati" /><p>{ar ? "رعاية مترابطة بذكاء." : "Care, intelligently connected."}</p></div><nav aria-label={ar ? "روابط التذييل" : "Footer links"}><a href="/support">{ar ? "الدعم" : "Support"}</a><a href="/privacy-rights">{ar ? "الخصوصية" : "Privacy"}</a><a href="/settings/accessibility">{ar ? "إمكانية الوصول" : "Accessibility"}</a><a href="/service-status">{ar ? "حالة الخدمات" : "Service status"}</a></nav><small>{ar ? "مساحة مريض موثقة" : "Authenticated patient workspace"}</small></footer>
+    <footer className="home-footer-v2"><div><img src="/brand/qivaya-logo-primary.png" alt="Qivaya" /><p>{ar ? "رعاية مترابطة بذكاء." : "Care, intelligently connected."}</p></div><nav aria-label={ar ? "روابط التذييل" : "Footer links"}><a href="/support">{ar ? "الدعم" : "Support"}</a><a href="/privacy-rights">{ar ? "الخصوصية" : "Privacy"}</a><a href="/settings/accessibility">{ar ? "إمكانية الوصول" : "Accessibility"}</a><a href="/service-status">{ar ? "حالة الخدمات" : "Service status"}</a></nav><small>{ar ? "مساحة مريض موثقة" : "Authenticated patient workspace"}</small></footer>
   </main>;
 }

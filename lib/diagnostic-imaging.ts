@@ -111,7 +111,7 @@ export async function createDiagnosticImagingOrder(userId: string, body: Record<
   const patient = (await db.select({ userId: patientProfiles.userId }).from(patientProfiles).where(eq(patientProfiles.id, appointment.patientId)).limit(1))[0];
   if (patient) await db.insert(notifications).values(notificationRecord({
     userId: patient.userId, type: "diagnostic_imaging", title: "Diagnostic imaging order issued",
-    body: "Your provider issued a signed imaging order. Review preparation details in Reyati.", actionPath: "/diagnostic-imaging",
+    body: "Your provider issued a signed imaging order. Review preparation details in Qivaya.", actionPath: "/diagnostic-imaging",
     resourceType: "diagnostic_imaging_order", resourceId: id, dedupeKey: `diagnostic-imaging:${id}:issued`, createdAt: now,
   }));
   return { id, status: "issued", signed: true, externalRequestSent: false, version: 1 };
@@ -134,8 +134,8 @@ export async function getPatientDiagnosticImaging(userId: string) {
   return {
     orders,
     boundaries: diagnosticImagingBoundaries,
-    boundary: "Reyati coordinates signed imaging orders and text-only synthetic reports. It is not connected to PACS, RIS, or DICOM and does not store or display images.",
-    urgentProtocol: "For urgent findings, the imaging organization's external clinical protocol is primary. Reyati records an attestation only and does not automatically escalate.",
+    boundary: "Qivaya coordinates signed imaging orders and text-only synthetic reports. It is not connected to PACS, RIS, or DICOM and does not store or display images.",
+    urgentProtocol: "For urgent findings, the imaging organization's external clinical protocol is primary. Qivaya records an attestation only and does not automatically escalate.",
   };
 }
 
@@ -150,7 +150,7 @@ export async function getPartnerDiagnosticImaging(userId: string) {
     orders: orders.map(row => ({ ...row.order, patientName: row.patientName })),
     boundaries: diagnosticImagingBoundaries,
     minimumNecessary: true,
-    urgentProtocol: "Follow the imaging organization's approved external clinical protocol first for urgent findings. Reyati never replaces or automates that protocol.",
+    urgentProtocol: "Follow the imaging organization's approved external clinical protocol first for urgent findings. Qivaya never replaces or automates that protocol.",
   };
 }
 

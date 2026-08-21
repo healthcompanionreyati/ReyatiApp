@@ -68,7 +68,7 @@ export async function getPrivacyRightsWorkspace(userId: string) {
     requests: rows.map((row) => ({ id: row.id, requestType: row.requestType, status: row.status, decisionCode: row.decisionCode, completionReference: row.completionReference, submittedAt: row.submittedAt, closedAt: row.closedAt, version: row.version, createdAt: row.createdAt, updatedAt: row.updatedAt, submissions: submissions.filter((item) => item.requestId === row.id).map((item) => ({ id: item.id, requestId: item.requestId, submissionType: item.submissionType, details: item.details, createdAt: item.createdAt })) })),
     requestTypes: PRIVACY_RIGHTS_REQUEST_TYPES,
     boundaries: PRIVACY_RIGHTS_BOUNDARIES,
-    guidance: "Reyati records and tracks your request. Fulfilment is a separately verified manual operation; submitting here does not immediately export, alter, delete, or close anything.",
+    guidance: "Qivaya records and tracks your request. Fulfilment is a separately verified manual operation; submitting here does not immediately export, alter, delete, or close anything.",
   };
 }
 

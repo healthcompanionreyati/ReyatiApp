@@ -78,7 +78,7 @@ export default function ProviderInsights() {
   function exportAggregate() {
     if (!insights) return;
     const rows = [
-      ["Reyati provider appointment aggregate"],
+      ["Qivaya provider appointment aggregate"],
       ["Range start", insights.range.start],
       ["Range end", insights.range.end],
       ["Scheduled", insights.metrics.scheduled],
@@ -100,7 +100,7 @@ export default function ProviderInsights() {
 
   return <main className={`insights-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="insights-sidebar">
-      <a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
+      <a href="/" className="provider-logo"><img src="/brand/qivaya-logo-reversed.png" alt="Qivaya"/><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
       <div className="insights-facility"><span>{providerInitials}</span><div><b>{insights?.organizationName ?? (ar ? "مساحة مقدم الرعاية" : "Provider workspace")}</b><small>{insights?.providerName ?? (ar ? "حساب موثّق" : "Verified account")}</small></div></div>
       <nav><a href="/provider"><span>◫</span>{ar ? "المواعيد" : "Appointments"}</a><a href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}</a><a href="/provider/services"><span>◇</span>{ar ? "الخدمات" : "Services"}</a><a className="active" href="/provider/insights"><span>↗</span>{ar ? "التقارير" : "Insights"}</a><a href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a></nav>
       <div className="insights-side-bottom"><a href="/support">◇ {ar ? "الدعم" : "Support"}</a><a href="/provider">← {ar ? "لوحة مقدم الرعاية" : "Provider dashboard"}</a><p>{ar ? "إجماليات مواعيد حقيقية · كل عرض مسجّل" : "Real appointment aggregates · every view is logged"}</p></div>
@@ -134,7 +134,7 @@ export default function ProviderInsights() {
             <article className="booking-chart"><div className="panel-title"><div><h2>{ar ? "اتجاه المواعيد المجدولة" : "Scheduled appointment trend"}</h2><p>{ar ? "حسب تاريخ الموعد في توقيت قطر" : "By appointment date in Qatar time"}</p></div></div><div className="live-chart" aria-label={ar ? "مخطط المواعيد اليومية" : "Daily appointment chart"}>{insights.daily.map((day, index) => <div key={day.date} title={`${day.date}: ${day.count}`}><span>{day.count || ""}</span><i style={{ height: `${Math.max(day.count ? 8 : 2, (day.count / chartMax) * 100)}%` }}/>{(insights.daily.length <= 30 || index % Math.ceil(insights.daily.length / 12) === 0) && <small>{new Intl.DateTimeFormat(ar ? "ar-QA" : "en-QA", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${day.date}T00:00:00Z`))}</small>}</div>)}</div></article>
             <article className="aggregate-card"><div className="panel-title"><div><h2>{ar ? "تفصيل الحالة" : "Status breakdown"}</h2><p>{ar ? "يُخفى أي جزء صغير" : "Small segments are suppressed"}</p></div></div><div className="aggregate-list">{insights.statusBreakdown.map((item) => <div key={item.label}><span><i/>{label(item.label)}</span><b>{item.suppressed ? `<${insights.privacyThreshold}` : item.count}</b></div>)}</div></article>
             <article className="aggregate-card"><div className="panel-title"><div><h2>{ar ? "أنماط الرعاية" : "Care modes"}</h2><p>{ar ? "من بيانات المواعيد المسجلة" : "From recorded appointment modes"}</p></div></div>{insights.modeBreakdown.length ? <div className="aggregate-list">{insights.modeBreakdown.map((item) => <div key={item.label}><span><i/>{label(item.label)}</span><b>{item.suppressed ? `<${insights.privacyThreshold}` : item.count}</b></div>)}</div> : <p className="aggregate-empty">{ar ? "لا توجد أنماط مسجلة في الفترة." : "No care modes were recorded in this period."}</p>}</article>
-            <article className="insights-boundary"><span>ⓘ</span><div><h2>{ar ? "ما لا تقيسه هذه الصفحة" : "What this page does not measure"}</h2><p>{ar ? "لا تتوفر حالياً بيانات مصدر الاكتشاف أو وقت الانتظار أو استغلال السعة. لن تستنتج رعايتي هذه القيم من المواعيد." : "Discovery source, wait time, and capacity utilization are not currently recorded. Reyati will not infer them from appointment data."}</p><a href="/support">{ar ? "حول حوكمة البيانات" : "About data governance"} →</a></div></article>
+            <article className="insights-boundary"><span>ⓘ</span><div><h2>{ar ? "ما لا تقيسه هذه الصفحة" : "What this page does not measure"}</h2><p>{ar ? "لا تتوفر حالياً بيانات مصدر الاكتشاف أو وقت الانتظار أو استغلال السعة. لن تستنتج كيفايا هذه القيم من المواعيد." : "Discovery source, wait time, and capacity utilization are not currently recorded. Qivaya will not infer them from appointment data."}</p><a href="/support">{ar ? "حول حوكمة البيانات" : "About data governance"} →</a></div></article>
           </section>}
         </>}
       </div>

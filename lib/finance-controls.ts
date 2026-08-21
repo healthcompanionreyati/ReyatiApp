@@ -156,7 +156,7 @@ export async function updateAdminFinanceControl(userId: string, body: Record<str
     const changed = await db.update(financeCases).set({ status: "triaged", triageCode, patientStatusNote: "Your request is under finance review.", version: version + 1, updatedAt: now }).where(and(eq(financeCases.id, caseId), eq(financeCases.version, version), eq(financeCases.status, "submitted"))).returning({ id: financeCases.id });
     if (!changed[0]) throw new FinanceControlConflictError();
     await recordEvent({ caseId, actorUserId: userId, action: "triaged", previousStatus: "submitted", nextStatus: "triaged", metadata: { triageCode } });
-    await notifyPatient(current.patientId, caseId, "Payment support request updated", "Your request is under finance review. Open Reyati for status.", `triaged:${version + 1}`);
+    await notifyPatient(current.patientId, caseId, "Payment support request updated", "Your request is under finance review. Open Qivaya for status.", `triaged:${version + 1}`);
     return { id: caseId, status: "triaged", version: version + 1 };
   }
   if (action === "prepare_decision") {
@@ -178,7 +178,7 @@ export async function updateAdminFinanceControl(userId: string, body: Record<str
     const changed = await db.update(financeCases).set({ status: "closed", resolutionCode: required(body.resolutionCode, "resolutionCode", 80), patientStatusNote: required(body.patientStatusNote, "patientStatusNote", 300), version: version + 1, closedAt: now, updatedAt: now }).where(and(eq(financeCases.id, caseId), eq(financeCases.version, version), eq(financeCases.status, current.status))).returning({ id: financeCases.id });
     if (!changed[0]) throw new FinanceControlConflictError();
     await recordEvent({ caseId, actorUserId: userId, action: "closed", previousStatus: current.status, nextStatus: "closed" });
-    await notifyPatient(current.patientId, caseId, "Payment support case closed", "Your payment support case has a final status. Open Reyati for the outcome.", `closed:${version + 1}`);
+    await notifyPatient(current.patientId, caseId, "Payment support case closed", "Your payment support case has a final status. Open Qivaya for the outcome.", `closed:${version + 1}`);
     return { id: caseId, status: "closed", version: version + 1 };
   }
   throw new FinanceControlValidationError("action is invalid");
@@ -207,7 +207,7 @@ async function checkDecision(userId: string, body: Record<string, unknown>) {
     await db.insert(financeAdjustments).values({ id: adjustmentId, caseId, ledgerEntryId: current.ledgerEntryId, decisionId, adjustmentType: decision.decisionType === "approve_refund" ? "refund_record" : "ledger_adjustment", amountQar: decision.approvedAmountQar, currency: "QAR", referenceOnlyProviderId: referenceOnlyProviderId(), executionStatus: "recorded_not_executed", createdByUserId: userId, createdAt: now });
   }
   await recordEvent({ caseId, actorUserId: userId, action: approved ? "decision_approved" : "decision_rejected", previousStatus: "pending_checker", nextStatus, metadata: { makerCheckerSeparated: true, adjustmentRecorded: adjustmentId != null, externalMoneyMovement: false } });
-  await notifyPatient(current.patientId, caseId, "Payment support request reviewed", approved && financial ? "A reviewed adjustment was recorded. No payment movement has been executed by Reyati." : "Your payment support request has been reviewed. Open Reyati for status.", `checked:${version + 1}`);
+  await notifyPatient(current.patientId, caseId, "Payment support request reviewed", approved && financial ? "A reviewed adjustment was recorded. No payment movement has been executed by Qivaya." : "Your payment support request has been reviewed. Open Qivaya for status.", `checked:${version + 1}`);
   return { id: caseId, decisionId, adjustmentId, status: nextStatus, version: version + 1, externalMoneyMovement: false };
 }
 
@@ -225,7 +225,7 @@ async function addReconciliationEvidence(userId: string, body: Record<string, un
     db.update(financeCases).set({ status: "reconciled", patientStatusNote: "Reconciliation evidence was recorded for this case.", version: version + 1, updatedAt: now }).where(and(eq(financeCases.id, caseId), eq(financeCases.version, version), eq(financeCases.status, "approved_recorded"))),
   ]);
   await recordEvent({ caseId, actorUserId: userId, action: "reconciliation_evidence_recorded", previousStatus: "approved_recorded", nextStatus: "reconciled", metadata: { evidenceReferenceInAudit: false, digestRecorded: true, providerReferenceOnly: true } });
-  await notifyPatient(current.patientId, caseId, "Payment support reconciliation updated", "Reconciliation evidence has been recorded. Open Reyati for status.", `reconciled:${version + 1}`);
+  await notifyPatient(current.patientId, caseId, "Payment support reconciliation updated", "Reconciliation evidence has been recorded. Open Qivaya for status.", `reconciled:${version + 1}`);
   return { id: caseId, evidenceId: id, status: "reconciled", version: version + 1, providerIdMode: "reference_only" };
 }
 

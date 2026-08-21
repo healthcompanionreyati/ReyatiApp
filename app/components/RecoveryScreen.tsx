@@ -9,7 +9,7 @@ type RecoveryScreenProps = {
 export default function RecoveryScreen({ title, message, retry }: RecoveryScreenProps) {
   return <main className="recovery-shell" id="main-content">
     <section className="recovery-card" role="alert">
-      <img src="/brand/reyati-logo.svg" alt="Reyati"/>
+      <img src="/brand/qivaya-logo-primary.png" alt="Qivaya"/>
       <span className="recovery-mark" aria-hidden="true">!</span>
       <p>SAFE RECOVERY</p>
       <h1>{title}</h1>
@@ -19,7 +19,7 @@ export default function RecoveryScreen({ title, message, retry }: RecoveryScreen
         <a href="/">Return home</a>
         <a className="secondary" href="/support">Contact support</a>
       </div>
-      <small>Your secure Reyati data is not displayed on this recovery screen.</small>
+      <small>Your secure Qivaya data is not displayed on this recovery screen.</small>
     </section>
   </main>;
 }

@@ -56,7 +56,7 @@ function comparisonFacts(provider: Awaited<ReturnType<typeof getPublishedProvide
     facilities: [...new Set(provider.services.map((service) => service.facilityName).filter((value): value is string => Boolean(value)))],
     areas: [...new Set(provider.services.map((service) => service.area).filter((value): value is string => Boolean(value)))],
     feeRangeQar: fees.length ? { minimum: Math.min(...fees), maximum: Math.max(...fees) } : null,
-    source: "Current Reyati verified provider catalogue", qualityClaim: false, recommended: false, sponsoredInfluence: false,
+    source: "Current Qivaya verified provider catalogue", qualityClaim: false, recommended: false, sponsoredInfluence: false,
   };
 }
 
@@ -74,7 +74,7 @@ export async function getSavedCare(userId: string) {
     favourites: favourites.map((item) => ({ ...item, provider: byId.get(item.providerId) ? comparisonFacts(byId.get(item.providerId)!) : null, currentlyPublished: byId.has(item.providerId) })),
     comparison: session ? { ...session, providers: comparisonIds.map((providerId) => byId.get(providerId)).filter(Boolean).map((provider) => comparisonFacts(provider!)), staleProviderCount: comparisonIds.filter((providerId) => !byId.has(providerId)).length } : null,
     catalog: catalog.map(comparisonFacts), boundaries: SAVED_CARE_BOUNDARIES,
-    guidance: "Comparison displays current factual catalogue fields only. Reyati does not rank clinical quality or recommend a provider.",
+    guidance: "Comparison displays current factual catalogue fields only. Qivaya does not rank clinical quality or recommend a provider.",
   };
 }
 

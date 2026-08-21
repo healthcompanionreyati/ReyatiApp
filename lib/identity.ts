@@ -38,7 +38,7 @@ export async function getOrCreateCurrentUser() {
       )).limit(1),
     ]);
     const current = currentUser[0];
-    if (!current) throw new Error("Linked Reyati user is unavailable");
+    if (!current) throw new Error("Linked Qivaya user is unavailable");
     await db.update(authIdentities).set({ lastAuthenticatedAt: now, updatedAt: now }).where(eq(authIdentities.id, currentIdentity.identityId));
     if (!contactMethod[0]) await addContactMethod(current.id, normalizedEmail, identity.email, now);
     if (current.email !== identity.email || current.displayName !== identity.displayName) {
@@ -47,7 +47,7 @@ export async function getOrCreateCurrentUser() {
     return { ...current, email: identity.email, displayName: identity.displayName };
   }
 
-  // A verified Clerk email links to the existing Reyati account so appointments,
+  // A verified Clerk email links to the existing Qivaya account so appointments,
   // roles, records, and audit history survive the hosting-provider cutover.
   const accountMatch = await db.select({ userId: users.id, contactMethodId: contactMethods.id }).from(users)
     .leftJoin(contactMethods, and(
@@ -64,7 +64,7 @@ export async function getOrCreateCurrentUser() {
   if (accountMatch[0]) {
     const matched = accountMatch[0];
     const current = (await db.select().from(users).where(eq(users.id, matched.userId)).limit(1))[0];
-    if (!current) throw new Error("Matched Reyati user is unavailable");
+    if (!current) throw new Error("Matched Qivaya user is unavailable");
     await db.batch([
       db.insert(authIdentities).values({ id: crypto.randomUUID(), userId: current.id, provider: identity.provider, providerSubject: identity.userId, status: "active", linkedAt: now, lastAuthenticatedAt: now, createdAt: now, updatedAt: now }).onConflictDoNothing(),
       db.insert(authEvents).values({ id: crypto.randomUUID(), userId: current.id, actorUserId: current.id, eventType: "identity.platform_linked", outcome: "success", channel: identity.provider, createdAt: now }),

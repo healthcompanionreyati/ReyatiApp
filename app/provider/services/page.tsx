@@ -151,14 +151,14 @@ export default function ProviderServices() {
 
   return <main className={`services-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="services-sidebar">
-      <a href="/" className="provider-logo"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati" /><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
+      <a href="/" className="provider-logo"><img src="/brand/qivaya-logo-reversed.png" alt="Qivaya" /><span>{ar ? "بوابة مقدم الرعاية" : "Provider console"}</span></a>
       <div className="services-facility"><span>R</span><div><b>{setup?.memberships[0]?.organizationName ?? (ar ? "حساب مقدم الرعاية" : "Provider account")}</b><small>{setup?.memberships[0]?.role.replaceAll("_", " ") ?? (ar ? "صلاحيات مطلوبة" : "Access pending")}</small></div></div>
       <nav><a href="/provider"><span>◫</span>{ar ? "اليوم" : "Today"}</a><a href="/provider/patients"><span>♙</span>{ar ? "المرضى" : "Patients"}</a><a className="active" href="/provider/services"><span>◇</span>{ar ? "الخدمات" : "Services"}<i>{setup?.services.length ?? 0}</i></a><a href="/provider/settings"><span>⚙</span>{ar ? "الإعدادات" : "Settings"}</a></nav>
       <div className="services-side-bottom"><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/provider">← {ar ? "لوحة مقدم الرعاية" : "Provider dashboard"}</a><p>{ar ? "صلاحيات حقيقية · سجل تدقيق نشط" : "Live permissions · audited changes"}</p></div>
     </aside>
 
     <section className="services-main">
-      <header className="services-top"><div><span>⌖</span><div><b>{setup?.memberships[0]?.organizationName ?? "Reyati provider network"}</b><small>{ar ? "إدارة خدمات موثقة" : "Verified service management"}</small></div></div><div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label="Notifications">●</a><span>PR</span></div></header>
+      <header className="services-top"><div><span>⌖</span><div><b>{setup?.memberships[0]?.organizationName ?? "Qivaya provider network"}</b><small>{ar ? "إدارة خدمات موثقة" : "Verified service management"}</small></div></div><div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" aria-label="Notifications">●</a><span>PR</span></div></header>
       <div className="services-workspace">
         <div className="services-heading"><div><p>{ar ? "الإعداد والنشر" : "ONBOARDING & PUBLISHING"}</p><h1>{ar ? "الخدمات والتوفر" : "Services & availability"}</h1><span>{ar ? "انشر فقط المعلومات والأسعار والمواعيد التي تم التحقق منها." : "Publish only verified profile facts, complete prices, and real bookable hours."}</span></div>{setup?.profile?.verificationStatus === "verified" && <button onClick={() => editService()}>＋ {ar ? "إضافة خدمة" : "Add service"}</button>}</div>
 

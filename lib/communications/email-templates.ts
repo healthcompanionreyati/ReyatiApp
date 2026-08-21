@@ -26,35 +26,35 @@ function escapeHtml(value: string) {
 
 const copy: Record<TransactionalEmailTemplateId, Record<SupportedEmailLocale, { subject: string; heading: string; body: string; cta: string }>> = {
   email_verification: {
-    en: { subject: "Verify your email for Reyati", heading: "Verify your email", body: "Confirm this email address for future Reyati account updates. This secure link expires shortly.", cta: "Verify email" },
+    en: { subject: "Verify your email for Qivaya", heading: "Verify your email", body: "Confirm this email address for future Qivaya account updates. This secure link expires shortly.", cta: "Verify email" },
     ar: { subject: "تحقق من بريدك الإلكتروني لريّاتي", heading: "تحقق من بريدك الإلكتروني", body: "أكد عنوان البريد الإلكتروني هذا لتحديثات حساب ريّاتي مستقبلاً. تنتهي صلاحية هذا الرابط الآمن قريباً.", cta: "تحقق من البريد" },
   },
   family_invitation: {
-    en: { subject: "You have a Reyati care-access invitation", heading: "Review a care-access invitation", body: "A Reyati account invited this email address to review specific care permissions. Sign in with this exact email to accept or decline. The invitation expires in seven days.", cta: "Review invitation" },
+    en: { subject: "You have a Qivaya care-access invitation", heading: "Review a care-access invitation", body: "A Qivaya account invited this email address to review specific care permissions. Sign in with this exact email to accept or decline. The invitation expires in seven days.", cta: "Review invitation" },
     ar: { subject: "لديك دعوة وصول للرعاية في ريّاتي", heading: "راجع دعوة وصول للرعاية", body: "دعا حساب في ريّاتي عنوان البريد هذا لمراجعة صلاحيات رعاية محددة. سجّل الدخول باستخدام البريد نفسه للقبول أو الرفض. تنتهي صلاحية الدعوة خلال سبعة أيام.", cta: "مراجعة الدعوة" },
   },
   appointment_update: {
-    en: { subject: "Your Reyati appointment was updated", heading: "Appointment update", body: "There is an update to an appointment in your secure Reyati account. Sign in to view the details.", cta: "View appointment" },
+    en: { subject: "Your Qivaya appointment was updated", heading: "Appointment update", body: "There is an update to an appointment in your secure Qivaya account. Sign in to view the details.", cta: "View appointment" },
     ar: { subject: "تم تحديث موعدك في ريّاتي", heading: "تحديث الموعد", body: "يوجد تحديث لموعد في حسابك الآمن في ريّاتي. سجّل الدخول لعرض التفاصيل.", cta: "عرض الموعد" },
   },
   provider_verification: {
-    en: { subject: "Your Reyati provider status was updated", heading: "Provider status update", body: "There is an update to your provider status in Reyati. Sign in to review the decision and next steps.", cta: "Review provider status" },
+    en: { subject: "Your Qivaya provider status was updated", heading: "Provider status update", body: "There is an update to your provider status in Qivaya. Sign in to review the decision and next steps.", cta: "Review provider status" },
     ar: { subject: "تم تحديث حالة مقدم الرعاية في ريّاتي", heading: "تحديث حالة مقدم الرعاية", body: "يوجد تحديث لحالة مقدم الرعاية في ريّاتي. سجّل الدخول لمراجعة القرار والخطوات التالية.", cta: "مراجعة حالة مقدم الرعاية" },
   },
   record_finalized: {
-    en: { subject: "A Reyati visit record is ready", heading: "Visit record ready", body: "A protected record for a completed visit is now available in your Reyati account. Sign in to view it securely.", cta: "View visit record" },
+    en: { subject: "A Qivaya visit record is ready", heading: "Visit record ready", body: "A protected record for a completed visit is now available in your Qivaya account. Sign in to view it securely.", cta: "View visit record" },
     ar: { subject: "سجل زيارة جاهز في ريّاتي", heading: "سجل الزيارة جاهز", body: "أصبح سجل محمي لزيارة مكتملة متاحاً في حسابك في ريّاتي. سجّل الدخول لعرضه بأمان.", cta: "عرض سجل الزيارة" },
   },
   family_access: {
-    en: { subject: "Your Reyati family access was updated", heading: "Family access update", body: "There is an update to family access in your Reyati account. Sign in to review the active permissions.", cta: "Review family access" },
+    en: { subject: "Your Qivaya family access was updated", heading: "Family access update", body: "There is an update to family access in your Qivaya account. Sign in to review the active permissions.", cta: "Review family access" },
     ar: { subject: "تم تحديث وصول العائلة في ريّاتي", heading: "تحديث وصول العائلة", body: "يوجد تحديث لوصول العائلة في حسابك في ريّاتي. سجّل الدخول لمراجعة الصلاحيات النشطة.", cta: "مراجعة وصول العائلة" },
   },
   support_update: {
-    en: { subject: "Your Reyati support request was updated", heading: "Support update", body: "There is an update to your secure Reyati support request. Sign in to view the response.", cta: "View support request" },
+    en: { subject: "Your Qivaya support request was updated", heading: "Support update", body: "There is an update to your secure Qivaya support request. Sign in to view the response.", cta: "View support request" },
     ar: { subject: "تم تحديث طلب الدعم في ريّاتي", heading: "تحديث الدعم", body: "يوجد تحديث لطلب الدعم الآمن في ريّاتي. سجّل الدخول لعرض الرد.", cta: "عرض طلب الدعم" },
   },
   security_notice: {
-    en: { subject: "Security notice from Reyati", heading: "Account security notice", body: "A security-related change was recorded for your Reyati account. Sign in directly to review your account.", cta: "Review account" },
+    en: { subject: "Security notice from Qivaya", heading: "Account security notice", body: "A security-related change was recorded for your Qivaya account. Sign in directly to review your account.", cta: "Review account" },
     ar: { subject: "إشعار أمني من ريّاتي", heading: "إشعار أمان الحساب", body: "تم تسجيل تغيير متعلق بالأمان في حسابك في ريّاتي. سجّل الدخول مباشرة لمراجعة حسابك.", cta: "مراجعة الحساب" },
   },
 };
@@ -70,7 +70,7 @@ export function renderTransactionalEmail(templateId: TransactionalEmailTemplateI
   const escapedUrl = escapeHtml(actionUrl);
   return {
     subject: template.subject,
-    text: `${template.heading}\n\n${template.body}\n\n${template.cta}: ${actionUrl}\n\nReyati will never ask for your password, verification code, or payment credentials by email.`,
-    html: `<div style="font-family:Arial,sans-serif;color:#062c43;line-height:1.6"><h1 style="font-size:24px">${escapeHtml(template.heading)}</h1><p>${escapeHtml(template.body)}</p><p><a href="${escapedUrl}" style="display:inline-block;background:#007f9f;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none">${escapeHtml(template.cta)}</a></p><p style="font-size:12px;color:#587184">Reyati will never ask for your password, verification code, or payment credentials by email.</p></div>`,
+    text: `${template.heading}\n\n${template.body}\n\n${template.cta}: ${actionUrl}\n\nQivaya will never ask for your password, verification code, or payment credentials by email.`,
+    html: `<div style="font-family:Arial,sans-serif;color:#062c43;line-height:1.6"><h1 style="font-size:24px">${escapeHtml(template.heading)}</h1><p>${escapeHtml(template.body)}</p><p><a href="${escapedUrl}" style="display:inline-block;background:#007f9f;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none">${escapeHtml(template.cta)}</a></p><p style="font-size:12px;color:#587184">Qivaya will never ask for your password, verification code, or payment credentials by email.</p></div>`,
   };
 }

@@ -83,7 +83,7 @@ export async function getPatientDigitalQueue(userId: string) {
       sourceUpdatedAt: row.sourceUpdatedAt, checkedInAt: row.checkedInAt, version: row.version!, staleAfterSeconds: row.staleAfterSeconds, sourceLabel: row.sourceLabel,
     }, now) : null;
     return { ...row, entry, eligible, opensAt, closesAt, eligibilityReason: entry ? "already_checked_in" : eligible ? null : now < opensAt ? "not_open_yet" : "check_in_closed" };
-  }), boundary: "Queue position and delay are shown only while reception data is fresh. When updates stop, Reyati keeps your check-in and shows neutral guidance." };
+  }), boundary: "Queue position and delay are shown only while reception data is fresh. When updates stop, Qivaya keeps your check-in and shows neutral guidance." };
 }
 
 export async function checkInPatient(userId: string, body: Record<string, unknown>) {

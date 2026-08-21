@@ -113,7 +113,7 @@ export async function inviteAdultCareAccess(userId: string, userEmail: string, b
   if (deliveryAvailable) {
     const suppression = await db.select({ addressHash: emailDeliverySuppressions.addressHash }).from(emailDeliverySuppressions)
       .where(eq(emailDeliverySuppressions.addressHash, await sha256(email))).limit(1);
-    if (suppression[0]) throw new FamilyAccessValidationError("This email address cannot receive Reyati invitations");
+    if (suppression[0]) throw new FamilyAccessValidationError("This email address cannot receive Qivaya invitations");
   }
   await db.update(careRelationshipInvitations).set({ status: "expired", updatedAt: now }).where(and(
     eq(careRelationshipInvitations.status, "pending"), lt(careRelationshipInvitations.expiresAt, now),

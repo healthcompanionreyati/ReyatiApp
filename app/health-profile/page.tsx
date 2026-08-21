@@ -120,7 +120,7 @@ export default function HealthProfilePage() {
   return (
     <main className={`${styles.shell} health-hub-shell health-profile-experience`} dir={ar ? "rtl" : "ltr"}>
       <header className={styles.top}>
-        <a href="/"><img src="/brand/reyati-logo-primary.svg" alt="Reyati" /></a>
+        <a href="/"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya" /></a>
         <nav>
           <a href="/">{ar ? "الرئيسية" : "Home"}</a>
           <a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a>
@@ -154,7 +154,7 @@ export default function HealthProfilePage() {
             </div>
             <div>
               <dt>{ar ? "المصدر" : "Source"}</dt>
-              <dd>{data?.profile?.source.label ?? "Reyati"}</dd>
+              <dd>{data?.profile?.source.label ?? "Qivaya"}</dd>
             </div>
           </dl>
         </aside>
@@ -165,7 +165,7 @@ export default function HealthProfilePage() {
           <span className={styles.shield}>✓</span>
           <div>
             <strong>{ar ? "أدخلتها أنت · لم يتم التحقق منها" : "Entered by you · Unverified"}</strong>
-            <p>{ar ? "هذا ليس سجلاً طبياً. لا يراه مقدم الرعاية ولا يُستخدم تلقائياً لاتخاذ قرار سريري. تحقق من المعلومات مباشرة مع مختص مؤهل." : "This is not a medical record. Providers cannot access it and Reyati never uses it automatically for clinical decisions. Verify information directly with a qualified professional."}</p>
+            <p>{ar ? "هذا ليس سجلاً طبياً. لا يراه مقدم الرعاية ولا يُستخدم تلقائياً لاتخاذ قرار سريري. تحقق من المعلومات مباشرة مع مختص مؤهل." : "This is not a medical record. Providers cannot access it and Qivaya never uses it automatically for clinical decisions. Verify information directly with a qualified professional."}</p>
           </div>
           <span className={styles.private}>{ar ? "خاص" : "PRIVATE"}</span>
         </section>

@@ -124,7 +124,7 @@ export async function getNotificationPreferenceWorkspace(userId: string) {
     preferences: preferences.map((item) => ({ category: item.category, channel: item.channel, enabled: item.enabled, mandatory: Boolean(item.mandatoryReasonCode), mandatoryReasonCode: item.mandatoryReasonCode, version: item.resourceVersion, updatedAt: item.updatedAt })),
     history, categories: NOTIFICATION_CATEGORIES, channels: NOTIFICATION_CHANNELS,
     boundaries: NOTIFICATION_PREFERENCE_BOUNDARIES,
-    guidance: "Preferences are saved choices only. Reyati does not claim message delivery or guaranteed quiet-hours enforcement.",
+    guidance: "Preferences are saved choices only. Qivaya does not claim message delivery or guaranteed quiet-hours enforcement.",
   };
 }
 

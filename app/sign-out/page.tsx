@@ -13,8 +13,8 @@ export default function SignOutPage() {
   }, [signOut]);
 
   return <main className="clerk-signout" id="main-content">
-    <img src="/brand/reyati-logo.svg" alt="Reyati" />
+    <img src="/brand/qivaya-logo-primary.png" alt="Qivaya" />
     <h1>Signing out securely…</h1>
-    <p>Your Reyati session is being closed.</p>
+    <p>Your Qivaya session is being closed.</p>
   </main>;
 }

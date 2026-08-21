@@ -214,7 +214,7 @@ export async function updatePartnerEmployerBenefit(userId: string, body: Record<
     if (!saved) throw new EmployerBenefitConflictError();
     if (saved.id === id) {
       const recipient = (await db.select({ id: users.id }).from(users).where(and(eq(users.email, invitationEmail), eq(users.status, "active"))).limit(1))[0];
-      if (recipient) await db.insert(notifications).values(notificationRecord({ userId: recipient.id, type: "benefit", title: "Benefit invitation available", body: "Review a sponsor-funded benefit invitation and choose whether to consent in Reyati.", actionPath: "/benefits", resourceType: "employer_benefit_eligibility", resourceId: id, dedupeKey: `benefit:${id}:offered`, createdAt: now })).onConflictDoNothing();
+      if (recipient) await db.insert(notifications).values(notificationRecord({ userId: recipient.id, type: "benefit", title: "Benefit invitation available", body: "Review a sponsor-funded benefit invitation and choose whether to consent in Qivaya.", actionPath: "/benefits", resourceType: "employer_benefit_eligibility", resourceId: id, dedupeKey: `benefit:${id}:offered`, createdAt: now })).onConflictDoNothing();
       await recordEvent({ programmeId, eligibilityId: id, actorUserId: userId, organizationId: partner.organizationId, action: "invitation_eligibility_added", nextStatus: "offered", metadata: { emailStored: false, hashBinding: true } });
     }
     return { id: saved.id, status: "offered", replayed: saved.id !== id, patientLinked: false, emailStored: false };

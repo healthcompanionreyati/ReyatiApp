@@ -16,13 +16,13 @@ const navigation = [
 ] as const;
 
 function initials(value: string) {
-  return value.split(/\s+|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "RY";
+  return value.split(/\s+|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "QV";
 }
 
 export default function PatientHeader({ ar, displayName, onLocaleChange, active = "home" }: PatientHeaderProps) {
   return <header className="app-header patient-app-header">
-    <a className="app-brand" href="/" aria-label={ar ? "رعايتي الرئيسية" : "Reyati home"}>
-      <img src="/brand/reyati-logo.svg" alt="Reyati" />
+    <a className="app-brand" href="/" aria-label={ar ? "كيفايا الرئيسية" : "Qivaya home"}>
+      <img src="/brand/qivaya-logo-primary.png" alt="Qivaya" />
     </a>
     <nav className="app-primary-nav" aria-label={ar ? "التنقل الرئيسي" : "Primary navigation"}>
       {navigation.map((item) => <a key={item.key} className={active === item.key ? "active" : ""} aria-current={active === item.key ? "page" : undefined} href={item.href}>{ar ? item.ar : item.en}</a>)}

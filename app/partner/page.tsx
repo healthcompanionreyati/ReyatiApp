@@ -45,7 +45,7 @@ export default function PartnerPortal() {
 
   return <main className={`partner-shell live-partner-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"}>
     <aside className="partner-sidebar">
-      <a className="partner-brand" href="/"><img src="/brand/reyati-logo-reversed.svg" alt="Reyati"/><span>{ar ? "مساحة الشركاء" : "Partner workspace"}</span></a>
+      <a className="partner-brand" href="/"><img src="/brand/qivaya-logo-reversed.png" alt="Qivaya"/><span>{ar ? "مساحة الشركاء" : "Partner workspace"}</span></a>
       <div className="partner-org boundary-org"><span>—</span><div><b>{ar ? "لا توجد مؤسسة متصلة" : "No organization connected"}</b><small>{ar ? "وصول الشركاء غير مفعّل" : "Partner access not enabled"}</small></div></div>
       <nav className="partner-boundary-nav">
         <a className="active" href="/partner"><span>◇</span>{ar ? "حالة المساحة" : "Workspace status"}</a>
@@ -62,14 +62,14 @@ export default function PartnerPortal() {
         <span><i>○</i>{ar ? "التمويل والفواتير" : "Funding & invoices"}</span>
         <span><i>○</i>{ar ? "إعداد البرنامج" : "Programme setup"}</span>
       </nav>
-      <div className="partner-side-note"><span>♙</span><p><b>{ar ? "حاجز خصوصية فعّال" : "Privacy boundary active"}</b>{ar ? "لا تعرض ريّاتي بيانات موظفين أو صحية أو مالية ما لم تكن مصادرها وصلاحياتها متصلة فعلياً." : "Reyati does not show employee, health, or financial data unless real sources and permissions are connected."}</p></div>
-      <div className="partner-links"><a href="/support">? {ar ? "طلب الدعم" : "Request support"}</a><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/">← {ar ? "العودة إلى ريّاتي" : "Back to Reyati"}</a></div>
+      <div className="partner-side-note"><span>♙</span><p><b>{ar ? "حاجز خصوصية فعّال" : "Privacy boundary active"}</b>{ar ? "لا تعرض ريّاتي بيانات موظفين أو صحية أو مالية ما لم تكن مصادرها وصلاحياتها متصلة فعلياً." : "Qivaya does not show employee, health, or financial data unless real sources and permissions are connected."}</p></div>
+      <div className="partner-links"><a href="/support">? {ar ? "طلب الدعم" : "Request support"}</a><a href="/journeys">◇ {ar ? "جميع المسارات" : "All journeys"}</a><a href="/">← {ar ? "العودة إلى ريّاتي" : "Back to Qivaya"}</a></div>
     </aside>
 
     <section className="partner-main">
       <header className="partner-top"><div><span className="partner-period">{ar ? "حدود القدرة" : "CAPABILITY BOUNDARY"}</span><b>{ar ? "وضع آمن للإنتاج" : "Production-safe state"}</b></div><div><button onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/support">{ar ? "الدعم" : "Support"}</a><span className="partner-avatar">{data?.operatorName?.slice(0, 2).toUpperCase() || "R"}</span></div></header>
       <div className="partner-workspace live-partner-workspace">
-        <div className="partner-heading"><div><p>{ar ? "بوابة صاحب العمل" : "EMPLOYER PORTAL"}</p><h1>{ar ? "مساحة الشركاء غير مفعّلة" : "Partner workspace is not active"}</h1><span>{ar ? "لا يوجد حالياً مصدر موثوق لبيانات أصحاب العمل أو الموظفين أو المزايا أو التمويل في ريّاتي." : "Reyati currently has no authoritative employer, employee, benefits, or funding source."}</span></div><a href="/support">{ar ? "ناقش التفعيل" : "Discuss activation"}</a></div>
+        <div className="partner-heading"><div><p>{ar ? "بوابة صاحب العمل" : "EMPLOYER PORTAL"}</p><h1>{ar ? "مساحة الشركاء غير مفعّلة" : "Partner workspace is not active"}</h1><span>{ar ? "لا يوجد حالياً مصدر موثوق لبيانات أصحاب العمل أو الموظفين أو المزايا أو التمويل في ريّاتي." : "Qivaya currently has no authoritative employer, employee, benefits, or funding source."}</span></div><a href="/support">{ar ? "ناقش التفعيل" : "Discuss activation"}</a></div>
 
         {!data && !error && <div className="partner-live-state"><span/><p>{ar ? "جارٍ التحقق من الوصول…" : "Checking access…"}</p></div>}
         {error && <div className="partner-live-state error"><h2>{error === "forbidden" ? (ar ? "تسجيل الدخول مطلوب" : "Sign-in required") : (ar ? "تعذر تحميل الحالة" : "Unable to load status")}</h2><p>{ar ? "لم يتم عرض أي بيانات شريك. حاول مرة أخرى أو تواصل مع الدعم." : "No partner data was shown. Try again or contact support."}</p>{error === "forbidden" ? <a href="/auth">{ar ? "فتح الحساب" : "Open account"}</a> : <button type="button" onClick={() => { setData(null); setError(null); setRefresh((value) => value + 1); }}>{ar ? "حاول مرة أخرى" : "Try again"}</button>}</div>}

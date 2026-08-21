@@ -92,7 +92,7 @@ export default function EncounterFollowUpPage() {
   return (
     <main className={styles.shell} id="main-content">
       <header className={styles.top}>
-        <a href="/"><img src="/brand/reyati-logo.svg" alt="Reyati" /></a>
+        <a href="/"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya" /></a>
         <nav>
           <a href="/appointments">Appointments</a>
           <a href="/wallet">Health records</a>

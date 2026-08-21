@@ -5,14 +5,14 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Create account",
-  description: "Create your secure Reyati healthcare account.",
+  description: "Create your secure Qivaya healthcare account.",
   alternates: { canonical: "/sign-up" },
 };
 
 export default function SignUpPage() {
   return <main className="clerk-auth-shell" id="main-content">
     <a className="clerk-auth-brand" href="/">
-      <img src="/brand/reyati-logo.svg" alt="Reyati" />
+      <img src="/brand/qivaya-logo-primary.png" alt="Qivaya" />
       <span>Care, intelligently connected</span>
     </a>
     <section className="clerk-auth-intro">

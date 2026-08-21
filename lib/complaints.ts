@@ -96,7 +96,7 @@ async function writeTrail(input: {
   if (!input.notifyUserId) return db.batch([event, audit]);
   return db.batch([event, audit, db.insert(notifications).values(notificationRecord({
     userId: input.notifyUserId, type: "complaint", title: "Concern status updated",
-    body: "A concern in your private Reyati tracker has been updated. Open the protected tracker to review its status.",
+    body: "A concern in your private Qivaya tracker has been updated. Open the protected tracker to review its status.",
     actionPath: "/complaints", resourceType: "complaint", resourceId: input.complaintId,
     dedupeKey: `complaint:${input.complaintId}:${input.resourceVersion}:${input.action}`, createdAt: now,
   })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] })]);
@@ -125,7 +125,7 @@ export async function getComplaintWorkspace(userId: string) {
   ]);
   return {
     categories: COMPLAINT_CATEGORIES, boundaries: COMPLAINT_BOUNDARIES, context,
-    emergencyBoundary: "Reyati complaints are not monitored as an emergency channel. For a life-threatening emergency in Qatar, call 999 now.",
+    emergencyBoundary: "Qivaya complaints are not monitored as an emergency channel. For a life-threatening emergency in Qatar, call 999 now.",
     complaints: rows.map((row) => ({
       id: row.id, reference: row.reference, category: row.category, subject: row.subject, narrative: row.narrative,
       desiredOutcome: row.desiredOutcome, appointmentId: row.appointmentId, supportCaseId: row.supportCaseId,
