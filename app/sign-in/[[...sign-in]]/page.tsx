@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { SignIn } from "@clerk/nextjs";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description: "Sign in securely to your Reyati healthcare workspace.",
+  alternates: { canonical: "/sign-in" },
+};
 
 export default function SignInPage() {
   return <main className="clerk-auth-shell" id="main-content">
