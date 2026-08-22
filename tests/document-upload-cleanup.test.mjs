@@ -7,7 +7,7 @@ const route = await readFile(new URL("../app/api/internal/document-upload-cleanu
 const flags = await readFile(new URL("../lib/foundation-flags.ts", import.meta.url), "utf8");
 
 test("upload cleanup is gated and accepts only signed bounded invocations", () => {
-  assert.match(flags, /documentUploadCleanup: false/);
+  assert.match(flags, /documentUploadCleanup: productionFlag\("QIVAYA_DOCUMENT_UPLOAD_CLEANUP"\)/);
   assert.match(route, /foundationFlags\.documentUploadCleanup/);
   assert.match(route, /MAX_BODY_BYTES = 4 \* 1024/);
   assert.match(cleanup, /x-reyati-cleanup-run-id/);

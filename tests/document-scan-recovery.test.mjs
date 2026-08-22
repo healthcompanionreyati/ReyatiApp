@@ -6,8 +6,8 @@ const recovery = await readFile(new URL("../lib/document-scan-recovery.ts", impo
 const route = await readFile(new URL("../app/api/internal/document-scan-recovery/route.ts", import.meta.url), "utf8");
 const flags = await readFile(new URL("../lib/foundation-flags.ts", import.meta.url), "utf8");
 
-test("scan recovery remains disabled and requires a fresh signed invocation", () => {
-  assert.match(flags, /documentScanRecovery: false/);
+test("scan recovery remains gated and requires a fresh signed invocation", () => {
+  assert.match(flags, /documentScanRecovery: productionFlag\("QIVAYA_DOCUMENT_SCAN_RECOVERY"\)/);
   assert.match(route, /foundationFlags\.documentScanRecovery/);
   assert.match(route, /MAX_BODY_BYTES = 4 \* 1024/);
   assert.match(recovery, /x-reyati-scan-recovery-run-id/);

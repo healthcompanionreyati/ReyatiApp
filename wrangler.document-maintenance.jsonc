@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "qivaya-document-maintenance",
+  "main": "workers/document-maintenance/index.ts",
+  "workers_dev": false,
+  "compatibility_date": "2026-08-22",
+  "vars": {
+    "UPLOAD_CLEANUP_URL": "https://www.qivaya.com/api/internal/document-upload-cleanup",
+    "SCAN_RECOVERY_URL": "https://www.qivaya.com/api/internal/document-scan-recovery"
+  },
+  "triggers": {
+    "crons": ["*/10 * * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  }
+}

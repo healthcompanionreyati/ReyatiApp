@@ -18,11 +18,13 @@ async function routeFiles(directory) {
 test("external capabilities fail closed unless an approved production gate is enabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundSmsDelivery", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery", "documentUploadCleanup", "documentScanRecovery"]) {
+  for (const capability of ["independentAuthentication", "outboundSmsDelivery", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
   assert.match(flags, /outboundEmailDelivery: productionFlag\("QIVAYA_OUTBOUND_EMAIL_DELIVERY"\)/);
   assert.match(flags, /communicationsWebhooks: productionFlag\("QIVAYA_COMMUNICATIONS_WEBHOOKS"\)/);
+  assert.match(flags, /documentUploadCleanup: productionFlag\("QIVAYA_DOCUMENT_UPLOAD_CLEANUP"\)/);
+  assert.match(flags, /documentScanRecovery: productionFlag\("QIVAYA_DOCUMENT_SCAN_RECOVERY"\)/);
   assert.match(flags, /=== "true"/);
 });
 
