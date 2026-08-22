@@ -136,5 +136,5 @@ export async function consumeDocumentAccessGrant(userId: string, body: Record<st
   }
   await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId, action: "document.content_delivered", resourceType: "document", resourceId: row.documentId, outcome: "success", metadataJson: JSON.stringify({ grantId: row.grantId, purpose: row.purpose, sizeBytes: row.sizeBytes }), createdAt: now });
   const extension = row.contentType === "application/pdf" ? "pdf" : row.contentType === "image/jpeg" ? "jpg" : "png";
-  return { body: bytes, headers: { "Cache-Control": "private, no-store", "Content-Disposition": `attachment; filename="reyati-medical-document.${extension}"`, "Content-Length": String(object.size), "Content-Type": row.contentType, "Cross-Origin-Resource-Policy": "same-origin", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY" } };
+  return { body: bytes, headers: { "Cache-Control": "private, no-store", "Content-Disposition": `attachment; filename="qivaya-medical-document.${extension}"`, "Content-Length": String(object.size), "Content-Type": row.contentType, "Cross-Origin-Resource-Policy": "same-origin", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY" } };
 }

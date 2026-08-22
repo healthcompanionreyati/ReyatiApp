@@ -91,7 +91,7 @@ export default function FinanceOperations() {
     const csv = rows.map((row) => row.map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
-    anchor.href = url; anchor.download = "reyati-payment-ledger-aggregate.csv"; anchor.click(); URL.revokeObjectURL(url);
+    anchor.href = url; anchor.download = "qivaya-payment-ledger-aggregate.csv"; anchor.click(); URL.revokeObjectURL(url);
   }
 
   const avatar = initials(data?.operatorName ?? "Finance Admin");

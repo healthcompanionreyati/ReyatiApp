@@ -59,7 +59,8 @@ const heroDetails = {
   },
 } as const;
 
-const opts = (values: string[]) => values.map((value) => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>);
+const displayLabel = (value: unknown) => String(value).replace(/^reyati(?=_|$)/i, "Qivaya").replaceAll("_", " ");
+const opts = (values: string[]) => values.map((value) => <option key={value} value={value}>{displayLabel(value)}</option>);
 
 function title(row: Row) {
   return String(row.documentCategory ?? row.title ?? row.purposeCode ?? row.actionCode ?? row.issueType ?? "Record").replaceAll("_", " ");
@@ -72,7 +73,7 @@ function details(row: Row) {
     row.draftText,
     row.recordDate,
     row.recordType,
-    row.sourceType,
+    row.sourceType ? displayLabel(row.sourceType) : null,
     row.scopeCode,
     row.recipientType,
     row.durationDays ? `${row.durationDays} days` : null,
@@ -279,7 +280,7 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
                     <span>{String(row.status ?? row.outcomeCode ?? "recorded").replaceAll("_", " ")}</span>
                   </div>
                   <p>{details(row) || "—"}</p>
-                  <small>{String(row.sourceLabel ?? row.actorType ?? "reyati_audit").replaceAll("_", " ")}</small>
+                  <small>{displayLabel(row.sourceLabel ?? row.actorType ?? "reyati_audit")}</small>
                   {module !== "access_history" && row.status === "active" && (
                     <button disabled={saving} onClick={() => void send({ action: "archive", recordId: row.id, version: row.version })}>{ar ? "أرشفة" : "Archive"}</button>
                   )}
