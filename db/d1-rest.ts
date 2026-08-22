@@ -6,7 +6,10 @@ type D1RestResult = {
 };
 
 type D1RestRawResult = Omit<D1RestResult, "results"> & {
-  results: unknown[][];
+  results?: {
+    columns?: string[];
+    rows?: unknown[][];
+  };
 };
 
 type D1StatementPayload = { sql: string; params: unknown[] };
@@ -91,7 +94,7 @@ export class D1RestDatabase {
     }
     const failed = body.result.find((result) => !result.success);
     if (failed) throw new Error(failed.error || "Cloudflare D1 raw query failed");
-    return body.result[0]?.results ?? [];
+    return body.result[0]?.results?.rows ?? [];
   }
 
   private async request(payload: D1StatementPayload | D1BatchPayload) {
