@@ -4,17 +4,20 @@ const apiKey = process.env.RESEND_API_KEY?.trim();
 const from = process.env.RESEND_FROM_EMAIL?.trim();
 const replyTo = process.env.RESEND_REPLY_TO_EMAIL?.trim();
 const recipient = process.env.QIVAYA_EMAIL_TEST_RECIPIENT?.trim();
+const requestedRunId = process.env.QIVAYA_EMAIL_TEST_RUN_ID?.trim();
 
 if (!enabled) throw new Error("Controlled email smoke delivery is disabled");
 if (!apiKey || !from || !recipient) throw new Error("Controlled email smoke delivery is not configured");
 
 const day = new Date().toISOString().slice(0, 10);
+const runId = requestedRunId || day;
+if (!/^[a-z0-9-]{1,64}$/.test(runId)) throw new Error("Controlled email smoke run identifier is invalid");
 const response = await fetch(endpoint, {
   method: "POST",
   headers: {
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",
-    "Idempotency-Key": `qivaya-controlled-smoke-${day}`,
+    "Idempotency-Key": `qivaya-controlled-smoke-${runId}`,
   },
   body: JSON.stringify({
     from,

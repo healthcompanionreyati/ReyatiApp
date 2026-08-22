@@ -33,7 +33,7 @@ External invitation addresses that bounce or complain are stored only as SHA-256
 - `QIVAYA_OUTBOUND_EMAIL_DELIVERY` and `QIVAYA_COMMUNICATIONS_WEBHOOKS` were enabled in Vercel Production only. Preview remains disabled.
 - Vercel production deployment `dpl_HWWi6swUtQBeydRDt6LRnoUN2Da4` reached Ready and was assigned to `www.qivaya.com`.
 - Unsigned production requests returned `401 unauthorized` for dispatch and `401 signature_required` for webhooks.
-- A previously delivered synthetic test message contained no account or health information. Replaying its signed `email.delivered` event returned `200 OK` and `accepted: true`; `matched: false` was expected because the smoke message bypassed the application outbox.
+- A fresh synthetic test message containing no account or health information was accepted and delivered to the approved test recipient. Its signed `email.sent` and `email.delivered` events both succeeded on the first attempt with `200 OK`; `matched: false` was expected because the smoke message bypassed the application outbox.
 - Cloudflare Worker version `20beba10-522e-4b15-ba51-b6539ac7c858` completed the scheduled `*/5 * * * *` dispatch with HTTP `200` and an empty outbox.
 
 ## Continuing operational requirements

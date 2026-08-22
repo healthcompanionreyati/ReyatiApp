@@ -20,6 +20,8 @@ test("controlled email smoke delivery is single-recipient, synthetic, and indepe
   const script = await source("scripts/smoke-email-delivery.mjs");
   assert.match(script, /QIVAYA_EMAIL_TEST_DELIVERY/);
   assert.match(script, /QIVAYA_EMAIL_TEST_RECIPIENT/);
+  assert.match(script, /QIVAYA_EMAIL_TEST_RUN_ID/);
+  assert.match(script, /\^\[a-z0-9-\]\{1,64\}\$/);
   assert.match(script, /to: \[recipient\]/);
   assert.match(script, /contains no account or health information/);
   assert.match(script, /Idempotency-Key/);
