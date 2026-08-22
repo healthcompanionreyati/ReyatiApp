@@ -72,6 +72,20 @@ const arabicRouteTitles: Record<string, string> = {
   "/provider/documents": "المستندات المشتركة", "/provider/insights": "إحصاءات مقدم الرعاية", "/provider/experience": "رؤى تجربة المرضى", "/provider/virtual-care": "الرعاية الافتراضية لمقدم الرعاية", "/provider/messages": "رسائل مقدم الرعاية", "/provider/referrals": "إحالات مقدم الرعاية", "/provider/prescription-review": "مراجعة الوصفات", "/provider/report-review": "مراجعة التقارير", "/admin": "نظرة العمليات العامة", "/admin/virtual-care": "حوكمة الرعاية الافتراضية", "/admin/messaging": "حوكمة الرسائل", "/admin/referrals": "حوكمة الإحالات", "/admin/experience": "حوكمة التجربة", "/admin/navigator-governance": "حوكمة موجّه الرعاية", "/admin/prescription-intelligence": "ذكاء الوصفات", "/admin/report-reader": "قارئ التقارير الطبية", "/admin/reminder-readiness": "جاهزية تذكيرات الدواء", "/admin/reminder-delivery-policy": "سياسة إرسال تذكيرات الدواء", "/admin/reminder-activation-readiness": "جاهزية تشغيل تذكيرات الدواء", "/admin/dependent-care": "حوكمة رعاية التابعين", "/admin/dependent-transition": "بروفة انتقال سن الرشد",
 };
 
+const routeTitleFor = (pathname: string, arabic: boolean) => {
+  const titles = arabic ? arabicRouteTitles : routeTitles;
+  const exactTitle = titles[pathname];
+  if (exactTitle) return exactTitle;
+
+  // Clerk renders multi-step authentication screens on nested catch-all routes
+  // such as /sign-in/factor-one. They are valid parts of the sign-in flow, not
+  // missing application pages.
+  if (pathname.startsWith("/sign-in/")) return titles["/sign-in"];
+  if (pathname.startsWith("/sign-up/")) return titles["/sign-up"];
+
+  return arabic ? "الصفحة غير موجودة" : "Page not found";
+};
+
 export default function AccessibilitySync() {
   useEffect(() => {
     let activeDialog: HTMLElement | null = null;
@@ -136,7 +150,7 @@ export default function AccessibilitySync() {
 
       document.documentElement.dir = direction;
       document.documentElement.lang = arabic ? "ar" : "en";
-      const routeTitle = (arabic ? arabicRouteTitles : routeTitles)[window.location.pathname] ?? (arabic ? "الصفحة غير موجودة" : "Page not found");
+      const routeTitle = routeTitleFor(window.location.pathname, arabic);
       document.title = `${routeTitle} · Qivaya`;
 
       const skipLink = document.querySelector<HTMLAnchorElement>(".skip-link");
