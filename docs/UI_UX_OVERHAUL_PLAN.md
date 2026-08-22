@@ -30,3 +30,16 @@ Qivaya should feel calm, precise, trustworthy, and easy to scan. The interface u
 - Forms, tables, cards, and system states remain readable in light and dark modes.
 - Keyboard focus is always visible and dialogs retain focus correctly.
 - All major routes build successfully and production aliases point to the verified release.
+
+## Route remediation matrix
+
+The design system must not impose layout geometry through partial class-name matches. Each shell keeps an explicit contract:
+
+- Patient shell: shared header and mobile dock, centered content, dark branded hero where a hero is used.
+- Provider discovery: one continuous discovery hero, one filter/results workspace, and a high-contrast trust panel.
+- Provider console: native sidebar grid remains intact; tokens change presentation but not column math.
+- Platform operations: each legacy operational shell retains its own sidebar width until it is migrated to the shared admin shell.
+- Audit ledger: fixed 238px desktop sidebar, fluid main column, 1360px content ceiling, and readable operational typography.
+- Mobile: route-owned breakpoints remain authoritative; the theme control sits above the dock without covering actions.
+
+Regression rule: shared CSS may define tokens, color, focus, motion, and component appearance. Width, positioning, grid columns, and route padding require a fully qualified shell selector.

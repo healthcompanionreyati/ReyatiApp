@@ -109,12 +109,6 @@ body::selection { background: color-mix(in srgb, var(--qv-primary) 25%, transpar
   min-width: 0;
 }
 
-:where(p, small, time, dd, .muted, [class*="-muted"], [class*="-subtitle"], [class*="-description"]) {
-  color: var(--qv-text-soft);
-}
-
-:where(h1, h2, h3, h4, dt, strong, b) { color: var(--qv-text); }
-
 :where(a, button, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
 :where(button, a, input, select, textarea) { transition: color .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
 :where(button:not(:disabled), a[href]) { cursor: pointer; }
@@ -210,33 +204,6 @@ body::selection { background: color-mix(in srgb, var(--qv-primary) 25%, transpar
   .lifecycle-side, .message-side, .ops-health-side, .ownership-side, .recovery-side,
   .referral-side, .virtual-provider-nav) :where(p, small, span) { color: var(--qv-sidebar-muted); }
 
-@media (min-width: 981px) {
-  :where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
-    .partner-sidebar, .program-sidebar, .live-admin-sidebar, .verify-sidebar, .finance-sidebar,
-    .cases-sidebar, .moderation-sidebar, .audit-sidebar, .orgops-sidebar, .accessops-sidebar,
-    .comms-ops-sidebar, .continuity-side, .experience-side, .hold-side, .incident-side,
-    .lifecycle-side, .message-side, .ops-health-side, .ownership-side, .recovery-side,
-    .referral-side, .virtual-provider-nav) {
-    width: var(--qv-sidebar-width) !important;
-    max-width: var(--qv-sidebar-width) !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    position: fixed !important;
-    inset-block: 0 !important;
-    inset-inline-start: 0 !important;
-    overflow: hidden !important;
-  }
-  :where(.provider-main, .services-main, .insights-main, .settings-main, .patient-provider-main,
-    .partner-main, .program-main, .admin-main, .verify-main, .finance-main, .cases-main,
-    .moderation-main, .audit-main, .orgops-main, .accessops-main, .comms-ops-main,
-    .continuity-main, .experience-main, .hold-main, .incident-main, .lifecycle-main,
-    .message-provider-main, .ops-health-main, .ownership-main, .recovery-main,
-    .referral-main, .virtual-provider-main) {
-    width: calc(100% - var(--qv-sidebar-width)) !important;
-    margin-inline-start: var(--qv-sidebar-width) !important;
-  }
-}
-
 /* Admin navigation stays usable with a very large module inventory. */
 .live-admin-sidebar { padding: 22px 14px 16px !important; display: flex !important; flex-direction: column; gap: 14px !important; }
 .live-admin-sidebar .provider-logo { flex: 0 0 auto; padding-inline: 8px; }
@@ -274,31 +241,30 @@ body::selection { background: color-mix(in srgb, var(--qv-primary) 25%, transpar
   .verify-workspace, .finance-workspace, .cases-workspace, .moderation-workspace,
   .audit-workspace, .orgops-main > div, .accessops-content, .lifecycle-workspace,
   .message-provider-workspace, .referral-provider-workspace, .virtual-provider-workspace) {
-  width: min(100%, var(--qv-content)) !important;
-  margin-inline: auto !important;
-  padding: clamp(24px, 3.2vw, 46px) !important;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* Cards, panels, status blocks and table-like rows */
 :where(.admin-panel, .provider-panel, .documents-card, .message-panel, .communication-panel,
   .lifecycle-editor, .ops-health-panel, .accessops-panel, .comms-ops-panel, .moderation-panel,
-  .panel, [class$="-panel"], [class*="-card"]:not(.cl-card):not(.auth-card)) {
+  .panel) {
   border-color: var(--qv-border) !important;
   background: var(--qv-surface) !important;
   color: var(--qv-text) !important;
   box-shadow: var(--qv-shadow-sm) !important;
 }
-:where(.admin-security-note, .boundary, [class$="-boundary"], [class*="-notice"], [class*="-summary"]) {
+:where(.admin-security-note, .boundary) {
   border-color: var(--qv-border) !important;
   background: var(--qv-surface-soft) !important;
   color: var(--qv-text) !important;
 }
-:where([class*="-state"], [class*="-empty"], .empty, .system-loading) {
+:where(.empty, .system-loading) {
   border-color: var(--qv-border) !important;
   background: var(--qv-surface) !important;
   color: var(--qv-text-soft) !important;
 }
-:where(table, [class*="-list"] > article, [class*="-list"] > div, [class*="-timeline"] > article) { border-color: var(--qv-border) !important; }
+:where(table) { border-color: var(--qv-border) !important; }
 
 /* Dark mode catches legacy hard-coded light surfaces without changing semantic status colors. */
 :root[data-theme="dark"] :where(.auth-card, .cl-card, dialog, [role="dialog"], [class*="drawer"], [class*="modal"]:not([class*="layer"])) {
@@ -326,29 +292,126 @@ body::selection { background: color-mix(in srgb, var(--qv-primary) 25%, transpar
 .mobile-dock a { color: var(--qv-text-faint) !important; }
 .mobile-dock a.active { color: var(--qv-primary) !important; }
 
-@media (max-width: 980px) {
-  :where(.provider-sidebar, .services-sidebar, .insights-sidebar, .settings-sidebar, .patient-provider-sidebar,
-    .partner-sidebar, .program-sidebar, .live-admin-sidebar, .verify-sidebar, .finance-sidebar,
-    .cases-sidebar, .moderation-sidebar, .audit-sidebar, .orgops-sidebar, .accessops-sidebar,
-    .comms-ops-sidebar, .continuity-side, .experience-side, .hold-side, .incident-side,
-    .lifecycle-side, .message-side, .ops-health-side, .ownership-side, .recovery-side,
-    .referral-side, .virtual-provider-nav) { display: none !important; }
-  :where(.provider-main, .services-main, .insights-main, .settings-main, .patient-provider-main,
-    .partner-main, .program-main, .admin-main, .verify-main, .finance-main, .cases-main,
-    .moderation-main, .audit-main, .orgops-main, .accessops-main, .comms-ops-main,
-    .continuity-main, .experience-main, .hold-main, .incident-main, .lifecycle-main,
-    .message-provider-main, .ops-health-main, .ownership-main, .recovery-main,
-    .referral-main, .virtual-provider-main) { width: 100% !important; margin-inline-start: 0 !important; }
+/* Explicit route contracts: preserve each module's native shell geometry. */
+.providers-shell .provider-search-hero {
+  display: block !important;
+  max-width: none;
+  margin: 0;
+  padding: clamp(42px, 5vw, 70px) clamp(20px, 7vw, 96px) !important;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(118deg, #082f42 0%, #064b62 72%, #087f91 130%) !important;
+  box-shadow: none;
+}
+.providers-shell .provider-search-hero::after { opacity: .42; }
+.providers-shell .provider-search-hero > div:first-child {
+  width: min(1120px, 100%);
+  margin-inline: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.providers-shell .provider-search-hero h1 { max-width: 760px; color: #fff !important; }
+.providers-shell .provider-search-hero > div > span { color: #d8edf1 !important; }
+.providers-shell .provider-search-hero label { max-width: 900px; }
+.providers-shell .provider-search-stats { max-width: 760px; }
+.providers-shell .providers-workspace { width: min(1220px, calc(100% - 36px)); padding-inline: 0; }
+.providers-shell .trust-panel {
+  border: 1px solid var(--qv-border) !important;
+  background: var(--qv-surface) !important;
+  color: var(--qv-text) !important;
+}
+.providers-shell .trust-panel h2,
+.providers-shell .trust-panel li b { color: var(--qv-text) !important; }
+.providers-shell .trust-panel > p,
+.providers-shell .trust-panel li small { color: var(--qv-text-soft) !important; }
+.providers-shell .trust-panel li {
+  border-color: var(--qv-border) !important;
+  background: var(--qv-surface-soft) !important;
+}
+
+.wallet-shell .wallet-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: min(1280px, calc(100% - 36px));
+  max-width: 1280px;
+  margin: 22px auto 0;
+  padding: clamp(42px, 5vw, 66px) clamp(28px, 5vw, 58px) !important;
+  border-color: rgba(255, 255, 255, .1) !important;
+  border-radius: 30px;
+  background: linear-gradient(118deg, #082f42 0%, #064b62 72%, #087f91 130%) !important;
+  color: #fff !important;
+}
+.wallet-shell .wallet-hero::after { z-index: -1; opacity: .72; }
+.wallet-shell .wallet-hero > div { position: relative; z-index: 1; }
+.wallet-shell .wallet-hero p { color: #66d4e1 !important; }
+.wallet-shell .wallet-hero h1 { color: #fff !important; }
+.wallet-shell .wallet-hero > div > span { color: #d4e8ed !important; }
+.wallet-shell .wallet-hero-actions { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.wallet-shell .wallet-hero-actions a { color: #fff !important; border-color: rgba(255,255,255,.34) !important; background: rgba(255,255,255,.08) !important; }
+.wallet-shell .wallet-hero-actions a:hover { background: rgba(255,255,255,.16) !important; }
+.wallet-shell .wallet-notice,
+.wallet-shell .wallet-content { width: min(1180px, calc(100% - 36px)); margin-inline: auto; }
+
+@media (min-width: 721px) {
+  .audit-shell .audit-main {
+    flex: 0 0 auto !important;
+    width: calc(100vw - 238px) !important;
+    margin-inline-start: 238px !important;
+  }
+  .audit-shell .audit-top { width: 100%; box-sizing: border-box; }
+  .audit-shell .audit-workspace { width: 100% !important; max-width: 1360px; margin-inline: auto !important; }
+}
+.audit-shell .audit-heading { width: 100%; box-sizing: border-box; }
+.audit-shell .audit-heading > div { min-width: 0; max-width: 760px; }
+.audit-shell .audit-heading h1 { max-width: none; overflow-wrap: normal; }
+.audit-shell .audit-banner,
+.audit-shell .audit-live-state,
+.audit-shell .audit-live-filters,
+.audit-shell .event-panel,
+.audit-shell .event-detail { width: 100%; box-sizing: border-box; }
+.audit-shell .audit-banner p,
+.audit-shell .audit-live-state p { font-size: 12px; line-height: 1.55; }
+.audit-shell .audit-live-filters label,
+.audit-shell .audit-live-filters button,
+.audit-shell .event-tools button,
+.audit-shell .event-tools input { font-size: 11px; }
+.audit-shell .event-table > header { font-size: 10px; }
+.audit-shell .event-table > button,
+.audit-shell .event-table > button :where(time, span, code, b, small, i, em) { font-size: 11px; }
+
+.home-experience .home-dashboard { padding-top: 34px; }
+.home-experience .home-hubs { padding-top: 42px; }
+.home-experience .home-hub-card { min-height: 240px; }
+
+:root[data-theme="dark"] .providers-shell .trust-panel,
+:root[data-theme="dark"] .providers-shell .trust-panel li,
+:root[data-theme="dark"] .wallet-shell .wallet-notice,
+:root[data-theme="dark"] .wallet-shell .wallet-live-state,
+:root[data-theme="dark"] .audit-shell .audit-heading,
+:root[data-theme="dark"] .audit-shell .audit-live-state,
+:root[data-theme="dark"] .audit-shell .audit-live-filters,
+:root[data-theme="dark"] .audit-shell .event-panel,
+:root[data-theme="dark"] .audit-shell .event-detail {
+  border-color: var(--qv-border) !important;
+  background: var(--qv-surface) !important;
+  color: var(--qv-text) !important;
 }
 
 @media (max-width: 720px) {
   .qivaya-theme-toggle { inset-inline-end: 12px; inset-block-end: 82px; min-width: 44px; width: 44px; padding: 5px; }
   .qivaya-theme-toggle b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  :where(.provider-workspace, .services-workspace, .insights-workspace, .settings-workspace,
-    .patient-provider-workspace, .partner-workspace, .program-workspace, .admin-workspace,
-    .verify-workspace, .finance-workspace, .cases-workspace, .moderation-workspace,
-    .audit-workspace, .accessops-content, .lifecycle-workspace, .message-provider-workspace,
-    .referral-provider-workspace, .virtual-provider-workspace) { padding: 22px 14px 92px !important; }
+  .wallet-shell .wallet-hero { width: calc(100% - 24px); margin-top: 12px; padding: 34px 20px !important; }
+  .wallet-shell .wallet-notice,
+  .wallet-shell .wallet-content { width: calc(100% - 24px); }
+  .providers-shell .provider-search-hero { padding: 36px 18px 42px !important; }
+  .providers-shell .providers-workspace { width: calc(100% - 26px); }
+  .audit-shell .audit-main { width: 100% !important; margin-inline-start: 0 !important; }
+  .audit-shell .audit-workspace { padding: 22px 14px 92px !important; }
   :where(.lifecycle-grid, .admin-dashboard-grid, .provider-grid, .documents-grid, .family-live-grid,
     .wallet-grid, .payments-grid, .support-grid) { grid-template-columns: minmax(0, 1fr) !important; }
 }
