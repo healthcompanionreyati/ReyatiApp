@@ -33,8 +33,8 @@ export default function PlatformAccessPage() {
   }, []);
 
   async function invite(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setSaving(true); setError(""); const form = new FormData(event.currentTarget);
-    try { const created = await api({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "invite", email: form.get("email"), role: form.get("role") }) }) as { acceptPath: string }; setInviteLink(`${window.location.origin}${created.acceptPath}`); setNotice("Secure platform invitation created"); event.currentTarget.reset(); await load(); }
+    event.preventDefault(); setSaving(true); setError(""); const formElement = event.currentTarget; const form = new FormData(formElement);
+    try { const created = await api({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "invite", email: form.get("email"), role: form.get("role") }) }) as { acceptPath: string }; setInviteLink(`${window.location.origin}${created.acceptPath}`); setNotice("Secure platform invitation created"); formElement.reset(); await load(); }
     catch (caught) { setError(caught instanceof Error ? caught.message : "Invitation could not be created"); } finally { setSaving(false); }
   }
   async function update(row: RoleRow) { setSaving(true); setError(""); try { await api({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: row.status === "active" ? "suspend_role" : "reactivate_role", userId: row.userId, role: row.role }) }); setNotice(row.status === "active" ? "Platform role suspended" : "Platform role reactivated"); setConfirming(null); await load(); } catch (caught) { setError(caught instanceof Error ? caught.message : "Role could not be updated"); } finally { setSaving(false); } }
