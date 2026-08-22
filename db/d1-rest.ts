@@ -8,6 +8,10 @@ type D1RestResult = {
 type D1StatementPayload = { sql: string; params: unknown[] };
 type D1BatchPayload = { batch: D1StatementPayload[] };
 
+function normalizeD1Parameter(value: unknown) {
+  return typeof value === "boolean" ? Number(value) : value;
+}
+
 class D1RestPreparedStatement {
   constructor(
     private readonly database: D1RestDatabase,
@@ -16,7 +20,7 @@ class D1RestPreparedStatement {
   ) {}
 
   bind(...params: unknown[]) {
-    return new D1RestPreparedStatement(this.database, this.sql, params);
+    return new D1RestPreparedStatement(this.database, this.sql, params.map(normalizeD1Parameter));
   }
 
   async all() {
