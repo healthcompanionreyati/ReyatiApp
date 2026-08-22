@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import "./appointments.css";
 import "./appointments-live.css";
@@ -105,7 +107,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const content = <><a className="skip-link" href="#main-content">Skip to main content</a>{children}<NetworkStatus/><UnsavedChangesGuard/><AccessibilitySync/><MobileDock/><ThemeController/></>;
-  return <html lang="en" dir="ltr" suppressHydrationWarning><body>{process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  const application = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
     ? <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} signInUrl="/sign-in" signUpUrl="/sign-up">{content}</ClerkProvider>
-    : content}</body></html>;
+    : content;
+
+  return <html lang="en" dir="ltr" suppressHydrationWarning><body>
+    {application}
+    <Analytics />
+    <SpeedInsights />
+  </body></html>;
 }
