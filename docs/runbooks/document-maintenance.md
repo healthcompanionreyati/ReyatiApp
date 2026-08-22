@@ -1,6 +1,6 @@
 # Document maintenance runbook
 
-Status: Worker deployed and secrets synchronized. Production cleanup and scan-recovery gates remain disabled pending explicit destructive-action approval.
+Status: Production cleanup and scan-recovery are active and verified. Preview remains disabled.
 
 ## Architecture
 
@@ -37,11 +37,20 @@ Activation requires explicit approval because upload cleanup can permanently del
 
 1. Confirm the R2 bucket, D1 database, and deployment are the intended production resources.
 2. Confirm the production bucket contains no unexplained objects.
-3. Confirm both signing secrets exist in the Worker and Vercel Production/Preview.
+3. Confirm both signing secrets exist in the Worker and the intended Vercel environment.
 4. Enable `QIVAYA_DOCUMENT_UPLOAD_CLEANUP=true` and `QIVAYA_DOCUMENT_SCAN_RECOVERY=true` in Vercel.
 5. Redeploy production.
 6. Trigger one signed invocation and confirm both processors report zero failures.
 7. Watch the first scheduled execution in Cloudflare Worker logs.
+
+### Production activation record — 2026-08-22
+
+- Explicit approval was received for production document cleanup and scan-recovery activation.
+- `QIVAYA_DOCUMENT_UPLOAD_CLEANUP` and `QIVAYA_DOCUMENT_SCAN_RECOVERY` were enabled in Vercel Production only. Preview remains disabled.
+- Production deployment `dpl_GE2QX3ZLqKaUhCNLsWEXLhU1aaLL` reached Ready from Git commit `e871ade`.
+- Unsigned requests to both maintenance routes returned `401 signature_required`, confirming that the authorization boundary fails closed.
+- Cloudflare Worker version `2ac31e48-a841-41c9-af39-5ea010c9439a` completed its scheduled `*/10 * * * *` invocation with outcome `ok`; both `documents.upload_cleanup.completed` and `documents.scan_recovery.completed` reported HTTP `200`.
+- Logs contained only aggregate event names, statuses, and the cron expression. No document identifiers, object keys, signatures, or response bodies were emitted.
 
 ## Rollback
 
