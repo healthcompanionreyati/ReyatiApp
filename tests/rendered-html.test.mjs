@@ -25,21 +25,21 @@ async function render(pathname = "/") {
   );
 }
 
-test("renders the branded Reyati patient experience", async () => {
+test("renders the branded Qivaya patient experience", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Reyati — Find trusted care in Qatar<\/title>/i);
+  assert.match(html, /<title>Qivaya — A clearer way through care<\/title>/i);
   assert.match(html, /manifest\.webmanifest/i);
   assert.match(html, /Skip to main content/i);
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   assert.equal(response.headers.get("x-frame-options"), "DENY");
   assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
-  assert.match(html, /Welcome to Reyati/);
+  assert.match(html, /Welcome to Qivaya/);
   assert.match(html, /Care, intelligently connected\./);
-  assert.match(html, /src="\/brand\/reyati-logo\.svg"/);
+  assert.match(html, /src="\/brand\/qivaya-logo-primary\.png"/);
   assert.match(html, /Everything you need, organized around you/);
   assert.match(html, /Only real account activity/);
   assert.doesNotMatch(html, /codex-preview|Building your site|react-loading-skeleton|Dr\. Laila|Mariam Ahmed|prototype journeys|synthetic data/i);
@@ -100,7 +100,7 @@ test("keeps starter preview infrastructure out of the product", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
-  assert.match(layout, /default:\s*"Reyati — Find trusted care in Qatar"/);
+  assert.match(layout, /default:\s*"Qivaya — A clearer way through care"/);
   assert.match(layout, /import "\.\/quality\.css"/);
   assert.match(layout, /import "\.\/ui-polish\.css"/);
   assert.match(layout, /import "\.\/ui-completion\.css"/);
@@ -108,7 +108,7 @@ test("keeps starter preview infrastructure out of the product", async () => {
   assert.match(layout, /<AccessibilitySync\/>/);
   assert.match(page, /fetch\("\/api\/me"/);
   assert.match(page, /fetch\("\/api\/appointments"/);
-  assert.match(page, /Reyati does not invent information for this page/);
+  assert.match(page, /Qivaya does not invent information for this page/);
   assert.doesNotMatch(layout, /codex-preview|_sites-preview/);
   assert.doesNotMatch(page, /SkeletonPreview|_sites-preview/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
@@ -318,7 +318,7 @@ test("ships a durable, user-owned notification inbox for real workflow events", 
   assert.match(appointmentsService, /Appointment request received/);
   assert.match(appointmentsService, /New appointment request/);
   assert.match(verification, /Professional verification approved/);
-  assert.match(page, /Account-owned updates from your real Reyati activity/);
+  assert.match(page, /Account-owned updates from your real Qivaya activity/);
   assert.match(page, /Mark all as read/);
   assert.doesNotMatch(page, /seed:|Role switching|Prototype preferences|synthetic/i);
 });
@@ -553,7 +553,8 @@ test("replaces simulated OTP authentication with the dispatch-owned ChatGPT iden
   assert.match(page, /chatGPTSignInPath\("\/auth"\)/);
   assert.match(page, /chatGPTSignOutPath\("\/"\)/);
   assert.match(authUi, /Signing in identifies you; it does not grant provider/);
-  assert.match(authUi, /Reyati never asks for a password, SMS code, or payment credential/);
+  assert.match(authUi, /The secure sign-in service sends a one-time code to your email/);
+  assert.match(authUi, /Qivaya never asks for payment credentials on this page/);
   assert.match(auth, /oai-authenticated-user-id/);
   assert.match(auth, /safeRelativeReturnPath/);
   assert.match(identityRoute, /getOrCreateCurrentUser/);
@@ -683,7 +684,7 @@ test("replaces fabricated moderation decisions with an audited capability bounda
   assert.match(route, /AuthorizationDeniedError/);
   assert.match(route, /Cache-Control.*no-store/);
   assert.match(page, /fetch\("\/api\/admin\/moderation"/);
-  assert.match(page, /Reyati does not currently collect or publish reviews/);
+  assert.match(page, /Qivaya does not currently collect or publish reviews/);
   assert.match(page, /A public review system must never ask patients to publish diagnoses/);
   assert.match(page, /Requirements before activation/);
   assert.match(page, /\/admin\/cases/);
@@ -897,11 +898,11 @@ test("provides branded recovery for route, application, and missing-page failure
   assert.match(screen, /Try again/);
   assert.match(screen, /Return home/);
   assert.match(screen, /Contact support/);
-  assert.match(screen, /secure Reyati data is not displayed/);
+  assert.match(screen, /secure Qivaya data is not displayed/);
   assert.match(routeError, /retry=\{reset\}/);
   assert.match(routeError, /has not been changed by this failed view/);
   assert.match(globalError, /<html lang="en" dir="ltr">/);
-  assert.match(globalError, /Reyati needs to reload/);
+  assert.match(globalError, /Qivaya needs to reload/);
   assert.match(notFound, /We could not find that page/);
   assert.match(recoveryCss, /\.recovery-shell/);
   assert.match(layout, /recovery\.css/);
@@ -916,7 +917,7 @@ test("reports offline and restored connectivity without claiming workflow succes
 
   assert.match(network, /window\.addEventListener\("offline", markOffline\)/);
   assert.match(network, /window\.addEventListener\("online", markOnline\)/);
-  assert.match(network, /Reyati cannot confirm new saves or status updates/);
+  assert.match(network, /Qivaya cannot confirm new saves or status updates/);
   assert.match(network, /Reload live data before relying on appointment, payment, or access status/);
   assert.match(network, /window\.location\.reload\(\)/);
   assert.match(network, /role="alert" aria-live="assertive"/);
@@ -940,7 +941,7 @@ test("provides truthful route loading feedback and workspace-specific document t
   assert.match(loadingCss, /@keyframes reyati-loading/);
   assert.match(loadingCss, /prefers-reduced-motion:reduce/);
   assert.match(accessibility, /const routeTitles: Record<string, string>/);
-  assert.match(accessibility, /document\.title = `\$\{routeTitle\} · Reyati`/);
+  assert.match(accessibility, /document\.title = `\$\{routeTitle\} · Qivaya`/);
   assert.match(accessibility, /"\/admin\/verification": "Provider verification"/);
   assert.match(accessibility, /"\/provider\/encounter": "Encounter workspace"/);
   assert.match(layout, /route-loading\.css/);
@@ -1097,7 +1098,7 @@ test("protects meaningful unfinished forms before navigation or tab close", asyn
   assert.match(guard, /event\.metaKey \|\| event\.ctrlKey/);
   assert.match(guard, /destination\.origin !== window\.location\.origin/);
   assert.match(guard, /Leave with unsent information\?/);
-  assert.match(guard, /Reyati has not saved this unfinished information/);
+  assert.match(guard, /Qivaya has not saved this unfinished information/);
   assert.match(guard, /ConfirmActionDialog/);
   assert.doesNotMatch(guard, /window\.confirm/);
   assert.match(layout, /<UnsavedChangesGuard\/>/);

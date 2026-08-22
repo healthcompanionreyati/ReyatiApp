@@ -52,7 +52,7 @@ test("immutable events and audit metadata exclude contact values and notes", () 
 });
 
 test("identity and contact claims are clear and safe", () => {
-  assert.match(patient, /ChatGPT identity is read-only/);
+  assert.match(patient, /Sign-in identity is read-only/);
   assert.match(patient, /does not change them or claim contact verification/);
   assert.match(patient, /Read-only · not claimed as verified/);
   assert.match(patient, /user-entered, and not a verified contact method/);

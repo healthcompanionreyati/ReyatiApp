@@ -32,7 +32,7 @@ test("visibility requires explicit consent and remains patient controlled",()=>{
   assert.match(service,/visibility === "emergency_summary" && !consentGranted/);
   assert.match(service,/Explicit consent is required/);
   assert.match(patient,/I explicitly consent/);
-  assert.match(patient,/Only I can see it inside Reyati/);
+  assert.match(patient,/Only I can see it inside Qivaya/);
   assert.match(patient,/It is not shared or sent/);
 });
 

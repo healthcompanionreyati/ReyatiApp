@@ -23,7 +23,7 @@ export default function ThemeController() {
   useEffect(() => {
     const initial = preferredTheme();
     applyTheme(initial);
-    setTheme(initial);
+    const initialFrame = window.requestAnimationFrame(() => setTheme(initial));
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const syncSystemTheme = (event: MediaQueryListEvent) => {
@@ -33,7 +33,10 @@ export default function ThemeController() {
       setTheme(next);
     };
     media.addEventListener("change", syncSystemTheme);
-    return () => media.removeEventListener("change", syncSystemTheme);
+    return () => {
+      window.cancelAnimationFrame(initialFrame);
+      media.removeEventListener("change", syncSystemTheme);
+    };
   }, []);
 
   function toggle() {

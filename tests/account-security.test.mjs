@@ -40,8 +40,8 @@ test("central boundaries disable external identity MFA automatic lockout locatio
   assert.match(service,/rawTokenStorageOrDisplay: false/);assert.match(service,/externalRiskScoring: false/);
 });
 
-test("UI clearly scopes revocation to Reyati local authorization",()=>{
-  assert.match(patient,/revocation governs only Reyati's recorded local session authorization/);
+test("UI clearly scopes revocation to Qivaya local authorization",()=>{
+  assert.match(patient,/revocation governs only Qivaya's recorded local session authorization/);
   assert.match(patient,/cannot terminate the hosted ChatGPT identity session/);
   assert.match(service,/localReyatiAuthorizationRevoked: true/);assert.match(service,/hostedChatGPTSessionTerminated: false/);
 });

@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "qivaya-production-monitor",
+  "main": "workers/production-monitor/index.ts",
+  "workers_dev": false,
+  "compatibility_date": "2026-08-22",
+  "vars": {
+    "HEALTH_URL": "https://www.qivaya.com/api/health",
+    "PROVIDERS_URL": "https://www.qivaya.com/providers"
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  }
+}
