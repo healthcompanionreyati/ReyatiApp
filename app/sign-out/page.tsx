@@ -1,20 +1,13 @@
-"use client";
-
-import { useClerk } from "@clerk/nextjs";
-import { useEffect } from "react";
+import Link from "next/link";
+import SignOutClient from "./SignOutClient";
 
 export default function SignOutPage() {
-  const { signOut } = useClerk();
-
-  useEffect(() => {
-    const returnTo = new URLSearchParams(window.location.search).get("redirect_url");
-    const safeReturnTo = returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : "/";
-    void signOut({ redirectUrl: safeReturnTo });
-  }, [signOut]);
+  if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) return <SignOutClient />;
 
   return <main className="clerk-signout" id="main-content">
     <img src="/brand/qivaya-logo-primary.png" alt="Qivaya" />
-    <h1>Signing out securely…</h1>
-    <p>Your Qivaya session is being closed.</p>
+    <h1>Sign-out is unavailable</h1>
+    <p>Authentication is not configured for this environment.</p>
+    <Link href="/">Return to Qivaya</Link>
   </main>;
 }

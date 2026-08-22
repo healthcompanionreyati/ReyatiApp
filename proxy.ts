@@ -5,23 +5,38 @@ const clerkEnabled = Boolean(
   process.env.CLERK_SECRET_KEY && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
 );
 
-const withClerk = clerkMiddleware(async (_auth, request) => {
-  const { pathname, searchParams } = request.nextUrl;
+const productionAuthorizedParties = [
+  "https://qivaya.com",
+  "https://www.qivaya.com",
+];
 
-  if (pathname === "/signin-with-chatgpt") {
-    const destination = new URL("/sign-in", request.url);
-    destination.searchParams.set("redirect_url", safeReturnPath(searchParams.get("return_to")));
-    return NextResponse.redirect(destination);
-  }
+const withClerk = clerkMiddleware(
+  async (_auth, request) => {
+    const { pathname, searchParams } = request.nextUrl;
 
-  if (pathname === "/signout-with-chatgpt") {
-    const destination = new URL("/sign-out", request.url);
-    destination.searchParams.set("redirect_url", safeReturnPath(searchParams.get("return_to")));
-    return NextResponse.redirect(destination);
-  }
+    if (pathname === "/signin-with-chatgpt") {
+      const destination = new URL("/sign-in", request.url);
+      destination.searchParams.set("redirect_url", safeReturnPath(searchParams.get("return_to")));
+      return NextResponse.redirect(destination);
+    }
 
-  return NextResponse.next();
-});
+    if (pathname === "/signout-with-chatgpt") {
+      const destination = new URL("/sign-out", request.url);
+      destination.searchParams.set("redirect_url", safeReturnPath(searchParams.get("return_to")));
+      return NextResponse.redirect(destination);
+    }
+
+    return NextResponse.next();
+  },
+  (request) => ({
+    // Do not trust the request Host header in production. Clerk validates the
+    // session token's `azp` claim against only Qivaya's canonical origins.
+    authorizedParties:
+      process.env.VERCEL_ENV === "production"
+        ? productionAuthorizedParties
+        : developmentAuthorizedParties(request),
+  }),
+);
 
 export default clerkEnabled
   ? withClerk
@@ -46,4 +61,12 @@ function safeReturnPath(value: string | null) {
   } catch {
     return "/";
   }
+}
+
+function developmentAuthorizedParties(request: NextRequest) {
+  const parties = new Set([request.nextUrl.origin]);
+  for (const hostname of [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]) {
+    if (hostname) parties.add(`https://${hostname}`);
+  }
+  return [...parties];
 }
