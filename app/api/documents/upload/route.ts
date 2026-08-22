@@ -26,7 +26,7 @@ async function boundedBytes(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!foundationFlags.medicalDocumentUploads || !foundationFlags.documentScanCallbacks) return Response.json({ error: "not_found" }, { status: 404, headers: noStore });
+  if (!foundationFlags.medicalDocumentUploads || !foundationFlags.documentScanDispatch || !foundationFlags.documentScanPolling) return Response.json({ error: "not_found" }, { status: 404, headers: noStore });
   try {
     const user = await getOrCreateCurrentUser(); if (user.status !== "active") throw new AuthorizationDeniedError();
     await enforceWriteRateLimit(user.id, "documents.upload.complete", { limit: 10 });

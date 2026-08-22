@@ -16,6 +16,7 @@
     "test:privileged": "node tests/privileged-workflows.mjs",
     "test:email-delivery": "node scripts/smoke-email-delivery.mjs",
     "test:document-maintenance": "node scripts/smoke-document-maintenance.mjs",
+    "test:document-scanner": "node --test tests/document-scanner-opswat.test.mjs tests/document-scan-polling.test.mjs tests/document-upload.test.mjs tests/document-scanning.test.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:communications-worker": "tsc --noEmit -p workers/communications-dispatcher/tsconfig.json",
     "typecheck:document-maintenance-worker": "tsc --noEmit -p workers/document-maintenance/tsconfig.json",

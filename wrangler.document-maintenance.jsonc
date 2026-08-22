@@ -4,12 +4,14 @@
   "main": "workers/document-maintenance/index.ts",
   "workers_dev": false,
   "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "UPLOAD_CLEANUP_URL": "https://www.qivaya.com/api/internal/document-upload-cleanup",
-    "SCAN_RECOVERY_URL": "https://www.qivaya.com/api/internal/document-scan-recovery"
+    "SCAN_RECOVERY_URL": "https://www.qivaya.com/api/internal/document-scan-recovery",
+    "SCAN_POLL_URL": "https://www.qivaya.com/api/internal/document-scan-poll"
   },
   "triggers": {
-    "crons": ["*/10 * * * *"]
+    "crons": ["* * * * *", "*/10 * * * *"]
   },
   "observability": {
     "enabled": true,

@@ -9,10 +9,10 @@ const storage = await readFile(new URL("../lib/document-storage.ts", import.meta
 const schema = await readFile(new URL("../db/schema.ts", import.meta.url), "utf8");
 const migration = await readFile(new URL("../drizzle/0022_condemned_deathstrike.sql", import.meta.url), "utf8");
 
-test("upload completion remains hidden unless uploads and scan callbacks are both active", () => {
-  assert.match(route, /!foundationFlags\.medicalDocumentUploads \|\| !foundationFlags\.documentScanCallbacks/);
-  assert.match(upload, /!foundationFlags\.medicalDocumentUploads \|\| !foundationFlags\.documentScanCallbacks/);
-  assert.match(medical, /foundationFlags\.medicalDocumentUploads && foundationFlags\.documentScanCallbacks && storageConfigured && malwareScannerConfigured/);
+test("upload completion remains hidden unless upload, dispatch, and polling gates are active", () => {
+  assert.match(route, /!foundationFlags\.medicalDocumentUploads \|\| !foundationFlags\.documentScanDispatch \|\| !foundationFlags\.documentScanPolling/);
+  assert.match(upload, /!foundationFlags\.medicalDocumentUploads \|\| !foundationFlags\.documentScanDispatch \|\| !foundationFlags\.documentScanPolling/);
+  assert.match(medical, /foundationFlags\.medicalDocumentUploads && foundationFlags\.documentScanDispatch && foundationFlags\.documentScanPolling && storageConfigured && malwareScannerConfigured/);
 });
 
 test("upload sessions persist category with an expand-only migration", () => {
@@ -48,6 +48,9 @@ test("server computes checksum, stages privately, and records a durable scan han
   assert.match(upload, /status: "scanning"/);
   assert.match(upload, /malwareScanStatus: "pending"/);
   assert.match(upload, /eventType: "scan_requested"/);
+  assert.match(upload, /dispatchPrivateDocumentScan/);
+  assert.match(upload, /documentScanJobs/);
+  assert.match(upload, /providerReference: scan\.providerReference/);
   assert.match(upload, /dedupeKey: `upload:\$\{session\.id\}`/);
 });
 

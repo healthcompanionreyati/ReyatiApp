@@ -212,6 +212,8 @@ export const foundationFlags = {
   communicationsWebhooks: productionFlag("QIVAYA_COMMUNICATIONS_WEBHOOKS"),
   medicalDocumentUploads: false,
   documentScanCallbacks: false,
+  documentScanDispatch: productionFlag("QIVAYA_DOCUMENT_SCAN_DISPATCH"),
+  documentScanPolling: productionFlag("QIVAYA_DOCUMENT_SCAN_POLLING"),
   documentDeletionProcessor: false,
   privateDocumentDelivery: false,
   documentUploadCleanup: productionFlag("QIVAYA_DOCUMENT_UPLOAD_CLEANUP"),

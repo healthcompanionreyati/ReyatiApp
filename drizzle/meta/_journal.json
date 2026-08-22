@@ -645,6 +645,13 @@
       "when": 1786996778288,
       "tag": "0091_square_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 92,
+      "version": "6",
+      "when": 1787389501352,
+      "tag": "0092_old_sabretooth",
+      "breakpoints": true
     }
   ]
 }

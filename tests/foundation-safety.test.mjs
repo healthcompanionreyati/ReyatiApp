@@ -127,6 +127,14 @@ test("all authenticated write APIs use durable privacy-safe rate limits", async 
       assert.match(recovery, /MAX_BATCH_SIZE = 25/);
       continue;
     }
+    if (file.endsWith(path.join("internal", "document-scan-poll", "route.ts"))) {
+      assert.match(contents, /documentScanPolling/);
+      const polling = await source("lib/document-scan-polling.ts");
+      assert.match(polling, /x-reyati-scan-poll-signature/);
+      assert.match(polling, /x-reyati-scan-poll-timestamp/);
+      assert.match(polling, /MAX_BATCH_SIZE = 25/);
+      continue;
+    }
     assert.match(contents, /@\/lib\/rate-limits/, `${path.relative(root, file)} lacks the shared limiter`);
     assert.match(contents, /rateLimitResponse/, `${path.relative(root, file)} lacks a 429 response path`);
   }
@@ -148,10 +156,10 @@ test("medical documents remain metadata-only, consent-scoped, and upload-gated",
   const providerPage = await source("app/provider/documents/page.tsx");
   const hosting = await source(".openai/hosting.json");
   assert.match(schema, /sqliteTable\("document_shares"/);
-  for (const table of ["document_upload_sessions", "document_processing_events", "document_access_grants", "document_deletion_jobs"]) assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
+  for (const table of ["document_upload_sessions", "document_processing_events", "document_scan_jobs", "document_access_grants", "document_deletion_jobs"]) assert.match(schema, new RegExp(`sqliteTable\\("${table}"`));
   assert.match(service, /foundationFlags\.medicalDocumentUploads/);
   assert.match(hosting, /"r2": "DOCUMENTS"/);
-  assert.match(service, /foundationFlags\.medicalDocumentUploads && foundationFlags\.documentScanCallbacks && storageConfigured && malwareScannerConfigured/);
+  assert.match(service, /foundationFlags\.medicalDocumentUploads && foundationFlags\.documentScanDispatch && foundationFlags\.documentScanPolling && storageConfigured && malwareScannerConfigured/);
   assert.match(service, /10 \* 1024 \* 1024/);
   assert.match(service, /maxPages: 25/);
   assert.match(service, /MAX_SHARE_DAYS = 30/);

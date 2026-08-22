@@ -1,7 +1,7 @@
-import { getRuntimeEnv } from "@/lib/runtime-env";
 import { and, eq, gt } from "drizzle-orm";
 import { getDb } from "@/db";
-import { auditEvents, documentProcessingEvents, documentRecords, documentUploadSessions } from "@/db/schema";
+import { auditEvents, documentProcessingEvents, documentRecords, documentScanJobs, documentUploadSessions } from "@/db/schema";
+import { dispatchPrivateDocumentScan } from "@/lib/document-scanner-opswat";
 import { deletePrivateDocumentObject, stagePrivateDocumentObject } from "@/lib/document-storage";
 import { foundationFlags } from "@/lib/foundation-flags";
 
@@ -25,7 +25,7 @@ async function sha256(bytes: Uint8Array) {
 }
 
 export async function completePrivateDocumentUpload(input: { userId: string; sessionId: string; expectedVersion: number; contentType: string; bytes: Uint8Array }) {
-  if (!foundationFlags.medicalDocumentUploads || !foundationFlags.documentScanCallbacks) throw new DocumentUploadError("not_found", 404);
+  if (!foundationFlags.medicalDocumentUploads || !foundationFlags.documentScanDispatch || !foundationFlags.documentScanPolling) throw new DocumentUploadError("not_found", 404);
   if (!input.sessionId || input.sessionId.length > 128 || !Number.isSafeInteger(input.expectedVersion) || input.expectedVersion < 1) throw new DocumentUploadError("invalid_request", 400);
   if (input.bytes.byteLength < 1 || input.bytes.byteLength > MAX_FILE_BYTES) throw new DocumentUploadError("invalid_file_size", 413);
   const db = await getDb(); const now = new Date();
@@ -47,11 +47,13 @@ export async function completePrivateDocumentUpload(input: { userId: string; ses
   try {
     const stored = await stagePrivateDocumentObject({ objectKey: session.objectKey, body: input.bytes, contentType: input.contentType, ownerReference: input.userId, expectedSizeBytes: session.expectedSizeBytes, checksumSha256 });
     if (stored.size !== session.expectedSizeBytes) throw new Error("Stored object size differs from upload session");
-    const completedAt = new Date(); const env = await getRuntimeEnv(); const scannerProvider = env.DOCUMENT_SCAN_PROVIDER?.trim() ?? null;
+    const scan = await dispatchPrivateDocumentScan({ documentId, contentType: input.contentType, bytes: input.bytes });
+    const completedAt = new Date();
     await db.batch([
       db.insert(documentRecords).values({ id: documentId, ownerUserId: input.userId, sourceOrganizationId: null, objectKey: session.objectKey, category: session.category, verificationStatus: "unverified", contentType: session.expectedContentType, sizeBytes: session.expectedSizeBytes, checksumSha256, status: "scanning", pageCount: null, capturedAt: null, malwareScanStatus: "pending", quarantineReasonCode: null, retentionState: "active", deletionEligibleAt: null, deletedAt: null, version: 1, createdAt: completedAt, updatedAt: completedAt }),
       db.update(documentUploadSessions).set({ documentId, status: "uploaded", completedAt, version: session.version + 2, updatedAt: completedAt }).where(and(eq(documentUploadSessions.id, session.id), eq(documentUploadSessions.ownerUserId, input.userId), eq(documentUploadSessions.status, "uploading"), eq(documentUploadSessions.version, session.version + 1))),
-      db.insert(documentProcessingEvents).values({ id: crypto.randomUUID(), documentId, eventType: "scan_requested", providerReference: scannerProvider, reasonCode: null, dedupeKey: `upload:${session.id}`, occurredAt: completedAt, createdAt: completedAt }),
+      db.insert(documentProcessingEvents).values({ id: crypto.randomUUID(), documentId, eventType: "scan_requested", providerReference: scan.providerReference, reasonCode: null, dedupeKey: `upload:${session.id}`, occurredAt: completedAt, createdAt: completedAt }),
+      db.insert(documentScanJobs).values({ id: crypto.randomUUID(), documentId, provider: scan.provider, providerReference: scan.providerReference, status: "submitted", attemptCount: 0, nextAttemptAt: completedAt, leaseExpiresAt: null, lastErrorCode: null, completedAt: null, version: 1, createdAt: completedAt, updatedAt: completedAt }),
       db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: input.userId, organizationId: null, action: "document.upload_completed", resourceType: "document", resourceId: documentId, outcome: "success", metadataJson: JSON.stringify({ uploadSessionId: session.id, sizeBytes: session.expectedSizeBytes, contentType: session.expectedContentType }), createdAt: completedAt }),
     ]);
     return { documentId, status: "scanning", malwareScanStatus: "pending" } as const;

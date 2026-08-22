@@ -5,13 +5,14 @@ Status: Production cleanup and scan-recovery are active and verified. Preview re
 ## Architecture
 
 - Cloudflare Worker: `qivaya-document-maintenance`
-- Schedule: every ten minutes, UTC
+- Schedule: scan polling every minute; cleanup and stalled-scan recovery every ten minutes, UTC
 - Upload cleanup endpoint: `/api/internal/document-upload-cleanup`
 - Scan recovery endpoint: `/api/internal/document-scan-recovery`
+- Scan polling endpoint: `/api/internal/document-scan-poll` (disabled until scanner activation)
 - Authentication: independent HMAC-SHA256 secrets, five-minute clock-skew limit, unique run identifiers, and bounded JSON bodies
 - Logging: event name, status, and cron expression only; no identifiers, object keys, signatures, or response bodies
 
-The Worker treats a `404` response as an intentionally disabled capability. One job failing does not prevent the other job from running, but the scheduled invocation is marked incomplete for observability.
+The Worker treats a `404` response as an intentionally disabled capability. One job failing does not prevent another job from running, but the scheduled invocation is marked incomplete for observability.
 
 ## Upload cleanup boundary
 
@@ -58,4 +59,4 @@ Set both environment gates to `false` and redeploy Vercel. The Worker will conti
 
 ## Separate launch gate
 
-This maintenance service does not activate patient uploads, scanner callbacks, private content delivery, or retention deletion. Those capabilities remain independently disabled until a malware-scanner provider, scan dispatch contract, reviewed retention policy, and production security approval exist.
+This maintenance service does not activate patient uploads, scanner dispatch/polling, scanner callbacks, private content delivery, or retention deletion. Those capabilities remain independently disabled until the scanner activation checklist and the relevant production security reviews are complete.

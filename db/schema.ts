@@ -1345,6 +1345,25 @@ export const documentProcessingEvents = sqliteTable("document_processing_events"
   index("idx_document_processing_events_document_occurred").on(table.documentId, table.occurredAt),
 ]);
 
+export const documentScanJobs = sqliteTable("document_scan_jobs", {
+  id: text("id").primaryKey(),
+  documentId: text("document_id").notNull().references(() => documentRecords.id, { onDelete: "restrict" }),
+  provider: text("provider").notNull(),
+  providerReference: text("provider_reference").notNull(),
+  status: text("status").notNull().default("submitted"),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  nextAttemptAt: integer("next_attempt_at", { mode: "timestamp_ms" }).notNull(),
+  leaseExpiresAt: integer("lease_expires_at", { mode: "timestamp_ms" }),
+  lastErrorCode: text("last_error_code"),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_document_scan_jobs_document").on(table.documentId),
+  uniqueIndex("idx_document_scan_jobs_provider_reference").on(table.provider, table.providerReference),
+  index("idx_document_scan_jobs_status_next_attempt").on(table.status, table.nextAttemptAt),
+]);
+
 export const documentAccessGrants = sqliteTable("document_access_grants", {
   id: text("id").primaryKey(),
   documentId: text("document_id").notNull().references(() => documentRecords.id, { onDelete: "restrict" }),

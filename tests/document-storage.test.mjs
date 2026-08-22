@@ -27,7 +27,7 @@ test("private object keys are generated centrally and never enter public session
 
 test("R2 configuration alone cannot activate document uploads", () => {
   assert.match(flags, /medicalDocumentUploads: false/);
-  assert.match(service, /foundationFlags\.medicalDocumentUploads && foundationFlags\.documentScanCallbacks && storageConfigured && malwareScannerConfigured/);
+  assert.match(service, /foundationFlags\.medicalDocumentUploads && foundationFlags\.documentScanDispatch && foundationFlags\.documentScanPolling && storageConfigured && malwareScannerConfigured/);
   assert.match(service, /if \(!readiness\.uploadEnabled\)/);
 });
 

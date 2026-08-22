@@ -72,7 +72,7 @@ export async function getOperationsHealth(userId: string, operatorName: string) 
     { id: "backup_rehearsal", name: "Hosted backup restoration rehearsal", status: "partial", note: "The evidence workflow is implemented; readiness still requires a recent independently verified full-platform rehearsal within both recovery targets." },
     { id: "retention_enforcement", name: "Automated retention enforcement", status: "partial", note: "Approved-plan governance and hold-aware preview runs are implemented; job creation, scheduled execution, and activation remain disabled." },
     { id: "document_upload_cleanup", name: "Expired document-upload cleanup", status: "partial", note: "Signed bounded cleanup and privacy-safe backlog counts are implemented; scheduled activation and alert thresholds remain outstanding." },
-    { id: "document_scan_recovery", name: "Stalled document-scan recovery", status: "partial", note: "Signed leased timeout quarantine and privacy-safe stalled counts are implemented; scanner dispatch, scheduling, and alert thresholds remain outstanding." },
+    { id: "document_scan_recovery", name: "Medical-document scanning", status: "partial", note: "Private OPSWAT dispatch, durable signed polling, bounded retries, and timeout quarantine are implemented but remain disabled pending commercial private-processing credentials, PDF page-count assurance, and security activation review." },
     { id: "platform_rate_limiting", name: "Platform-wide write rate limiting", status: "implemented", note: "Authenticated writes use durable account and operation buckets with hashed identities and retry timing." },
   ] as const;
 

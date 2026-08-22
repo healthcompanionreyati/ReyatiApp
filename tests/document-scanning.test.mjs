@@ -23,7 +23,7 @@ test("document scanner callback is signed, time-bounded, and replay-safe", () =>
 });
 
 test("scanner payload never supplies object keys and only scanning documents can change", () => {
-  const payloadType = scanner.slice(scanner.indexOf("type ScanPayload"), scanner.indexOf("export async function processDocumentScanWebhook"));
+  const payloadType = scanner.slice(scanner.indexOf("type ScanPayload"), scanner.indexOf("export type TrustedDocumentScanResult"));
   assert.doesNotMatch(payloadType, /objectKey/);
   assert.match(scanner, /document\[0\]\.status !== "scanning"/);
   assert.match(scanner, /eq\(documentRecords\.version, document\[0\]\.version\)/);
