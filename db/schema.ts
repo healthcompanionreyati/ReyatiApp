@@ -323,6 +323,22 @@ export const retentionExecutionRuns = sqliteTable("retention_execution_runs", {
   index("idx_retention_execution_runs_status_lease").on(table.status, table.leaseExpiresAt),
 ]);
 
+export const retentionSafetyRehearsals = sqliteTable("retention_safety_rehearsals", {
+  id: text("id").primaryKey(),
+  suiteVersion: text("suite_version").notNull(),
+  scenarioCount: integer("scenario_count").notNull(),
+  passedScenarios: integer("passed_scenarios").notNull(),
+  failedScenarios: integer("failed_scenarios").notNull(),
+  result: text("result").notNull(),
+  dataMode: text("data_mode").notNull().default("synthetic_only"),
+  documentsChanged: integer("documents_changed").notNull().default(0),
+  deletionJobsCreated: integer("deletion_jobs_created").notNull().default(0),
+  objectsDeleted: integer("objects_deleted").notNull().default(0),
+  externalCalls: integer("external_calls").notNull().default(0),
+  executedByUserId: text("executed_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_retention_safety_rehearsals_executed").on(table.executedAt)]);
+
 export const retentionAutomationPlanEvents = sqliteTable("retention_automation_plan_events", {
   id: text("id").primaryKey(),
   planId: text("plan_id").notNull().references(() => retentionAutomationPlans.id, { onDelete: "restrict" }),

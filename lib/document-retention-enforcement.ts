@@ -5,6 +5,7 @@ import { DocumentDeletionError, processDocumentDeletionJob } from "@/lib/documen
 import { foundationFlags } from "@/lib/foundation-flags";
 import { hasActiveDocumentLegalHold } from "@/lib/legal-hold-operations";
 import { getRuntimeEnv } from "@/lib/runtime-env";
+import { isActiveDocumentAccess, isRetentionCandidate } from "@/lib/document-retention-safety";
 
 const MAX_CLOCK_SKEW_SECONDS = 5 * 60;
 const MAX_BATCH_SIZE = 25;
@@ -61,10 +62,10 @@ function cadenceRunKey(planId: string, cadence: string, now: Date) {
 async function activeAccessExists(documentId: string) {
   const db = await getDb(); const now = new Date();
   const [shares, grants] = await Promise.all([
-    db.select({ id: documentShares.id }).from(documentShares).where(and(eq(documentShares.documentId, documentId), eq(documentShares.status, "active"), gt(documentShares.expiresAt, now))).limit(1),
-    db.select({ id: documentAccessGrants.id }).from(documentAccessGrants).where(and(eq(documentAccessGrants.documentId, documentId), eq(documentAccessGrants.status, "active"), gt(documentAccessGrants.expiresAt, now))).limit(1),
+    db.select({ status: documentShares.status, expiresAt: documentShares.expiresAt }).from(documentShares).where(and(eq(documentShares.documentId, documentId), eq(documentShares.status, "active"), gt(documentShares.expiresAt, now))).limit(1),
+    db.select({ status: documentAccessGrants.status, expiresAt: documentAccessGrants.expiresAt }).from(documentAccessGrants).where(and(eq(documentAccessGrants.documentId, documentId), eq(documentAccessGrants.status, "active"), gt(documentAccessGrants.expiresAt, now))).limit(1),
   ]);
-  return Boolean(shares[0] || grants[0]);
+  return shares.some((access)=>isActiveDocumentAccess(access,now)) || grants.some((access)=>isActiveDocumentAccess(access,now));
 }
 
 export async function processDocumentRetentionEnforcement(rawBody: string, headers: Headers) {
@@ -91,13 +92,14 @@ export async function processDocumentRetentionEnforcement(rawBody: string, heade
     executionRunId = existing.id; executionVersion = existing.version + 1;
   }
   try {
-  const candidates = await db.select({ id: documentRecords.id, version: documentRecords.version, sourceOrganizationId: documentRecords.sourceOrganizationId })
+  const candidates = await db.select({ id: documentRecords.id, ownerUserId: documentRecords.ownerUserId, sourceOrganizationId: documentRecords.sourceOrganizationId, status: documentRecords.status, retentionState: documentRecords.retentionState, deletionEligibleAt: documentRecords.deletionEligibleAt, version: documentRecords.version })
     .from(documentRecords).where(and(
       eq(documentRecords.retentionState, "active"), lte(documentRecords.deletionEligibleAt, startedAt),
       inArray(documentRecords.status, ["ready", "quarantined", "rejected"]),
     )).orderBy(documentRecords.deletionEligibleAt).limit(limit);
   let queued = 0; let excludedByHold = 0; let excludedByAccess = 0; let skipped = 0;
   for (const document of candidates) {
+    if (!isRetentionCandidate(document, startedAt)) { skipped += 1; continue; }
     if (await hasActiveDocumentLegalHold(document.id)) { excludedByHold += 1; continue; }
     if (await activeAccessExists(document.id)) { excludedByAccess += 1; continue; }
     const existing = await db.select({ id: documentDeletionJobs.id }).from(documentDeletionJobs).where(eq(documentDeletionJobs.documentId, document.id)).limit(1);

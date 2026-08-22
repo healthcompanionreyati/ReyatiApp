@@ -5,6 +5,7 @@ import { auditEvents, documentAccessGrants, documentDeletionJobs, documentRecord
 import { deletePrivateDocumentObject } from "@/lib/document-storage";
 import { foundationFlags } from "@/lib/foundation-flags";
 import { hasActiveDocumentLegalHold } from "@/lib/legal-hold-operations";
+import { canClaimDocumentDeletionJob, isActiveDocumentAccess } from "@/lib/document-retention-safety";
 
 const MAX_CLOCK_SKEW_SECONDS = 5 * 60;
 const LEASE_MILLISECONDS = 5 * 60 * 1000;
@@ -88,10 +89,10 @@ export async function processDocumentDeletionJob(jobId: string, runId: string) {
     return { accepted: true, matched: true, blocked: true } as const;
   }
   if (row.retentionState !== "deletion_pending" || !row.deletionEligibleAt || row.deletionEligibleAt > now) throw new DocumentDeletionError("not_deletion_eligible", 409);
-  const activeShares = await db.select({ id: documentShares.id }).from(documentShares).where(and(eq(documentShares.documentId, row.documentId), eq(documentShares.status, "active"))).limit(1);
-  const activeGrants = await db.select({ id: documentAccessGrants.id }).from(documentAccessGrants).where(and(eq(documentAccessGrants.documentId, row.documentId), eq(documentAccessGrants.status, "active"))).limit(1);
-  if (activeShares[0] || activeGrants[0]) throw new DocumentDeletionError("active_access_exists", 409);
-  const canClaim = row.jobStatus === "pending" || row.jobStatus === "retrying" || (row.jobStatus === "processing" && Boolean(row.leaseExpiresAt && row.leaseExpiresAt < now));
+  const activeShares = await db.select({ status: documentShares.status, expiresAt: documentShares.expiresAt }).from(documentShares).where(and(eq(documentShares.documentId, row.documentId), eq(documentShares.status, "active"))).limit(1);
+  const activeGrants = await db.select({ status: documentAccessGrants.status, expiresAt: documentAccessGrants.expiresAt }).from(documentAccessGrants).where(and(eq(documentAccessGrants.documentId, row.documentId), eq(documentAccessGrants.status, "active"))).limit(1);
+  if (activeShares.some((access)=>isActiveDocumentAccess(access,now)) || activeGrants.some((access)=>isActiveDocumentAccess(access,now))) throw new DocumentDeletionError("active_access_exists", 409);
+  const canClaim = canClaimDocumentDeletionJob({status:row.jobStatus,leaseExpiresAt:row.leaseExpiresAt},now);
   if (!canClaim) throw new DocumentDeletionError("job_unavailable", 409);
   const attemptCount = row.attemptCount + 1; const leaseExpiresAt = new Date(now.getTime() + LEASE_MILLISECONDS);
   const claimed = await db.update(documentDeletionJobs).set({ status: "processing", attemptCount, leaseExpiresAt, lastErrorCode: null, version: row.jobVersion + 1, updatedAt: now })

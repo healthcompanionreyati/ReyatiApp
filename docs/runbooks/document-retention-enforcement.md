@@ -2,6 +2,8 @@
 
 Status: Production implementation deployed behind disabled gates. No retention deletion is active.
 
+The protected Retention Automation Centre also provides a 22-scenario synthetic safety rehearsal. It exercises the same eligibility, legal-hold, active-access, and lease rules used by the production executor, records aggregate evidence, and has zero document, deletion-job, R2-object, or external-call side effects.
+
 ## Execution boundary
 
 - Endpoint: `/api/internal/document-retention-enforcement`
@@ -29,12 +31,13 @@ The executor requires one approved `medical_documents` lifecycle policy and one 
 1. Confirm the intended production D1 database and R2 bucket.
 2. Confirm an independently approved medical-document lifecycle policy and automation plan exist with an accountable owner.
 3. Confirm there are no unexplained eligible documents in a preview run.
-4. Confirm legal-hold placement and independent release across all four scopes using synthetic records.
-5. Configure the shared HMAC secret in Vercel Production and Cloudflare.
-6. Deploy with both gates false and confirm unsigned/disabled requests return `404`.
-7. Enable both gates in a monitored change window.
-8. Run a signed batch with limit 1 against an approved synthetic eligible record, then verify R2 absence, job completion, metadata state, and audit evidence.
-9. Increase to the approved batch limit only after the rehearsal passes.
+4. Run the 22-scenario zero-side-effect safety rehearsal and confirm all shared policy rules pass. This does not replace the later isolated destructive rehearsal.
+5. Confirm legal-hold placement and independent release across all four scopes using approved synthetic records in an isolated rehearsal boundary.
+6. Configure the shared HMAC secret in Vercel Production and Cloudflare.
+7. Deploy with both gates false and confirm unsigned/disabled requests return `404`.
+8. Enable both gates only in the isolated, monitored destructive-rehearsal boundary.
+9. Run a signed batch with limit 1 against one approved synthetic eligible record, then verify R2 absence, job completion, metadata state, and audit evidence.
+10. Return both gates to false. Production activation still requires the approved policy, independent plan review, and change-window decision.
 
 ## Emergency rollback
 
