@@ -23,3 +23,12 @@ test("maintenance gates default closed and require explicit environment activati
   assert.match(flags, /documentUploadCleanup: productionFlag\("QIVAYA_DOCUMENT_UPLOAD_CLEANUP"\)/);
   assert.match(flags, /documentScanRecovery: productionFlag\("QIVAYA_DOCUMENT_SCAN_RECOVERY"\)/);
 });
+
+test("production smoke invocation is fixed-origin, signed, bounded, and aggregate-only", async () => {
+  const smoke = await source("scripts/smoke-document-maintenance.mjs");
+  assert.match(smoke, /const origin = "https:\/\/www\.qivaya\.com"/);
+  assert.match(smoke, /createHmac\("sha256"/);
+  assert.match(smoke, /JSON\.stringify\(\{ limit: 20 \}\)/);
+  assert.match(smoke, /cleanup\.failed !== 0 \|\| recovery\.failed !== 0/);
+  assert.doesNotMatch(smoke, /console\.log\([^\n]*(?:secret|signature|runId|payload)/);
+});
