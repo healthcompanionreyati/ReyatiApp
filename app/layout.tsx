@@ -67,10 +67,12 @@ import "./support-finance-experience.css";
 import "./core-experience.css";
 import "./admin-visual-overrides.css";
 import "./qivaya-brand.css";
+import "./qivaya-overhaul.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";
 import UnsavedChangesGuard from "./components/UnsavedChangesGuard";
+import ThemeController from "./components/ThemeController";
 
 export const metadata: Metadata = {
   title: {
@@ -102,8 +104,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const content = <><a className="skip-link" href="#main-content">Skip to main content</a>{children}<NetworkStatus/><UnsavedChangesGuard/><AccessibilitySync/><MobileDock/></>;
-  return <html lang="en" dir="ltr"><body>{process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  const content = <><a className="skip-link" href="#main-content">Skip to main content</a>{children}<NetworkStatus/><UnsavedChangesGuard/><AccessibilitySync/><MobileDock/><ThemeController/></>;
+  return <html lang="en" dir="ltr" suppressHydrationWarning><body>{process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
     ? <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} signInUrl="/sign-in" signUpUrl="/sign-up">{content}</ClerkProvider>
     : content}</body></html>;
 }

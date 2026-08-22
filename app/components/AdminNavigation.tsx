@@ -95,11 +95,11 @@ export default function AdminNavigation({ ar }: { ar: boolean }) {
       <span aria-hidden="true">⌕</span>
       <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "ابحث في الأدوات" : "Find a workspace"} aria-label={ar ? "ابحث في الأدوات" : "Find a workspace"}/>
     </label>
-    {!normalized && <div className="admin-nav-primary">{primary.map((item) => <NavLink key={item.href} item={item} ar={ar} active={path === item.href}/>)}</div>}
+    {!normalized && <div className="admin-nav-primary">{primary.map((item) => <NavLink key={item.href} item={item} ar={ar} active={item.href === "/admin" ? path === item.href : path === item.href || path.startsWith(`${item.href}/`)}/>)}</div>}
     <div className="admin-nav-groups">
-      {filtered.map((group, index) => <details key={group.en} open={Boolean(normalized) || index === 0}>
+      {filtered.map((group) => <details key={group.en} {...(normalized ? { open: true } : { defaultOpen: group.items.some((item) => path === item.href || path.startsWith(`${item.href}/`)) })}>
         <summary><span>{ar ? group.ar : group.en}</span><i aria-hidden="true">⌄</i></summary>
-        <div>{group.items.map((item) => <NavLink key={item.href} item={item} ar={ar} active={path === item.href}/>)}</div>
+        <div>{group.items.map((item) => <NavLink key={item.href} item={item} ar={ar} active={path === item.href || path.startsWith(`${item.href}/`)}/>)}</div>
       </details>)}
       {normalized && !filtered.length && <p className="admin-nav-empty">{ar ? "لا توجد أدوات مطابقة" : "No matching workspaces"}</p>}
     </div>
