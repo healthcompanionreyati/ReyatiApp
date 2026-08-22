@@ -298,6 +298,31 @@ export const retentionPreviewRuns = sqliteTable("retention_preview_runs", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_retention_preview_runs_plan_created").on(table.planId, table.createdAt)]);
 
+export const retentionExecutionRuns = sqliteTable("retention_execution_runs", {
+  id: text("id").primaryKey(),
+  planId: text("plan_id").notNull().references(() => retentionAutomationPlans.id, { onDelete: "restrict" }),
+  policyId: text("policy_id").notNull().references(() => dataLifecyclePolicies.id, { onDelete: "restrict" }),
+  runKey: text("run_key").notNull(),
+  status: text("status").notNull().default("processing"),
+  examined: integer("examined").notNull().default(0),
+  queued: integer("queued").notNull().default(0),
+  excludedByHold: integer("excluded_by_hold").notNull().default(0),
+  excludedByAccess: integer("excluded_by_access").notNull().default(0),
+  completed: integer("completed").notNull().default(0),
+  blocked: integer("blocked").notNull().default(0),
+  failed: integer("failed").notNull().default(0),
+  skipped: integer("skipped").notNull().default(0),
+  leaseExpiresAt: integer("lease_expires_at", { mode: "timestamp_ms" }),
+  lastErrorCode: text("last_error_code"),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_retention_execution_runs_key").on(table.runKey),
+  index("idx_retention_execution_runs_plan_created").on(table.planId, table.createdAt),
+  index("idx_retention_execution_runs_status_lease").on(table.status, table.leaseExpiresAt),
+]);
+
 export const retentionAutomationPlanEvents = sqliteTable("retention_automation_plan_events", {
   id: text("id").primaryKey(),
   planId: text("plan_id").notNull().references(() => retentionAutomationPlans.id, { onDelete: "restrict" }),

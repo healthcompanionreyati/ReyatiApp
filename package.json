@@ -17,6 +17,7 @@
     "test:email-delivery": "node scripts/smoke-email-delivery.mjs",
     "test:document-maintenance": "node scripts/smoke-document-maintenance.mjs",
     "test:document-scanner": "node --test tests/document-scanner-opswat.test.mjs tests/document-scan-polling.test.mjs tests/document-upload.test.mjs tests/document-scanning.test.mjs",
+    "test:document-retention": "node --test tests/document-retention-enforcement.test.mjs tests/document-deletion.test.mjs tests/legal-hold-operations.test.mjs tests/retention-automation.test.mjs tests/document-maintenance-dispatcher.test.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:communications-worker": "tsc --noEmit -p workers/communications-dispatcher/tsconfig.json",
     "typecheck:document-maintenance-worker": "tsc --noEmit -p workers/document-maintenance/tsconfig.json",

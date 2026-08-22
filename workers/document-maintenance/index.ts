@@ -2,13 +2,14 @@ type DocumentMaintenanceEnv = Env & {
   DOCUMENT_CLEANUP_SIGNING_SECRET: string;
   DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET: string;
   DOCUMENT_SCAN_POLL_SIGNING_SECRET: string;
+  DOCUMENT_RETENTION_SIGNING_SECRET: string;
 };
 
 type MaintenanceTarget = {
   event: string;
   url: string;
   secret: string;
-  headerPrefix: "cleanup" | "scan-recovery" | "scan-poll";
+  headerPrefix: "cleanup" | "scan-recovery" | "scan-poll" | "retention";
 };
 
 function base64(bytes: ArrayBuffer) {
@@ -53,10 +54,12 @@ async function invoke(target: MaintenanceTarget, cron: string) {
 async function maintain(env: DocumentMaintenanceEnv, cron: string) {
   const targets: MaintenanceTarget[] = cron === "* * * * *"
     ? [{ event: "documents.scan_poll", url: env.SCAN_POLL_URL, secret: env.DOCUMENT_SCAN_POLL_SIGNING_SECRET, headerPrefix: "scan-poll" }]
-    : [
-        { event: "documents.upload_cleanup", url: env.UPLOAD_CLEANUP_URL, secret: env.DOCUMENT_CLEANUP_SIGNING_SECRET, headerPrefix: "cleanup" },
-        { event: "documents.scan_recovery", url: env.SCAN_RECOVERY_URL, secret: env.DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET, headerPrefix: "scan-recovery" },
-      ];
+    : cron === "7 * * * *"
+      ? [{ event: "documents.retention_enforcement", url: env.RETENTION_ENFORCEMENT_URL, secret: env.DOCUMENT_RETENTION_SIGNING_SECRET, headerPrefix: "retention" }]
+      : [
+          { event: "documents.upload_cleanup", url: env.UPLOAD_CLEANUP_URL, secret: env.DOCUMENT_CLEANUP_SIGNING_SECRET, headerPrefix: "cleanup" },
+          { event: "documents.scan_recovery", url: env.SCAN_RECOVERY_URL, secret: env.DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET, headerPrefix: "scan-recovery" },
+        ];
   const results = await Promise.allSettled(targets.map((target) => invoke(target, cron)));
   if (results.some((result) => result.status === "rejected")) throw new Error("document_maintenance_incomplete");
 }

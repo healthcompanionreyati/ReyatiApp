@@ -54,6 +54,10 @@ export async function processDocumentDeletionInvocation(rawBody: string, headers
   if (!foundationFlags.documentDeletionProcessor) throw new DocumentDeletionError("not_found", 404);
   const runId = await verifyInvocation(rawBody, headers);
   const jobId = parseJobId(rawBody);
+  return processDocumentDeletionJob(jobId, runId);
+}
+
+export async function processDocumentDeletionJob(jobId: string, runId: string) {
   const db = await getDb(); const now = new Date();
   const rows = await db.select({
     jobId: documentDeletionJobs.id, documentId: documentDeletionJobs.documentId, jobStatus: documentDeletionJobs.status,
@@ -78,7 +82,7 @@ export async function processDocumentDeletionInvocation(rawBody: string, headers
   }
   if (row.legalHold || await hasActiveDocumentLegalHold(row.documentId)) {
     if (row.jobStatus !== "blocked") await db.batch([
-      db.update(documentDeletionJobs).set({ status: "blocked", leaseExpiresAt: null, lastErrorCode: "legal_hold", version: row.jobVersion + 1, updatedAt: now }).where(and(eq(documentDeletionJobs.id, jobId), eq(documentDeletionJobs.version, row.jobVersion))),
+      db.update(documentDeletionJobs).set({ status: "blocked", legalHold: true, leaseExpiresAt: null, lastErrorCode: "legal_hold", version: row.jobVersion + 1, updatedAt: now }).where(and(eq(documentDeletionJobs.id, jobId), eq(documentDeletionJobs.version, row.jobVersion))),
       db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: null, organizationId: row.sourceOrganizationId, action: "document.deletion_blocked", resourceType: "document", resourceId: row.documentId, outcome: "blocked", metadataJson: JSON.stringify({ runHash: await sha256(runId), reasonCode: "legal_hold" }), createdAt: now }),
     ]);
     return { accepted: true, matched: true, blocked: true } as const;

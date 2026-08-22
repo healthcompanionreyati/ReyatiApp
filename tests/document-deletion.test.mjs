@@ -8,7 +8,7 @@ const route = await readFile(new URL("../app/api/internal/document-deletion/rout
 const flags = await readFile(new URL("../lib/foundation-flags.ts", import.meta.url), "utf8");
 
 test("document deletion processor remains unreachable until policy activation", () => {
-  assert.match(flags, /documentDeletionProcessor: false/);
+  assert.match(flags, /documentDeletionProcessor: productionFlag\("QIVAYA_DOCUMENT_DELETION_PROCESSOR"\)/);
   assert.match(route, /if \(!foundationFlags\.documentDeletionProcessor\).*not_found/);
   assert.match(processor, /if \(!foundationFlags\.documentDeletionProcessor\).*not_found/);
 });

@@ -5,10 +5,11 @@ Status: Production cleanup and scan-recovery are active and verified. Preview re
 ## Architecture
 
 - Cloudflare Worker: `qivaya-document-maintenance`
-- Schedule: scan polling every minute; cleanup and stalled-scan recovery every ten minutes, UTC
+- Schedule: scan polling every minute; cleanup and stalled-scan recovery every ten minutes; dormant retention enforcement hourly at minute 7, UTC
 - Upload cleanup endpoint: `/api/internal/document-upload-cleanup`
 - Scan recovery endpoint: `/api/internal/document-scan-recovery`
 - Scan polling endpoint: `/api/internal/document-scan-poll` (disabled until scanner activation)
+- Retention enforcement endpoint: `/api/internal/document-retention-enforcement` (disabled until approved-policy activation)
 - Authentication: independent HMAC-SHA256 secrets, five-minute clock-skew limit, unique run identifiers, and bounded JSON bodies
 - Logging: event name, status, and cron expression only; no identifiers, object keys, signatures, or response bodies
 

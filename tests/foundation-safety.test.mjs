@@ -18,13 +18,15 @@ async function routeFiles(directory) {
 test("external capabilities fail closed unless an approved production gate is enabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundSmsDelivery", "medicalDocumentUploads", "documentScanCallbacks", "documentDeletionProcessor", "privateDocumentDelivery"]) {
+  for (const capability of ["independentAuthentication", "outboundSmsDelivery", "medicalDocumentUploads", "documentScanCallbacks", "privateDocumentDelivery"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
   assert.match(flags, /outboundEmailDelivery: productionFlag\("QIVAYA_OUTBOUND_EMAIL_DELIVERY"\)/);
   assert.match(flags, /communicationsWebhooks: productionFlag\("QIVAYA_COMMUNICATIONS_WEBHOOKS"\)/);
   assert.match(flags, /documentUploadCleanup: productionFlag\("QIVAYA_DOCUMENT_UPLOAD_CLEANUP"\)/);
   assert.match(flags, /documentScanRecovery: productionFlag\("QIVAYA_DOCUMENT_SCAN_RECOVERY"\)/);
+  assert.match(flags, /documentDeletionProcessor: productionFlag\("QIVAYA_DOCUMENT_DELETION_PROCESSOR"\)/);
+  assert.match(flags, /retentionAutomationExecution: productionFlag\("QIVAYA_RETENTION_AUTOMATION_EXECUTION"\)/);
   assert.match(flags, /=== "true"/);
 });
 
@@ -133,6 +135,15 @@ test("all authenticated write APIs use durable privacy-safe rate limits", async 
       assert.match(polling, /x-reyati-scan-poll-signature/);
       assert.match(polling, /x-reyati-scan-poll-timestamp/);
       assert.match(polling, /MAX_BATCH_SIZE = 25/);
+      continue;
+    }
+    if (file.endsWith(path.join("internal", "document-retention-enforcement", "route.ts"))) {
+      assert.match(contents, /retentionAutomationExecution/);
+      assert.match(contents, /documentDeletionProcessor/);
+      const enforcement = await source("lib/document-retention-enforcement.ts");
+      assert.match(enforcement, /x-reyati-retention-signature/);
+      assert.match(enforcement, /x-reyati-retention-timestamp/);
+      assert.match(enforcement, /MAX_BATCH_SIZE = 25/);
       continue;
     }
     assert.match(contents, /@\/lib\/rate-limits/, `${path.relative(root, file)} lacks the shared limiter`);
