@@ -81,7 +81,7 @@ export const metadata: Metadata = {
   },
   description: "Connected health that helps people find, access, and continue care with confidence.",
   applicationName: "Qivaya",
-  metadataBase: new URL(process.env.REYATI_APP_URL ?? "https://qivaya.com"),
+  metadataBase: new URL(process.env.REYATI_APP_URL || "https://qivaya.com"),
   alternates: { canonical: "/" },
   manifest: "/manifest.webmanifest",
   icons: { icon: "/brand/qivaya-app-icon.png", apple: "/brand/qivaya-app-icon.png" },
