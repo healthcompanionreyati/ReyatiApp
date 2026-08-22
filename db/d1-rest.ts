@@ -5,6 +5,10 @@ type D1RestResult = {
   error?: string;
 };
 
+type D1RestRawResult = Omit<D1RestResult, "results"> & {
+  results: unknown[][];
+};
+
 type D1StatementPayload = { sql: string; params: unknown[] };
 type D1BatchPayload = { batch: D1StatementPayload[] };
 
@@ -32,8 +36,7 @@ class D1RestPreparedStatement {
   }
 
   async raw() {
-    const result = await this.all();
-    return result.results.map((row) => Object.values(row));
+    return this.database.executeRaw({ sql: this.sql, params: this.params });
   }
 
   async first(column?: string) {
@@ -44,9 +47,11 @@ class D1RestPreparedStatement {
 
 export class D1RestDatabase {
   private readonly endpoint: string;
+  private readonly rawEndpoint: string;
 
   constructor(accountId: string, databaseId: string, private readonly apiToken: string) {
     this.endpoint = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/d1/database/${encodeURIComponent(databaseId)}/query`;
+    this.rawEndpoint = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/d1/database/${encodeURIComponent(databaseId)}/raw`;
   }
 
   prepare(sql: string) {
@@ -67,6 +72,26 @@ export class D1RestDatabase {
   async execute(statement: D1StatementPayload) {
     const results = await this.request(statement);
     return results[0];
+  }
+
+  async executeRaw(statement: D1StatementPayload) {
+    const response = await fetch(this.rawEndpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(statement),
+      cache: "no-store",
+    });
+    const body = await response.json().catch(() => null) as { success?: boolean; result?: D1RestRawResult[]; errors?: { message?: string }[] } | null;
+    if (!response.ok || !body?.success || !Array.isArray(body.result)) {
+      const message = body?.errors?.map((item) => item.message).filter(Boolean).join("; ") || `Cloudflare D1 raw query failed with ${response.status}`;
+      throw new Error(message);
+    }
+    const failed = body.result.find((result) => !result.success);
+    if (failed) throw new Error(failed.error || "Cloudflare D1 raw query failed");
+    return body.result[0]?.results ?? [];
   }
 
   private async request(payload: D1StatementPayload | D1BatchPayload) {

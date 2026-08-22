@@ -13,3 +13,10 @@ test("D1 REST preserves non-boolean values", () => {
   assert.match(source, /: value;/);
   assert.doesNotMatch(source, /JSON\.stringify\(value\)/);
 });
+
+test("D1 REST uses ordered raw rows for Drizzle result mapping", () => {
+  assert.match(source, /\/d1\/database\/\$\{encodeURIComponent\(databaseId\)\}\/raw/);
+  assert.match(source, /return this\.database\.executeRaw/);
+  assert.match(source, /results: unknown\[\]\[\]/);
+  assert.doesNotMatch(source, /Object\.values\(row\)/);
+});
