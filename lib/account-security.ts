@@ -6,15 +6,16 @@ import { requirePlatformRole } from "@/lib/authorization";
 import { foundationFlags } from "@/lib/foundation-flags";
 
 export const ACCOUNT_SECURITY_REHEARSAL_VERSION = "account-security-boundaries-v1";
-export const ACCOUNT_SECURITY_BOUNDARIES = {
-  externalIdentityProviderControls: foundationFlags.accountSecurityExternalIdentityProviderControls,
+export function accountSecurityBoundaries(identityProviderControls = false) { return {
+  externalIdentityProviderControls: identityProviderControls || foundationFlags.accountSecurityExternalIdentityProviderControls,
   mfaEnrollment: foundationFlags.accountSecurityMfaEnrollment,
   automaticRiskLockout: foundationFlags.accountSecurityAutomaticRiskLockout,
   preciseLocation: foundationFlags.accountSecurityPreciseLocation,
-  hostedSessionRevocation: foundationFlags.accountSecurityHostedSessionRevocation,
+  hostedSessionRevocation: identityProviderControls || foundationFlags.accountSecurityHostedSessionRevocation,
   rawTokenStorageOrDisplay: false,
   externalRiskScoring: false,
-} as const;
+} as const; }
+export const ACCOUNT_SECURITY_BOUNDARIES = accountSecurityBoundaries(false);
 
 export class AccountSecurityValidationError extends Error { constructor(message: string) { super(message); this.name = "AccountSecurityValidationError"; } }
 export class AccountSecurityConflictError extends Error { constructor() { super("This session changed. Refresh and try again."); this.name = "AccountSecurityConflictError"; } }
@@ -33,12 +34,44 @@ function reasonCode(value: unknown) {
   if (typeof value !== "string" || !/^[a-z0-9][a-z0-9_:-]{1,63}$/.test(value)) throw new AccountSecurityValidationError("reasonCode must be a coded value"); return value;
 }
 
-async function recordEvent(input: { userId: string; actorUserId: string; sessionId?: string | null; eventType: string; outcome: string; reasonCode?: string | null }) {
+async function recordEvent(input: { userId: string; actorUserId: string; sessionId?: string | null; eventType: string; outcome: string; reasonCode?: string | null; identityProviderActionPerformed?: boolean }) {
   const db = await getDb(), now = new Date();
   await db.batch([
     db.insert(accountSecurityEvents).values({ id: crypto.randomUUID(), userId: input.userId, actorUserId: input.actorUserId, sessionId: input.sessionId ?? null, eventType: input.eventType, outcome: input.outcome, reasonCode: input.reasonCode ?? null, occurredAt: now }),
-    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: input.actorUserId, organizationId: null, action: `account_security.${input.eventType}`, resourceType: "account_security_session", resourceId: input.sessionId ?? "aggregate", outcome: input.outcome, metadataJson: JSON.stringify({ reasonCode: input.reasonCode ?? null, tokenIncluded: false, ipAddressIncluded: false, rawUserAgentIncluded: false, preciseLocationIncluded: false, externalRiskScoreIncluded: false, identityProviderActionPerformed: false }), createdAt: now }),
+    db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: input.actorUserId, organizationId: null, action: `account_security.${input.eventType}`, resourceType: "account_security_session", resourceId: input.sessionId ?? "aggregate", outcome: input.outcome, metadataJson: JSON.stringify({ reasonCode: input.reasonCode ?? null, tokenIncluded: false, ipAddressIncluded: false, rawUserAgentIncluded: false, preciseLocationIncluded: false, externalRiskScoreIncluded: false, identityProviderActionPerformed: input.identityProviderActionPerformed === true }), createdAt: now }),
   ]);
+}
+
+export type AccountSecurityProviderSession = { id:string; status:string; current:boolean; version:number };
+export type AccountSecurityProviderAdapter = {
+  provider: "clerk";
+  currentSessionId: string;
+  listActiveSessions: () => Promise<AccountSecurityProviderSession[]>;
+  revokeSession: (sessionId: string) => Promise<void>;
+};
+
+export async function revokeAccountSecurityProviderSession(userId: string, body: Record<string, unknown>, adapter: AccountSecurityProviderAdapter) {
+  const action = body.action === "revoke_session" ? "revoke_session" : body.action === "revoke_other_sessions" ? "revoke_other_sessions" : null;
+  if (!action) throw new AccountSecurityValidationError("action is invalid");
+  if (body.confirmCurrentAuthenticatedSession !== true) throw new AccountSecurityValidationError("Confirm this action from the current authenticated session");
+  const requestId = boundedId(body.requestId, "requestId"), reason = reasonCode(body.reasonCode), db = await getDb(), now = new Date();
+  if (action === "revoke_session") {
+    const sessionId = boundedId(body.sessionId, "sessionId"), expected = expectedVersion(body.version);
+    const replay = await priorCommand(userId, requestId, action, sessionId); if (replay) return replay;
+    const session = (await adapter.listActiveSessions()).find((item) => item.id === sessionId);
+    if (!session || session.status !== "active" || session.version !== expected) throw new AccountSecurityConflictError();
+    if (session.current || session.id === adapter.currentSessionId) throw new AccountSecurityValidationError("The current session is protected. Sign out from the account menu instead.");
+    await adapter.revokeSession(sessionId);
+    await db.insert(accountSecurityCommands).values({ id: crypto.randomUUID(), userId, requestId, action, targetSessionId: sessionId, resultStatus: "revoked", affectedCount: 1, createdAt: now });
+    await recordEvent({ userId, actorUserId: userId, eventType: "identity_session_revoked", outcome: "success", reasonCode: reason, identityProviderActionPerformed: true });
+    return { status: "revoked", affectedCount: 1, idempotentReplay: false, identityProvider: adapter.provider, identityProviderActionPerformed: true, hostedSessionTerminated: true };
+  }
+  const replay = await priorCommand(userId, requestId, action, null); if (replay) return replay;
+  const targets = (await adapter.listActiveSessions()).filter((session) => !session.current && session.id !== adapter.currentSessionId);
+  for (const session of targets) await adapter.revokeSession(session.id);
+  await db.insert(accountSecurityCommands).values({ id: crypto.randomUUID(), userId, requestId, action, targetSessionId: null, resultStatus: "revoked", affectedCount: targets.length, createdAt: now });
+  await recordEvent({ userId, actorUserId: userId, eventType: "identity_other_sessions_revoked", outcome: "success", reasonCode: reason, identityProviderActionPerformed: true });
+  return { status: "revoked", affectedCount: targets.length, idempotentReplay: false, identityProvider: adapter.provider, identityProviderActionPerformed: true, hostedSessionsTerminated: targets.length, currentSessionProtected: true };
 }
 
 export function coarseDeviceContext(rawUserAgent: string | null): Omit<AccountSecurityDeviceContext, "bindingHash"> {
@@ -73,7 +106,7 @@ export async function getAccountSecurityWorkspace(userId: string, context: Accou
     events,
     reauthentication: { sensitiveActionsRequireCurrentAuthenticatedSession: true, freshIdentityProviderReauthenticationAvailable: false, currentSessionRevocationAllowed: false, hostedChatGPTSessionTerminationAvailable: false },
     privacy: { tokensExposed: false, ipAddressesExposed: false, rawUserAgentsExposed: false, preciseLocationsExposed: false },
-    boundaries: ACCOUNT_SECURITY_BOUNDARIES,
+    boundaries: accountSecurityBoundaries(false),
   };
 }
 
@@ -123,7 +156,7 @@ export async function getAccountSecurityGovernance(userId: string) {
     db.select().from(accountSecurityRehearsals).orderBy(desc(accountSecurityRehearsals.executedAt)).limit(10),
   ]);
   const countStatus = (status: string) => Number(sessionGroups.find((item) => item.status === status)?.count ?? 0);
-  return { visibility: "aggregate_only", asOf: now, metrics: { activeSessions: countStatus("active"), revokedSessions: countStatus("revoked"), expiredSessions: countStatus("expired"), recordedSecurityEvents: eventGroups.reduce((sum, item) => sum + Number(item.count), 0) }, eventAggregates: eventGroups, privacy: { userIdentitiesExposed: false, deviceIdentifiersExposed: false, tokensExposed: false, ipAddressesExposed: false, rawUserAgentsExposed: false }, rehearsals, boundaries: ACCOUNT_SECURITY_BOUNDARIES };
+  return { visibility: "aggregate_only", asOf: now, metrics: { activeSessions: countStatus("active"), revokedSessions: countStatus("revoked"), expiredSessions: countStatus("expired"), recordedSecurityEvents: eventGroups.reduce((sum, item) => sum + Number(item.count), 0) }, eventAggregates: eventGroups, privacy: { userIdentitiesExposed: false, deviceIdentifiersExposed: false, tokensExposed: false, ipAddressesExposed: false, rawUserAgentsExposed: false }, rehearsals, boundaries: accountSecurityBoundaries(Boolean(process.env.CLERK_SECRET_KEY && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)) };
 }
 
 export async function runAccountSecurityRehearsal(userId: string) {

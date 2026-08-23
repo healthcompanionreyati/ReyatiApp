@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),"utf8");
-const schema=read("db/account-security-schema.ts"),service=read("lib/account-security.ts"),patient=read("app/account/security/page.tsx"),admin=read("app/admin/account-security/page.tsx"),api=read("app/api/account/security/route.ts"),adminApi=read("app/api/admin/account-security/route.ts"),css=read("app/account/security/account-security.module.css"),flags=read("lib/foundation-flags.ts");
+const schema=read("db/account-security-schema.ts"),service=read("lib/account-security.ts"),clerk=read("lib/clerk-account-security.ts"),patient=read("app/account/security/page.tsx"),identity=read("app/account/identity/[[...user-profile]]/page.tsx"),admin=read("app/admin/account-security/page.tsx"),api=read("app/api/account/security/route.ts"),adminApi=read("app/api/admin/account-security/route.ts"),css=read("app/account/security/account-security.module.css"),flags=read("lib/foundation-flags.ts");
 
 test("sessions events idempotent commands and rehearsals are durable and indexed",()=>{
   for(const name of ["accountSecuritySessions","accountSecurityEvents","accountSecurityCommands","accountSecurityRehearsals"])assert.match(schema,new RegExp(`export const ${name}`));
@@ -20,7 +20,7 @@ test("patient session reads and writes are strictly owner-scoped and optimistic"
 test("current session is protected and all-other revocation excludes it",()=>{
   assert.match(service,/session\.deviceBindingHash === context\.bindingHash/);
   assert.match(service,/The current session is protected/);assert.match(service,/ne\(accountSecuritySessions\.id, current\.id\)/);
-  assert.match(patient,/Your current session is protected/);assert.match(patient,/Revoke other sessions/);
+  assert.match(patient,/Your current session is protected/);assert.match(patient,/End other sessions/);
 });
 
 test("only privacy-safe coarse device context is derived",()=>{
@@ -40,10 +40,12 @@ test("central boundaries disable external identity MFA automatic lockout locatio
   assert.match(service,/rawTokenStorageOrDisplay: false/);assert.match(service,/externalRiskScoring: false/);
 });
 
-test("UI clearly scopes revocation to Qivaya local authorization",()=>{
-  assert.match(patient,/revocation governs only Qivaya's recorded local session authorization/);
-  assert.match(patient,/cannot terminate the hosted ChatGPT identity session/);
-  assert.match(service,/localReyatiAuthorizationRevoked: true/);assert.match(service,/hostedChatGPTSessionTerminated: false/);
+test("production UI and API use real Clerk session revocation",()=>{
+  assert.match(patient,/Ending a session revokes it with Clerk/);
+  assert.match(patient,/Password & MFA/);assert.match(identity,/UserProfile/);
+  assert.match(api,/getClerkAccountSecurityContext/);assert.match(api,/revokeAccountSecurityProviderSession/);
+  assert.match(clerk,/getSessionList/);assert.match(clerk,/revokeSession/);assert.match(clerk,/session\.userId !== context\.userId/);
+  assert.match(service,/identityProviderActionPerformed: true/);assert.match(service,/hostedSessionTerminated: true/);
 });
 
 test("patient API is private authenticated rate limited and action bounded",()=>{

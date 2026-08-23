@@ -1,5 +1,6 @@
 import { AuthorizationDeniedError } from "@/lib/authorization";
-import { AccountSecurityConflictError, AccountSecurityValidationError, coarseDeviceContext, getAccountSecurityWorkspace, revokeAccountSecuritySession } from "@/lib/account-security";
+import { accountSecurityBoundaries, AccountSecurityConflictError, AccountSecurityValidationError, coarseDeviceContext, getAccountSecurityWorkspace, revokeAccountSecurityProviderSession, revokeAccountSecuritySession } from "@/lib/account-security";
+import { getClerkAccountSecurityContext, listClerkAccountSecuritySessions, revokeClerkAccountSecuritySession } from "@/lib/clerk-account-security";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
 import { reportOperationalError } from "@/lib/observability";
 import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
@@ -23,10 +24,25 @@ function response(data: unknown, setCookie: string | null, init?: ResponseInit) 
   const headers = new Headers(init?.headers ?? noStore); if (setCookie) headers.set("Set-Cookie", setCookie); return Response.json(data, { ...init, headers });
 }
 
-export async function GET(request: Request) { return handle(request, (userId, context) => getAccountSecurityWorkspace(userId, context)); }
+export async function GET(request: Request) { return handle(request, async (userId, context) => {
+  const workspacePromise = getAccountSecurityWorkspace(userId, context), clerk = await getClerkAccountSecurityContext();
+  if (!clerk) return workspacePromise;
+  const [workspace, sessions] = await Promise.all([workspacePromise, listClerkAccountSecuritySessions(clerk)]);
+  return { ...workspace, sessions, reauthentication: { ...workspace.reauthentication, hostedSessionRevocationAvailable: true }, boundaries: accountSecurityBoundaries(true) };
+}); }
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
-  return handle(request, async (userId, context) => { if (!body) throw new AccountSecurityValidationError("A JSON object is required"); return revokeAccountSecuritySession(userId, context, body); }, "patient.account-security");
+  return handle(request, async (userId, context) => {
+    if (!body) throw new AccountSecurityValidationError("A JSON object is required");
+    const clerk = await getClerkAccountSecurityContext();
+    if (!clerk) return revokeAccountSecuritySession(userId, context, body);
+    return revokeAccountSecurityProviderSession(userId, body, {
+      provider: "clerk",
+      currentSessionId: clerk.sessionId,
+      listActiveSessions: () => listClerkAccountSecuritySessions(clerk),
+      revokeSession: (sessionId) => revokeClerkAccountSecuritySession(clerk, sessionId),
+    });
+  }, "patient.account-security");
 }
 
 async function handle(request: Request, operation: (userId: string, context: Awaited<ReturnType<typeof requestContext>>["context"]) => Promise<unknown>, rateScope?: string) {
