@@ -980,7 +980,7 @@ test("keeps the provider schedule recoverable across authentication and response
   assert.match(provider, /loadAppointments = useCallback\(async \(signal\?: AbortSignal\)/);
   assert.match(provider, /cache: "no-store", signal/);
   assert.match(provider, /response\.status === 401/);
-  assert.match(provider, /\/signin-with-chatgpt\?return_to=\/provider/);
+  assert.match(provider, /\/sign-in\?redirect_url=%2Fprovider/);
   assert.match(provider, /response\.json\(\)\.catch\(\(\) => \(\{\}\)\)/);
   assert.match(provider, /caught instanceof DOMException && caught\.name === "AbortError"/);
   assert.match(provider, /const controller = new AbortController\(\)/);
@@ -991,7 +991,7 @@ test("keeps patient appointments retryable and distinct from confirmed empty dat
   const appointments = await readFile(new URL("../app/appointments/page.tsx", import.meta.url), "utf8");
 
   assert.match(appointments, /response\.json\(\)\.catch\(\(\) => \(\{\}\)\)/);
-  assert.match(appointments, /const load = useCallback\(async \(signal\?: AbortSignal\)/);
+  assert.match(appointments, /const load = useCallback\(async \(signal\?: AbortSignal, quiet = false\)/);
   assert.match(appointments, /request\(\{ cache: "no-store", signal \}\)/);
   assert.match(appointments, /caught instanceof DOMException && caught\.name === "AbortError"/);
   assert.match(appointments, /const controller = new AbortController\(\)/);
@@ -1043,7 +1043,7 @@ test("keeps provider discovery, availability, and booking responses recoverable"
   assert.match(providers, /onClick=\{\(\) => void loadCatalog\(\)\}/);
   assert.match(providers, /availabilityRefresh/);
   assert.match(providers, /setAvailabilityRefresh\(\(value\) => value \+ 1\)/);
-  assert.match(providers, /const data = await response\.json\(\)\.catch\(\(\) => \(\{\}\)\) as \{ error\?: string; message\?: string \}/);
+  assert.match(providers, /const data = await response\.json\(\)\.catch\(\(\) => \(\{\}\)\) as \{ appointment\?: \{ status\?: string \}; error\?: string; message\?: string \}/);
 });
 
 test("keeps family, notification, and support data failures retryable", async () => {

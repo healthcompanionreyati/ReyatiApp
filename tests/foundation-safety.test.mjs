@@ -18,9 +18,11 @@ async function routeFiles(directory) {
 test("external capabilities fail closed unless an approved production gate is enabled", async () => {
   const flags = await source("lib/foundation-flags.ts");
   assert.doesNotMatch(flags, /:\s*true\b/);
-  for (const capability of ["independentAuthentication", "outboundSmsDelivery", "medicalDocumentUploads", "documentScanCallbacks", "privateDocumentDelivery"]) {
+  for (const capability of ["independentAuthentication", "outboundSmsDelivery", "documentScanCallbacks"]) {
     assert.match(flags, new RegExp(`${capability}: false`));
   }
+  assert.match(flags, /medicalDocumentUploads: productionFlag\("QIVAYA_MEDICAL_DOCUMENT_UPLOADS"\)/);
+  assert.match(flags, /privateDocumentDelivery: productionFlag\("QIVAYA_PRIVATE_DOCUMENT_DELIVERY"\)/);
   assert.match(flags, /outboundEmailDelivery: productionFlag\("QIVAYA_OUTBOUND_EMAIL_DELIVERY"\)/);
   assert.match(flags, /communicationsWebhooks: productionFlag\("QIVAYA_COMMUNICATIONS_WEBHOOKS"\)/);
   assert.match(flags, /documentUploadCleanup: productionFlag\("QIVAYA_DOCUMENT_UPLOAD_CLEANUP"\)/);
@@ -105,6 +107,13 @@ test("all authenticated write APIs use durable privacy-safe rate limits", async 
       assert.match(scanning, /dedupeKey/);
       continue;
     }
+    if (file.endsWith(path.join("webhooks", "stripe", "route.ts"))) {
+      assert.match(contents, /stripe-signature/);
+      const payments = await source("lib/stripe-payments.ts");
+      assert.match(payments, /constructEventAsync/);
+      assert.match(payments, /idx_payment_processor_provider_event|providerEventId/);
+      continue;
+    }
     if (file.endsWith(path.join("internal", "document-deletion", "route.ts"))) {
       assert.match(contents, /documentDeletionProcessor/);
       const deletion = await source("lib/document-deletion.ts");
@@ -181,13 +190,13 @@ test("medical documents remain metadata-only, consent-scoped, and upload-gated",
   assert.match(service, /db\.insert\(consents\)/);
   assert.match(service, /db\.insert\(documentShares\)/);
   assert.match(service, /version: share\[0\]\.version \+ 1/);
-  assert.match(service, /contentAccessEnabled: foundationFlags\.privateDocumentDelivery/);
+  assert.match(service, /const contentAccessEnabled = foundationFlags\.privateDocumentDelivery && await protectedDocumentStorageConfigured\(\)/);
   assert.doesNotMatch(service.match(/getProviderSharedDocuments[\s\S]*$/)?.[0] ?? "", /objectKey|checksumSha256/);
   assert.match(patientRoute, /enforceWriteRateLimit/);
   assert.match(patientRoute, /body\.action === "cancel_upload"/);
   assert.match(providerRoute, /requireActiveProvider|getProviderSharedDocuments/);
-  assert.match(patientPage, /Document uploads are not active yet/);
-  assert.match(providerPage, /Document content is not available/);
+  assert.match(patientPage, /Document vault is in read-only mode/);
+  assert.match(providerPage, /Metadata-only access is active/);
 });
 
 test("platform identity is separated without claiming independent email verification", async () => {

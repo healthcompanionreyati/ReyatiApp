@@ -18,7 +18,7 @@ test("patient documents localize metadata, consent, notices, and safe error stat
   assert.match(page, /موافقة محددة المدة/);
   assert.match(page, /مقدم الرعاية الموثّق/);
   assert.match(page, /منح الوصول/);
-  assert.match(page, /تم إلغاء الوصول/);
+  assert.match(page, /تم إلغاء وصول مقدم الرعاية/);
   assert.doesNotMatch(page, /purposeLabels/);
   assert.doesNotMatch(page, /Intl\.DateTimeFormat\("en-QA"/);
 });
