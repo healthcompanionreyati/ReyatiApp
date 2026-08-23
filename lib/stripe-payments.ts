@@ -109,6 +109,17 @@ export async function getStripeReconciliationClient() {
   return { stripe: new Stripe(configuration.secretKey, { maxNetworkRetries: 2, timeout: 20_000, typescript: true }), configuration };
 }
 
+export async function getStripeTestAcceptanceClient() {
+  const configuration = await stripeConfiguration();
+  if (configuration.mode !== "test" || !configuration.secretKey?.startsWith("sk_test_") || !configuration.checkoutReady || !configuration.webhookReady) {
+    throw new PaymentProviderUnavailableError("Stripe test-mode checkout and signed webhooks must be active before evidence can be collected");
+  }
+  return {
+    stripe: new Stripe(configuration.secretKey, { maxNetworkRetries: 2, timeout: 20_000, typescript: true }),
+    configuration,
+  };
+}
+
 async function stripeClient(requireWebhook = false) {
   const configuration = await stripeConfiguration();
   if (!configuration.checkoutReady || !configuration.secretKey || !configuration.appUrl || (requireWebhook && (!configuration.webhookReady || !configuration.webhookSecret))) {

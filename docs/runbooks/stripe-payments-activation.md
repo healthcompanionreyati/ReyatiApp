@@ -76,6 +76,15 @@ Set `QIVAYA_STRIPE_RECONCILIATION=false` to stop new reconciliation runs. Set `Q
 4. A successful run persists only its rehearsal evidence row and audit event. It must report zero Stripe calls, R2 writes, emails, money movement, customer records, and operational payment records.
 5. Treat any failed scenario or non-zero side-effect counter as a release blocker. The rehearsal does not replace Stripe test-mode acceptance, signed-webhook monitoring, or reconciliation review.
 
+## Stripe test-mode acceptance evidence
+
+1. Keep Stripe in test mode and complete one real hosted checkout, signed payment webhook, receipt/PDF/email intent, independently approved full refund, signed refund webhook, credit-note/PDF/email intent, and read-only reconciliation match.
+2. Open `/admin/payment-acceptance` as the platform administrator who operated the test. Enter the `pi_…` payment-intent ID and `re_…` refund ID from the same lifecycle.
+3. The collector retrieves only those Stripe test objects and correlates them with Qivaya records. It refuses live-mode objects and cannot create checkout sessions, issue refunds, send email, write R2, change the ledger, or change environment gates.
+4. Resolve every failed check and collect a new run. Do not approve a partially passing run.
+5. A different active platform administrator or security auditor reviews the fully passing evidence. The collector cannot approve their own run.
+6. Treat one fully passing, independently approved run as a prerequisite for any live-mode change. Approval records evidence only; it never enables live mode automatically.
+
 ## Reconciliation boundary
 
 The admin finance view reports recorded ledger totals and processor-event health. The control plane may execute only an independently approved full Stripe refund when its separate activation gate is enabled. It does not reconcile bank statements, calculate provider payables, perform partial or automatic refunds, or initiate payouts.
