@@ -29,6 +29,8 @@ test("upload route authenticates, rate limits, and incrementally enforces ten me
   assert.match(route, /request\.body\.getReader\(\)/);
   assert.match(route, /reader\.cancel\(\)/);
   assert.doesNotMatch(route, /request\.arrayBuffer\(\)/);
+  assert.match(route, /x-qivaya-upload-session-id/);
+  assert.match(route, /x-qivaya-upload-version/);
 });
 
 test("completion is owner-bound, versioned, expiring, exact-size, and signature checked", () => {

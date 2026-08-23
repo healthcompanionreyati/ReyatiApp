@@ -30,8 +30,8 @@ export async function POST(request: Request) {
   try {
     const user = await getOrCreateCurrentUser(); if (user.status !== "active") throw new AuthorizationDeniedError();
     await enforceWriteRateLimit(user.id, "documents.upload.complete", { limit: 10 });
-    const sessionId = request.headers.get("x-reyati-upload-session-id")?.trim() ?? "";
-    const expectedVersion = Number(request.headers.get("x-reyati-upload-version"));
+    const sessionId = request.headers.get("x-qivaya-upload-session-id")?.trim() ?? "";
+    const expectedVersion = Number(request.headers.get("x-qivaya-upload-version"));
     const contentType = request.headers.get("content-type")?.trim().toLowerCase() ?? "";
     const bytes = await boundedBytes(request);
     return Response.json({ data: await completePrivateDocumentUpload({ userId: user.id, sessionId, expectedVersion, contentType, bytes }) }, { status: 202, headers: noStore });

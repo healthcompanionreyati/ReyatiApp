@@ -50,7 +50,12 @@ function documentCategory(value: unknown) {
 async function uploadReadiness() {
   const storageConfigured = await protectedDocumentStorageConfigured();
   const malwareScannerConfigured = await privateDocumentScannerConfigured();
-  return { uploadEnabled: foundationFlags.medicalDocumentUploads && foundationFlags.documentScanDispatch && foundationFlags.documentScanPolling && storageConfigured && malwareScannerConfigured, storageConfigured, malwareScannerConfigured };
+  return {
+    uploadEnabled: foundationFlags.medicalDocumentUploads && foundationFlags.documentScanDispatch && foundationFlags.documentScanPolling && storageConfigured && malwareScannerConfigured,
+    deliveryEnabled: foundationFlags.privateDocumentDelivery && storageConfigured,
+    storageConfigured,
+    malwareScannerConfigured,
+  };
 }
 
 async function expireShares() {
@@ -185,7 +190,8 @@ export async function getProviderSharedDocuments(userId: string) {
     .innerJoin(users, eq(users.id, documentShares.ownerUserId)).where(and(
       eq(documentShares.recipientProviderId, provider.id), eq(documentShares.status, "active"), gt(documentShares.expiresAt, now),
       eq(documentRecords.status, "ready"), eq(documentRecords.malwareScanStatus, "clean"), eq(documentRecords.retentionState, "active"),
-    )).orderBy(desc(documentShares.createdAt)).limit(100);
+  )).orderBy(desc(documentShares.createdAt)).limit(100);
+  const contentAccessEnabled = foundationFlags.privateDocumentDelivery && await protectedDocumentStorageConfigured();
   await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId: provider.organizationId, action: "provider.shared_documents_viewed", resourceType: "document_share_collection", resourceId: provider.id, outcome: "success", metadataJson: JSON.stringify({ documentCount: documents.length }), createdAt: now });
-  return { documents, contentAccessEnabled: foundationFlags.privateDocumentDelivery, limitation: foundationFlags.privateDocumentDelivery ? null : "Document bytes remain unavailable until protected object delivery is activated." };
+  return { documents, contentAccessEnabled, limitation: contentAccessEnabled ? null : "Document bytes remain unavailable until protected object delivery is activated." };
 }

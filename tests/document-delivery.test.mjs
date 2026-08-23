@@ -9,7 +9,7 @@ const issueRoute = await readFile(new URL("../app/api/documents/access/route.ts"
 const contentRoute = await readFile(new URL("../app/api/documents/content/route.ts", import.meta.url), "utf8");
 
 test("private document delivery remains unreachable until activation review", () => {
-  assert.match(flags, /privateDocumentDelivery: false/);
+  assert.match(flags, /privateDocumentDelivery: productionFlag\("QIVAYA_PRIVATE_DOCUMENT_DELIVERY"\)/);
   assert.match(issueRoute, /if \(!foundationFlags\.privateDocumentDelivery\).*not_found/);
   assert.match(contentRoute, /if \(!foundationFlags\.privateDocumentDelivery\).*not_found/);
   assert.match(delivery, /if \(!foundationFlags\.privateDocumentDelivery\).*not_found/g);
