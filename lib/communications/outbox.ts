@@ -10,7 +10,7 @@ import { signedVerificationPath } from "@/lib/communications/email-verification"
 import { signedFamilyInvitationPath } from "@/lib/communications/family-invitations";
 import { notificationEmailCategoryEnabled } from "@/lib/notification-preferences";
 
-export async function enqueueTransactionalEmail(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string }) {
+export async function enqueueTransactionalEmail(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string; resourceType?: string; resourceId?: string }) {
   const db = await getDb();
   const [contact, preference, categoryEnabled] = await Promise.all([
     db.select({ id: contactMethods.id, status: contactMethods.status }).from(contactMethods).where(and(eq(contactMethods.userId, input.userId), eq(contactMethods.kind, "email"), eq(contactMethods.isPrimary, true))).limit(1),
@@ -27,6 +27,7 @@ export async function enqueueTransactionalEmail(input: { userId: string; templat
   const inserted = await db.insert(outboundMessages).values({
     id, userId: input.userId, recipientContactMethodId: contact[0].id, channel: "email", templateId: input.templateId,
     templateVersion: 1, templateDataJson: JSON.stringify(templateData), locale, contentClassification: "account",
+    resourceType: input.resourceType ?? null, resourceId: input.resourceId ?? null,
     dedupeKey: input.dedupeKey, status: suppressionReason ? "suppressed" : "pending", attemptCount: 0,
     nextAttemptAt: suppressionReason ? null : now, lastErrorCode: suppressionReason,
     sentAt: null, createdAt: now, updatedAt: now,
@@ -34,7 +35,7 @@ export async function enqueueTransactionalEmail(input: { userId: string; templat
   return { queued: Boolean(inserted[0]), messageId: inserted[0]?.id ?? null, status: suppressionReason ? "suppressed" : "pending", reason: inserted[0] ? suppressionReason : "duplicate" } as const;
 }
 
-export async function recordTransactionalEmailIntent(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string }) {
+export async function recordTransactionalEmailIntent(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string; resourceType?: string; resourceId?: string }) {
   try {
     return await enqueueTransactionalEmail(input);
   } catch (error) {

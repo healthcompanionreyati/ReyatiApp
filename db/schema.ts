@@ -1604,6 +1604,8 @@ export const outboundMessages = sqliteTable("outbound_messages", {
   templateDataJson: text("template_data_json").notNull().default("{}"),
   locale: text("locale").notNull().default("en"),
   contentClassification: text("content_classification").notNull(),
+  resourceType: text("resource_type"),
+  resourceId: text("resource_id"),
   dedupeKey: text("dedupe_key").notNull(),
   status: text("status").notNull().default("pending"),
   attemptCount: integer("attempt_count").notNull().default(0),
@@ -1617,6 +1619,7 @@ export const outboundMessages = sqliteTable("outbound_messages", {
   uniqueIndex("idx_outbound_messages_provider_message").on(table.providerMessageId),
   index("idx_outbound_messages_status_next_attempt").on(table.status, table.nextAttemptAt),
   index("idx_outbound_messages_user_created").on(table.userId, table.createdAt),
+  index("idx_outbound_messages_resource_created").on(table.resourceType, table.resourceId, table.createdAt),
 ]);
 
 export const messageDeliveryEvents = sqliteTable("message_delivery_events", {

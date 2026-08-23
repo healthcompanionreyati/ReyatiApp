@@ -87,3 +87,11 @@ The admin finance view reports recorded ledger totals and processor-event health
 3. Patients access their documents at `/payment-receipts`; delegated access requires the active `payments` family permission.
 4. Administrators access a patient-identity-free register at `/admin/payment-receipts`.
 5. These documents are payment-status records, not tax invoices, provider settlement statements, or payout instructions. Card data and raw Stripe payloads are never stored.
+
+## Receipt email delivery
+
+1. A signed successful-payment event queues `payment_receipt_ready`; a signed completed-refund event queues `payment_credit_note_ready`.
+2. Delivery uses the existing D1 outbox and deterministic document idempotency key. Replayed Stripe events cannot create duplicate email sends.
+3. Delivery requires the production email gate, a verified primary contact, the email master preference, and the enabled support-service email category. In-app documents remain available if any condition blocks email.
+4. Email contains only a secure link and generic document-ready copy. It does not contain the amount, provider, appointment, patient, card, or refund details.
+5. Resend webhook outcomes are authoritative for delivered, delayed, bounced, complaint, or failed status. Operators inspect and process due retries through `/admin/communications`; the receipt register does not bypass suppression or retry policy.

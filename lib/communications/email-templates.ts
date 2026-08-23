@@ -1,4 +1,4 @@
-export type TransactionalEmailTemplateId = "email_verification" | "family_invitation" | "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice" | "payment_update";
+export type TransactionalEmailTemplateId = "email_verification" | "family_invitation" | "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice" | "payment_update" | "payment_receipt_ready" | "payment_credit_note_ready";
 export type SupportedEmailLocale = "en" | "ar";
 
 export type EmailTemplateInput = {
@@ -60,6 +60,14 @@ const copy: Record<TransactionalEmailTemplateId, Record<SupportedEmailLocale, { 
   payment_update: {
     en: { subject: "Your Qivaya payment status was updated", heading: "Payment status update", body: "Your payment provider reported a change to an appointment payment in Qivaya. Sign in to review the confirmed status and payment record.", cta: "Review payment" },
     ar: { subject: "تم تحديث حالة الدفع في كيفايا", heading: "تحديث حالة الدفع", body: "أبلغ مزود الدفع عن تغيير في دفعة موعد داخل كيفايا. سجّل الدخول لمراجعة الحالة المؤكدة وسجل الدفع.", cta: "مراجعة الدفع" },
+  },
+  payment_receipt_ready: {
+    en: { subject: "Your Qivaya payment receipt is ready", heading: "Payment receipt ready", body: "Your payment provider confirmed a successful appointment payment. The account-owned receipt is ready in Qivaya. This email contains no card data and is not a tax invoice.", cta: "View receipt" },
+    ar: { subject: "إيصال الدفع جاهز في كيفايا", heading: "إيصال الدفع جاهز", body: "أكد مزود الدفع نجاح دفعة موعد. أصبح الإيصال المملوك للحساب جاهزاً في كيفايا. لا يحتوي هذا البريد على بيانات البطاقة وليس فاتورة ضريبية.", cta: "عرض الإيصال" },
+  },
+  payment_credit_note_ready: {
+    en: { subject: "A Qivaya refund credit note is ready", heading: "Refund credit note ready", body: "Your payment provider confirmed a refund for an appointment payment. A separate credit note is ready in Qivaya. This email contains no card data and does not initiate money movement.", cta: "View credit note" },
+    ar: { subject: "إشعار دائن للاسترداد جاهز في كيفايا", heading: "إشعار دائن للاسترداد جاهز", body: "أكد مزود الدفع استرداداً لدفعة موعد. أصبح إشعار دائن منفصل جاهزاً في كيفايا. لا يحتوي هذا البريد على بيانات البطاقة ولا يبدأ حركة أموال.", cta: "عرض الإشعار الدائن" },
   },
 };
 
