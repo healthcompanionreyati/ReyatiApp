@@ -106,6 +106,16 @@ The admin finance view reports recorded ledger totals and processor-event health
 4. A platform administrator may open the approved window from 15 minutes before its start until its end. Opening revalidates the unchanged Go decision and complete Stripe test-mode checkout, webhook, refund, and reconciliation controls.
 5. Make the separately approved Vercel environment and Stripe credential changes manually. This module cannot edit environment variables, store credentials, deploy code, call Stripe mutations, move money, change the ledger, send email, or write R2 objects.
 6. After redeployment, choose **Verify live activation** only when the server observes live mode plus complete checkout, signed-webhook, refund, and reconciliation readiness. If rollback is required, disable checkout under the rollback procedure and choose **Verify rollback** only after the server observes containment.
+
+## Post-activation stability assurance
+
+1. Open `/admin/payment-assurance` only after a live activation window is closed as **activation verified**.
+2. Wait for the complete monitoring period named in the activation window. The server will refuse early evidence collection.
+3. Collect the fourteen-check snapshot. It reads server configuration and aggregate D1 counters only. It does not call Stripe or expose provider identifiers, credentials, customer data, payment amounts, or raw webhook payloads.
+4. A different active platform administrator or security auditor reviews the result. **Confirm stabilized** is available only when all checks pass. **Require rollback** always requires a written review note.
+5. A rollback-required decision is evidence, not execution. Follow the emergency rollback procedure above through an independently approved Vercel change.
+6. After the payment and checkout gates are disabled, an authorized user who did not collect the snapshot may choose **Verify rollback containment**. The server records containment only when checkout is observed disabled.
+7. Preserve the activation window, assurance snapshot, coded assurance events, reconciliation evidence, and audit history. Never delete these records as part of rollback.
 7. Continue the named monitoring period and use `/admin/operations`, `/admin/payment-reconciliation`, `/admin/payment-disputes`, `/admin/communications`, and `/admin/audit` for operational evidence. A verified configuration is not evidence of a successful patient charge.
 
 ## Dispute monitoring
