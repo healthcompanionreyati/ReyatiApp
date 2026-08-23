@@ -40,6 +40,7 @@ export type PaymentProviderStatus = {
   checkoutReady: boolean;
   webhookReady: boolean;
   refundsReady: boolean;
+  reconciliationReady: boolean;
   reason: "activation_disabled" | "configuration_incomplete" | "mode_mismatch" | null;
 };
 
@@ -61,6 +62,7 @@ async function stripeConfiguration(): Promise<StripeConfiguration> {
   const env = await getRuntimeEnv();
   const activation = env.QIVAYA_STRIPE_PAYMENTS?.trim() === "true";
   const refundActivation = env.QIVAYA_STRIPE_REFUNDS?.trim() === "true";
+  const reconciliationActivation = env.QIVAYA_STRIPE_RECONCILIATION?.trim() === "true";
   const requestedMode = env.QIVAYA_STRIPE_MODE?.trim() === "live" ? "live" : env.QIVAYA_STRIPE_MODE?.trim() === "test" ? "test" : null;
   const secretKey = env.STRIPE_SECRET_KEY?.trim() || null;
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET?.trim() || null;
@@ -75,6 +77,7 @@ async function stripeConfiguration(): Promise<StripeConfiguration> {
     checkoutReady: activation && Boolean(secretKey && appUrl && modeMatches),
     webhookReady: activation && Boolean(secretKey && webhookSecret && modeMatches),
     refundsReady: activation && refundActivation && Boolean(secretKey && webhookSecret && modeMatches),
+    reconciliationReady: activation && reconciliationActivation && Boolean(secretKey && modeMatches),
     reason: !activation ? "activation_disabled" : !modeMatches && secretKey ? "mode_mismatch" : !configured ? "configuration_incomplete" : null,
     secretKey,
     webhookSecret,
@@ -83,13 +86,19 @@ async function stripeConfiguration(): Promise<StripeConfiguration> {
 }
 
 export async function getPaymentProviderStatus(): Promise<PaymentProviderStatus> {
-  const { provider, enabled, mode, checkoutReady, webhookReady, refundsReady, reason } = await stripeConfiguration();
-  return { provider, enabled, mode, checkoutReady, webhookReady, refundsReady, reason };
+  const { provider, enabled, mode, checkoutReady, webhookReady, refundsReady, reconciliationReady, reason } = await stripeConfiguration();
+  return { provider, enabled, mode, checkoutReady, webhookReady, refundsReady, reconciliationReady, reason };
 }
 
 export async function getStripeRefundClient() {
   const configuration = await stripeConfiguration();
   if (!configuration.refundsReady || !configuration.secretKey) throw new PaymentProviderUnavailableError("Provider refund execution is not active yet");
+  return { stripe: new Stripe(configuration.secretKey, { maxNetworkRetries: 2, timeout: 20_000, typescript: true }), configuration };
+}
+
+export async function getStripeReconciliationClient() {
+  const configuration = await stripeConfiguration();
+  if (!configuration.reconciliationReady || !configuration.secretKey) throw new PaymentProviderUnavailableError("Stripe reconciliation is not active yet");
   return { stripe: new Stripe(configuration.secretKey, { maxNetworkRetries: 2, timeout: 20_000, typescript: true }), configuration };
 }
 

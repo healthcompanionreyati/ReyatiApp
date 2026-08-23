@@ -53,5 +53,6 @@ declare module "cloudflare:workers" {
     QIVAYA_STRIPE_PAYMENTS?: string;
     QIVAYA_STRIPE_MODE?: string;
     QIVAYA_STRIPE_REFUNDS?: string;
+    QIVAYA_STRIPE_RECONCILIATION?: string;
   };
 }

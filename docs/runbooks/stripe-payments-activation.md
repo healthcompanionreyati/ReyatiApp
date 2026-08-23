@@ -23,6 +23,7 @@ Full refunds use the finance maker-checker workflow. A separate platform adminis
    - `QIVAYA_STRIPE_MODE=test` during test-mode validation, then `live` only with a live key
    - `QIVAYA_STRIPE_PAYMENTS=false`
    - `QIVAYA_STRIPE_REFUNDS=false`
+   - `QIVAYA_STRIPE_RECONCILIATION=false`
 5. Confirm `REYATI_APP_URL=https://www.qivaya.com`.
 
 Never put secret values in Git, tickets, screenshots, or support messages.
@@ -49,9 +50,18 @@ Never put secret values in Git, tickets, screenshots, or support messages.
 5. Set `QIVAYA_STRIPE_REFUNDS=true` only in the intended environment.
 6. Keep the flag off to disable new refund requests without affecting existing payment records or webhook reconciliation.
 
+## Reconciliation activation
+
+1. Keep `QIVAYA_STRIPE_RECONCILIATION=false` until checkout and webhook validation are complete.
+2. Confirm the Stripe secret has read access to balance transactions in the intended test or live account.
+3. Set `QIVAYA_STRIPE_RECONCILIATION=true` in the intended environment and redeploy.
+4. From `/admin/payment-reconciliation`, run a completed window no longer than seven days.
+5. Review every exception. The module reads and compares provider evidence; it never changes the payment ledger, issues refunds, creates payouts, or corrects provider data.
+6. A run is marked incomplete if the provider window exceeds the bounded 1,000-item import. Use smaller non-overlapping windows rather than expanding the limit.
+
 ## Rollback
 
-Set `QIVAYA_STRIPE_REFUNDS=false` to stop new refund execution. Set `QIVAYA_STRIPE_PAYMENTS=false` to also remove checkout availability and cause the webhook endpoint to return unavailable. Neither rollback deletes ledger, checkout, refund-execution, or processor-event history. Do not remove the database tables during an operational rollback.
+Set `QIVAYA_STRIPE_RECONCILIATION=false` to stop new reconciliation runs. Set `QIVAYA_STRIPE_REFUNDS=false` to stop new refund execution. Set `QIVAYA_STRIPE_PAYMENTS=false` to also remove checkout availability and cause the webhook endpoint to return unavailable. None of these rollbacks delete ledger, checkout, refund-execution, reconciliation, or processor-event history. Do not remove the database tables during an operational rollback.
 
 ## Reconciliation boundary
 
