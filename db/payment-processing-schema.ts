@@ -372,3 +372,46 @@ export const paymentActivationAssuranceEvents = sqliteTable("payment_activation_
   index("idx_payment_assurance_event_run_created").on(table.assuranceRunId, table.createdAt),
   index("idx_payment_assurance_event_code_created").on(table.eventCode, table.createdAt),
 ]);
+
+export const paymentIncidentCases = sqliteTable("payment_incident_cases", {
+  id: text("id").primaryKey(),
+  sourceAssuranceRunId: text("source_assurance_run_id").references(() => paymentActivationAssuranceRuns.id, { onDelete: "restrict" }),
+  openedByUserId: text("opened_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  clientRequestId: text("client_request_id").notNull(),
+  severity: text("severity").notNull(),
+  signalCode: text("signal_code").notNull(),
+  ownerUserId: text("owner_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  backupUserId: text("backup_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  containmentTargetMinutes: integer("containment_target_minutes").notNull(),
+  status: text("status").notNull().default("open"),
+  containmentCode: text("containment_code"),
+  containedByUserId: text("contained_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  containedAt: integer("contained_at", { mode: "timestamp_ms" }),
+  recoveryEvidenceCode: text("recovery_evidence_code"),
+  recoveryPreparedByUserId: text("recovery_prepared_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  recoveryPreparedAt: integer("recovery_prepared_at", { mode: "timestamp_ms" }),
+  recoveryReviewedByUserId: text("recovery_reviewed_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  recoveryDecision: text("recovery_decision"),
+  recoveryReviewedAt: integer("recovery_reviewed_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_payment_incident_request").on(table.openedByUserId, table.clientRequestId),
+  index("idx_payment_incident_status_severity").on(table.status, table.severity, table.createdAt),
+  index("idx_payment_incident_assurance").on(table.sourceAssuranceRunId, table.createdAt),
+]);
+
+export const paymentIncidentEvents = sqliteTable("payment_incident_events", {
+  id: text("id").primaryKey(),
+  incidentId: text("incident_id").notNull().references(() => paymentIncidentCases.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  eventCode: text("event_code").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  codedDetailsJson: text("coded_details_json").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_payment_incident_event_case_created").on(table.incidentId, table.createdAt),
+  index("idx_payment_incident_event_code_created").on(table.eventCode, table.createdAt),
+]);

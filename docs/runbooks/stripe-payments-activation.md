@@ -118,6 +118,15 @@ The admin finance view reports recorded ledger totals and processor-event health
 7. Preserve the activation window, assurance snapshot, coded assurance events, reconciliation evidence, and audit history. Never delete these records as part of rollback.
 7. Continue the named monitoring period and use `/admin/operations`, `/admin/payment-reconciliation`, `/admin/payment-disputes`, `/admin/communications`, and `/admin/audit` for operational evidence. A verified configuration is not evidence of a successful patient charge.
 
+## Payment incident command and recovery
+
+1. Open `/admin/payment-incidents` when monitoring, reconciliation, refund operations, configuration, checkout, or the post-activation assurance ledger reveals a production payment signal.
+2. Select only the coded severity and signal. Assign two different active platform administrators or security auditors as owner and backup, and set a severity-bounded containment target. Never enter credentials, customer data, payment identifiers, amounts, or raw provider payloads.
+3. Execute containment separately under the approved Stripe and Vercel operating procedure. The named owner or backup records the coded result; **Checkout disabled** is accepted only when the server observes payment and checkout gates disabled.
+4. A platform administrator prepares coded recovery evidence after containment. The incident stays open until a different active platform administrator or security auditor makes the recovery decision.
+5. **Close recovered** requires all live payment controls to be ready and no failed or waiting processor event in the last fifteen minutes. **Close contained** requires checkout to remain disabled. **Return** sends the incident back to containment for revised evidence.
+6. Preserve the incident, coded events, assurance source, reconciliation evidence, and audit ledger. This module cannot change Stripe, Vercel, credentials, deployments, money, financial records, email, or R2 objects.
+
 ## Dispute monitoring
 
 1. Enable all five `charge.dispute.*` webhook events listed above on the same signed endpoint.
