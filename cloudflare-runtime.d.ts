@@ -48,5 +48,9 @@ declare module "cloudflare:workers" {
     CONTACT_VERIFICATION_SIGNING_KEY?: string;
     FAMILY_INVITATION_SIGNING_KEY?: string;
     RESEND_WEBHOOK_SIGNING_SECRET?: string;
+    STRIPE_SECRET_KEY?: string;
+    STRIPE_WEBHOOK_SECRET?: string;
+    QIVAYA_STRIPE_PAYMENTS?: string;
+    QIVAYA_STRIPE_MODE?: string;
   };
 }

@@ -444,7 +444,7 @@ test("ships an account-owned payment ledger without invented charges or refunds"
   assert.match(service, /patient\.payment_ledger_viewed/);
   assert.match(route, /getOrCreateCurrentUser/);
   assert.match(route, /Cache-Control.*no-store/);
-  assert.match(page, /No payment provider is connected yet/);
+  assert.match(page, /The payment provider is not active yet/);
   assert.match(page, /Cancelling an appointment does not prove/);
   assert.match(page, /No provider reference recorded/);
   assert.doesNotMatch(page, /Visa|Apple Pay|Dr\. Laila|Mariam Ahmed|Atlas Consulting|PAY-260|Refund in progress|Try checkout|synthetic/i);
@@ -662,7 +662,7 @@ test("ships a read-only admin finance ledger without invented money movement", a
   assert.match(route, /Cache-Control.*no-store/);
   assert.match(page, /fetch\("\/api\/admin\/finance"/);
   assert.match(page, /Recorded value does not prove money moved/);
-  assert.match(page, /No acquirer file, bank statement, or provider-payable account is connected/);
+  assert.match(page, /No bank-statement or provider-payable reconciliation is connected/);
   assert.match(page, /This page contains no patient names or appointment references/);
   assert.match(page, /Export CSV/);
   assert.doesNotMatch(page, /STL-2608|RFD-8814|PAY-|Al Noor Medical Center|Pearl Health Clinic|Upcoming settlements|Ledger match|Second approval|Reconciliation history|Synthetic financial data|Prototype finance report/i);
@@ -1019,7 +1019,7 @@ test("keeps the health-record wallet retryable and preserves delegated return co
 test("keeps the payment ledger retryable and preserves delegated return context", async () => {
   const payments = await readFile(new URL("../app/payments/page.tsx", import.meta.url), "utf8");
 
-  assert.match(payments, /const loadPayments = useCallback\(async \(signal\?: AbortSignal\)/);
+  assert.match(payments, /const loadPayments = useCallback\(async \(signal\?: AbortSignal, quiet = false\)/);
   assert.match(payments, /cache: "no-store", signal/);
   assert.match(payments, /response\.json\(\)\.catch\(\(\) => \(\{\}\)\)/);
   assert.match(payments, /const returnTo = `\/payments\$\{window\.location\.search\}`/);

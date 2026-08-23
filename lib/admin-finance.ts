@@ -1,7 +1,9 @@
 import { count, max, sum } from "drizzle-orm";
 import { getDb } from "@/db";
+import { paymentProcessorEvents } from "@/db/payment-processing-schema";
 import { auditEvents, paymentLedgerEntries } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
+import { getPaymentProviderStatus } from "@/lib/stripe-payments";
 
 const statusOrder = ["not_charged", "authorized", "paid", "refund_pending", "refunded", "failed"] as const;
 
@@ -9,7 +11,7 @@ export async function getAdminFinanceOverview(userId: string, operatorName: stri
   await requirePlatformRole(userId, ["platform_admin"]);
   const db = await getDb();
   const now = new Date();
-  const [rows, providerReferences] = await Promise.all([
+  const [rows, providerReferences, processorRows, paymentProvider] = await Promise.all([
     db.select({
       status: paymentLedgerEntries.status,
       entryCount: count(),
@@ -18,6 +20,8 @@ export async function getAdminFinanceOverview(userId: string, operatorName: stri
       latestUpdate: max(paymentLedgerEntries.statusUpdatedAt),
     }).from(paymentLedgerEntries).groupBy(paymentLedgerEntries.status),
     db.select({ value: count(paymentLedgerEntries.providerReference) }).from(paymentLedgerEntries),
+    db.select({ status: paymentProcessorEvents.processingStatus, value: count() }).from(paymentProcessorEvents).groupBy(paymentProcessorEvents.processingStatus),
+    getPaymentProviderStatus(),
   ]);
 
   const byStatus = new Map(rows.map((row) => [row.status, row]));
@@ -58,7 +62,11 @@ export async function getAdminFinanceOverview(userId: string, operatorName: stri
       recordedRefundAmountQar,
       pendingRefundEntries: statuses.find((row) => row.status === "refund_pending")?.entryCount ?? 0,
       providerReferencedEntries: Number(providerReferences[0]?.value ?? 0),
+      processorEventsReceived: processorRows.reduce((total, row) => total + Number(row.value), 0),
+      processorEventsFailed: Number(processorRows.find((row) => row.status === "failed")?.value ?? 0),
     },
     statuses,
+    paymentProvider,
+    processorEvents: processorRows.map((row) => ({ status: row.status, count: Number(row.value) })),
   };
 }

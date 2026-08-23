@@ -51,6 +51,7 @@ const transactionalEmailCategories = new Map<string, Category>([
   ["family_access", "account_security"],
   ["support_update", "support_service"],
   ["security_notice", "account_security"],
+  ["payment_update", "support_service"],
 ]);
 
 function categoryValue(value: unknown): Category {

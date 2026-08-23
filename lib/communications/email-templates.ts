@@ -1,4 +1,4 @@
-export type TransactionalEmailTemplateId = "email_verification" | "family_invitation" | "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice";
+export type TransactionalEmailTemplateId = "email_verification" | "family_invitation" | "appointment_update" | "provider_verification" | "record_finalized" | "family_access" | "support_update" | "security_notice" | "payment_update";
 export type SupportedEmailLocale = "en" | "ar";
 
 export type EmailTemplateInput = {
@@ -56,6 +56,10 @@ const copy: Record<TransactionalEmailTemplateId, Record<SupportedEmailLocale, { 
   security_notice: {
     en: { subject: "Security notice from Qivaya", heading: "Account security notice", body: "A security-related change was recorded for your Qivaya account. Sign in directly to review your account.", cta: "Review account" },
     ar: { subject: "إشعار أمني من كيفايا", heading: "إشعار أمان الحساب", body: "تم تسجيل تغيير متعلق بالأمان في حسابك في كيفايا. سجّل الدخول مباشرة لمراجعة حسابك.", cta: "مراجعة الحساب" },
+  },
+  payment_update: {
+    en: { subject: "Your Qivaya payment status was updated", heading: "Payment status update", body: "Your payment provider reported a change to an appointment payment in Qivaya. Sign in to review the confirmed status and payment record.", cta: "Review payment" },
+    ar: { subject: "تم تحديث حالة الدفع في كيفايا", heading: "تحديث حالة الدفع", body: "أبلغ مزود الدفع عن تغيير في دفعة موعد داخل كيفايا. سجّل الدخول لمراجعة الحالة المؤكدة وسجل الدفع.", cta: "مراجعة الدفع" },
   },
 };
 
