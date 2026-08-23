@@ -144,3 +144,45 @@ export const paymentDisputeEvents = sqliteTable("payment_dispute_events", {
   uniqueIndex("idx_payment_dispute_event_provider_id").on(table.provider, table.providerEventId),
   index("idx_payment_dispute_event_dispute_received").on(table.disputeId, table.receivedAt),
 ]);
+
+export const paymentReceipts = sqliteTable("payment_receipts", {
+  id: text("id").primaryKey(),
+  ledgerEntryId: text("ledger_entry_id").notNull().references(() => paymentLedgerEntries.id, { onDelete: "restrict" }),
+  receiptNumber: text("receipt_number").notNull(),
+  provider: text("provider").notNull().default("stripe"),
+  providerEventId: text("provider_event_id").notNull(),
+  providerPaymentIntentId: text("provider_payment_intent_id"),
+  providerName: text("provider_name").notNull(),
+  facilityName: text("facility_name"),
+  appointmentStartedAt: integer("appointment_started_at", { mode: "timestamp_ms" }).notNull(),
+  careMode: text("care_mode").notNull(),
+  amountMinor: integer("amount_minor").notNull(),
+  currency: text("currency").notNull(),
+  issuedAt: integer("issued_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_payment_receipt_ledger").on(table.ledgerEntryId),
+  uniqueIndex("idx_payment_receipt_number").on(table.receiptNumber),
+  uniqueIndex("idx_payment_receipt_provider_event").on(table.provider, table.providerEventId),
+  index("idx_payment_receipt_issued").on(table.issuedAt),
+]);
+
+export const paymentCreditNotes = sqliteTable("payment_credit_notes", {
+  id: text("id").primaryKey(),
+  receiptId: text("receipt_id").notNull().references(() => paymentReceipts.id, { onDelete: "restrict" }),
+  ledgerEntryId: text("ledger_entry_id").notNull().references(() => paymentLedgerEntries.id, { onDelete: "restrict" }),
+  creditNoteNumber: text("credit_note_number").notNull(),
+  provider: text("provider").notNull().default("stripe"),
+  providerEventId: text("provider_event_id").notNull(),
+  providerRefundId: text("provider_refund_id"),
+  amountMinor: integer("amount_minor").notNull(),
+  currency: text("currency").notNull(),
+  reasonCode: text("reason_code").notNull().default("provider_confirmed_refund"),
+  issuedAt: integer("issued_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_payment_credit_note_number").on(table.creditNoteNumber),
+  uniqueIndex("idx_payment_credit_note_provider_event").on(table.provider, table.providerEventId),
+  index("idx_payment_credit_note_receipt_issued").on(table.receiptId, table.issuedAt),
+  index("idx_payment_credit_note_ledger_issued").on(table.ledgerEntryId, table.issuedAt),
+]);

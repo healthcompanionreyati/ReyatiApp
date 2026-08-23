@@ -10,7 +10,7 @@ const patientItems: DockItem[] = [
   { href: "/providers", icon: "C", label: "Find care", aliases: ["/navigator", "/facilities", "/saved-care"] },
   { href: "/appointments", icon: "A", label: "Visits", aliases: ["/queue", "/pre-visit-intake", "/appointment-preparation", "/appointment-accommodations", "/post-visit-actions"] },
   { href: "/wallet", icon: "R", label: "My health", aliases: ["/laboratory", "/diagnostic-imaging", "/pharmacy", "/care-plan", "/health-profile", "/emergency-profile", "/immunizations", "/screening-history", "/health-measurements", "/symptom-journal", "/wellness-journal", "/document-capture", "/record-index", "/care-timeline"] },
-  { href: "/journeys", icon: "M", label: "More", aliases: ["/family", "/payments", "/support", "/notifications", "/account", "/privacy-rights", "/consents", "/benefits", "/insurance", "/reviews", "/complaints", "/settings", "/notification-preferences", "/service-status", "/health-library", "/connections", "/device-connections"] },
+  { href: "/journeys", icon: "M", label: "More", aliases: ["/family", "/payments", "/payment-receipts", "/support", "/notifications", "/account", "/privacy-rights", "/consents", "/benefits", "/insurance", "/reviews", "/complaints", "/settings", "/notification-preferences", "/service-status", "/health-library", "/connections", "/device-connections"] },
 ];
 
 const providerItems: DockItem[] = [

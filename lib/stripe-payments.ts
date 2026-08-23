@@ -1,9 +1,9 @@
 import Stripe from "stripe";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
-import { paymentCheckoutSessions, paymentDisputeEvents, paymentDisputes, paymentProcessorEvents, paymentRefundExecutions } from "@/db/payment-processing-schema";
+import { paymentCheckoutSessions, paymentCreditNotes, paymentDisputeEvents, paymentDisputes, paymentProcessorEvents, paymentReceipts, paymentRefundExecutions } from "@/db/payment-processing-schema";
 import { financeAdjustments } from "@/db/finance-controls-schema";
-import { appointments, auditEvents, notifications, patientProfiles, paymentLedgerEntries, providerProfiles, users } from "@/db/schema";
+import { appointments, auditEvents, facilities, notifications, patientProfiles, paymentLedgerEntries, providerProfiles, users } from "@/db/schema";
 import { notificationRecord } from "@/lib/notification-center";
 import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
 import { getRuntimeEnv } from "@/lib/runtime-env";
@@ -333,6 +333,49 @@ async function recordDisputeState(event: Stripe.Event, now: Date) {
   return { disputeId, ledgerEntryId, patientUserId: patient?.userId ?? null, status };
 }
 
+function financialDocumentNumber(prefix: "RCPT" | "CRN", now: Date) {
+  return `QV-${prefix}-${now.getUTCFullYear()}-${crypto.randomUUID().replaceAll("-", "").slice(0, 10).toUpperCase()}`;
+}
+
+async function recordPaymentDocument(event: Stripe.Event, ledgerEntryId: string, status: "paid" | "failed" | "refund_pending" | "refunded", refundAmountQar: number | null, now: Date) {
+  if (status !== "paid" && status !== "refunded") return;
+  const db = await getDb();
+  if (status === "paid") {
+    const snapshot = (await db.select({
+      amountQar: paymentLedgerEntries.amountQar, currency: paymentLedgerEntries.currency,
+      providerName: users.displayName, facilityName: facilities.name,
+      appointmentStartedAt: appointments.scheduledStart, careMode: appointments.mode,
+    }).from(paymentLedgerEntries)
+      .innerJoin(appointments, eq(appointments.id, paymentLedgerEntries.appointmentId))
+      .innerJoin(providerProfiles, eq(providerProfiles.id, appointments.providerId))
+      .innerJoin(users, eq(users.id, providerProfiles.userId))
+      .leftJoin(facilities, eq(facilities.id, appointments.facilityId))
+      .where(eq(paymentLedgerEntries.id, ledgerEntryId)).limit(1))[0];
+    if (!snapshot) throw new PaymentValidationError("Receipt payment entry was not found");
+    const object = event.data.object as unknown;
+    await db.insert(paymentReceipts).values({
+      id: crypto.randomUUID(), ledgerEntryId, receiptNumber: financialDocumentNumber("RCPT", now),
+      provider: "stripe", providerEventId: event.id,
+      providerPaymentIntentId: objectIdentifier(recordValue(object, "payment_intent")) ?? (event.type.startsWith("payment_intent.") ? stringValue(object, "id") : null),
+      providerName: snapshot.providerName, facilityName: snapshot.facilityName,
+      appointmentStartedAt: snapshot.appointmentStartedAt, careMode: snapshot.careMode,
+      amountMinor: Math.round(snapshot.amountQar * 100), currency: snapshot.currency.toLowerCase(), issuedAt: now, createdAt: now,
+    }).onConflictDoNothing();
+    return;
+  }
+  const receipt = (await db.select({ id: paymentReceipts.id, currency: paymentReceipts.currency }).from(paymentReceipts)
+    .where(eq(paymentReceipts.ledgerEntryId, ledgerEntryId)).limit(1))[0];
+  if (!receipt || refundAmountQar === null) return;
+  const object = event.data.object as unknown;
+  await db.insert(paymentCreditNotes).values({
+    id: crypto.randomUUID(), receiptId: receipt.id, ledgerEntryId,
+    creditNoteNumber: financialDocumentNumber("CRN", now), provider: "stripe", providerEventId: event.id,
+    providerRefundId: event.type.startsWith("refund.") ? stringValue(object, "id") : null,
+    amountMinor: Math.round(refundAmountQar * 100), currency: receipt.currency,
+    reasonCode: "provider_confirmed_refund", issuedAt: now, createdAt: now,
+  }).onConflictDoNothing();
+}
+
 function eventTransition(event: Stripe.Event) {
   const object = event.data.object as unknown;
   if (event.type === "checkout.session.completed") return stringValue(object, "payment_status") === "paid" ? { status: "paid" as const, refundAmountQar: null } : null;
@@ -408,6 +451,7 @@ export async function verifyAndProcessStripeWebhook(rawBody: string, signature: 
       .innerJoin(patientProfiles, eq(patientProfiles.id, paymentLedgerEntries.patientId))
       .where(eq(paymentLedgerEntries.id, ledgerEntryId)).limit(1))[0];
     if (!ledger) throw new PaymentValidationError("Webhook payment entry was not found");
+    await recordPaymentDocument(event, ledgerEntryId, transition.status, transition.refundAmountQar, now);
     const providerReference = objectIdentifier(recordValue(event.data.object, "payment_intent")) ?? (event.type.startsWith("payment_intent.") ? stringValue(event.data.object, "id") : null);
     const updated = await db.update(paymentLedgerEntries).set({
       status: transition.status,

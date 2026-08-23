@@ -738,7 +738,7 @@ test("turns the journey catalog into a truthful production capability directory"
 
   assert.match(page, /Every workspace\. An honest status\./);
   assert.match(page, /Authorization is enforced server-side/);
-  assert.match(page, /Recorded payment status; no checkout or money movement/);
+  assert.match(page, /Secure checkout, provider-confirmed status, receipts, and payment support/);
   assert.match(page, /Recorded aggregates; no settlement or refund controls/);
   assert.match(page, /Activation boundary; no review source connected/);
   assert.match(page, /Activation requirements; no employer data connected/);

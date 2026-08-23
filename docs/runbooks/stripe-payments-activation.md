@@ -79,3 +79,11 @@ The admin finance view reports recorded ledger totals and processor-event health
 3. Keep dispute status separate from payment and refund status. The workspace never rewrites the ledger.
 4. Accept or challenge a dispute and submit evidence only through the approved Stripe operating procedure. Qivaya does not automate those actions.
 5. Confirm patient notifications reveal only the dispute status and direct the account owner to payment support; raw webhook payloads and evidence contents are not stored.
+
+## Receipts and credit notes
+
+1. A successful signed payment event creates one immutable receipt snapshot for the owned payment-ledger entry.
+2. A successful signed refund event creates a separate immutable credit note; it never rewrites or deletes the original receipt.
+3. Patients access their documents at `/payment-receipts`; delegated access requires the active `payments` family permission.
+4. Administrators access a patient-identity-free register at `/admin/payment-receipts`.
+5. These documents are payment-status records, not tax invoices, provider settlement statements, or payout instructions. Card data and raw Stripe payloads are never stored.
