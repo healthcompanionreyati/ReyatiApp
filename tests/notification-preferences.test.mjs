@@ -22,6 +22,8 @@ test("all required categories and channels are explicit", () => {
   for (const category of ["appointment", "medication", "follow_up", "account_security", "support_service", "marketing"]) assert.match(service, new RegExp(`"${category}"`));
   for (const channel of ["in_app", "email", "sms", "push"]) assert.match(service, new RegExp(`"${channel}"`));
   assert.match(service, /NOTIFICATION_CATEGORIES\.flatMap/);
+  assert.match(service, /offset \+= 8/);
+  assert.match(service, /missing\.slice\(offset, offset \+ 8\)/);
 });
 
 test("essential transactional and account security notices cannot be disabled", () => {

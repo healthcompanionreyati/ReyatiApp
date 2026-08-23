@@ -114,10 +114,12 @@ async function ensureWorkspace(userId: string) {
   const existingKeys = new Set(existing.map((item) => `${item.category}:${item.channel}`));
   const missing = NOTIFICATION_CATEGORIES.flatMap((category) => NOTIFICATION_CHANNELS.map((channel) => ({ category, channel }))).filter(({ category, channel }) => !existingKeys.has(`${category}:${channel}`));
   if (missing.length) {
-    await db.insert(notificationCategoryPreferences).values(missing.map(({ category, channel }) => {
-      const key = `${category}:${channel}`;
-      return { userId, category, channel, enabled: defaultEnabled.has(key), mandatoryReasonCode: mandatoryRules.get(key) ?? null, resourceVersion: 1, createdAt: now, updatedAt: now };
-    })).onConflictDoNothing();
+    for (let offset = 0; offset < missing.length; offset += 8) {
+      await db.insert(notificationCategoryPreferences).values(missing.slice(offset, offset + 8).map(({ category, channel }) => {
+        const key = `${category}:${channel}`;
+        return { userId, category, channel, enabled: defaultEnabled.has(key), mandatoryReasonCode: mandatoryRules.get(key) ?? null, resourceVersion: 1, createdAt: now, updatedAt: now };
+      })).onConflictDoNothing();
+    }
   }
   return profile;
 }
