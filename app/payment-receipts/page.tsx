@@ -47,7 +47,7 @@ export default function PaymentReceipts() {
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Receipts are temporarily unavailable"); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { queueMicrotask(() => void load()); }, [load]);
 
   async function downloadPdf(kind: "payment_receipt" | "payment_credit_note", id: string, artifact: Artifact | null) {
     if (delegated) { setError(ar ? "تنزيل PDF متاح فقط لصاحب الحساب." : "PDF download is available only to the account owner."); return; }

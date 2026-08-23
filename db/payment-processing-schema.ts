@@ -190,3 +190,26 @@ export const paymentCreditNotes = sqliteTable("payment_credit_notes", {
   index("idx_payment_credit_note_receipt_issued").on(table.receiptId, table.issuedAt),
   index("idx_payment_credit_note_ledger_issued").on(table.ledgerEntryId, table.issuedAt),
 ]);
+
+export const paymentLifecycleRehearsals = sqliteTable("payment_lifecycle_rehearsals", {
+  id: text("id").primaryKey(),
+  requestedByUserId: text("requested_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  clientRequestId: text("client_request_id").notNull(),
+  suiteVersion: text("suite_version").notNull(),
+  scenarioCount: integer("scenario_count").notNull(),
+  passedScenarios: integer("passed_scenarios").notNull(),
+  failedScenarios: integer("failed_scenarios").notNull(),
+  result: text("result").notNull(),
+  dataMode: text("data_mode").notNull().default("synthetic_only"),
+  scenarioResultsJson: text("scenario_results_json").notNull(),
+  stripeCallsMade: integer("stripe_calls_made").notNull().default(0),
+  r2ObjectsWritten: integer("r2_objects_written").notNull().default(0),
+  emailsSent: integer("emails_sent").notNull().default(0),
+  moneyMovementMinor: integer("money_movement_minor").notNull().default(0),
+  customerRecordsCreated: integer("customer_records_created").notNull().default(0),
+  operationalRecordsCreated: integer("operational_records_created").notNull().default(0),
+  executedAt: integer("executed_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_payment_lifecycle_rehearsal_request").on(table.requestedByUserId, table.clientRequestId),
+  index("idx_payment_lifecycle_rehearsal_result_executed").on(table.result, table.executedAt),
+]);

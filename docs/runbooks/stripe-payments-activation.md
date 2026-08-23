@@ -68,6 +68,14 @@ Never put secret values in Git, tickets, screenshots, or support messages.
 
 Set `QIVAYA_STRIPE_RECONCILIATION=false` to stop new reconciliation runs. Set `QIVAYA_STRIPE_REFUNDS=false` to stop new refund execution. Set `QIVAYA_STRIPE_PAYMENTS=false` to also remove checkout availability and cause the webhook endpoint to return unavailable. None of these rollbacks delete ledger, checkout, refund-execution, reconciliation, or processor-event history. Do not remove the database tables during an operational rollback.
 
+## Zero-effect lifecycle rehearsal
+
+1. Open `/admin/payment-lifecycle-rehearsal` with an active platform administrator role. Security auditors have read-only access to the evidence ledger.
+2. Run the complete ten-scenario suite before enabling or changing any payment-provider gate.
+3. The suite models hosted checkout, signed transition, duplicate-event idempotency, immutable receipt creation, private PDF integrity, minimal email intent, receipt-preserving refund, and exact reconciliation entirely in memory.
+4. A successful run persists only its rehearsal evidence row and audit event. It must report zero Stripe calls, R2 writes, emails, money movement, customer records, and operational payment records.
+5. Treat any failed scenario or non-zero side-effect counter as a release blocker. The rehearsal does not replace Stripe test-mode acceptance, signed-webhook monitoring, or reconciliation review.
+
 ## Reconciliation boundary
 
 The admin finance view reports recorded ledger totals and processor-event health. The control plane may execute only an independently approved full Stripe refund when its separate activation gate is enabled. It does not reconcile bank statements, calculate provider payables, perform partial or automatic refunds, or initiate payouts.

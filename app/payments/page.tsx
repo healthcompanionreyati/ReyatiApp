@@ -90,9 +90,11 @@ export default function Payments() {
   useEffect(() => {
     const controller = new AbortController();
     const checkout = new URLSearchParams(window.location.search).get("checkout");
-    if (checkout === "success") setNotice(ar ? "تم إرسال الدفع. ننتظر الآن تأكيداً موقّعاً من مزود الدفع." : "Payment submitted. Waiting for signed provider confirmation.");
-    if (checkout === "cancelled") setNotice(ar ? "تم إغلاق الدفع دون تغيير سجل الدفع." : "Checkout closed without changing your payment record.");
-    queueMicrotask(() => { if (!controller.signal.aborted) void loadPayments(controller.signal); });
+    queueMicrotask(() => {
+      if (checkout === "success") setNotice(ar ? "تم إرسال الدفع. ننتظر الآن تأكيداً موقّعاً من مزود الدفع." : "Payment submitted. Waiting for signed provider confirmation.");
+      if (checkout === "cancelled") setNotice(ar ? "تم إغلاق الدفع دون تغيير سجل الدفع." : "Checkout closed without changing your payment record.");
+      if (!controller.signal.aborted) void loadPayments(controller.signal);
+    });
     return () => controller.abort();
   }, [ar, loadPayments]);
 
