@@ -257,12 +257,18 @@ test("communication preferences are account-owned, audited, and do not bypass de
 
 test("Arabic and RTL preferences persist across critical journeys", async () => {
   const hook = await source("app/components/useReyatiLocale.ts");
+  const accountSync = await source("app/components/AuthenticatedLocaleSync.tsx");
+  const layout = await source("app/layout.tsx");
   const rtl = await source("app/rtl.css");
   const accessibility = await source("app/components/AccessibilitySync.tsx");
   assert.match(hook, /reyati\.locale/);
   assert.match(hook, /reyati:locale-change/);
-  assert.match(hook, /fetch\("\/api\/account\/communications"/);
-  assert.match(hook, /method: "POST"/);
+  assert.doesNotMatch(hook, /fetch\("\/api\/account\/communications"/);
+  assert.match(accountSync, /useAuth\(\)/);
+  assert.match(accountSync, /!isLoaded \|\| !isSignedIn \|\| !userId/);
+  assert.match(accountSync, /fetch\("\/api\/account\/communications"/);
+  assert.match(accountSync, /method: "POST"/);
+  assert.match(layout, /<AuthenticatedLocaleSync\/>/);
   assert.match(hook, /document\.documentElement\.lang = locale/);
   assert.match(hook, /locale === "ar" \? "rtl" : "ltr"/);
   assert.match(rtl, /IBM Plex Sans Arabic/);

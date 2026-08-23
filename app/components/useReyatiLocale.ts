@@ -17,14 +17,6 @@ function storedLocale(): ReyatiLocale | null {
   return value === "ar" || value === "en" ? value : null;
 }
 
-async function accountPreference(): Promise<{ locale: ReyatiLocale; emailEnabled: boolean } | null> {
-  const response = await fetch("/api/account/communications", { cache: "no-store" });
-  if (!response.ok) return null;
-  const payload = await response.json().catch(() => ({})) as { data?: { preferences?: { locale?: ReyatiLocale; emailEnabled?: boolean } } };
-  const locale = payload.data?.preferences?.locale;
-  return locale === "en" || locale === "ar" ? { locale, emailEnabled: payload.data?.preferences?.emailEnabled === true } : null;
-}
-
 export function useReyatiLocale() {
   const [locale, setLocaleState] = useState<ReyatiLocale>("en");
 
@@ -32,11 +24,6 @@ export function useReyatiLocale() {
     let active = true;
     const local = storedLocale();
     if (local) { applyLocale(local); queueMicrotask(() => { if (active) setLocaleState(local); }); }
-    accountPreference().then((preference) => {
-      if (!active || !preference) return;
-      window.localStorage.setItem(storageKey, preference.locale);
-      setLocaleState(preference.locale); applyLocale(preference.locale);
-    }).catch(() => undefined);
     const sync = (event: Event) => {
       const next = (event as CustomEvent<ReyatiLocale>).detail ?? storedLocale();
       if (next === "en" || next === "ar") { setLocaleState(next); applyLocale(next); }
@@ -48,11 +35,9 @@ export function useReyatiLocale() {
   const setLocale = useCallback((next: ReyatiLocale) => {
     setLocaleState(next); applyLocale(next); window.localStorage.setItem(storageKey, next);
     window.dispatchEvent(new CustomEvent<ReyatiLocale>(localeEvent, { detail: next }));
-    accountPreference().then((preference) => {
-      if (!preference || preference.locale === next) return;
-      return fetch("/api/account/communications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ locale: next, emailEnabled: preference.emailEnabled }) });
-    }).catch(() => undefined);
   }, []);
 
   return [locale, setLocale] as const;
 }
+
+export { localeEvent };

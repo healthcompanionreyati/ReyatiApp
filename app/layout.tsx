@@ -76,6 +76,7 @@ import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";
 import UnsavedChangesGuard from "./components/UnsavedChangesGuard";
 import ThemeController from "./components/ThemeController";
+import AuthenticatedLocaleSync from "./components/AuthenticatedLocaleSync";
 
 export const metadata: Metadata = {
   title: {
@@ -109,7 +110,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const content = <><a className="skip-link" href="#main-content">Skip to main content</a>{children}<NetworkStatus/><UnsavedChangesGuard/><AccessibilitySync/><MobileDock/><ThemeController/></>;
   const application = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-    ? <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} signInUrl="/sign-in" signUpUrl="/sign-up">{content}</ClerkProvider>
+    ? <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} signInUrl="/sign-in" signUpUrl="/sign-up"><AuthenticatedLocaleSync/>{content}</ClerkProvider>
     : content;
 
   return <html lang="en" dir="ltr" suppressHydrationWarning><body>
