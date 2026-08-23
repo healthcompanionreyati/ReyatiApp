@@ -2,7 +2,7 @@ import { UserProfile } from "@clerk/nextjs";
 import Link from "next/link";
 import styles from "./identity.module.css";
 
-export const metadata = { title: "Password and MFA · Qivaya" };
+export const metadata = { title: "Password and MFA" };
 
 export default function AccountIdentityPage() {
   return <main className={styles.shell} id="main-content">
