@@ -16,8 +16,9 @@ export class InvalidDocumentObjectKeyError extends Error {
   }
 }
 
-export function createPrivateDocumentObjectKey(now = new Date()) {
-  return `documents/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${crypto.randomUUID()}`;
+export function createPrivateDocumentObjectKey(now = new Date(), documentId = crypto.randomUUID()) {
+  if (!/^[0-9a-f-]{36}$/.test(documentId)) throw new InvalidDocumentObjectKeyError();
+  return `documents/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${documentId}`;
 }
 
 export function assertPrivateDocumentObjectKey(value: string) {
@@ -67,12 +68,12 @@ export async function readPrivateDocumentObject(objectKey: string) {
   return { body: object.body, size: object.size, etag: object.etag, contentType: object.httpMetadata?.contentType ?? null };
 }
 
-export async function stagePrivateDocumentObject(input: { objectKey: string; body: ReadableStream<Uint8Array> | ArrayBuffer | Uint8Array; contentType: string; ownerReference: string; expectedSizeBytes: number; checksumSha256: string }) {
+export async function stagePrivateDocumentObject(input: { objectKey: string; body: ReadableStream<Uint8Array> | ArrayBuffer | Uint8Array; contentType: string; ownerReference: string; expectedSizeBytes: number; checksumSha256: string; classification?: "clinical" | "financial" }) {
   const storage = await storageBinding();
   const objectKey = assertPrivateDocumentObjectKey(input.objectKey);
   if (!Number.isSafeInteger(input.expectedSizeBytes) || input.expectedSizeBytes < 1 || input.expectedSizeBytes > 10 * 1024 * 1024) throw new RangeError("Document size is outside the approved limit");
   if (!/^[a-f0-9]{64}$/.test(input.checksumSha256)) throw new TypeError("Document checksum is invalid");
-  const stored = await storage.put(objectKey, input.body, { httpMetadata: { contentType: input.contentType }, customMetadata: { ownerReferenceHash: await sha256(input.ownerReference), expectedSizeBytes: String(input.expectedSizeBytes), checksumSha256: input.checksumSha256, classification: "clinical" } });
+  const stored = await storage.put(objectKey, input.body, { httpMetadata: { contentType: input.contentType }, customMetadata: { ownerReferenceHash: await sha256(input.ownerReference), expectedSizeBytes: String(input.expectedSizeBytes), checksumSha256: input.checksumSha256, classification: input.classification ?? "clinical" } });
   return { size: stored.size, etag: stored.etag };
 }
 

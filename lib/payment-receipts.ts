@@ -1,7 +1,7 @@
 import { and, count, desc, eq, inArray, sum } from "drizzle-orm";
 import { getDb } from "@/db";
 import { paymentCreditNotes, paymentReceipts } from "@/db/payment-processing-schema";
-import { auditEvents, outboundMessages, patientProfiles, paymentLedgerEntries } from "@/db/schema";
+import { auditEvents, documentRecords, outboundMessages, patientProfiles, paymentLedgerEntries } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 
 type DeliveryRow = { resourceType: string | null; resourceId: string | null; status: string; reason: string | null; sentAt: Date | null; updatedAt: Date };
@@ -15,6 +15,11 @@ function deliveryMap(rows: DeliveryRow[]) {
   return mapped;
 }
 
+type ArtifactRow = { id: string; status: string; sizeBytes: number; checksumSha256: string; createdAt: Date };
+function artifactMap(rows: ArtifactRow[]) {
+  return new Map(rows.map((row) => [row.id, { documentId: row.id, status: row.status, sizeBytes: row.sizeBytes, checksumSha256: row.checksumSha256, generatedAt: row.createdAt }]));
+}
+
 export async function getPatientPaymentReceipts(userId: string, actorUserId = userId) {
   const db = await getDb();
   const receipts = await db.select({
@@ -22,7 +27,7 @@ export async function getPatientPaymentReceipts(userId: string, actorUserId = us
     providerName: paymentReceipts.providerName, facilityName: paymentReceipts.facilityName,
     appointmentStartedAt: paymentReceipts.appointmentStartedAt, careMode: paymentReceipts.careMode,
     amountMinor: paymentReceipts.amountMinor, currency: paymentReceipts.currency,
-    issuedAt: paymentReceipts.issuedAt,
+    issuedAt: paymentReceipts.issuedAt, documentId: paymentReceipts.documentId,
   }).from(paymentReceipts)
     .innerJoin(paymentLedgerEntries, eq(paymentLedgerEntries.id, paymentReceipts.ledgerEntryId))
     .innerJoin(patientProfiles, eq(patientProfiles.id, paymentLedgerEntries.patientId))
@@ -30,7 +35,7 @@ export async function getPatientPaymentReceipts(userId: string, actorUserId = us
   const creditNotes = await db.select({
     id: paymentCreditNotes.id, receiptId: paymentCreditNotes.receiptId,
     creditNoteNumber: paymentCreditNotes.creditNoteNumber, amountMinor: paymentCreditNotes.amountMinor,
-    currency: paymentCreditNotes.currency, reasonCode: paymentCreditNotes.reasonCode, issuedAt: paymentCreditNotes.issuedAt,
+    currency: paymentCreditNotes.currency, reasonCode: paymentCreditNotes.reasonCode, issuedAt: paymentCreditNotes.issuedAt, documentId: paymentCreditNotes.documentId,
   }).from(paymentCreditNotes)
     .innerJoin(paymentLedgerEntries, eq(paymentLedgerEntries.id, paymentCreditNotes.ledgerEntryId))
     .innerJoin(patientProfiles, eq(patientProfiles.id, paymentLedgerEntries.patientId))
@@ -46,15 +51,18 @@ export async function getPatientPaymentReceipts(userId: string, actorUserId = us
     inArray(outboundMessages.resourceId, documentIds),
   )).orderBy(desc(outboundMessages.updatedAt)) : [];
   const deliveries = deliveryMap(deliveryRows);
+  const artifactDocumentIds = [...receipts.map((item) => item.documentId), ...creditNotes.map((item) => item.documentId)].filter((value): value is string => Boolean(value));
+  const artifacts = artifactMap(artifactDocumentIds.length ? await db.select({ id: documentRecords.id, status: documentRecords.status, sizeBytes: documentRecords.sizeBytes, checksumSha256: documentRecords.checksumSha256, createdAt: documentRecords.createdAt })
+    .from(documentRecords).where(and(eq(documentRecords.ownerUserId, userId), inArray(documentRecords.id, artifactDocumentIds))) : []);
   await db.insert(auditEvents).values({
     id: crypto.randomUUID(), actorUserId, organizationId: null,
     action: "patient.payment_receipts_viewed", resourceType: "payment_receipt", resourceId: userId,
     outcome: "success", metadataJson: JSON.stringify({ receiptCount: receipts.length, delegated: actorUserId !== userId }), createdAt: new Date(),
   });
   return receipts.map((receipt) => ({
-    ...receipt, emailDelivery: deliveries.get(`payment_receipt:${receipt.id}`) ?? null,
+    ...receipt, artifact: receipt.documentId ? artifacts.get(receipt.documentId) ?? null : null, emailDelivery: deliveries.get(`payment_receipt:${receipt.id}`) ?? null,
     creditNotes: creditNotes.filter((note) => note.receiptId === receipt.id).map((note) => ({
-      ...note, emailDelivery: deliveries.get(`payment_credit_note:${note.id}`) ?? null,
+      ...note, artifact: note.documentId ? artifacts.get(note.documentId) ?? null : null, emailDelivery: deliveries.get(`payment_credit_note:${note.id}`) ?? null,
     })),
   }));
 }
@@ -67,12 +75,12 @@ export async function getAdminPaymentReceiptWorkspace(userId: string) {
       id: paymentReceipts.id, receiptNumber: paymentReceipts.receiptNumber,
       providerName: paymentReceipts.providerName, facilityName: paymentReceipts.facilityName,
       appointmentStartedAt: paymentReceipts.appointmentStartedAt, careMode: paymentReceipts.careMode,
-      amountMinor: paymentReceipts.amountMinor, currency: paymentReceipts.currency, issuedAt: paymentReceipts.issuedAt,
+      amountMinor: paymentReceipts.amountMinor, currency: paymentReceipts.currency, issuedAt: paymentReceipts.issuedAt, documentId: paymentReceipts.documentId,
     }).from(paymentReceipts).orderBy(desc(paymentReceipts.issuedAt)).limit(250),
     db.select({
       id: paymentCreditNotes.id, receiptId: paymentCreditNotes.receiptId,
       creditNoteNumber: paymentCreditNotes.creditNoteNumber, amountMinor: paymentCreditNotes.amountMinor,
-      currency: paymentCreditNotes.currency, reasonCode: paymentCreditNotes.reasonCode, issuedAt: paymentCreditNotes.issuedAt,
+      currency: paymentCreditNotes.currency, reasonCode: paymentCreditNotes.reasonCode, issuedAt: paymentCreditNotes.issuedAt, documentId: paymentCreditNotes.documentId,
     }).from(paymentCreditNotes).orderBy(desc(paymentCreditNotes.issuedAt)).limit(500),
     db.select({ value: count(), amountMinor: sum(paymentReceipts.amountMinor) }).from(paymentReceipts),
     db.select({ value: count(), amountMinor: sum(paymentCreditNotes.amountMinor) }).from(paymentCreditNotes),
@@ -87,7 +95,12 @@ export async function getAdminPaymentReceiptWorkspace(userId: string) {
     inArray(outboundMessages.resourceId, documentIds),
   )).orderBy(desc(outboundMessages.updatedAt)) : [];
   const deliveries = deliveryMap(deliveryRows);
+  const artifactDocumentIds = [...receipts.map((item) => item.documentId), ...credits.map((item) => item.documentId)].filter((value): value is string => Boolean(value));
+  const artifacts = artifactMap(artifactDocumentIds.length ? await db.select({ id: documentRecords.id, status: documentRecords.status, sizeBytes: documentRecords.sizeBytes, checksumSha256: documentRecords.checksumSha256, createdAt: documentRecords.createdAt })
+    .from(documentRecords).where(inArray(documentRecords.id, artifactDocumentIds)) : []);
   const deliveryValues = [...deliveries.values()];
+  const artifactValues = [...artifacts.values()];
+  const paymentDocumentCount = receipts.length + credits.length;
   const now = new Date();
   await db.insert(auditEvents).values({
     id: crypto.randomUUID(), actorUserId: userId, organizationId: null,
@@ -103,11 +116,14 @@ export async function getAdminPaymentReceiptWorkspace(userId: string) {
       deliveryTracked: deliveryValues.length,
       deliveryCompleted: deliveryValues.filter((item) => item.status === "delivered").length,
       deliveryAttention: deliveryValues.filter((item) => ["failed", "bounced", "complained", "suppressed"].includes(item.status)).length,
+      pdfReady: artifactValues.filter((item) => item.status === "ready").length,
+      pdfPending: paymentDocumentCount - artifactValues.length,
+      pdfAttention: artifactValues.filter((item) => item.status !== "ready").length,
     },
     receipts: receipts.map((receipt) => ({
-      ...receipt, emailDelivery: deliveries.get(`payment_receipt:${receipt.id}`) ?? null,
+      ...receipt, artifact: receipt.documentId ? artifacts.get(receipt.documentId) ?? null : null, emailDelivery: deliveries.get(`payment_receipt:${receipt.id}`) ?? null,
       creditNotes: credits.filter((note) => note.receiptId === receipt.id).map((note) => ({
-        ...note, emailDelivery: deliveries.get(`payment_credit_note:${note.id}`) ?? null,
+        ...note, artifact: note.documentId ? artifacts.get(note.documentId) ?? null : null, emailDelivery: deliveries.get(`payment_credit_note:${note.id}`) ?? null,
       })),
     })),
   };

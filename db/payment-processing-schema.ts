@@ -1,5 +1,5 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
-import { paymentLedgerEntries, users } from "./schema";
+import { documentRecords, paymentLedgerEntries, users } from "./schema";
 
 export const paymentCheckoutSessions = sqliteTable("payment_checkout_sessions", {
   id: text("id").primaryKey(),
@@ -158,12 +158,14 @@ export const paymentReceipts = sqliteTable("payment_receipts", {
   careMode: text("care_mode").notNull(),
   amountMinor: integer("amount_minor").notNull(),
   currency: text("currency").notNull(),
+  documentId: text("document_id").references(() => documentRecords.id, { onDelete: "restrict" }),
   issuedAt: integer("issued_at", { mode: "timestamp_ms" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [
   uniqueIndex("idx_payment_receipt_ledger").on(table.ledgerEntryId),
   uniqueIndex("idx_payment_receipt_number").on(table.receiptNumber),
   uniqueIndex("idx_payment_receipt_provider_event").on(table.provider, table.providerEventId),
+  uniqueIndex("idx_payment_receipt_document").on(table.documentId),
   index("idx_payment_receipt_issued").on(table.issuedAt),
 ]);
 
@@ -178,11 +180,13 @@ export const paymentCreditNotes = sqliteTable("payment_credit_notes", {
   amountMinor: integer("amount_minor").notNull(),
   currency: text("currency").notNull(),
   reasonCode: text("reason_code").notNull().default("provider_confirmed_refund"),
+  documentId: text("document_id").references(() => documentRecords.id, { onDelete: "restrict" }),
   issuedAt: integer("issued_at", { mode: "timestamp_ms" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [
   uniqueIndex("idx_payment_credit_note_number").on(table.creditNoteNumber),
   uniqueIndex("idx_payment_credit_note_provider_event").on(table.provider, table.providerEventId),
+  uniqueIndex("idx_payment_credit_note_document").on(table.documentId),
   index("idx_payment_credit_note_receipt_issued").on(table.receiptId, table.issuedAt),
   index("idx_payment_credit_note_ledger_issued").on(table.ledgerEntryId, table.issuedAt),
 ]);

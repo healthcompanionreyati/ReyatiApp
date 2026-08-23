@@ -87,7 +87,7 @@ export async function consumeDocumentAccessGrant(userId: string, body: Record<st
   const rows = await db.select({
     grantId: documentAccessGrants.id, documentId: documentAccessGrants.documentId, shareId: documentAccessGrants.shareId,
     purpose: documentAccessGrants.purpose, objectKey: documentRecords.objectKey, ownerUserId: documentRecords.ownerUserId,
-    contentType: documentRecords.contentType,
+    contentType: documentRecords.contentType, category: documentRecords.category,
     sizeBytes: documentRecords.sizeBytes, checksumSha256: documentRecords.checksumSha256, documentVersion: documentRecords.version,
   }).from(documentAccessGrants).innerJoin(documentRecords, eq(documentRecords.id, documentAccessGrants.documentId)).where(and(
     eq(documentAccessGrants.tokenHash, tokenHash), eq(documentAccessGrants.requesterUserId, userId), eq(documentAccessGrants.status, "active"), gt(documentAccessGrants.expiresAt, now),
@@ -136,5 +136,6 @@ export async function consumeDocumentAccessGrant(userId: string, body: Record<st
   }
   await db.insert(auditEvents).values({ id: crypto.randomUUID(), actorUserId: userId, organizationId, action: "document.content_delivered", resourceType: "document", resourceId: row.documentId, outcome: "success", metadataJson: JSON.stringify({ grantId: row.grantId, purpose: row.purpose, sizeBytes: row.sizeBytes }), createdAt: now });
   const extension = row.contentType === "application/pdf" ? "pdf" : row.contentType === "image/jpeg" ? "jpg" : "png";
-  return { body: bytes, headers: { "Cache-Control": "private, no-store", "Content-Disposition": `attachment; filename="qivaya-medical-document.${extension}"`, "Content-Length": String(object.size), "Content-Type": row.contentType, "Cross-Origin-Resource-Policy": "same-origin", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY" } };
+  const filename = row.category === "payment_receipt" ? "qivaya-payment-receipt" : row.category === "payment_credit_note" ? "qivaya-refund-credit-note" : "qivaya-medical-document";
+  return { body: bytes, headers: { "Cache-Control": "private, no-store", "Content-Disposition": `attachment; filename="${filename}.${extension}"`, "Content-Length": String(object.size), "Content-Type": row.contentType, "Cross-Origin-Resource-Policy": "same-origin", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY" } };
 }

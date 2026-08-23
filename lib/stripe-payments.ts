@@ -6,6 +6,8 @@ import { financeAdjustments } from "@/db/finance-controls-schema";
 import { appointments, auditEvents, facilities, notifications, patientProfiles, paymentLedgerEntries, providerProfiles, users } from "@/db/schema";
 import { notificationRecord } from "@/lib/notification-center";
 import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
+import { reportOperationalError } from "@/lib/observability";
+import { ensurePaymentDocumentArtifact } from "@/lib/payment-document-artifacts";
 import { getRuntimeEnv } from "@/lib/runtime-env";
 
 const checkoutStatuses = ["not_charged", "failed"];
@@ -493,6 +495,9 @@ export async function verifyAndProcessStripeWebhook(rawBody: string, signature: 
       await processorUpdate;
     }
     if (financialDocument) {
+      await ensurePaymentDocumentArtifact(financialDocument.kind, financialDocument.id).catch((error) => {
+        reportOperationalError("payment_receipts.automatic_pdf_generation_failed", error);
+      });
       await recordTransactionalEmailIntent({
         userId: ledger.patientUserId, templateId: financialDocument.templateId,
         actionPath: `/payment-receipts?document=${encodeURIComponent(financialDocument.id)}`,

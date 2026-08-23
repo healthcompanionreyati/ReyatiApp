@@ -63,7 +63,7 @@ test("patient and admin receipt delivery UX is bilingual, linked, responsive, an
   ]);
   assert.match(patient, /The in-app Qivaya record is authoritative/);
   assert.match(patient, /سجل كيفايا داخل التطبيق هو المرجع/);
-  assert.match(patient, /documentId=params\.get\("document"\)/);
+  assert.match(patient, /requestedId = params\.get\("document"\)/);
   assert.match(patient, /\/settings\/communications/);
   assert.match(admin, /Payment-document delivery/);
   assert.match(admin, /تسليم مستندات الدفع/);

@@ -53,7 +53,7 @@ test("patient receipt access is care-subject scoped and admin access is role sco
   assert.match(adminRoute, /Cache-Control.*private, no-store/);
 });
 
-test("receipt workspaces are bilingual, responsive, printable, and read only", async () => {
+test("receipt workspaces are bilingual, responsive, printable, and cannot mutate payment state", async () => {
   const [patient, patientCss, admin, adminCss] = await Promise.all([
     source("app/payment-receipts/page.tsx"),
     source("app/payment-receipts/payment-receipts.module.css"),
@@ -66,7 +66,7 @@ test("receipt workspaces are bilingual, responsive, printable, and read only", a
   assert.match(admin, /Receipt operations/);
   assert.match(admin, /عمليات الإيصالات/);
   assert.match(admin, /Patient identity/);
-  assert.doesNotMatch(`${patient}\n${admin}`, /method:\s*["'](?:POST|PATCH|DELETE)/);
+  assert.doesNotMatch(`${patient}\n${admin}`, /\/api\/(?:payments\/checkout|admin\/finance-controls\/refunds)/);
   assert.match(patientCss, /@media print/);
   assert.match(patientCss, /@media\(max-width:760px\)/);
   assert.match(adminCss, /@media\(max-width:900px\)/);
