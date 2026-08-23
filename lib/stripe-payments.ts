@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
-import { paymentCheckoutSessions, paymentProcessorEvents, paymentRefundExecutions } from "@/db/payment-processing-schema";
+import { paymentCheckoutSessions, paymentDisputeEvents, paymentDisputes, paymentProcessorEvents, paymentRefundExecutions } from "@/db/payment-processing-schema";
 import { financeAdjustments } from "@/db/finance-controls-schema";
 import { appointments, auditEvents, notifications, patientProfiles, paymentLedgerEntries, providerProfiles, users } from "@/db/schema";
 import { notificationRecord } from "@/lib/notification-center";
@@ -18,6 +18,11 @@ const supportedEvents = new Set([
   "refund.created",
   "refund.updated",
   "charge.refunded",
+  "charge.dispute.created",
+  "charge.dispute.updated",
+  "charge.dispute.funds_withdrawn",
+  "charge.dispute.funds_reinstated",
+  "charge.dispute.closed",
 ]);
 
 export class PaymentValidationError extends Error {
@@ -260,6 +265,74 @@ async function recordRefundExecutionState(event: Stripe.Event, now: Date) {
   ]);
 }
 
+const terminalDisputeStatuses = new Set(["won", "lost", "warning_closed"]);
+
+function unixDate(value: unknown, fallback: Date) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? new Date(value * 1000) : fallback;
+}
+
+async function recordDisputeState(event: Stripe.Event, now: Date) {
+  if (!event.type.startsWith("charge.dispute.")) return null;
+  const object = event.data.object as unknown;
+  const providerDisputeId = stringValue(object, "id");
+  const status = stringValue(object, "status") ?? "unknown";
+  const amount = recordValue(object, "amount");
+  const currency = stringValue(object, "currency")?.toLowerCase();
+  if (!providerDisputeId || typeof amount !== "number" || !Number.isInteger(amount) || amount < 0 || !currency) {
+    throw new PaymentValidationError("Stripe dispute data is incomplete");
+  }
+  const db = await getDb();
+  const ledgerEntryId = await resolveEventLedgerId(object);
+  const existing = (await db.select({ id: paymentDisputes.id, status: paymentDisputes.status }).from(paymentDisputes)
+    .where(and(eq(paymentDisputes.provider, "stripe"), eq(paymentDisputes.providerDisputeId, providerDisputeId))).limit(1))[0];
+  const disputeId = existing?.id ?? crypto.randomUUID();
+  const evidenceDetails = recordValue(object, "evidence_details");
+  const evidenceDue = recordValue(evidenceDetails, "due_by");
+  const providerCreatedAt = unixDate(recordValue(object, "created"), now);
+  const closedAt = terminalDisputeStatuses.has(status) ? now : null;
+  await db.batch([
+    db.insert(paymentDisputes).values({
+      id: disputeId, ledgerEntryId, provider: "stripe", providerDisputeId,
+      providerChargeId: objectIdentifier(recordValue(object, "charge")),
+      providerPaymentIntentId: objectIdentifier(recordValue(object, "payment_intent")),
+      amountMinor: amount, currency, reasonCode: stringValue(object, "reason") ?? "unknown", status,
+      evidenceDueAt: typeof evidenceDue === "number" ? unixDate(evidenceDue, now) : null,
+      providerCreatedAt, providerUpdatedAt: now, createdAt: now, updatedAt: now, closedAt,
+    }).onConflictDoUpdate({ target: [paymentDisputes.provider, paymentDisputes.providerDisputeId], set: {
+      ledgerEntryId: ledgerEntryId ?? undefined,
+      providerChargeId: objectIdentifier(recordValue(object, "charge")) ?? undefined,
+      providerPaymentIntentId: objectIdentifier(recordValue(object, "payment_intent")) ?? undefined,
+      amountMinor: amount, currency, reasonCode: stringValue(object, "reason") ?? "unknown", status,
+      evidenceDueAt: typeof evidenceDue === "number" ? unixDate(evidenceDue, now) : null,
+      providerUpdatedAt: now, updatedAt: now, closedAt,
+    }}),
+    db.insert(paymentDisputeEvents).values({
+      id: crypto.randomUUID(), disputeId, provider: "stripe", providerEventId: event.id,
+      eventType: event.type, previousStatus: existing?.status ?? null, nextStatus: status, receivedAt: now,
+    }).onConflictDoNothing(),
+  ]);
+  const patient = ledgerEntryId ? (await db.select({ userId: patientProfiles.userId }).from(paymentLedgerEntries)
+    .innerJoin(patientProfiles, eq(patientProfiles.id, paymentLedgerEntries.patientId))
+    .where(eq(paymentLedgerEntries.id, ledgerEntryId)).limit(1))[0] : null;
+  await db.insert(auditEvents).values({
+    id: crypto.randomUUID(), actorUserId: null, organizationId: null,
+    action: "payment.dispute_status_received", resourceType: "payment_dispute", resourceId: disputeId,
+    outcome: "success", metadataJson: JSON.stringify({ provider: "stripe", eventId: event.id, eventType: event.type, status, ledgerResolved: Boolean(ledgerEntryId), externalActor: true, rawPayloadStored: false }), createdAt: now,
+  });
+  if (patient?.userId) {
+    const notice = terminalDisputeStatuses.has(status)
+      ? { title: "Payment dispute updated", body: `Your payment provider closed a dispute with status: ${status.replaceAll("_", " ")}. Review the payment record or contact support.` }
+      : { title: "Payment dispute opened", body: "Your payment provider reported a dispute on an appointment payment. Review the status and contact support if you need help." };
+    await db.insert(notifications).values(notificationRecord({
+      userId: patient.userId, type: "payment", title: notice.title, body: notice.body,
+      actionPath: "/payments", resourceType: "payment_dispute", resourceId: disputeId,
+      dedupeKey: `payment-dispute:${event.id}:patient`, createdAt: now,
+    })).onConflictDoNothing({ target: [notifications.userId, notifications.dedupeKey] });
+    await recordTransactionalEmailIntent({ userId: patient.userId, templateId: "payment_update", actionPath: "/payments", dedupeKey: `email:payment-dispute:${event.id}:patient` });
+  }
+  return { disputeId, ledgerEntryId, patientUserId: patient?.userId ?? null, status };
+}
+
 function eventTransition(event: Stripe.Event) {
   const object = event.data.object as unknown;
   if (event.type === "checkout.session.completed") return stringValue(object, "payment_status") === "paid" ? { status: "paid" as const, refundAmountQar: null } : null;
@@ -316,6 +389,12 @@ export async function verifyAndProcessStripeWebhook(rawBody: string, signature: 
     if (!supportedEvents.has(event.type)) {
       await db.update(paymentProcessorEvents).set({ processingStatus: "ignored", processedAt: now }).where(and(eq(paymentProcessorEvents.provider, "stripe"), eq(paymentProcessorEvents.providerEventId, event.id)));
       return { received: true, replayed: false, status: "ignored" };
+    }
+    const dispute = await recordDisputeState(event, now);
+    if (dispute) {
+      await db.update(paymentProcessorEvents).set({ processingStatus: "processed", ledgerEntryId: dispute.ledgerEntryId, errorCode: dispute.ledgerEntryId ? null : "ledger_not_resolved", processedAt: now })
+        .where(and(eq(paymentProcessorEvents.provider, "stripe"), eq(paymentProcessorEvents.providerEventId, event.id)));
+      return { received: true, replayed: false, status: "processed" };
     }
     await recordCheckoutSessionState(event, now);
     await recordRefundExecutionState(event, now);

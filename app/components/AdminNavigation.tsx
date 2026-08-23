@@ -68,6 +68,7 @@ const groups: NavGroup[] = [
     { href: "/admin/tenant-configuration", icon: "⚙", en: "Tenant configuration", ar: "إعدادات المؤسسات" },
     { href: "/admin/finance-controls", icon: "Q", en: "Finance controls", ar: "الضوابط المالية" },
     { href: "/admin/payment-reconciliation", icon: "≋", en: "Payment reconciliation", ar: "مطابقة المدفوعات" },
+    { href: "/admin/payment-disputes", icon: "!", en: "Payment disputes", ar: "نزاعات المدفوعات" },
     { href: "/admin/benefits", icon: "◇", en: "Benefits", ar: "المزايا" },
     { href: "/admin/partner-governance", icon: "◇", en: "Partner governance", ar: "حوكمة الشركاء" },
     { href: "/admin/integration-operations", icon: "↔", en: "Integration operations", ar: "عمليات التكامل" },

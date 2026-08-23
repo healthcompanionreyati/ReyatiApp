@@ -6,7 +6,7 @@ Full refunds use the finance maker-checker workflow. A separate platform adminis
 
 ## Production prerequisites
 
-1. Apply database migration `drizzle/0095_grey_mother_askani.sql` to the production D1 database.
+1. Apply payment migrations through `drizzle/0098_left_beast.sql` to the production D1 database.
 2. In Stripe, create a webhook endpoint for `https://www.qivaya.com/api/webhooks/stripe`.
 3. Subscribe the endpoint to:
    - `checkout.session.completed`
@@ -17,6 +17,11 @@ Full refunds use the finance maker-checker workflow. A separate platform adminis
    - `refund.created`
    - `refund.updated`
    - `charge.refunded`
+   - `charge.dispute.created`
+   - `charge.dispute.updated`
+   - `charge.dispute.funds_withdrawn`
+   - `charge.dispute.funds_reinstated`
+   - `charge.dispute.closed`
 4. Add these encrypted Vercel environment variables to Production only:
    - `STRIPE_SECRET_KEY`
    - `STRIPE_WEBHOOK_SECRET`
@@ -66,3 +71,11 @@ Set `QIVAYA_STRIPE_RECONCILIATION=false` to stop new reconciliation runs. Set `Q
 ## Reconciliation boundary
 
 The admin finance view reports recorded ledger totals and processor-event health. The control plane may execute only an independently approved full Stripe refund when its separate activation gate is enabled. It does not reconcile bank statements, calculate provider payables, perform partial or automatic refunds, or initiate payouts.
+
+## Dispute monitoring
+
+1. Enable all five `charge.dispute.*` webhook events listed above on the same signed endpoint.
+2. Use `/admin/payment-disputes` to monitor the provider lifecycle and identify unlinked events.
+3. Keep dispute status separate from payment and refund status. The workspace never rewrites the ledger.
+4. Accept or challenge a dispute and submit evidence only through the approved Stripe operating procedure. Qivaya does not automate those actions.
+5. Confirm patient notifications reveal only the dispute status and direct the account owner to payment support; raw webhook payloads and evidence contents are not stored.

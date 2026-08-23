@@ -107,3 +107,40 @@ export const paymentReconciliationItems = sqliteTable("payment_reconciliation_it
   index("idx_payment_reconciliation_item_run_status").on(table.runId, table.matchStatus),
   index("idx_payment_reconciliation_item_ledger").on(table.ledgerEntryId, table.createdAt),
 ]);
+
+export const paymentDisputes = sqliteTable("payment_disputes", {
+  id: text("id").primaryKey(),
+  ledgerEntryId: text("ledger_entry_id").references(() => paymentLedgerEntries.id, { onDelete: "restrict" }),
+  provider: text("provider").notNull().default("stripe"),
+  providerDisputeId: text("provider_dispute_id").notNull(),
+  providerChargeId: text("provider_charge_id"),
+  providerPaymentIntentId: text("provider_payment_intent_id"),
+  amountMinor: integer("amount_minor").notNull(),
+  currency: text("currency").notNull(),
+  reasonCode: text("reason_code").notNull(),
+  status: text("status").notNull(),
+  evidenceDueAt: integer("evidence_due_at", { mode: "timestamp_ms" }),
+  providerCreatedAt: integer("provider_created_at", { mode: "timestamp_ms" }).notNull(),
+  providerUpdatedAt: integer("provider_updated_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  closedAt: integer("closed_at", { mode: "timestamp_ms" }),
+}, (table) => [
+  uniqueIndex("idx_payment_dispute_provider_id").on(table.provider, table.providerDisputeId),
+  index("idx_payment_dispute_status_updated").on(table.status, table.updatedAt),
+  index("idx_payment_dispute_ledger_updated").on(table.ledgerEntryId, table.updatedAt),
+]);
+
+export const paymentDisputeEvents = sqliteTable("payment_dispute_events", {
+  id: text("id").primaryKey(),
+  disputeId: text("dispute_id").notNull().references(() => paymentDisputes.id, { onDelete: "restrict" }),
+  provider: text("provider").notNull().default("stripe"),
+  providerEventId: text("provider_event_id").notNull(),
+  eventType: text("event_type").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  receivedAt: integer("received_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_payment_dispute_event_provider_id").on(table.provider, table.providerEventId),
+  index("idx_payment_dispute_event_dispute_received").on(table.disputeId, table.receivedAt),
+]);

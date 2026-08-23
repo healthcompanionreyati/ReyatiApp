@@ -1,5 +1,6 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
+import { paymentDisputes } from "@/db/payment-processing-schema";
 import { appointments, auditEvents, facilities, patientProfiles, paymentLedgerEntries, providerProfiles, providerServiceLocations, users } from "@/db/schema";
 
 export async function getPatientPaymentLedger(userId: string, actorUserId = userId) {
@@ -31,11 +32,24 @@ export async function getPatientPaymentLedger(userId: string, actorUserId = user
     .orderBy(desc(appointments.scheduledStart))
     .limit(100);
 
+  const ledgerIds = rows.flatMap((row) => row.ledgerId ? [row.ledgerId] : []);
+  const disputes = ledgerIds.length ? await db.select({
+    id: paymentDisputes.id,
+    ledgerEntryId: paymentDisputes.ledgerEntryId,
+    amountMinor: paymentDisputes.amountMinor,
+    currency: paymentDisputes.currency,
+    reasonCode: paymentDisputes.reasonCode,
+    status: paymentDisputes.status,
+    evidenceDueAt: paymentDisputes.evidenceDueAt,
+    updatedAt: paymentDisputes.updatedAt,
+    closedAt: paymentDisputes.closedAt,
+  }).from(paymentDisputes).where(inArray(paymentDisputes.ledgerEntryId, ledgerIds)).orderBy(desc(paymentDisputes.updatedAt)) : [];
   const entries = rows.map((row) => ({
     ...row,
     amountQar: row.recordedAmountQar ?? row.publishedFeeQar,
     currency: row.currency ?? "QAR",
     paymentStatus: row.paymentStatus ?? "unavailable",
+    dispute: disputes.find((item) => item.ledgerEntryId === row.ledgerId) ?? null,
   }));
   await db.insert(auditEvents).values({
     id: crypto.randomUUID(), actorUserId, organizationId: null,
