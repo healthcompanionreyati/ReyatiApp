@@ -244,3 +244,31 @@ export const paymentAcceptanceRuns = sqliteTable("payment_acceptance_runs", {
   index("idx_payment_acceptance_intent_collected").on(table.providerPaymentIntentId, table.collectedAt),
   index("idx_payment_acceptance_status_collected").on(table.status, table.reviewStatus, table.collectedAt),
 ]);
+
+export const paymentGoLiveReviews = sqliteTable("payment_go_live_reviews", {
+  id: text("id").primaryKey(),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  clientRequestId: text("client_request_id").notNull(),
+  frameworkVersion: text("framework_version").notNull(),
+  provider: text("provider").notNull().default("stripe"),
+  providerMode: text("provider_mode").notNull(),
+  acceptanceRunId: text("acceptance_run_id").references(() => paymentAcceptanceRuns.id, { onDelete: "restrict" }),
+  rehearsalRunId: text("rehearsal_run_id").references(() => paymentLifecycleRehearsals.id, { onDelete: "restrict" }),
+  reconciliationRunId: text("reconciliation_run_id").references(() => paymentReconciliationRuns.id, { onDelete: "restrict" }),
+  status: text("status").notNull(),
+  checkCount: integer("check_count").notNull(),
+  passedChecks: integer("passed_checks").notNull(),
+  failedChecks: integer("failed_checks").notNull(),
+  checkResultsJson: text("check_results_json").notNull(),
+  decision: text("decision").notNull().default("pending"),
+  reviewedByUserId: text("reviewed_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewNote: text("review_note"),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  moneyMovementMinor: integer("money_movement_minor").notNull().default(0),
+  operationalChangesExecuted: integer("operational_changes_executed", { mode: "boolean" }).notNull().default(false),
+  version: integer("version").notNull().default(1),
+  preparedAt: integer("prepared_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_payment_go_live_request").on(table.preparedByUserId, table.clientRequestId),
+  index("idx_payment_go_live_status_prepared").on(table.status, table.decision, table.preparedAt),
+]);

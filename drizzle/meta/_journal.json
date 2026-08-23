@@ -729,6 +729,13 @@
       "when": 1787522770711,
       "tag": "0103_legal_princess_powerful",
       "breakpoints": true
+    },
+    {
+      "idx": 104,
+      "version": "6",
+      "when": 1787524554522,
+      "tag": "0104_whole_firestar",
+      "breakpoints": true
     }
   ]
 }

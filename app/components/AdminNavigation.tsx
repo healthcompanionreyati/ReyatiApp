@@ -72,6 +72,7 @@ const groups: NavGroup[] = [
     { href: "/admin/payment-receipts", icon: "▤", en: "Payment receipts", ar: "إيصالات المدفوعات" },
     { href: "/admin/payment-lifecycle-rehearsal", icon: "◇", en: "Payment rehearsal", ar: "بروفة دورة الدفع" },
     { href: "/admin/payment-acceptance", icon: "✓", en: "Stripe test acceptance", ar: "قبول اختبار Stripe" },
+    { href: "/admin/payment-go-live", icon: "◎", en: "Payment go-live", ar: "جاهزية إطلاق الدفع" },
     { href: "/admin/benefits", icon: "◇", en: "Benefits", ar: "المزايا" },
     { href: "/admin/partner-governance", icon: "◇", en: "Partner governance", ar: "حوكمة الشركاء" },
     { href: "/admin/integration-operations", icon: "↔", en: "Integration operations", ar: "عمليات التكامل" },

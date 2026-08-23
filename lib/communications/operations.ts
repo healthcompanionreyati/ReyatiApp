@@ -8,7 +8,7 @@ import { foundationFlags } from "@/lib/foundation-flags";
 
 const statusOrder = ["pending", "processing", "retry", "sent", "delayed", "delivered", "bounced", "complained", "failed", "suppressed"];
 
-async function readiness() {
+export async function getCommunicationReadiness() {
   const env = await getRuntimeEnv();
   let secureAppUrl = false;
   try { secureAppUrl = new URL(env.REYATI_APP_URL ?? "").protocol === "https:"; } catch { /* Not configured. */ }
@@ -36,7 +36,7 @@ export async function getCommunicationOperations(userId: string, operatorName: s
       attemptCount: outboundMessages.attemptCount, reason: outboundMessages.lastErrorCode,
       providerTracked: outboundMessages.providerMessageId, createdAt: outboundMessages.createdAt, updatedAt: outboundMessages.updatedAt,
     }).from(outboundMessages).orderBy(desc(outboundMessages.createdAt)).limit(40),
-    readiness(),
+    getCommunicationReadiness(),
   ]);
   const counts = new Map(statusRows.map((row) => [row.status, Number(row.value)]));
   const webhookCounts = Object.fromEntries(webhookRows.map((row) => [row.status, Number(row.value)]));

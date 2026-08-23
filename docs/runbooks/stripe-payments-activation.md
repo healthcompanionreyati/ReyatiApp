@@ -89,6 +89,15 @@ Set `QIVAYA_STRIPE_RECONCILIATION=false` to stop new reconciliation runs. Set `Q
 
 The admin finance view reports recorded ledger totals and processor-event health. The control plane may execute only an independently approved full Stripe refund when its separate activation gate is enabled. It does not reconcile bank statements, calculate provider payables, perform partial or automatic refunds, or initiate payouts.
 
+## Payment go-live readiness decision
+
+1. Keep Stripe in test mode. Complete the zero-effect lifecycle rehearsal and obtain an independently approved, fully passing Stripe test-acceptance run.
+2. Confirm signed payment and refund webhook processing, a completed reconciliation window without exceptions, a provider-confirmed refund, ready receipt and credit-note PDF artifacts in private R2, and both preference-aware document email intents.
+3. Confirm the Resend delivery and webhook path is configured and at least two distinct active platform administrators or security auditors are available.
+4. Open `/admin/payment-go-live` as a platform administrator and prepare a new readiness snapshot. Resolve every blocked check and prepare a new immutable snapshot; never alter an earlier result.
+5. A different active platform administrator or security auditor records the final Go or No-Go decision. The preparer cannot review the same snapshot, and Go is unavailable unless all eleven checks pass.
+6. The decision is evidence only. It cannot switch credentials, change a Vercel environment variable, enable a gate, create a charge or refund, send email, write an R2 object, or mutate the financial ledger. Perform any approved activation separately under the change-management procedure.
+
 ## Dispute monitoring
 
 1. Enable all five `charge.dispute.*` webhook events listed above on the same signed endpoint.
