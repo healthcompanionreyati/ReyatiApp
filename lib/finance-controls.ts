@@ -9,9 +9,11 @@ import {
   financeReconciliationEvidence,
 } from "@/db/finance-controls-schema";
 import { auditEvents, notifications, patientProfiles, paymentLedgerEntries, users } from "@/db/schema";
+import { paymentRefundExecutions } from "@/db/payment-processing-schema";
 import { AuthorizationDeniedError, requirePlatformRole } from "@/lib/authorization";
 import { notificationRecord } from "@/lib/notification-center";
 import { foundationFlags } from "@/lib/foundation-flags";
+import { getPaymentProviderStatus } from "@/lib/stripe-payments";
 
 export const FINANCE_CONTROL_REHEARSAL_VERSION = "finance-control-plane-v1";
 export const FINANCE_CONTROL_BOUNDARIES = {
@@ -135,9 +137,11 @@ export async function getAdminFinanceControls(userId: string) {
   const cases = await db.select({ case: financeCases, patientName: users.displayName, ledgerAmountQar: paymentLedgerEntries.amountQar, ledgerCurrency: paymentLedgerEntries.currency, ledgerStatus: paymentLedgerEntries.status })
     .from(financeCases).innerJoin(patientProfiles, eq(patientProfiles.id, financeCases.patientId)).innerJoin(users, eq(users.id, patientProfiles.userId)).innerJoin(paymentLedgerEntries, eq(paymentLedgerEntries.id, financeCases.ledgerEntryId)).orderBy(desc(financeCases.updatedAt)).limit(200);
   const pendingDecisions = await db.select().from(financeCaseDecisions).where(eq(financeCaseDecisions.status, "pending_checker")).orderBy(desc(financeCaseDecisions.preparedAt)).limit(100);
+  const adjustments = await db.select().from(financeAdjustments).orderBy(desc(financeAdjustments.createdAt)).limit(200);
+  const refundExecutions = await db.select().from(paymentRefundExecutions).orderBy(desc(paymentRefundExecutions.createdAt)).limit(200);
   const metricsRows = await db.select({ status: financeCases.status, value: count() }).from(financeCases).groupBy(financeCases.status);
   const rehearsals = await db.select().from(financeControlRehearsals).orderBy(desc(financeControlRehearsals.executedAt)).limit(20);
-  return { role: role.role, cases: cases.map(({ case: item, ...context }) => ({ ...item, ...context })), pendingDecisions, metrics: Object.fromEntries(metricsRows.map((row) => [row.status, Number(row.value)])), rehearsals, boundaries: FINANCE_CONTROL_BOUNDARIES, governanceVisibility: "aggregate_only" };
+  return { role: role.role, cases: cases.map(({ case: item, ...context }) => ({ ...item, ...context })), pendingDecisions, adjustments, refundExecutions, refundProvider: await getPaymentProviderStatus(), metrics: Object.fromEntries(metricsRows.map((row) => [row.status, Number(row.value)])), rehearsals, boundaries: FINANCE_CONTROL_BOUNDARIES, governanceVisibility: "aggregate_only" };
 }
 
 export async function updateAdminFinanceControl(userId: string, body: Record<string, unknown>) {

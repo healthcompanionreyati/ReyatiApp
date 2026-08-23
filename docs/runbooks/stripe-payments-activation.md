@@ -1,6 +1,8 @@
 # Stripe payments activation
 
-Qivaya uses Stripe-hosted Checkout. Qivaya does not collect or store card numbers, does not initiate automatic refunds, and does not create provider payouts or settlements. The payment ledger changes only after a signed Stripe webhook is verified.
+Qivaya uses Stripe-hosted Checkout. Qivaya does not collect or store card numbers and does not create provider payouts or settlements. The payment ledger changes only after a signed Stripe webhook is verified.
+
+Full refunds use the finance maker-checker workflow. A separate platform administrator may execute an independently approved full-value refund only when `QIVAYA_STRIPE_REFUNDS=true`. Partial refunds, automatic refunds, payouts, and settlements remain unavailable.
 
 ## Production prerequisites
 
@@ -20,6 +22,7 @@ Qivaya uses Stripe-hosted Checkout. Qivaya does not collect or store card number
    - `STRIPE_WEBHOOK_SECRET`
    - `QIVAYA_STRIPE_MODE=test` during test-mode validation, then `live` only with a live key
    - `QIVAYA_STRIPE_PAYMENTS=false`
+   - `QIVAYA_STRIPE_REFUNDS=false`
 5. Confirm `REYATI_APP_URL=https://www.qivaya.com`.
 
 Never put secret values in Git, tickets, screenshots, or support messages.
@@ -37,10 +40,19 @@ Never put secret values in Git, tickets, screenshots, or support messages.
 5. Switch to live credentials and `QIVAYA_STRIPE_MODE=live` only after the test evidence is approved.
 6. Set `QIVAYA_STRIPE_PAYMENTS=true` in Production and redeploy.
 
+## Refund activation
+
+1. Complete checkout activation and confirm signed `refund.created`, `refund.updated`, and `charge.refunded` events reach the webhook.
+2. Confirm at least two active platform administrators are available for maker-checker separation.
+3. Run a Stripe test-mode full refund through `/admin/finance-controls` and verify the maker cannot execute it, request replay is idempotent, and the ledger remains paid until the signed webhook arrives.
+4. Confirm provider execution becomes confirmed after the webhook, then append reconciliation evidence before closing the case.
+5. Set `QIVAYA_STRIPE_REFUNDS=true` only in the intended environment.
+6. Keep the flag off to disable new refund requests without affecting existing payment records or webhook reconciliation.
+
 ## Rollback
 
-Set `QIVAYA_STRIPE_PAYMENTS=false` and redeploy. This immediately removes checkout availability and causes the webhook endpoint to return unavailable without deleting ledger, checkout, or processor-event history. Do not remove the database tables during an operational rollback.
+Set `QIVAYA_STRIPE_REFUNDS=false` to stop new refund execution. Set `QIVAYA_STRIPE_PAYMENTS=false` to also remove checkout availability and cause the webhook endpoint to return unavailable. Neither rollback deletes ledger, checkout, refund-execution, or processor-event history. Do not remove the database tables during an operational rollback.
 
 ## Reconciliation boundary
 
-The admin finance view reports recorded ledger totals and processor-event health. It does not reconcile bank statements, calculate provider payables, execute refunds, move funds, or initiate payouts. Those capabilities require separate approved modules and operating controls.
+The admin finance view reports recorded ledger totals and processor-event health. The control plane may execute only an independently approved full Stripe refund when its separate activation gate is enabled. It does not reconcile bank statements, calculate provider payables, perform partial or automatic refunds, or initiate payouts.

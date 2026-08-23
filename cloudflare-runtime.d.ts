@@ -52,5 +52,6 @@ declare module "cloudflare:workers" {
     STRIPE_WEBHOOK_SECRET?: string;
     QIVAYA_STRIPE_PAYMENTS?: string;
     QIVAYA_STRIPE_MODE?: string;
+    QIVAYA_STRIPE_REFUNDS?: string;
   };
 }

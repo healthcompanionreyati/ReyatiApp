@@ -1,7 +1,8 @@
 import Stripe from "stripe";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
-import { paymentCheckoutSessions, paymentProcessorEvents } from "@/db/payment-processing-schema";
+import { paymentCheckoutSessions, paymentProcessorEvents, paymentRefundExecutions } from "@/db/payment-processing-schema";
+import { financeAdjustments } from "@/db/finance-controls-schema";
 import { appointments, auditEvents, notifications, patientProfiles, paymentLedgerEntries, providerProfiles, users } from "@/db/schema";
 import { notificationRecord } from "@/lib/notification-center";
 import { recordTransactionalEmailIntent } from "@/lib/communications/outbox";
@@ -38,6 +39,7 @@ export type PaymentProviderStatus = {
   mode: "test" | "live" | null;
   checkoutReady: boolean;
   webhookReady: boolean;
+  refundsReady: boolean;
   reason: "activation_disabled" | "configuration_incomplete" | "mode_mismatch" | null;
 };
 
@@ -58,6 +60,7 @@ function validAppOrigin(value: string | undefined) {
 async function stripeConfiguration(): Promise<StripeConfiguration> {
   const env = await getRuntimeEnv();
   const activation = env.QIVAYA_STRIPE_PAYMENTS?.trim() === "true";
+  const refundActivation = env.QIVAYA_STRIPE_REFUNDS?.trim() === "true";
   const requestedMode = env.QIVAYA_STRIPE_MODE?.trim() === "live" ? "live" : env.QIVAYA_STRIPE_MODE?.trim() === "test" ? "test" : null;
   const secretKey = env.STRIPE_SECRET_KEY?.trim() || null;
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET?.trim() || null;
@@ -71,6 +74,7 @@ async function stripeConfiguration(): Promise<StripeConfiguration> {
     mode: requestedMode,
     checkoutReady: activation && Boolean(secretKey && appUrl && modeMatches),
     webhookReady: activation && Boolean(secretKey && webhookSecret && modeMatches),
+    refundsReady: activation && refundActivation && Boolean(secretKey && webhookSecret && modeMatches),
     reason: !activation ? "activation_disabled" : !modeMatches && secretKey ? "mode_mismatch" : !configured ? "configuration_incomplete" : null,
     secretKey,
     webhookSecret,
@@ -79,8 +83,14 @@ async function stripeConfiguration(): Promise<StripeConfiguration> {
 }
 
 export async function getPaymentProviderStatus(): Promise<PaymentProviderStatus> {
-  const { provider, enabled, mode, checkoutReady, webhookReady, reason } = await stripeConfiguration();
-  return { provider, enabled, mode, checkoutReady, webhookReady, reason };
+  const { provider, enabled, mode, checkoutReady, webhookReady, refundsReady, reason } = await stripeConfiguration();
+  return { provider, enabled, mode, checkoutReady, webhookReady, refundsReady, reason };
+}
+
+export async function getStripeRefundClient() {
+  const configuration = await stripeConfiguration();
+  if (!configuration.refundsReady || !configuration.secretKey) throw new PaymentProviderUnavailableError("Provider refund execution is not active yet");
+  return { stripe: new Stripe(configuration.secretKey, { maxNetworkRetries: 2, timeout: 20_000, typescript: true }), configuration };
 }
 
 async function stripeClient(requireWebhook = false) {
@@ -222,6 +232,25 @@ async function recordCheckoutSessionState(event: Stripe.Event, now: Date) {
   }).where(and(eq(paymentCheckoutSessions.provider, "stripe"), eq(paymentCheckoutSessions.providerSessionId, providerSessionId)));
 }
 
+async function recordRefundExecutionState(event: Stripe.Event, now: Date) {
+  if (!event.type.startsWith("refund.")) return;
+  const object = event.data.object as unknown;
+  const providerRefundId = stringValue(object, "id");
+  if (!providerRefundId) return;
+  const providerStatus = stringValue(object, "status");
+  const status = providerStatus === "succeeded" ? "confirmed" : providerStatus === "failed" || providerStatus === "canceled" ? "failed" : "provider_accepted";
+  const db = await getDb();
+  const execution = (await db.select({ adjustmentId: paymentRefundExecutions.adjustmentId }).from(paymentRefundExecutions)
+    .where(and(eq(paymentRefundExecutions.provider, "stripe"), eq(paymentRefundExecutions.providerRefundId, providerRefundId))).limit(1))[0];
+  if (!execution) return;
+  await db.batch([
+    db.update(paymentRefundExecutions).set({ status, failureCode: status === "failed" ? providerStatus : null, completedAt: status === "confirmed" || status === "failed" ? now : null, updatedAt: now })
+      .where(and(eq(paymentRefundExecutions.provider, "stripe"), eq(paymentRefundExecutions.providerRefundId, providerRefundId))),
+    db.update(financeAdjustments).set({ executionStatus: status === "confirmed" ? "provider_confirmed" : status === "failed" ? "provider_failed" : "provider_requested" })
+      .where(eq(financeAdjustments.id, execution.adjustmentId)),
+  ]);
+}
+
 function eventTransition(event: Stripe.Event) {
   const object = event.data.object as unknown;
   if (event.type === "checkout.session.completed") return stringValue(object, "payment_status") === "paid" ? { status: "paid" as const, refundAmountQar: null } : null;
@@ -280,6 +309,7 @@ export async function verifyAndProcessStripeWebhook(rawBody: string, signature: 
       return { received: true, replayed: false, status: "ignored" };
     }
     await recordCheckoutSessionState(event, now);
+    await recordRefundExecutionState(event, now);
     const ledgerEntryId = await resolveEventLedgerId(event.data.object);
     const transition = eventTransition(event);
     if (!ledgerEntryId || !transition) {

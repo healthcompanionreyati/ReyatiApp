@@ -35,3 +35,27 @@ export const paymentProcessorEvents = sqliteTable("payment_processor_events", {
   index("idx_payment_processor_status_received").on(table.processingStatus, table.receivedAt),
   index("idx_payment_processor_ledger_received").on(table.ledgerEntryId, table.receivedAt),
 ]);
+
+export const paymentRefundExecutions = sqliteTable("payment_refund_executions", {
+  id: text("id").primaryKey(),
+  caseId: text("case_id").notNull(),
+  adjustmentId: text("adjustment_id").notNull(),
+  ledgerEntryId: text("ledger_entry_id").notNull().references(() => paymentLedgerEntries.id, { onDelete: "restrict" }),
+  requestedByUserId: text("requested_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  clientRequestId: text("client_request_id").notNull(),
+  provider: text("provider").notNull().default("stripe"),
+  providerRefundId: text("provider_refund_id"),
+  providerPaymentIntentId: text("provider_payment_intent_id").notNull(),
+  amountMinor: integer("amount_minor").notNull(),
+  currency: text("currency").notNull().default("qar"),
+  status: text("status").notNull().default("requesting"),
+  failureCode: text("failure_code"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
+}, (table) => [
+  uniqueIndex("idx_payment_refund_adjustment").on(table.adjustmentId),
+  uniqueIndex("idx_payment_refund_provider_refund").on(table.provider, table.providerRefundId),
+  uniqueIndex("idx_payment_refund_client_request").on(table.requestedByUserId, table.adjustmentId, table.clientRequestId),
+  index("idx_payment_refund_ledger_status_created").on(table.ledgerEntryId, table.status, table.createdAt),
+]);
