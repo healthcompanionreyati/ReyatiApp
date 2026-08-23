@@ -272,3 +272,50 @@ export const paymentGoLiveReviews = sqliteTable("payment_go_live_reviews", {
   uniqueIndex("idx_payment_go_live_request").on(table.preparedByUserId, table.clientRequestId),
   index("idx_payment_go_live_status_prepared").on(table.status, table.decision, table.preparedAt),
 ]);
+
+export const paymentActivationWindows = sqliteTable("payment_activation_windows", {
+  id: text("id").primaryKey(),
+  goLiveReviewId: text("go_live_review_id").notNull().references(() => paymentGoLiveReviews.id, { onDelete: "restrict" }),
+  goLiveReviewVersion: integer("go_live_review_version").notNull(),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  clientRequestId: text("client_request_id").notNull(),
+  targetEnvironment: text("target_environment").notNull().default("production"),
+  windowStartsAt: integer("window_starts_at", { mode: "timestamp_ms" }).notNull(),
+  windowEndsAt: integer("window_ends_at", { mode: "timestamp_ms" }).notNull(),
+  changeOwner: text("change_owner").notNull(),
+  monitoringOwner: text("monitoring_owner").notNull(),
+  rollbackOwner: text("rollback_owner").notNull(),
+  monitoringMinutes: integer("monitoring_minutes").notNull(),
+  status: text("status").notNull().default("pending_review"),
+  reviewedByUserId: text("reviewed_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewNote: text("review_note"),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  openedByUserId: text("opened_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  openedAt: integer("opened_at", { mode: "timestamp_ms" }),
+  closedByUserId: text("closed_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  closedAt: integer("closed_at", { mode: "timestamp_ms" }),
+  outcome: text("outcome"),
+  providerModeAtClose: text("provider_mode_at_close"),
+  version: integer("version").notNull().default(1),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  uniqueIndex("idx_payment_activation_request").on(table.preparedByUserId, table.clientRequestId),
+  index("idx_payment_activation_status_window").on(table.status, table.windowStartsAt, table.windowEndsAt),
+  index("idx_payment_activation_go_live").on(table.goLiveReviewId, table.createdAt),
+]);
+
+export const paymentActivationEvents = sqliteTable("payment_activation_events", {
+  id: text("id").primaryKey(),
+  windowId: text("window_id").notNull().references(() => paymentActivationWindows.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  eventCode: text("event_code").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  providerMode: text("provider_mode"),
+  codedDetailsJson: text("coded_details_json").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [
+  index("idx_payment_activation_event_window_created").on(table.windowId, table.createdAt),
+  index("idx_payment_activation_event_code_created").on(table.eventCode, table.createdAt),
+]);

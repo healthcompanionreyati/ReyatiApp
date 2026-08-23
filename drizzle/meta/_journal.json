@@ -736,6 +736,13 @@
       "when": 1787524554522,
       "tag": "0104_whole_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 105,
+      "version": "6",
+      "when": 1787525423262,
+      "tag": "0105_sparkling_killraven",
+      "breakpoints": true
     }
   ]
 }

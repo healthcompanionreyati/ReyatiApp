@@ -98,6 +98,16 @@ The admin finance view reports recorded ledger totals and processor-event health
 5. A different active platform administrator or security auditor records the final Go or No-Go decision. The preparer cannot review the same snapshot, and Go is unavailable unless all eleven checks pass.
 6. The decision is evidence only. It cannot switch credentials, change a Vercel environment variable, enable a gate, create a charge or refund, send email, write an R2 object, or mutate the financial ledger. Perform any approved activation separately under the change-management procedure.
 
+## Controlled production activation window
+
+1. After a fully passing Go decision is independently recorded, open `/admin/payment-activation` and prepare a production window scheduled within 30 days and lasting 15 minutes to 4 hours.
+2. Name separate change, monitoring, and rollback owners and select a monitoring period of 15 to 240 minutes. Do not put passwords, keys, webhook secrets, or customer information in any owner field or review note.
+3. A different active platform administrator or security auditor reviews the window. The preparer cannot approve their own window.
+4. A platform administrator may open the approved window from 15 minutes before its start until its end. Opening revalidates the unchanged Go decision and complete Stripe test-mode checkout, webhook, refund, and reconciliation controls.
+5. Make the separately approved Vercel environment and Stripe credential changes manually. This module cannot edit environment variables, store credentials, deploy code, call Stripe mutations, move money, change the ledger, send email, or write R2 objects.
+6. After redeployment, choose **Verify live activation** only when the server observes live mode plus complete checkout, signed-webhook, refund, and reconciliation readiness. If rollback is required, disable checkout under the rollback procedure and choose **Verify rollback** only after the server observes containment.
+7. Continue the named monitoring period and use `/admin/operations`, `/admin/payment-reconciliation`, `/admin/payment-disputes`, `/admin/communications`, and `/admin/audit` for operational evidence. A verified configuration is not evidence of a successful patient charge.
+
 ## Dispute monitoring
 
 1. Enable all five `charge.dispute.*` webhook events listed above on the same signed endpoint.
