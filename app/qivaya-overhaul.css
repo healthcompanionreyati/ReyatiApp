@@ -273,7 +273,7 @@ body::selection { background: color-mix(in srgb, var(--qv-primary) 25%, transpar
   border-color: var(--qv-border) !important;
   box-shadow: var(--qv-shadow-lg) !important;
 }
-:root[data-theme="dark"] :where(.wallet-shell, .providers-shell, .family-shell, .payments-shell,
+:root[data-theme="dark"] :where(.wallet-shell, .providers-shell, .appointments-shell, .family-shell, .payments-shell,
   .support-shell, .notifications-shell, .provider-shell, .services-shell, .insights-shell,
   .settings-shell, .admin-shell, .partner-shell, .program-shell, .lifecycle-shell,
   .experience-shell, .message-shell, .referral-shell, .virtual-shell, .wait-console) {

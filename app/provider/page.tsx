@@ -46,7 +46,7 @@ export default function ProviderConsole() {
     setLoading(true); setError("");
     try {
       const response = await fetch("/api/provider/appointments", { cache: "no-store", signal });
-      if (response.status === 401) { window.location.assign("/signin-with-chatgpt?return_to=/provider"); return; }
+      if (response.status === 401) { window.location.assign("/sign-in?redirect_url=%2Fprovider"); return; }
       const payload = await response.json().catch(() => ({})) as { appointments?: Appointment[]; message?: string; error?: string };
       if (!response.ok) throw new Error(ar ? (response.status === 403 ? "يلزم ملف مقدم رعاية موثّق." : "تعذر تحميل جدولك.") : payload.message || (response.status === 403 ? "A verified provider profile is required." : "Unable to load your schedule."));
       setAppointments(payload.appointments || []);

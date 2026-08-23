@@ -38,7 +38,7 @@ type Slot = {
   label: string;
 };
 
-type BookingState = "idle" | "submitting" | "confirmed" | "error";
+type BookingState = "idle" | "submitting" | "requested" | "error";
 
 const colors = ["coral", "blue", "mint", "gold", "violet"];
 
@@ -79,11 +79,19 @@ export default function ProviderDiscovery() {
       const response = await fetch("/api/providers", { cache: "no-store", signal });
       const data = await response.json().catch(() => ({})) as { providers?: Provider[] };
       if (!response.ok) throw new Error("catalog unavailable");
-      setProviders(Array.isArray(data.providers) ? data.providers : []);
+      const nextProviders = Array.isArray(data.providers) ? data.providers : [];
+      setProviders(nextProviders);
       const search = new URLSearchParams(window.location.search);
       setSubjectUserId(search.get("subjectUserId"));
       const navigatorSpecialty = search.get("specialty");
       if (navigatorSpecialty) setQuery(navigatorSpecialty);
+      const requestedProvider = nextProviders.find((provider) => provider.id === search.get("providerId"));
+      if (requestedProvider) {
+        const requestedServiceId = search.get("serviceLocationId");
+        const requestedService = requestedProvider.services.find((service) => service.id === requestedServiceId);
+        setSelected(requestedProvider);
+        setServiceId(requestedService?.id ?? requestedProvider.services[0]?.id ?? "");
+      }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setCatalogError(true);
@@ -183,13 +191,13 @@ export default function ProviderDiscovery() {
           subjectUserId,
         }),
       });
-      const data = await response.json().catch(() => ({})) as { error?: string; message?: string };
+      const data = await response.json().catch(() => ({})) as { appointment?: { status?: string }; error?: string; message?: string };
       if (response.status === 401) {
-        window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(`/providers${window.location.search}`)}`);
+        window.location.assign(`/sign-in?redirect_url=${encodeURIComponent(`/providers${window.location.search}`)}`);
         return;
       }
       if (!response.ok) throw new Error(data.message || data.error || "booking failed");
-      setBooking("confirmed");
+      setBooking("requested");
     } catch (error) {
       setBooking("error");
       setBookingMessage(error instanceof Error ? error.message : "booking failed");
@@ -246,14 +254,15 @@ export default function ProviderDiscovery() {
 
     {selected && <div className="profile-layer" onMouseDown={(event) => event.target === event.currentTarget && setSelected(null)}><aside className="provider-profile" aria-label={ar ? "ملف مقدم الرعاية" : "Provider profile"}>
       <button className="drawer-close" onClick={() => setSelected(null)} aria-label={ar ? "إغلاق" : "Close"}>×</button>
-      {booking === "confirmed" ? <div className="profile-confirmed"><span>✓</span><p>{ar ? "تم الحجز" : "BOOKING CONFIRMED"}</p><h2>{ar ? "تم تأكيد موعدك" : "Your appointment is confirmed"}</h2><b>{slot ? slotLabel(slot.scheduledStart) : ""} · {selected.name}</b><small>{ar ? (subjectUserId ? "تم حفظ الموعد بأمان في حساب المريض الذي منح الصلاحية." : "تم حفظ الموعد بأمان في حسابك.") : subjectUserId ? "The appointment is securely saved to the patient account that granted access." : "The appointment is securely saved to your account."}</small><a href={subjectUserId ? `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/appointments"}>{ar ? (subjectUserId ? "عرض المواعيد المفوّضة" : "عرض مواعيدي") : subjectUserId ? "View delegated appointments" : "View my appointments"}</a></div> : <>
+      {booking === "requested" ? <div className="profile-confirmed profile-requested"><span>✓</span><p>{ar ? "تم إرسال الطلب" : "APPOINTMENT REQUEST SENT"}</p><h2>{ar ? "طلبك محفوظ وبانتظار المراجعة" : "Your request is saved and awaiting review"}</h2><b>{slot ? slotLabel(slot.scheduledStart) : ""} · {selected.name}</b><small>{ar ? (subjectUserId ? "تم حفظ الطلب بأمان في حساب المريض. سنعرض الحالة الجديدة بعد مراجعة مقدم الرعاية." : "تم حفظ الطلب بأمان في حسابك. سنعرض الحالة الجديدة بعد مراجعة مقدم الرعاية.") : subjectUserId ? "The request is securely saved to the patient account. Its status will update after the provider reviews it." : "The request is securely saved to your account. Its status will update after the provider reviews it."}</small><div className="profile-request-status"><i>1</i><b>{ar ? "تم إرسال الطلب" : "Request sent"}</b><span>→</span><i>2</i><b>{ar ? "مراجعة مقدم الرعاية" : "Provider review"}</b><span>→</span><i>3</i><b>{ar ? "التأكيد" : "Confirmation"}</b></div><a href={subjectUserId ? `/appointments?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/appointments"}>{ar ? (subjectUserId ? "تتبع المواعيد المفوّضة" : "تتبع حالة الموعد") : subjectUserId ? "Track delegated appointment" : "Track appointment status"}</a></div> : <>
         <div className="profile-head"><div className={`provider-photo large ${colorFor(selected.id)}`}>{initials(selected.name)}<span>✓</span></div><div><p>✓ {ar ? "مقدم رعاية موثّق" : "Verified provider"}</p><h2>{selected.name}</h2><span>{selected.specialty}</span></div></div>
         <div className="verification-strip"><span>♙</span><p><b>{ar ? "تم التحقق من الترخيص والانتماء" : "Licence and affiliation verified"}</b>{ar ? "تم نشر الملف من منشأة نشطة" : "Published by an active organization"}</p></div>
         <section className="profile-about"><h3>{ar ? "عن مقدم الرعاية" : "About"}</h3><p>{ar ? selected.bioAr || selected.bioEn || "لم تُضف نبذة بعد." : selected.bioEn || "The provider has not added a public biography yet."}</p><div><article><b>{selected.yearsExperience ?? "—"}</b><small>{ar ? "سنوات خبرة" : "Years experience"}</small></article><article><b>{selected.languages.join(" · ") || "—"}</b><small>{ar ? "اللغات" : "Languages"}</small></article><article><b>✓</b><small>{ar ? "هوية موثقة" : "Verified identity"}</small></article></div></section>
         <section className="profile-location"><h3>{ar ? "الخدمة والموقع" : "Service & location"}</h3><select className="service-location-select" value={serviceId} onChange={(event) => setServiceId(event.target.value)} aria-label={ar ? "اختر الخدمة" : "Choose service"}>{selected.services.map((service) => <option value={service.id} key={service.id}>{service.mode === "video" ? (ar ? "زيارة فيديو" : "Video consultation") : service.facilityName} · {reyatiNumber(service.feeQar, lang)} {ar ? "ر.ق" : "QAR"}</option>)}</select>{activeService && <div><span>⌖</span><p><b>{activeService.facilityName ?? (ar ? "زيارة فيديو" : "Video consultation")}</b><small>{activeService.area ? `${activeService.area}, ${ar ? "الدوحة" : "Doha"} · ` : ""}{reyatiNumber(activeService.slotDurationMinutes, lang)} {ar ? "دقيقة" : "minutes"}</small></p><strong>{reyatiNumber(activeService.feeQar, lang)} {ar ? "ر.ق" : "QAR"}<small>{ar ? "السعر المنشور" : "published price"}</small></strong></div>}</section>
         <section className="profile-slots"><div><h3>{ar ? "اختر موعداً" : "Choose a time"}</h3><span>{ar ? "الأيام الـ ١٤ القادمة" : "Next 14 days"}</span></div><div>{slotsLoading ? <p className="slot-state">{ar ? "جارٍ تحميل المواعيد…" : "Loading availability…"}</p> : availabilityError ? <div className="slot-state error"><p>{ar ? "تعذر تحميل المواعيد. حاول مرة أخرى." : "Availability could not be loaded. Please try again."}</p><button type="button" onClick={() => setAvailabilityRefresh((value) => value + 1)}>{ar ? "حاول مرة أخرى" : "Try again"}</button></div> : slots.length ? slots.map((item) => <button className={slot?.scheduledStart === item.scheduledStart ? "active" : ""} key={`${item.serviceLocationId}-${item.scheduledStart}`} onClick={() => chooseSlot(item)}>{slotLabel(item.scheduledStart)}</button>) : <p className="slot-state">{ar ? "لا توجد مواعيد متاحة حالياً." : "No bookable times are currently available."}</p>}</div></section>
         {booking === "error" && <p className="booking-error" role="alert">{bookingMessage === "The requested time is no longer available" ? (ar ? "هذا الموعد لم يعد متاحاً. اختر موعداً آخر." : "That time was just booked. Please choose another slot.") : (ar ? "تعذر تأكيد الحجز. يرجى المحاولة مرة أخرى." : "We couldn’t confirm the booking. Please try again.")}</p>}
-        <div className="profile-book"><div><small>{ar ? "الإجمالي" : "Total"}</small><b>{activeService ? reyatiNumber(activeService.feeQar, lang) : "—"} {ar ? "ر.ق" : "QAR"}</b></div><button disabled={!slot || booking === "submitting"} onClick={confirmBooking}>{booking === "submitting" ? (ar ? "جارٍ التأكيد…" : "Confirming…") : slot ? (ar ? "تأكيد الموعد" : "Confirm appointment") : (ar ? "اختر وقتاً للمتابعة" : "Select a time to continue")}</button></div>
+        <div className="booking-request-note"><span>i</span><p><b>{ar ? "هذا طلب موعد" : "This creates an appointment request"}</b>{ar ? "سيصبح الموعد مؤكداً فقط بعد موافقة مقدم الرعاية. سنخطرك عند تغير الحالة." : "The appointment becomes confirmed only after the provider accepts it. We’ll notify you when its status changes."}</p></div>
+        <div className="profile-book"><div><small>{ar ? "الإجمالي" : "Total"}</small><b>{activeService ? reyatiNumber(activeService.feeQar, lang) : "—"} {ar ? "ر.ق" : "QAR"}</b></div><button disabled={!slot || booking === "submitting"} onClick={confirmBooking}>{booking === "submitting" ? (ar ? "جارٍ إرسال الطلب…" : "Sending request…") : slot ? (ar ? "إرسال طلب الموعد" : "Send appointment request") : (ar ? "اختر وقتاً للمتابعة" : "Select a time to continue")}</button></div>
       </>}
     </aside></div>}
   </main>;

@@ -20,7 +20,7 @@ async function request(init?: RequestInit) {
   const response = await fetch(endpoint, init);
   const payload = await response.json().catch(() => ({})) as { appointments?: Appointment[]; appointment?: unknown; delegated?: boolean; message?: string; error?: string };
   if (response.status === 401) {
-    window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(`/appointments${window.location.search}`)}`);
+    window.location.assign(`/sign-in?redirect_url=${encodeURIComponent(`/appointments${window.location.search}`)}`);
     throw new Error("Authentication required");
   }
   if (!response.ok) {
@@ -32,6 +32,21 @@ async function request(init?: RequestInit) {
 }
 
 function initials(name: string) { return name.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase(); }
+
+function lifecycleSteps(status: string, ar: boolean) {
+  if (status === "pending") return [
+    { label: ar ? "تم إرسال الطلب" : "Request sent", state: "current" },
+    { label: ar ? "مراجعة مقدم الرعاية" : "Provider review", state: "next" },
+    { label: ar ? "التأكيد" : "Confirmation", state: "next" },
+  ];
+  if (status === "confirmed") return [
+    { label: ar ? "تم إرسال الطلب" : "Request sent", state: "done" },
+    { label: ar ? "تم التأكيد" : "Confirmed", state: "current" },
+    { label: ar ? "الاستعداد للزيارة" : "Prepare for visit", state: "next" },
+  ];
+  return [];
+}
+
 export default function Appointments() {
   const [lang, setLang] = useReyatiLocale();
   const ar = lang === "ar";
@@ -48,9 +63,17 @@ export default function Appointments() {
   const [subjectUserId, setSubjectUserId] = useState<string | null>(null);
   const [delegated, setDelegated] = useState(false);
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    setLoading(true); setError("");
-    try { const payload = await request({ cache: "no-store", signal }); setItems(payload.appointments ?? []); setDelegated(Boolean(payload.delegated)); setSubjectUserId(payload.requestedSubjectUserId); }
+  const load = useCallback(async (signal?: AbortSignal, quiet = false) => {
+    if (!quiet) setLoading(true);
+    setError("");
+    try {
+      const payload = await request({ cache: "no-store", signal });
+      const nextItems = payload.appointments ?? [];
+      setItems(nextItems);
+      setSelected((current) => current ? nextItems.find((item) => item.id === current.id) ?? current : null);
+      setDelegated(Boolean(payload.delegated));
+      setSubjectUserId(payload.requestedSubjectUserId);
+    }
     catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") return;
       setError(ar ? "المواعيد غير متاحة مؤقتاً" : caught instanceof Error ? caught.message : "Appointments unavailable");
@@ -72,13 +95,28 @@ export default function Appointments() {
     .sort((a, b) => new Date(b.scheduledStart).valueOf() - new Date(a.scheduledStart).valueOf()), [items, referenceTime]);
   const visible = tab === "upcoming" ? upcoming : history;
   const providersPath = subjectUserId ? `/providers?subjectUserId=${encodeURIComponent(subjectUserId)}` : "/providers";
+  const hasPending = items.some((item) => item.status === "pending");
+  const selectedLifecycle = selected ? lifecycleSteps(selected.status, ar) : [];
+
+  useEffect(() => {
+    if (!hasPending) return;
+    const interval = window.setInterval(() => { void load(undefined, true); }, 15_000);
+    return () => window.clearInterval(interval);
+  }, [hasPending, load]);
+
+  function rebookPath(item: Appointment) {
+    const params = new URLSearchParams({ providerId: item.providerId });
+    if (item.serviceLocationId) params.set("serviceLocationId", item.serviceLocationId);
+    if (subjectUserId) params.set("subjectUserId", subjectUserId);
+    return `/providers?${params}`;
+  }
 
   async function cancelAppointment() {
     if (!selected || cancelling) return;
     setCancelling(true); setError("");
     try {
       await request({ method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancel", appointmentId: selected.id, version: selected.version, subjectUserId }) });
-      setConfirmCancellation(false); setSelected(null); setNotice(ar ? "تم إلغاء الموعد وتحرير الوقت" : "Appointment cancelled and schedule released"); await load();
+      setConfirmCancellation(false); setSelected(null); setNotice(ar ? "تم إلغاء الموعد وتحرير الوقت. يمكنك الآن اختيار موعد جديد." : "Appointment cancelled and schedule released. You can now choose a new time."); await load();
     } catch (caught) { setError(ar ? "تعذر إلغاء الموعد" : caught instanceof Error ? caught.message : "Appointment could not be cancelled"); }
     finally { setCancelling(false); }
   }
@@ -88,7 +126,7 @@ export default function Appointments() {
     <section className="appointments-hero"><div><p>{ar ? "رحلة رعايتك" : "Your care journey"}</p><h1>{ar ? "المواعيد" : "Appointments"}</h1><span>{ar ? "حجوزات مملوكة لحسابك وحالتها الحالية وضوابط آمنة لدورة حياتها." : "Account-owned bookings, current status, and safe lifecycle controls."}</span></div><a href={providersPath}>＋ {ar ? "حجز موعد جديد" : "Book new appointment"}</a></section>
     {delegated && <div className="appointments-delegated-note"><b>{ar ? "إدارة المواعيد بموافقة." : "Managing appointments with consent."}</b> {ar ? "يمكنك العرض والحجز والإلغاء فقط أثناء سريان إذن الموعد القابل للإلغاء. يتم تدقيق كل إجراء مفوّض." : "You can view, book, and cancel only while this revocable appointment permission remains active. Every delegated action is audited."}</div>}
     <section className="appointments-content">
-      <div className="appointment-tabs"><button className={tab === "upcoming" ? "active" : ""} onClick={() => setTab("upcoming")}>{ar ? "القادمة" : "Upcoming"} <span>{upcoming.length}</span></button><button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}>{ar ? "السجل" : "History"} <span>{history.length}</span></button><a href="/support">{ar ? "الدعم" : "Support"}</a></div>
+      <div className="appointment-tabs"><button className={tab === "upcoming" ? "active" : ""} onClick={() => setTab("upcoming")}>{ar ? "القادمة" : "Upcoming"} <span>{upcoming.length}</span></button><button className={tab === "history" ? "active" : ""} onClick={() => setTab("history")}>{ar ? "السجل" : "History"} <span>{history.length}</span></button><button className="appointment-refresh" type="button" onClick={() => void load()} aria-label={ar ? "تحديث حالة المواعيد" : "Refresh appointment status"}>↻ {ar ? "تحديث" : "Refresh"}</button><a href="/support">{ar ? "الدعم" : "Support"}</a></div>
       {error && <div className="appointment-live-error">{error}<button type="button" onClick={() => void load()}>{ar ? "حاول مرة أخرى" : "Try again"}</button></div>}
       {loading ? <div className="appointment-live-state"><span>◇</span><h2>{ar ? "جارٍ تحميل مواعيدك…" : "Loading your appointments…"}</h2></div>
         : error ? <div className="appointment-live-state error"><span>!</span><h2>{ar ? "حالة الموعد غير متاحة" : "Appointment status unavailable"}</h2><p>{ar ? "تعذر على كيفايا تأكيد أحدث حجوزاتك. حاول مرة أخرى قبل الاعتماد على هذه القائمة." : "Qivaya could not confirm your latest bookings. Try again before relying on this list."}</p></div>
@@ -99,7 +137,7 @@ export default function Appointments() {
           return <article key={item.id}><div className="appointment-date"><b>{reyatiDate(start, lang, { day: "2-digit" })}</b><span>{reyatiDate(start, lang, { month: "short" }).toUpperCase()}</span></div><div className="appointment-live-provider"><span>{initials(item.providerName)}</span><div><p>{reyatiDate(start, lang, { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}</p><h2>{item.providerName}</h2><small>{item.specialty} · {item.facilityName || (item.mode === "video" ? (ar ? "استشارة فيديو" : "Video consultation") : (ar ? "المنشأة قيد التأكيد" : "Facility pending"))}</small></div></div><i className={item.status}>{statusLabel(item.status)}</i><div className="appointment-live-actions"><button onClick={() => setSelected(item)}>{ar ? "عرض التفاصيل" : "View details"}</button>{item.status === "completed" && <a href={`/wallet?appointmentId=${encodeURIComponent(item.id)}`}>{ar ? "سجل الزيارة" : "Visit record"}</a>}{canCancel && <button className="cancel" onClick={() => setSelected(item)}>{ar ? "إلغاء" : "Cancel"}</button>}</div></article>;
         })}</div>}
     </section>
-    {selected && <div className="appointment-modal-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) { setConfirmCancellation(false); setSelected(null); } }}><div className="appointment-dialog wide"><button className="drawer-close" onClick={() => { setConfirmCancellation(false); setSelected(null); }} aria-label={ar ? "إغلاق" : "Close"}>×</button><p>{ar ? "تفاصيل الموعد" : "APPOINTMENT DETAIL"}</p><h2>{reyatiDate(selected.scheduledStart, lang, { dateStyle: "full", timeStyle: "short" })}</h2><div className="selected-doctor"><div className="doctor-avatar blue">{initials(selected.providerName)}<span>✓</span></div><div><h3>{selected.providerName}</h3><p>{selected.specialty} · {selected.facilityName || (selected.mode === "video" ? (ar ? "استشارة فيديو" : "Video consultation") : (ar ? "المنشأة قيد التأكيد" : "Facility pending"))}</p></div></div><dl className="appointment-detail-list"><div><dt>{ar ? "الحالة" : "Status"}</dt><dd>{statusLabel(selected.status)}</dd></div><div><dt>{ar ? "نوع الزيارة" : "Visit mode"}</dt><dd>{statusLabel(selected.mode)}</dd></div><div><dt>{ar ? "المرجع" : "Reference"}</dt><dd>{selected.id}</dd></div><div><dt>{ar ? "ينتهي" : "Ends"}</dt><dd>{reyatiDate(selected.scheduledEnd, lang, { hour: "numeric", minute: "2-digit" })}</dd></div></dl><div className="policy-box"><span>i</span><p><b>{ar ? "تتم إدارة حالة الدفع بشكل منفصل." : "Payment status is managed separately."}</b>{ar ? " يؤدي الإلغاء هنا إلى تحرير الجدول السريري ولا يعد باسترداد أو يدل عليه." : "Cancelling here releases the clinical schedule. It does not promise or imply a refund."}</p></div>{["pending", "confirmed"].includes(selected.status) && new Date(selected.scheduledStart).valueOf() > referenceTime && <button className="danger-action appointment-confirm-trigger" onClick={() => setConfirmCancellation(true)}>{ar ? "إلغاء الموعد" : "Cancel appointment"}</button>}</div></div>}
+    {selected ? <div className="appointment-modal-layer" onMouseDown={(event) => { if (event.target === event.currentTarget) { setConfirmCancellation(false); setSelected(null); } }}><div className="appointment-dialog wide"><button className="drawer-close" onClick={() => { setConfirmCancellation(false); setSelected(null); }} aria-label={ar ? "إغلاق" : "Close"}>×</button><p>{ar ? "تفاصيل الموعد" : "APPOINTMENT DETAIL"}</p><h2>{reyatiDate(selected.scheduledStart, lang, { dateStyle: "full", timeStyle: "short" })}</h2><div className="selected-doctor"><div className="doctor-avatar blue">{initials(selected.providerName)}<span>✓</span></div><div><h3>{selected.providerName}</h3><p>{selected.specialty} · {selected.facilityName || (selected.mode === "video" ? (ar ? "استشارة فيديو" : "Video consultation") : (ar ? "المنشأة قيد التأكيد" : "Facility pending"))}</p></div></div>{selectedLifecycle.length ? <section className="appointment-lifecycle" aria-label={ar ? "دورة حياة الموعد" : "Appointment lifecycle"}><header><b>{selected.status === "pending" ? (ar ? "بانتظار مراجعة مقدم الرعاية" : "Awaiting provider review") : (ar ? "تم تأكيد موعدك" : "Your appointment is confirmed")}</b><small>{selected.status === "pending" ? (ar ? "يتم تحديث الحالة تلقائياً." : "Status refreshes automatically.") : (ar ? "استعد للزيارة أو راسل فريق الرعاية." : "Prepare for the visit or message your care team.")}</small></header><ol>{selectedLifecycle.map((step) => <li className={step.state} key={step.label}><span>{step.state === "done" ? "✓" : ""}</span><b>{step.label}</b></li>)}</ol></section> : null}<dl className="appointment-detail-list"><div><dt>{ar ? "الحالة" : "Status"}</dt><dd>{statusLabel(selected.status)}</dd></div><div><dt>{ar ? "نوع الزيارة" : "Visit mode"}</dt><dd>{statusLabel(selected.mode)}</dd></div><div><dt>{ar ? "المرجع" : "Reference"}</dt><dd>{selected.id}</dd></div><div><dt>{ar ? "ينتهي" : "Ends"}</dt><dd>{reyatiDate(selected.scheduledEnd, lang, { hour: "numeric", minute: "2-digit" })}</dd></div></dl><div className="policy-box"><span>i</span><p><b>{ar ? "تتم إدارة حالة الدفع بشكل منفصل." : "Payment status is managed separately."}</b>{ar ? " يؤدي الإلغاء هنا إلى تحرير الجدول السريري ولا يعد باسترداد أو يدل عليه." : "Cancelling here releases the clinical schedule. It does not promise or imply a refund."}</p></div>{["pending", "confirmed"].includes(selected.status) && new Date(selected.scheduledStart).valueOf() > referenceTime ? <div className="appointment-change-time"><p><b>{ar ? "هل تحتاج إلى وقت مختلف؟" : "Need a different time?"}</b>{ar ? "لمنع الحجز المزدوج، ألغِ هذا الموعد أولاً ثم اختر وقتاً منشوراً جديداً." : "To prevent double booking, cancel this appointment first, then choose a new published time."}</p><button className="danger-action appointment-confirm-trigger" onClick={() => setConfirmCancellation(true)}>{ar ? "إلغاء الموعد" : "Cancel appointment"}</button></div> : null}{["cancelled", "declined", "no_show"].includes(selected.status) ? <a className="appointment-rebook" href={rebookPath(selected)}>{ar ? "اختر موعداً جديداً مع مقدم الرعاية" : "Choose a new time with this provider"} →</a> : null}{selected.status === "confirmed" ? <div className="appointment-next-actions"><a href={`/appointment-preparation?appointmentId=${encodeURIComponent(selected.id)}`}>{ar ? "الاستعداد للزيارة" : "Prepare for visit"}</a><a href="/messages">{ar ? "مراسلة فريق الرعاية" : "Message care team"}</a>{selected.mode === "video" ? <a href={`/virtual-care?appointmentId=${encodeURIComponent(selected.id)}`}>{ar ? "فتح الرعاية الافتراضية" : "Open virtual care"}</a> : null}</div> : null}</div></div> : null}
     <ConfirmActionDialog locale={lang} open={Boolean(selected && confirmCancellation)} title={ar ? "إلغاء هذا الموعد؟" : "Cancel this appointment?"} description={ar ? "سيتم إخطار مقدم الرعاية وتحرير الوقت المحجوز فوراً." : "The provider will be notified and the reserved time will be released immediately."} consequence={ar ? "هذا لا يثبت استرداد دفعة. تتم إدارة حالة الدفع بشكل منفصل." : "This does not prove a payment was refunded. Payment status is handled separately."} confirmLabel={ar ? "إلغاء الموعد" : "Cancel appointment"} busyLabel={ar ? "جارٍ الإلغاء…" : "Cancelling…"} busy={cancelling} onCancel={() => setConfirmCancellation(false)} onConfirm={() => void cancelAppointment()}/>
     {notice && <div className="appointment-live-toast">✓ {notice}<button onClick={() => setNotice("")}>×</button></div>}
   </main>;
