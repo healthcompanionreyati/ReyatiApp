@@ -36,5 +36,7 @@ test("the existing maintenance Worker polls each minute without exposing secrets
   assert.match(worker, /headerPrefix: "scan-poll"/);
   assert.match(config, /"SCAN_POLL_URL"/);
   assert.match(config, /"\* \* \* \* \*"/);
+  assert.match(worker, /enabled: activated\(env\.SCAN_POLL_ENABLED\)/);
+  assert.match(config, /"SCAN_POLL_ENABLED": "false"/);
   assert.doesNotMatch(config, /DOCUMENT_SCAN_POLL_SIGNING_SECRET/);
 });

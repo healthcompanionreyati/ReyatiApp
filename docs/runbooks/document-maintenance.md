@@ -13,7 +13,7 @@ Status: Production cleanup and scan-recovery are active and verified. Preview re
 - Authentication: independent HMAC-SHA256 secrets, five-minute clock-skew limit, unique run identifiers, and bounded JSON bodies
 - Logging: event name, status, and cron expression only; no identifiers, object keys, signatures, or response bodies
 
-The Worker treats a `404` response as an intentionally disabled capability. One job failing does not prevent another job from running, but the scheduled invocation is marked incomplete for observability.
+The Worker skips scanner polling and retention before making an HTTP request while their Worker activation variables remain `false`. This keeps intentionally disabled capabilities out of Vercel request-error logs. A defensive `404` response is still treated as an intentionally disabled capability if the Worker and application gates temporarily disagree. One active job failing does not prevent another active job from running, but the scheduled invocation is marked incomplete for observability.
 
 ## Upload cleanup boundary
 
@@ -45,6 +45,8 @@ Activation requires explicit approval because upload cleanup can permanently del
 6. Trigger one signed invocation and confirm both processors report zero failures.
 7. Watch the first scheduled execution in Cloudflare Worker logs.
 
+Scanner polling and retention require two coordinated gates each. Change `SCAN_POLL_ENABLED` or `RETENTION_ENFORCEMENT_ENABLED` in the Worker configuration only after its corresponding Vercel application gate is approved and deployed. Activate the application first, verify the protected route, then activate the Worker invocation; reverse that order during rollback.
+
 ### Production activation record — 2026-08-22
 
 - Explicit approval was received for production document cleanup and scan-recovery activation.
@@ -56,7 +58,7 @@ Activation requires explicit approval because upload cleanup can permanently del
 
 ## Rollback
 
-Set both environment gates to `false` and redeploy Vercel. The Worker will continue receiving its cron trigger but the application will return `404`, which the Worker records as a disabled skip. Do not delete the Worker or signing secrets during an incident; preserving them keeps rollback reversible.
+Set the affected Worker activation variable to `false` first and deploy the Worker so no new request is emitted. Then set the corresponding Vercel environment gate to `false` and redeploy the application. Do not delete the Worker or signing secrets during an incident; preserving them keeps rollback reversible.
 
 ## Separate launch gate
 

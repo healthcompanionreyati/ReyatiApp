@@ -18,14 +18,21 @@ test("document maintenance is isolated, scheduled, signed, and privacy-minimized
   assert.match(worker, /x-reyati-\$\{target\.headerPrefix\}-signature/);
   assert.match(worker, /Promise\.allSettled/);
   assert.match(worker, /response\.status === 404/);
+  assert.match(config, /"SCAN_POLL_ENABLED": "false"/);
+  assert.match(config, /"RETENTION_ENFORCEMENT_ENABLED": "false"/);
+  assert.match(worker, /if \(!target\.enabled\)/);
+  assert.match(worker, /reason: "capability_disabled"/);
   assert.doesNotMatch(worker, /response\.text|response\.json|console\.(?:log|error)\([^\n]*(?:secret|signed|runId)/);
 });
 
 test("maintenance gates default closed and require explicit environment activation", async () => {
   const flags = await source("lib/foundation-flags.ts");
+  const config = await source("wrangler.document-maintenance.jsonc");
   assert.match(flags, /documentUploadCleanup: productionFlag\("QIVAYA_DOCUMENT_UPLOAD_CLEANUP"\)/);
   assert.match(flags, /documentScanRecovery: productionFlag\("QIVAYA_DOCUMENT_SCAN_RECOVERY"\)/);
   assert.match(flags, /retentionAutomationExecution: productionFlag\("QIVAYA_RETENTION_AUTOMATION_EXECUTION"\)/);
+  assert.match(config, /SCAN_POLL_ENABLED/);
+  assert.match(config, /RETENTION_ENFORCEMENT_ENABLED/);
 });
 
 test("production smoke invocation is fixed-origin, signed, bounded, and aggregate-only", async () => {

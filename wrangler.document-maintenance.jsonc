@@ -9,7 +9,9 @@
     "UPLOAD_CLEANUP_URL": "https://www.qivaya.com/api/internal/document-upload-cleanup",
     "SCAN_RECOVERY_URL": "https://www.qivaya.com/api/internal/document-scan-recovery",
     "SCAN_POLL_URL": "https://www.qivaya.com/api/internal/document-scan-poll",
-    "RETENTION_ENFORCEMENT_URL": "https://www.qivaya.com/api/internal/document-retention-enforcement"
+    "RETENTION_ENFORCEMENT_URL": "https://www.qivaya.com/api/internal/document-retention-enforcement",
+    "SCAN_POLL_ENABLED": "false",
+    "RETENTION_ENFORCEMENT_ENABLED": "false"
   },
   "triggers": {
     "crons": ["* * * * *", "*/10 * * * *", "7 * * * *"]

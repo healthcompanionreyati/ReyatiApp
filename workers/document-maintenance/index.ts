@@ -3,6 +3,8 @@ type DocumentMaintenanceEnv = Env & {
   DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET: string;
   DOCUMENT_SCAN_POLL_SIGNING_SECRET: string;
   DOCUMENT_RETENTION_SIGNING_SECRET: string;
+  SCAN_POLL_ENABLED: string;
+  RETENTION_ENFORCEMENT_ENABLED: string;
 };
 
 type MaintenanceTarget = {
@@ -10,6 +12,7 @@ type MaintenanceTarget = {
   url: string;
   secret: string;
   headerPrefix: "cleanup" | "scan-recovery" | "scan-poll" | "retention";
+  enabled: boolean;
 };
 
 function base64(bytes: ArrayBuffer) {
@@ -23,6 +26,10 @@ async function signature(secret: string, value: string) {
 }
 
 async function invoke(target: MaintenanceTarget, cron: string) {
+  if (!target.enabled) {
+    console.log(JSON.stringify({ event: `${target.event}.skipped`, reason: "capability_disabled", cron }));
+    return;
+  }
   const body = JSON.stringify({ limit: 20 });
   const timestamp = String(Math.floor(Date.now() / 1000));
   const runId = `worker:${target.headerPrefix}:${crypto.randomUUID()}`;
@@ -52,13 +59,14 @@ async function invoke(target: MaintenanceTarget, cron: string) {
 }
 
 async function maintain(env: DocumentMaintenanceEnv, cron: string) {
+  const activated = (value: string) => value.trim().toLowerCase() === "true";
   const targets: MaintenanceTarget[] = cron === "* * * * *"
-    ? [{ event: "documents.scan_poll", url: env.SCAN_POLL_URL, secret: env.DOCUMENT_SCAN_POLL_SIGNING_SECRET, headerPrefix: "scan-poll" }]
+    ? [{ event: "documents.scan_poll", url: env.SCAN_POLL_URL, secret: env.DOCUMENT_SCAN_POLL_SIGNING_SECRET, headerPrefix: "scan-poll", enabled: activated(env.SCAN_POLL_ENABLED) }]
     : cron === "7 * * * *"
-      ? [{ event: "documents.retention_enforcement", url: env.RETENTION_ENFORCEMENT_URL, secret: env.DOCUMENT_RETENTION_SIGNING_SECRET, headerPrefix: "retention" }]
+      ? [{ event: "documents.retention_enforcement", url: env.RETENTION_ENFORCEMENT_URL, secret: env.DOCUMENT_RETENTION_SIGNING_SECRET, headerPrefix: "retention", enabled: activated(env.RETENTION_ENFORCEMENT_ENABLED) }]
       : [
-          { event: "documents.upload_cleanup", url: env.UPLOAD_CLEANUP_URL, secret: env.DOCUMENT_CLEANUP_SIGNING_SECRET, headerPrefix: "cleanup" },
-          { event: "documents.scan_recovery", url: env.SCAN_RECOVERY_URL, secret: env.DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET, headerPrefix: "scan-recovery" },
+          { event: "documents.upload_cleanup", url: env.UPLOAD_CLEANUP_URL, secret: env.DOCUMENT_CLEANUP_SIGNING_SECRET, headerPrefix: "cleanup", enabled: true },
+          { event: "documents.scan_recovery", url: env.SCAN_RECOVERY_URL, secret: env.DOCUMENT_SCAN_RECOVERY_SIGNING_SECRET, headerPrefix: "scan-recovery", enabled: true },
         ];
   const results = await Promise.allSettled(targets.map((target) => invoke(target, cron)));
   if (results.some((result) => result.status === "rejected")) throw new Error("document_maintenance_incomplete");
