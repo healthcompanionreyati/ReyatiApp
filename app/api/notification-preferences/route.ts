@@ -1,6 +1,6 @@
 import { AuthorizationDeniedError } from "@/lib/authorization";
 import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
-import { NotificationPreferenceConflictError, NotificationPreferenceValidationError, getNotificationPreferenceWorkspace, updateNotificationPreference, updateNotificationPreferenceProfile } from "@/lib/notification-preferences";
+import { NotificationPreferenceConflictError, NotificationPreferenceValidationError, getNotificationPreferenceWorkspace, updateNotificationEmailMaster, updateNotificationPreference, updateNotificationPreferenceProfile } from "@/lib/notification-preferences";
 import { reportOperationalError } from "@/lib/observability";
 import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 
@@ -13,6 +13,7 @@ export async function POST(request: Request) {
   return handle(async (userId) => {
     if (!body) throw new NotificationPreferenceValidationError("A JSON object is required");
     if (body.action === "update_preference") return updateNotificationPreference(userId, body);
+    if (body.action === "update_email_master") return updateNotificationEmailMaster(userId, body);
     if (body.action === "update_profile") return updateNotificationPreferenceProfile(userId, body);
     throw new NotificationPreferenceValidationError("action is invalid");
   }, "patient.notification-preferences");

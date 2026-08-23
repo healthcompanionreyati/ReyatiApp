@@ -8,15 +8,18 @@ import { foundationFlags } from "@/lib/foundation-flags";
 import { reportOperationalError } from "@/lib/observability";
 import { signedVerificationPath } from "@/lib/communications/email-verification";
 import { signedFamilyInvitationPath } from "@/lib/communications/family-invitations";
+import { notificationEmailCategoryEnabled } from "@/lib/notification-preferences";
 
 export async function enqueueTransactionalEmail(input: { userId: string; templateId: TransactionalEmailTemplateId; actionPath: string; dedupeKey: string }) {
   const db = await getDb();
-  const [contact, preference] = await Promise.all([
+  const [contact, preference, categoryEnabled] = await Promise.all([
     db.select({ id: contactMethods.id, status: contactMethods.status }).from(contactMethods).where(and(eq(contactMethods.userId, input.userId), eq(contactMethods.kind, "email"), eq(contactMethods.isPrimary, true))).limit(1),
     db.select({ enabled: notificationPreferences.enabled, locale: notificationPreferences.locale }).from(notificationPreferences).where(and(eq(notificationPreferences.userId, input.userId), eq(notificationPreferences.channel, "email"))).limit(1),
+    notificationEmailCategoryEnabled(input.userId, input.templateId),
   ]);
   if (!contact[0]) return { queued: false, reason: "contact_required" } as const;
   if (!preference[0]?.enabled) return { queued: false, reason: "preference_disabled" } as const;
+  if (!categoryEnabled) return { queued: false, reason: "category_preference_disabled" } as const;
   const locale: SupportedEmailLocale = preference[0].locale === "ar" ? "ar" : "en";
   const templateData = validateEmailTemplateInput({ actionPath: input.actionPath });
   const now = new Date(); const id = crypto.randomUUID();

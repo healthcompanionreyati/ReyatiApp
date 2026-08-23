@@ -14,7 +14,7 @@ async function request(init?: RequestInit) {
   const response = await fetch("/api/account/communications", init);
   const payload = await response.json().catch(() => ({})) as { data?: Settings; error?: string; message?: string };
   if (response.status === 401) {
-    window.location.assign("/signin-with-chatgpt?return_to=/settings/communications");
+    window.location.assign("/sign-in?redirect_url=/settings/communications");
     throw new Error("Authentication required");
   }
   if (!response.ok || !payload.data) throw new Error(payload.message || payload.error || "Communication settings are unavailable");
@@ -70,8 +70,8 @@ export default function CommunicationSettingsPage() {
   }
 
   return <main className={`communication-settings-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"} id="main-content">
-    <header className="communication-settings-header"><a href="/" className="brand"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya"/></a><nav aria-label={ar ? "تنقل المريض" : "Patient navigation"}><a href="/">{ar ? "الرئيسية" : "Home"}</a><a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a><a href="/notifications">{ar ? "الإشعارات" : "Notifications"}</a></nav><a className="communication-back" href="/auth">{ar ? "الحساب الآمن" : "Secure account"}</a></header>
-    <section className="communication-settings-hero"><div><p>{ar ? "إعدادات الحساب" : "ACCOUNT SETTINGS"}</p><h1>{ar ? "الاتصال واللغة" : "Communication & language"}</h1><span>{ar ? "اختر لغة تحديثات الحساب وسجّل تفضيل البريد الإلكتروني للمستقبل." : "Choose the language for account updates and record your email preference for future delivery."}</span></div><span className="communication-shield">✓</span></section>
+    <header className="communication-settings-header"><a href="/" className="brand"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya"/></a><nav aria-label={ar ? "تنقل المريض" : "Patient navigation"}><a href="/">{ar ? "الرئيسية" : "Home"}</a><a href="/notifications">{ar ? "الإشعارات" : "Notifications"}</a><a href="/notification-preferences">{ar ? "تفضيلات الإشعارات" : "Notification preferences"}</a></nav><a className="communication-back" href="/auth">{ar ? "الحساب الآمن" : "Secure account"}</a></header>
+    <section className="communication-settings-hero"><div><p>{ar ? "إعدادات الحساب" : "ACCOUNT SETTINGS"}</p><h1>{ar ? "الاتصال واللغة" : "Communication & language"}</h1><span>{ar ? "تحقق من بريدك واختر لغة تحديثات الحساب التي ترسلها كيفايا." : "Verify your email and choose the language for account updates delivered by Qivaya."}</span></div><span className="communication-shield">✓</span></section>
     <form className="communication-settings-content" onSubmit={save}>
       {error && <div className="communication-message error" role="alert"><b>{ar ? "تعذر إكمال الطلب" : "We couldn’t complete that request"}</b><span>{error}</span></div>}
       {notice && <div className="communication-message success" role="status"><b>✓ {notice}</b><span>{ar ? "تظل إشعارات التطبيق نشطة دائماً للتحديثات الأساسية." : "In-app notifications remain active for essential account updates."}</span></div>}

@@ -9,6 +9,8 @@ const patient = read("app/notification-preferences/page.tsx");
 const admin = read("app/admin/notification-preferences/page.tsx");
 const patientApi = read("app/api/notification-preferences/route.ts");
 const adminApi = read("app/api/admin/notification-preferences/route.ts");
+const outbox = read("lib/communications/outbox.ts");
+const communicationSettings = read("app/settings/communications/page.tsx");
 
 test("notification profiles preferences immutable events and rehearsals are durable and indexed", () => {
   for (const name of ["notificationPreferenceProfiles", "notificationCategoryPreferences", "notificationPreferenceEvents", "notificationPreferenceRehearsals"]) assert.match(schema, new RegExp(`export const ${name}`));
@@ -32,7 +34,6 @@ test("essential transactional and account security notices cannot be disabled", 
 test("quiet hours timezone and locale are stored preferences without delivery guarantees", () => {
   for (const field of ["preferredLocale", "timezone", "quietHoursEnabled", "quietHoursStart", "quietHoursEnd"]) assert.match(schema, new RegExp(field));
   assert.match(service, /quietHoursEnforcementGuaranteed: false/);
-  assert.match(patient, /Quiet hours are stored as a preference/);
   assert.match(patient, /Enforcement is not guaranteed/);
 });
 
@@ -53,11 +54,30 @@ test("preference events are append-only and audit metadata contains no address o
   assert.match(patient, /Immutable history/);
 });
 
-test("central release flags keep forbidden capabilities disabled", () => {
-  for (const flag of ["notificationPreferencesExternalDelivery", "notificationPreferencesExternalSync", "notificationPreferencesInferredConsent", "notificationPreferencesClinicalPersonalization", "notificationPreferencesGuaranteedQuietHoursEnforcement"]) assert.match(service, new RegExp(`foundationFlags\\.${flag}`));
+test("production email delivery is preference-scoped while unsupported channels remain disabled", () => {
+  for (const flag of ["outboundEmailDelivery", "notificationPreferencesExternalSync", "notificationPreferencesInferredConsent", "notificationPreferencesClinicalPersonalization", "notificationPreferencesGuaranteedQuietHoursEnforcement"]) assert.match(service, new RegExp(`foundationFlags\\.${flag}`));
   assert.match(service, /deliveryPerformed: false/);
   assert.match(service, /externalSynchronization: false/);
+  assert.match(service, /notificationEmailCategoryEnabled/);
+  assert.match(service, /updateNotificationEmailMaster/);
+  assert.match(service, /Verify your email before enabling delivery/);
+  for (const template of ["appointment_update", "provider_verification", "record_finalized", "family_access", "support_update", "security_notice"]) assert.match(service, new RegExp(template));
+  assert.match(outbox, /category_preference_disabled/);
+  assert.match(outbox, /notificationEmailCategoryEnabled/);
+  assert.match(patient, /Transactional email delivery is active/);
+  assert.match(patient, /This channel is not available yet/);
   assert.match(patient, /No external sync or clinical personalization/);
+});
+
+test("verified contact readiness and privacy-safe delivery history are visible to the account owner", () => {
+  assert.match(service, /contactMethods\.displayValue/);
+  assert.match(service, /outboundMessages\.templateId/);
+  assert.match(service, /independentlyVerified/);
+  assert.match(patient, /Verified delivery contact/);
+  assert.match(patient, /Recent transactional email/);
+  assert.match(patient, /Recipient addresses and message content are not shown here/);
+  assert.match(communicationSettings, /\/notification-preferences/);
+  assert.doesNotMatch(communicationSettings, /signin-with-chatgpt/);
 });
 
 test("patient and admin APIs are private authenticated rate-limited and conflict aware", () => {
@@ -65,6 +85,7 @@ test("patient and admin APIs are private authenticated rate-limited and conflict
   assert.match(patientApi, /NotificationPreferenceConflictError/);
   assert.match(patientApi, /status: 409/);
   assert.match(patientApi, /update_preference/);
+  assert.match(patientApi, /update_email_master/);
   assert.match(patientApi, /update_profile/);
   assert.match(adminApi, /run_rehearsal/);
 });

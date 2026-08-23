@@ -6,7 +6,7 @@ import {
   notificationPreferenceProfiles,
   notificationPreferenceRehearsals,
 } from "@/db/notification-preferences-schema";
-import { auditEvents } from "@/db/schema";
+import { auditEvents, contactMethods, notificationPreferences, outboundMessages, users } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 import { foundationFlags } from "@/lib/foundation-flags";
 
@@ -15,7 +15,7 @@ export const NOTIFICATION_CHANNELS = ["in_app", "email", "sms", "push"] as const
 export const NOTIFICATION_PREFERENCE_REHEARSAL_VERSION = "notification-preferences-v1";
 
 export const NOTIFICATION_PREFERENCE_BOUNDARIES = {
-  actualDelivery: foundationFlags.notificationPreferencesExternalDelivery,
+  actualDelivery: foundationFlags.outboundEmailDelivery,
   externalPreferenceSync: foundationFlags.notificationPreferencesExternalSync,
   inferredConsent: foundationFlags.notificationPreferencesInferredConsent,
   clinicalPersonalization: foundationFlags.notificationPreferencesClinicalPersonalization,
@@ -29,8 +29,8 @@ const mandatoryRules = new Map<string, string>([
 ]);
 
 const defaultEnabled = new Set([
-  "appointment:in_app", "appointment:email", "appointment:push",
-  "medication:in_app", "follow_up:in_app", "account_security:in_app",
+  "appointment:in_app", "appointment:email",
+  "medication:in_app", "follow_up:in_app", "follow_up:email", "account_security:in_app",
   "account_security:email", "support_service:in_app", "support_service:email",
 ]);
 
@@ -43,6 +43,15 @@ export class NotificationPreferenceConflictError extends Error {
 
 type Category = typeof NOTIFICATION_CATEGORIES[number];
 type Channel = typeof NOTIFICATION_CHANNELS[number];
+
+const transactionalEmailCategories = new Map<string, Category>([
+  ["appointment_update", "appointment"],
+  ["provider_verification", "account_security"],
+  ["record_finalized", "follow_up"],
+  ["family_access", "account_security"],
+  ["support_update", "support_service"],
+  ["security_notice", "account_security"],
+]);
 
 function categoryValue(value: unknown): Category {
   if (typeof value !== "string" || !NOTIFICATION_CATEGORIES.includes(value as Category)) throw new NotificationPreferenceValidationError("category is invalid");
@@ -113,19 +122,63 @@ async function ensureWorkspace(userId: string) {
   return profile;
 }
 
+export async function notificationEmailCategoryEnabled(userId: string, templateId: string) {
+  const category = transactionalEmailCategories.get(templateId);
+  if (!category) return true;
+  await ensureWorkspace(userId);
+  const db = await getDb();
+  const preference = (await db.select({ enabled: notificationCategoryPreferences.enabled })
+    .from(notificationCategoryPreferences)
+    .where(and(
+      eq(notificationCategoryPreferences.userId, userId),
+      eq(notificationCategoryPreferences.category, category),
+      eq(notificationCategoryPreferences.channel, "email"),
+    )).limit(1))[0];
+  return preference?.enabled ?? false;
+}
+
 export async function getNotificationPreferenceWorkspace(userId: string) {
   const profile = await ensureWorkspace(userId), db = await getDb();
-  const [preferences, history] = await Promise.all([
+  const [preferences, history, contactRows, masterRows, deliveryActivity] = await Promise.all([
     db.select().from(notificationCategoryPreferences).where(eq(notificationCategoryPreferences.userId, userId)).orderBy(notificationCategoryPreferences.category, notificationCategoryPreferences.channel),
     db.select({ id: notificationPreferenceEvents.id, action: notificationPreferenceEvents.action, category: notificationPreferenceEvents.category, channel: notificationPreferenceEvents.channel, nextEnabled: notificationPreferenceEvents.nextEnabled, reasonCode: notificationPreferenceEvents.reasonCode, occurredAt: notificationPreferenceEvents.occurredAt }).from(notificationPreferenceEvents).where(eq(notificationPreferenceEvents.subjectUserId, userId)).orderBy(desc(notificationPreferenceEvents.occurredAt)).limit(60),
+    db.select({ email: contactMethods.displayValue, status: contactMethods.status, verifiedAt: contactMethods.verifiedAt }).from(contactMethods).where(and(eq(contactMethods.userId, userId), eq(contactMethods.kind, "email"), eq(contactMethods.isPrimary, true))).limit(1),
+    db.select({ enabled: notificationPreferences.enabled }).from(notificationPreferences).where(and(eq(notificationPreferences.userId, userId), eq(notificationPreferences.channel, "email"))).limit(1),
+    db.select({ id: outboundMessages.id, templateId: outboundMessages.templateId, status: outboundMessages.status, reason: outboundMessages.lastErrorCode, createdAt: outboundMessages.createdAt, sentAt: outboundMessages.sentAt }).from(outboundMessages).where(eq(outboundMessages.userId, userId)).orderBy(desc(outboundMessages.createdAt)).limit(12),
   ]);
+  const contact = contactRows[0] ?? null;
   return {
     profile: { preferredLocale: profile.preferredLocale, timezone: profile.timezone, quietHoursEnabled: profile.quietHoursEnabled, quietHoursStart: profile.quietHoursStart, quietHoursEnd: profile.quietHoursEnd, version: profile.resourceVersion },
     preferences: preferences.map((item) => ({ category: item.category, channel: item.channel, enabled: item.enabled, mandatory: Boolean(item.mandatoryReasonCode), mandatoryReasonCode: item.mandatoryReasonCode, version: item.resourceVersion, updatedAt: item.updatedAt })),
     history, categories: NOTIFICATION_CATEGORIES, channels: NOTIFICATION_CHANNELS,
     boundaries: NOTIFICATION_PREFERENCE_BOUNDARIES,
-    guidance: "Preferences are saved choices only. Qivaya does not claim message delivery or guaranteed quiet-hours enforcement.",
+    delivery: {
+      channels: { in_app: true, email: foundationFlags.outboundEmailDelivery, sms: false, push: false },
+      email: {
+        contact: contact ? { email: contact.email, status: contact.status, independentlyVerified: contact.status === "verified" && Boolean(contact.verifiedAt) } : null,
+        masterEnabled: masterRows[0]?.enabled ?? false,
+        activity: deliveryActivity,
+      },
+    },
+    guidance: foundationFlags.outboundEmailDelivery
+      ? "Eligible transactional email is active for verified contacts and the categories you explicitly enable. In-app notifications remain authoritative."
+      : "Email delivery is temporarily unavailable. In-app notifications remain authoritative.",
   };
+}
+
+export async function updateNotificationEmailMaster(userId: string, body: Record<string, unknown>) {
+  if (typeof body.enabled !== "boolean") throw new NotificationPreferenceValidationError("enabled must be boolean");
+  const profile = await ensureWorkspace(userId), db = await getDb(), now = new Date();
+  const [contact, current] = await Promise.all([
+    db.select({ status: contactMethods.status, verifiedAt: contactMethods.verifiedAt }).from(contactMethods).where(and(eq(contactMethods.userId, userId), eq(contactMethods.kind, "email"), eq(contactMethods.isPrimary, true))).limit(1),
+    db.select({ enabled: notificationPreferences.enabled }).from(notificationPreferences).where(and(eq(notificationPreferences.userId, userId), eq(notificationPreferences.channel, "email"))).limit(1),
+  ]);
+  if (body.enabled && (contact[0]?.status !== "verified" || !contact[0].verifiedAt)) throw new NotificationPreferenceValidationError("Verify your email before enabling delivery");
+  if ((current[0]?.enabled ?? false) === body.enabled) return { enabled: body.enabled, changed: false, ...NOTIFICATION_PREFERENCE_BOUNDARIES };
+  await db.insert(notificationPreferences).values({ userId, channel: "email", enabled: body.enabled, locale: profile.preferredLocale, createdAt: now, updatedAt: now })
+    .onConflictDoUpdate({ target: [notificationPreferences.userId, notificationPreferences.channel], set: { enabled: body.enabled, locale: profile.preferredLocale, updatedAt: now } });
+  await appendEvent({ userId, action: "email_master_preference_changed", channel: "email", previousEnabled: current[0]?.enabled ?? false, nextEnabled: body.enabled, profileVersion: profile.resourceVersion, reasonCode: "explicit_patient_choice" });
+  return { enabled: body.enabled, changed: true, deliveryPerformed: false, ...NOTIFICATION_PREFERENCE_BOUNDARIES };
 }
 
 export async function updateNotificationPreference(userId: string, body: Record<string, unknown>) {
@@ -143,6 +196,15 @@ export async function updateNotificationPreference(userId: string, body: Record<
   const changed = await db.update(notificationCategoryPreferences).set({ enabled: body.enabled, mandatoryReasonCode: mandatoryReasonCode ?? null, resourceVersion: nextVersion, updatedAt: now }).where(and(eq(notificationCategoryPreferences.userId, userId), eq(notificationCategoryPreferences.category, category), eq(notificationCategoryPreferences.channel, channel), eq(notificationCategoryPreferences.resourceVersion, expected))).returning({ userId: notificationCategoryPreferences.userId });
   if (!changed[0]) throw new NotificationPreferenceConflictError();
   const profile = (await db.select().from(notificationPreferenceProfiles).where(eq(notificationPreferenceProfiles.userId, userId)).limit(1))[0];
+  if (channel === "email") {
+    const [emailChoices, currentMaster] = await Promise.all([
+      db.select({ enabled: notificationCategoryPreferences.enabled }).from(notificationCategoryPreferences).where(and(eq(notificationCategoryPreferences.userId, userId), eq(notificationCategoryPreferences.channel, "email"))),
+      db.select({ enabled: notificationPreferences.enabled }).from(notificationPreferences).where(and(eq(notificationPreferences.userId, userId), eq(notificationPreferences.channel, "email"))).limit(1),
+    ]);
+    const masterEnabled = body.enabled ? true : Boolean(currentMaster[0]?.enabled) && emailChoices.some((item) => item.enabled);
+    await db.insert(notificationPreferences).values({ userId, channel: "email", enabled: masterEnabled, locale: profile.preferredLocale, createdAt: now, updatedAt: now })
+      .onConflictDoUpdate({ target: [notificationPreferences.userId, notificationPreferences.channel], set: { enabled: masterEnabled, locale: profile.preferredLocale, updatedAt: now } });
+  }
   await appendEvent({ userId, action: "channel_preference_changed", category, channel, previousEnabled: current.enabled, nextEnabled: body.enabled, profileVersion: profile.resourceVersion, preferenceVersion: nextVersion, reasonCode: mandatoryReasonCode ? "mandatory_rule_preserved" : "explicit_patient_choice" });
   return { category, channel, enabled: body.enabled, mandatory: Boolean(mandatoryReasonCode), version: nextVersion, changed: true, deliveryPerformed: false, ...NOTIFICATION_PREFERENCE_BOUNDARIES };
 }
@@ -154,6 +216,10 @@ export async function updateNotificationPreferenceProfile(userId: string, body: 
   const db = await getDb(), now = new Date(), nextVersion = expected + 1;
   const changed = await db.update(notificationPreferenceProfiles).set({ preferredLocale, timezone, quietHoursEnabled: body.quietHoursEnabled, quietHoursStart, quietHoursEnd, resourceVersion: nextVersion, updatedAt: now }).where(and(eq(notificationPreferenceProfiles.userId, userId), eq(notificationPreferenceProfiles.resourceVersion, expected))).returning({ userId: notificationPreferenceProfiles.userId });
   if (!changed[0]) throw new NotificationPreferenceConflictError();
+  await db.batch([
+    db.update(users).set({ preferredLanguage: preferredLocale, updatedAt: now }).where(eq(users.id, userId)),
+    db.update(notificationPreferences).set({ locale: preferredLocale, updatedAt: now }).where(eq(notificationPreferences.userId, userId)),
+  ]);
   await appendEvent({ userId, action: "profile_settings_changed", profileVersion: nextVersion, reasonCode: "explicit_patient_choice" });
   return { preferredLocale, timezone, quietHoursEnabled: body.quietHoursEnabled, quietHoursStart, quietHoursEnd, version: nextVersion, quietHoursEnforcementGuaranteed: false, ...NOTIFICATION_PREFERENCE_BOUNDARIES };
 }
