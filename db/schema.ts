@@ -397,6 +397,50 @@ export const dataLifecycleAcceptanceEvents = sqliteTable("data_lifecycle_accepta
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_data_lifecycle_acceptance_events_run_created").on(table.acceptanceRunId, table.createdAt)]);
 
+export const documentActivationWindows = sqliteTable("document_activation_windows", {
+  id: text("id").primaryKey(),
+  reference: text("reference").notNull(),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  clientRequestId: text("client_request_id").notNull(),
+  evidenceReference: text("evidence_reference").notNull(),
+  targetEnvironment: text("target_environment").notNull().default("production"),
+  windowStartsAt: integer("window_starts_at", { mode: "timestamp_ms" }).notNull(),
+  windowEndsAt: integer("window_ends_at", { mode: "timestamp_ms" }).notNull(),
+  changeOwner: text("change_owner").notNull(),
+  monitoringOwner: text("monitoring_owner").notNull(),
+  rollbackOwner: text("rollback_owner").notNull(),
+  status: text("status").notNull().default("pending_review"),
+  reviewedByUserId: text("reviewed_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewNote: text("review_note"),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  openedByUserId: text("opened_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  openedAt: integer("opened_at", { mode: "timestamp_ms" }),
+  postureSnapshotJson: text("posture_snapshot_json"),
+  postureObservedAt: integer("posture_observed_at", { mode: "timestamp_ms" }),
+  verifiedByUserId: text("verified_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  verificationNote: text("verification_note"),
+  verifiedAt: integer("verified_at", { mode: "timestamp_ms" }),
+  rollbackVerifiedByUserId: text("rollback_verified_by_user_id").references(() => users.id, { onDelete: "restrict" }),
+  rollbackVerifiedAt: integer("rollback_verified_at", { mode: "timestamp_ms" }),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_document_activation_reference").on(table.reference),
+  uniqueIndex("idx_document_activation_request").on(table.preparedByUserId, table.clientRequestId),
+  index("idx_document_activation_status_window").on(table.status, table.windowStartsAt, table.windowEndsAt),
+]);
+
+export const documentActivationEvents = sqliteTable("document_activation_events", {
+  id: text("id").primaryKey(),
+  windowId: text("window_id").notNull().references(() => documentActivationWindows.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  eventCode: text("event_code").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  codedDetailsJson: text("coded_details_json").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_document_activation_events_window_created").on(table.windowId, table.createdAt)]);
+
 export const securityAlertPolicies = sqliteTable("security_alert_policies", {
   id: text("id").primaryKey(),
   signalType: text("signal_type").notNull(),
