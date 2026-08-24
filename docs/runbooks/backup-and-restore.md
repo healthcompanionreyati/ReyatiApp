@@ -1,6 +1,6 @@
 # Cloudflare storage backup and restore runbook
 
-Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated restore verified on 22 August 2026. A full-data hosted restore rehearsal remains a controlled-pilot gate.
+Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated restore verified on 22 August 2026. The hosted D1 migration-and-synthetic-data restore passed on 24 August 2026 with zero fixture loss, zero foreign-key violations, and verified disposal. Application-level post-restore authorization evidence remains a controlled-pilot gate.
 
 ## Required controls
 
@@ -18,6 +18,7 @@ Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated r
 - Production migrations must report no pending entries before release promotion.
 - The private R2 bucket is reachable through authenticated Cloudflare tooling and is not exposed through a public bucket URL.
 - The repeatable safe verification command is `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-cloudflare-recovery.ps1`.
+- The hosted synthetic rehearsal is `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/rehearse-hosted-d1-restore.ps1 -Database qivaya-recovery-rehearsal-YYYYMMDDhhmmss-xxxxxxxx`. The command rejects every target outside that exact naming pattern and hard-blocks the production name and database identifier.
 
 ## Rehearsal
 
@@ -27,7 +28,20 @@ Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated r
 4. Confirm the export contains no `INSERT INTO` statements and record its SHA-256 checksum.
 5. Restore the schema into an isolated local D1 instance and run table counts plus `PRAGMA foreign_key_check`.
 6. Upload a synthetic R2 object under `recovery-smoke/`, download it, compare SHA-256 checksums, and delete the exact object.
-7. For a full rehearsal, create an isolated hosted recovery database, import an approved encrypted synthetic backup, run privileged and negative-authorization workflows, measure RTO/RPO, independently review the evidence, and dispose of the rehearsal copy.
+7. For the hosted database rehearsal, generate the curated synthetic recovery package, validate it locally, create an isolated hosted database, apply versioned migrations, import the package, validate counts and foreign keys, measure recovery time and fixture loss, re-resolve the exact database identifier, and dispose of the rehearsal copy.
+8. Complete application-level privileged and negative-authorization workflows against an approved protected recovery environment, then have a second authorized reviewer accept the evidence in the recovery register.
+
+## Latest hosted rehearsal
+
+- Date: 24 August 2026
+- Evidence: `docs/runbooks/hosted-recovery-validation-2026-08-24.md`
+- Schema: all 108 repository migrations applied to a blank hosted D1 database.
+- Data: 1 organization, 5 providers, 50 patients, 40 appointments, 54 users, and 40 non-charged payment-ledger entries restored.
+- Isolation: zero non-synthetic authentication identifiers, zero non-synthetic email addresses, and zero unexpected payment states.
+- Integrity: zero foreign-key violations.
+- Recovery time: 50.201 seconds from migration start through data and integrity validation.
+- Recovery point loss: zero fixture records.
+- Disposal: the exact temporary database name and UUID were re-resolved before deletion; a subsequent metadata lookup confirmed it no longer exists.
 
 ## Production incident restore
 
