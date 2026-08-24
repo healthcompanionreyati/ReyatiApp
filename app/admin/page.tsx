@@ -99,6 +99,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/retention-automation"><span>◷</span>{ar ? "أتمتة الاحتفاظ" : "Retention automation"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>
+        <a className="admin-verification-link" href="/admin/monitoring-acceptance"><span>◉</span>{ar ? "قبول مراقبة الإنتاج" : "Production monitoring acceptance"}</a>
         <a className="admin-verification-link" href="/admin/pilot-review"><span>◆</span>{ar ? "قرار الإطلاق" : "Go / No-Go review"}</a>
         <a className="admin-verification-link" href="/admin/pilot-scope"><span>◫</span>{ar ? "نطاق البرنامج" : "Pilot scope"}</a>
         <a className="admin-verification-link" href="/admin/pilot-cohort"><span>◎</span>{ar ? "مجموعة البرنامج" : "Pilot cohort"}</a>

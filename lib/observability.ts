@@ -36,3 +36,8 @@ export function reportOperationalError(event: string, error: unknown, context?: 
   };
   console.error(JSON.stringify(payload));
 }
+
+/** Emits privacy-safe operational metadata to the hosting platform's runtime log stream. */
+export function reportOperationalEvent(event: string, context?: OperationalContext) {
+  console.info(JSON.stringify({ level: "info", event: eventToken(event), context: safeContext(context), occurredAt: new Date().toISOString() }));
+}

@@ -423,6 +423,47 @@ export const observabilityValidationRuns = sqliteTable("observability_validation
   mode: text("mode").notNull().default("local_redaction_test"), createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_observability_validation_runs_policy_created").on(table.policyId, table.createdAt)]);
 
+export const monitoringAcceptanceRuns = sqliteTable("monitoring_acceptance_runs", {
+  id: text("id").primaryKey(),
+  reference: text("reference").notNull(),
+  environment: text("environment").notNull().default("production"),
+  platform: text("platform").notNull().default("vercel_first_party"),
+  dataClassification: text("data_classification").notNull().default("synthetic_only"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  sampleWindowStartedAt: integer("sample_window_started_at", { mode: "timestamp_ms" }).notNull(),
+  sampleWindowEndedAt: integer("sample_window_ended_at", { mode: "timestamp_ms" }).notNull(),
+  evidenceReference: text("evidence_reference").notNull(),
+  approvedPolicyCount: integer("approved_policy_count").notNull(),
+  freshValidationCount: integer("fresh_validation_count").notNull(),
+  runtimeLogsAvailable: integer("runtime_logs_available", { mode: "boolean" }).notNull().default(false),
+  webAnalyticsConfigured: integer("web_analytics_configured", { mode: "boolean" }).notNull().default(false),
+  speedInsightsConfigured: integer("speed_insights_configured", { mode: "boolean" }).notNull().default(false),
+  securityAlertRouteVerified: integer("security_alert_route_verified", { mode: "boolean" }).notNull().default(false),
+  prohibitedFieldsDetected: integer("prohibited_fields_detected").notNull().default(0),
+  externalSystemsContacted: integer("external_systems_contacted").notNull().default(0),
+  status: text("status").notNull().default("pending_review"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_monitoring_acceptance_reference").on(table.reference),
+  index("idx_monitoring_acceptance_status_created").on(table.status, table.createdAt),
+  index("idx_monitoring_acceptance_reviewed").on(table.status, table.reviewedAt),
+]);
+
+export const monitoringAcceptanceEvents = sqliteTable("monitoring_acceptance_events", {
+  id: text("id").primaryKey(),
+  acceptanceRunId: text("acceptance_run_id").notNull().references(() => monitoringAcceptanceRuns.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_monitoring_acceptance_events_run_created").on(table.acceptanceRunId, table.createdAt)]);
+
 export const pilotReadinessReviews = sqliteTable("pilot_readiness_reviews", {
   id: text("id").primaryKey(),
   cycleLabel: text("cycle_label").notNull(),

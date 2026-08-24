@@ -48,6 +48,7 @@ import "./premium-ui.css";
 import "./readability-fixes.css";
 import "./communications-settings.css";
 import "./operations-health.css";
+import "./monitoring-acceptance.css";
 import "./pilot-readiness.css";
 import "./care-continuity.css";
 import "./pilot-ownership.css";

@@ -37,6 +37,7 @@ const groups: NavGroup[] = [
     { href: "/admin/security-alerts", icon: "⚠", en: "Security alerts", ar: "تنبيهات الأمن" },
     { href: "/admin/recovery", icon: "↻", en: "Recovery rehearsals", ar: "تجارب الاستعادة" },
     { href: "/admin/observability", icon: "⌁", en: "Observability", ar: "قابلية المراقبة" },
+    { href: "/admin/monitoring-acceptance", icon: "◉", en: "Monitoring acceptance", ar: "قبول المراقبة" },
     { href: "/admin/privacy-rights", icon: "◫", en: "Privacy rights", ar: "حقوق الخصوصية" },
     { href: "/admin/consents", icon: "✓", en: "Consent governance", ar: "حوكمة الموافقات" },
     { href: "/admin/complaints", icon: "!", en: "Complaints", ar: "الشكاوى" },
