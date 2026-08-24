@@ -1,6 +1,6 @@
 # Cloudflare storage backup and restore runbook
 
-Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated restore verified on 22 August 2026. The hosted D1 migration-and-synthetic-data restore passed on 24 August 2026 with zero fixture loss, zero foreign-key violations, and verified disposal. Application-level post-restore authorization evidence remains a controlled-pilot gate.
+Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated restore verified on 22 August 2026. The hosted D1 migration-and-synthetic-data restore and isolated post-restore application acceptance passed on 24 August 2026 with zero fixture loss, zero foreign-key violations, sixteen of sixteen application scenarios passing, independent role review, and verified disposal. A real incident restore still requires the named two-person production procedure below.
 
 ## Required controls
 
@@ -18,7 +18,7 @@ Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated r
 - Production migrations must report no pending entries before release promotion.
 - The private R2 bucket is reachable through authenticated Cloudflare tooling and is not exposed through a public bucket URL.
 - The repeatable safe verification command is `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-cloudflare-recovery.ps1`.
-- The hosted synthetic rehearsal is `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/rehearse-hosted-d1-restore.ps1 -Database qivaya-recovery-rehearsal-YYYYMMDDhhmmss-xxxxxxxx`. The command rejects every target outside that exact naming pattern and hard-blocks the production name and database identifier.
+- The hosted synthetic rehearsal is `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/rehearse-hosted-d1-restore.ps1 -Database qivaya-recovery-rehearsal-YYYYMMDDhhmmss-xxxxxxxx -RunApplicationAcceptance`. The command rejects every target outside that exact naming pattern, hard-blocks the production name and database identifier, and runs the compiled application against a separate isolated local copy of the same recovery package with Clerk and remote D1 credentials removed.
 
 ## Rehearsal
 
@@ -29,7 +29,7 @@ Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated r
 5. Restore the schema into an isolated local D1 instance and run table counts plus `PRAGMA foreign_key_check`.
 6. Upload a synthetic R2 object under `recovery-smoke/`, download it, compare SHA-256 checksums, and delete the exact object.
 7. For the hosted database rehearsal, generate the curated synthetic recovery package, validate it locally, create an isolated hosted database, apply versioned migrations, import the package, validate counts and foreign keys, measure recovery time and fixture loss, re-resolve the exact database identifier, and dispose of the rehearsal copy.
-8. Complete application-level privileged and negative-authorization workflows against an approved protected recovery environment, then have a second authorized reviewer accept the evidence in the recovery register.
+8. Run the application-level patient, provider, administrator, security-auditor, unauthenticated, cross-role denial, lifecycle, and independent-review workflows against the isolated restored package. Confirm no Clerk session or external-system call was made.
 
 ## Latest hosted rehearsal
 
@@ -42,6 +42,19 @@ Status: R2 byte round-trip, D1 Time Travel readiness, and schema-only isolated r
 - Recovery time: 50.201 seconds from migration start through data and integrity validation.
 - Recovery point loss: zero fixture records.
 - Disposal: the exact temporary database name and UUID were re-resolved before deletion; a subsequent metadata lookup confirmed it no longer exists.
+
+## Latest application-level acceptance
+
+- Date: 24 August 2026
+- Evidence: `docs/runbooks/recovery-application-acceptance-2026-08-24.md`
+- Hosted target: `qivaya-recovery-rehearsal-20260824063500-c73e8a64` (`08c14562-76a0-49b3-a85c-d92202d3267c`).
+- Recovery package: 1 organization, 5 providers, 50 patients, 40 appointments, 55 users, and 40 non-charged payment-ledger entries.
+- Integrity: zero foreign-key violations, zero unexpected identities, zero unexpected email domains, and zero unexpected payment states.
+- Application: 16 of 16 scenarios passed across patient, provider, platform administrator, security auditor, unauthenticated, and cross-role denial paths.
+- Recovery register: plan, start, complete, and verify events persisted; owner self-review and patient review were rejected; an independent security-auditor identity verified the evidence.
+- Isolation: zero external systems contacted and zero Clerk sessions created.
+- Recovery time: 59.861 seconds with zero fixture-record loss.
+- Disposal: the exact temporary name and UUID were verified before deletion; a subsequent metadata lookup confirmed the database no longer exists.
 
 ## Production incident restore
 

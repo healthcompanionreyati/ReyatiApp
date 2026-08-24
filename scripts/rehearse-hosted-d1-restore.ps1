@@ -1,7 +1,9 @@
 param(
   [Parameter(Mandatory = $true)]
   [string]$Database,
-  [string]$Config = "wrangler.production.jsonc"
+  [string]$Config = "wrangler.production.jsonc",
+  [switch]$RunApplicationAcceptance,
+  [int]$ApplicationPort = 3107
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,6 +24,9 @@ $bootstrapPath = Join-Path $workRoot "bootstrap-admin.sql"
 $fixturePath = Join-Path $workRoot "synthetic-pilot.sql"
 $backupPath = Join-Path $workRoot "synthetic-recovery-backup.sql"
 $evidencePath = Join-Path $workRoot "evidence.json"
+$applicationEvidencePath = Join-Path $workRoot "application-acceptance.json"
+$applicationServerOutPath = Join-Path $workRoot "application-server.stdout.log"
+$applicationServerErrorPath = Join-Path $workRoot "application-server.stderr.log"
 $created = $false
 $disposed = $false
 $remoteDatabaseId = $null
@@ -31,6 +36,7 @@ $validatedAt = $null
 $disposedAt = $null
 $counts = $null
 $backupHash = $null
+$applicationAcceptance = $null
 $failure = $null
 
 if ($Database -eq $productionDatabaseName -or $Database -notmatch $databasePattern) {
@@ -107,7 +113,7 @@ function Write-Evidence {
       providers = 5
       patients = 50
       appointments = 40
-      users = 54
+      users = 55
       payments = 40
     }
     observed_counts = $counts
@@ -115,10 +121,90 @@ function Write-Evidence {
     unexpected_auth_users = if ($null -ne $counts) { $counts.unexpected_auth_users } else { $null }
     unexpected_emails = if ($null -ne $counts) { $counts.unexpected_emails } else { $null }
     unexpected_payment_states = if ($null -ne $counts) { $counts.unexpected_payment_states } else { $null }
+    application_acceptance = $applicationAcceptance
     disposed = $disposed
     failure = $failure
   }
   $evidence | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $evidencePath -Encoding utf8
+}
+
+function Stop-StartedProcessTree {
+  param([Parameter(Mandatory = $true)][int]$RootProcessId)
+
+  $allProcesses = @(Get-CimInstance Win32_Process)
+  $pending = [System.Collections.Generic.Queue[int]]::new()
+  $ordered = [System.Collections.Generic.List[int]]::new()
+  $pending.Enqueue($RootProcessId)
+  while ($pending.Count -gt 0) {
+    $currentId = $pending.Dequeue()
+    if ($ordered.Contains($currentId)) { continue }
+    $ordered.Add($currentId)
+    foreach ($child in $allProcesses | Where-Object { [int]$_.ParentProcessId -eq $currentId }) {
+      $pending.Enqueue([int]$child.ProcessId)
+    }
+  }
+  $targets = $ordered.ToArray()
+  [Array]::Reverse($targets)
+  foreach ($processId in $targets) {
+    if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
+      Stop-Process -Id $processId -ErrorAction Stop
+    }
+  }
+}
+
+function Invoke-ApplicationAcceptance {
+  param([Parameter(Mandatory = $true)][string]$PersistencePath)
+
+  if ($ApplicationPort -lt 3000 -or $ApplicationPort -gt 3999) {
+    throw "ApplicationPort must be between 3000 and 3999."
+  }
+  $baseUrl = "http://127.0.0.1:$ApplicationPort"
+  $serverArguments = @(
+    (Join-Path $repoRoot "scripts\start-recovery-application.mjs"),
+    "--state=$PersistencePath", "--port=$ApplicationPort"
+  )
+  $server = $null
+  try {
+    $server = Start-Process -FilePath $nodePath -ArgumentList $serverArguments -WorkingDirectory $repoRoot -WindowStyle Hidden -RedirectStandardOutput $applicationServerOutPath -RedirectStandardError $applicationServerErrorPath -PassThru
+    $ready = $false
+    $deadline = [DateTime]::UtcNow.AddMinutes(3)
+    while ([DateTime]::UtcNow -lt $deadline) {
+      $server.Refresh()
+      if ($server.HasExited) { break }
+      try {
+        $health = Invoke-WebRequest -Uri "$baseUrl/api/health" -UseBasicParsing -TimeoutSec 3
+        if ($health.StatusCode -eq 200) { $ready = $true; break }
+      } catch { }
+      Start-Sleep -Seconds 1
+    }
+    if (!$ready) {
+      Get-Content -LiteralPath $applicationServerOutPath -Tail 30 -ErrorAction SilentlyContinue | Write-Host
+      Get-Content -LiteralPath $applicationServerErrorPath -Tail 30 -ErrorAction SilentlyContinue | Write-Host
+      throw "The isolated recovery application did not become ready."
+    }
+
+    $previousBaseUrl = $env:QIVAYA_RECOVERY_ACCEPTANCE_BASE_URL
+    $previousEvidence = $env:QIVAYA_RECOVERY_ACCEPTANCE_EVIDENCE
+    try {
+      $env:QIVAYA_RECOVERY_ACCEPTANCE_BASE_URL = $baseUrl
+      $env:QIVAYA_RECOVERY_ACCEPTANCE_EVIDENCE = $applicationEvidencePath
+      $acceptanceOutput = & $nodePath (Join-Path $repoRoot "scripts\smoke-recovery-application-acceptance.mjs")
+      $acceptanceExitCode = $LASTEXITCODE
+      $acceptanceOutput | Write-Host
+      if ($acceptanceExitCode -ne 0) { throw "Recovery application acceptance failed." }
+    } finally {
+      $env:QIVAYA_RECOVERY_ACCEPTANCE_BASE_URL = $previousBaseUrl
+      $env:QIVAYA_RECOVERY_ACCEPTANCE_EVIDENCE = $previousEvidence
+    }
+    if (!(Test-Path -LiteralPath $applicationEvidencePath -PathType Leaf)) {
+      throw "Recovery application acceptance produced no evidence."
+    }
+    return Get-Content -LiteralPath $applicationEvidencePath -Raw | ConvertFrom-Json
+  } finally {
+    if ($null -ne $server -and (Get-Process -Id $server.Id -ErrorAction SilentlyContinue)) {
+      Stop-StartedProcessTree -RootProcessId $server.Id
+    }
+  }
 }
 
 New-Item -ItemType Directory -Force -Path $workRoot | Out-Null
@@ -131,7 +217,7 @@ $localConfig = [ordered]@{
   d1_databases = @([ordered]@{
     binding = "DB"
     database_name = "qivaya-recovery-source-$runId"
-    database_id = "11111111-1111-4111-8111-111111111111"
+    database_id = "00000000-0000-4000-8000-000000000000"
     migrations_dir = "./migrations"
   })
 }
@@ -143,6 +229,10 @@ INSERT INTO users (id,auth_user_id,email,display_name,preferred_language,status,
 VALUES ('qv-recovery-admin','synthetic:recovery:admin','recovery.admin@synthetic.qivaya.invalid','Synthetic Recovery Administrator','en','active',unixepoch('now') * 1000,unixepoch('now') * 1000);
 INSERT INTO platform_roles (user_id,role,status,created_at,updated_at)
 VALUES ('qv-recovery-admin','platform_admin','active',unixepoch('now') * 1000,unixepoch('now') * 1000);
+INSERT INTO users (id,auth_user_id,email,display_name,preferred_language,status,created_at,updated_at)
+VALUES ('qv-recovery-reviewer','synthetic:recovery:reviewer','recovery.reviewer@synthetic.qivaya.invalid','Synthetic Recovery Security Auditor','en','active',unixepoch('now') * 1000,unixepoch('now') * 1000);
+INSERT INTO platform_roles (user_id,role,status,created_at,updated_at)
+VALUES ('qv-recovery-reviewer','security_auditor','active',unixepoch('now') * 1000,unixepoch('now') * 1000);
 "@
 $bootstrapSql | Set-Content -LiteralPath $bootstrapPath -Encoding utf8
 
@@ -211,7 +301,7 @@ try {
   }
   $counts = $validationRows[0]
 
-  $expected = [ordered]@{ organizations = 1; providers = 5; patients = 50; appointments = 40; users = 54; payments = 40 }
+  $expected = [ordered]@{ organizations = 1; providers = 5; patients = 50; appointments = 40; users = 55; payments = 40 }
   foreach ($field in $expected.Keys) {
     if ([int64]$counts.$field -ne [int64]$expected[$field]) {
       throw "Recovery validation failed for ${field}: expected $($expected[$field]), observed $($counts.$field)."
@@ -227,6 +317,14 @@ try {
   $foreignKeyRows = @(Get-D1QueryRows $foreignKeyPayload)
   if ($foreignKeyRows.Count -ne 0) {
     throw "Recovered database has $($foreignKeyRows.Count) foreign-key violation(s)."
+  }
+
+  if ($RunApplicationAcceptance) {
+    $localPersistencePath = Join-Path $workRoot ".wrangler\state"
+    $applicationAcceptance = Invoke-ApplicationAcceptance -PersistencePath $localPersistencePath
+    if ([int]$applicationAcceptance.failedScenarios -ne 0 -or [int]$applicationAcceptance.passedScenarios -ne [int]$applicationAcceptance.scenarioCount -or !$applicationAcceptance.independentReviewVerified) {
+      throw "Recovery application acceptance evidence is incomplete."
+    }
   }
 
   $validatedAt = [DateTime]::UtcNow

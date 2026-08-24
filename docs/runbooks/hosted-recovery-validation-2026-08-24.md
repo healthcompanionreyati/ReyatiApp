@@ -46,6 +46,6 @@ The isolated hosted D1 recovery rehearsal passed. No production data was exporte
 
 The rehearsal detected that a raw Wrangler local full export is not a dependable blank-hosted-database restore artifact because schema and data can be emitted in an order that references tables before creation. A data-only export also emits child tables before their parents and is rejected by hosted D1 foreign-key enforcement. The repeatable recovery path therefore applies the authoritative migration set first and imports a dependency-ordered, synthetic recovery package second. This path passed both local preflight and hosted validation.
 
-## Remaining controlled-pilot evidence
+## Application-level follow-up
 
-Database restoration is verified. Full-platform recovery acceptance still requires privileged and negative-authorization workflows to be run against an approved protected recovery deployment and independently reviewed by a second authorized operator. That evidence must not be inferred from this database-only rehearsal.
+This database-only rehearsal was followed by the isolated application-level acceptance recorded in `docs/runbooks/recovery-application-acceptance-2026-08-24.md`. That follow-up validates coded authentication and authorization boundaries against a restored synthetic package. It does not replace the named two-person approval required for a real production incident restore.
