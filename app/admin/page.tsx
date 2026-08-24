@@ -97,6 +97,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/data-lifecycle"><span>⌛</span>{ar ? "دورة حياة البيانات" : "Data lifecycle"}</a>
         <a className="admin-verification-link" href="/admin/legal-holds"><span>§</span>{ar ? "الحجز القانوني" : "Legal holds"}</a>
         <a className="admin-verification-link" href="/admin/retention-automation"><span>◷</span>{ar ? "أتمتة الاحتفاظ" : "Retention automation"}</a>
+        <a className="admin-verification-link" href="/admin/data-lifecycle-acceptance"><span>◎</span>{ar ? "قبول دورة الحياة" : "Lifecycle acceptance"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>
         <a className="admin-verification-link" href="/admin/monitoring-acceptance"><span>◉</span>{ar ? "قبول مراقبة الإنتاج" : "Production monitoring acceptance"}</a>

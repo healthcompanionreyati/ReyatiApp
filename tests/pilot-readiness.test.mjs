@@ -11,7 +11,8 @@ test("pilot readiness is server-derived and fails closed on external and human b
   assert.match(service, /gates\.filter\(\(gate\) => gate\.status === "cleared"\)/);
   assert.match(service, /primary and backup owners/);
   assert.match(service, /independently verified full-platform hosted rehearsal/);
-  assert.match(service, /Legal-hold placement and independently reviewed release are implemented/);
+  assert.match(service, /lifecycleEvidenceReady/);
+  assert.match(service, /Fresh independently verified production lifecycle acceptance is required/);
 });
 
 test("operations UI presents a bilingual non-overridable launch decision", async () => {

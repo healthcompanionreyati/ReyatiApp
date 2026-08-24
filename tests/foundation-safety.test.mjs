@@ -61,8 +61,8 @@ test("operations health is role-scoped, privacy-minimized, and truthful about pi
   const route = await source("app/api/admin/operations/route.ts");
   const page = await source("app/admin/operations/page.tsx");
   assert.match(service, /requirePlatformRole\(userId, \["platform_admin", "security_auditor"\]\)/);
-  assert.match(service, /external_error_tracking[\s\S]*?status: "blocked"/);
-  assert.match(service, /backup_rehearsal[\s\S]*?status: "blocked"/);
+  assert.match(service, /external_error_tracking[\s\S]*?status: "implemented"/);
+  assert.match(service, /backup_rehearsal[\s\S]*?status: "partial"/);
   assert.match(service, /platform_rate_limiting[\s\S]*?status: "implemented"/);
   assert.doesNotMatch(service, /supportCases\.description|supportCases\.subject|users\.email/);
   assert.match(route, /getOrCreateCurrentUser\(\)/);

@@ -350,6 +350,53 @@ export const retentionAutomationPlanEvents = sqliteTable("retention_automation_p
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 }, (table) => [index("idx_retention_automation_plan_events_plan_created").on(table.planId, table.createdAt)]);
 
+export const dataLifecycleAcceptanceRuns = sqliteTable("data_lifecycle_acceptance_runs", {
+  id: text("id").primaryKey(),
+  reference: text("reference").notNull(),
+  environment: text("environment").notNull().default("production"),
+  dataClassification: text("data_classification").notNull().default("synthetic_only"),
+  preparedByUserId: text("prepared_by_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  evidenceReference: text("evidence_reference").notNull(),
+  approvedPolicyCount: integer("approved_policy_count").notNull(),
+  approvedRetentionPlan: integer("approved_retention_plan", { mode: "boolean" }).notNull().default(false),
+  freshSafetyRehearsal: integer("fresh_safety_rehearsal", { mode: "boolean" }).notNull().default(false),
+  safetyScenarioCount: integer("safety_scenario_count").notNull().default(0),
+  overdueLegalHoldCount: integer("overdue_legal_hold_count").notNull().default(0),
+  protectedStorageConfigured: integer("protected_storage_configured", { mode: "boolean" }).notNull().default(false),
+  privateScannerConfigured: integer("private_scanner_configured", { mode: "boolean" }).notNull().default(false),
+  cleanupEnabled: integer("cleanup_enabled", { mode: "boolean" }).notNull().default(false),
+  scanRecoveryEnabled: integer("scan_recovery_enabled", { mode: "boolean" }).notNull().default(false),
+  scanDispatchEnabled: integer("scan_dispatch_enabled", { mode: "boolean" }).notNull().default(false),
+  scanPollingEnabled: integer("scan_polling_enabled", { mode: "boolean" }).notNull().default(false),
+  retentionExecutionEnabled: integer("retention_execution_enabled", { mode: "boolean" }).notNull().default(false),
+  deletionProcessorEnabled: integer("deletion_processor_enabled", { mode: "boolean" }).notNull().default(false),
+  scheduledMaintenanceObserved: integer("scheduled_maintenance_observed", { mode: "boolean" }).notNull().default(false),
+  isolatedStorageRehearsalPassed: integer("isolated_storage_rehearsal_passed", { mode: "boolean" }).notNull().default(false),
+  customerRecordsTouched: integer("customer_records_touched").notNull().default(0),
+  externalSystemsContacted: integer("external_systems_contacted").notNull().default(0),
+  status: text("status").notNull().default("pending_review"),
+  reviewerUserId: text("reviewer_user_id").references(() => users.id, { onDelete: "restrict" }),
+  reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+  reviewNote: text("review_note"),
+  version: integer("version").notNull().default(1),
+  ...timestamps,
+}, (table) => [
+  uniqueIndex("idx_data_lifecycle_acceptance_reference").on(table.reference),
+  index("idx_data_lifecycle_acceptance_status_created").on(table.status, table.createdAt),
+  index("idx_data_lifecycle_acceptance_reviewed").on(table.status, table.reviewedAt),
+]);
+
+export const dataLifecycleAcceptanceEvents = sqliteTable("data_lifecycle_acceptance_events", {
+  id: text("id").primaryKey(),
+  acceptanceRunId: text("acceptance_run_id").notNull().references(() => dataLifecycleAcceptanceRuns.id, { onDelete: "restrict" }),
+  actorUserId: text("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  action: text("action").notNull(),
+  previousStatus: text("previous_status"),
+  nextStatus: text("next_status").notNull(),
+  note: text("note").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+}, (table) => [index("idx_data_lifecycle_acceptance_events_run_created").on(table.acceptanceRunId, table.createdAt)]);
+
 export const securityAlertPolicies = sqliteTable("security_alert_policies", {
   id: text("id").primaryKey(),
   signalType: text("signal_type").notNull(),
