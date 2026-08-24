@@ -66,7 +66,7 @@ async function currentReadiness(now = new Date()) {
     db.select().from(pilotControlAssignments).where(and(eq(pilotControlAssignments.controlId, "data_lifecycle"), eq(pilotControlAssignments.evidenceStatus, "verified"), gt(pilotControlAssignments.lastRehearsedAt, new Date(now.valueOf() - OWNERSHIP_WINDOW_MS)))).limit(1),
   ]);
   const ownershipReady = Boolean(ownership[0]?.backupOwnerUserId && ownership[0]?.evidenceReference);
-  return { prerequisites, ownershipReady, preActivationReady: prerequisites.governanceReady && ownershipReady };
+  return { prerequisites, ownershipReady, preActivationReady: prerequisites.activationGovernanceReady && ownershipReady };
 }
 
 function safePosture(posture: Awaited<ReturnType<typeof getDataLifecycleRuntimePosture>>) {

@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gt, inArray, lt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { documentIncidentCommands } from "@/db/document-incidents-schema";
+import { documentStabilityAssuranceRuns } from "@/db/document-assurance-schema";
 import { auditEvents, dataLifecycleAcceptanceEvents, dataLifecycleAcceptanceRuns, dataLifecyclePolicies, documentActivationWindows, legalHoldOrders, notifications, platformRoles, retentionAutomationPlans, retentionSafetyRehearsals, users } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 import { requiredRecordClasses } from "@/lib/data-lifecycle-governance";
@@ -52,12 +53,13 @@ export async function getDataLifecycleRuntimePosture() {
 
 export async function getDataLifecycleAcceptancePrerequisites(now = new Date()) {
   const db = await getDb(); const boundary = new Date(now.valueOf() - EVIDENCE_WINDOW_DAYS * 86_400_000);
-  const [policies, plans, rehearsals, overdueHolds, activations, activeDocumentIncidents, posture] = await Promise.all([
+  const [policies, plans, rehearsals, overdueHolds, activations, stabilityRuns, activeDocumentIncidents, posture] = await Promise.all([
     db.select({ recordClass: dataLifecyclePolicies.recordClass }).from(dataLifecyclePolicies).where(and(eq(dataLifecyclePolicies.status, "approved"), inArray(dataLifecyclePolicies.recordClass, [...requiredRecordClasses]))),
     db.select({ id: retentionAutomationPlans.id }).from(retentionAutomationPlans).innerJoin(dataLifecyclePolicies, eq(dataLifecyclePolicies.id, retentionAutomationPlans.policyId)).where(and(eq(retentionAutomationPlans.recordClass, "medical_documents"), eq(retentionAutomationPlans.status, "approved"), eq(dataLifecyclePolicies.recordClass, "medical_documents"), eq(dataLifecyclePolicies.status, "approved"))).limit(1),
     db.select().from(retentionSafetyRehearsals).where(and(gt(retentionSafetyRehearsals.executedAt, boundary), eq(retentionSafetyRehearsals.result, "passed"))).orderBy(desc(retentionSafetyRehearsals.executedAt)).limit(20),
     db.select({ id: legalHoldOrders.id }).from(legalHoldOrders).where(and(inArray(legalHoldOrders.status, ["active", "release_pending"]), lt(legalHoldOrders.reviewDueAt, now))).limit(500),
-    db.select({ id: documentActivationWindows.id }).from(documentActivationWindows).where(and(eq(documentActivationWindows.status, "verified"), gt(documentActivationWindows.verifiedAt, boundary))).limit(1),
+    db.select({ id: documentActivationWindows.id, verifiedAt: documentActivationWindows.verifiedAt }).from(documentActivationWindows).where(and(eq(documentActivationWindows.status, "verified"), gt(documentActivationWindows.verifiedAt, boundary))).orderBy(desc(documentActivationWindows.verifiedAt)).limit(1),
+    db.select({ id: documentStabilityAssuranceRuns.id, activationWindowId: documentStabilityAssuranceRuns.activationWindowId, reviewedAt: documentStabilityAssuranceRuns.reviewedAt }).from(documentStabilityAssuranceRuns).where(and(eq(documentStabilityAssuranceRuns.result, "pass"), eq(documentStabilityAssuranceRuns.decision, "stabilized"), gt(documentStabilityAssuranceRuns.reviewedAt, boundary))).orderBy(desc(documentStabilityAssuranceRuns.reviewedAt)).limit(1),
     db.select({ id: documentIncidentCommands.id }).from(documentIncidentCommands).where(inArray(documentIncidentCommands.status, ["open", "acknowledged", "contained", "recovery_review"])).limit(500),
     getDataLifecycleRuntimePosture(),
   ]);
@@ -67,10 +69,12 @@ export async function getDataLifecycleAcceptancePrerequisites(now = new Date()) 
   const freshSafetyRehearsal = Boolean(rehearsal);
   const overdueLegalHoldCount = overdueHolds.length;
   const activationWindowVerified = Boolean(activations[0]);
+  const stabilityAssuranceVerified = Boolean(stabilityRuns[0] && activations[0] && stabilityRuns[0].activationWindowId === activations[0].id && stabilityRuns[0].reviewedAt && activations[0].verifiedAt && stabilityRuns[0].reviewedAt > activations[0].verifiedAt);
   const activeDocumentIncidentCount = activeDocumentIncidents.length;
-  const governanceReady = approvedPolicyCount === requiredRecordClasses.length && approvedRetentionPlan && freshSafetyRehearsal && overdueLegalHoldCount === 0 && activeDocumentIncidentCount === 0 && posture.productionEnvironment && posture.protectedStorageConfigured && posture.privateScannerConfigured;
+  const activationGovernanceReady = approvedPolicyCount === requiredRecordClasses.length && approvedRetentionPlan && freshSafetyRehearsal && overdueLegalHoldCount === 0 && activeDocumentIncidentCount === 0 && posture.productionEnvironment && posture.protectedStorageConfigured && posture.privateScannerConfigured;
+  const governanceReady = activationGovernanceReady && stabilityAssuranceVerified;
   const prerequisitesReady = governanceReady && posture.allRuntimeControlsEnabled && activationWindowVerified;
-  return { approvedPolicyCount, requiredPolicyCount: requiredRecordClasses.length, approvedRetentionPlan, freshSafetyRehearsal, safetyScenarioCount: rehearsal?.scenarioCount ?? 0, overdueLegalHoldCount, activeDocumentIncidentCount, activationWindowVerified, evidenceWindowDays: EVIDENCE_WINDOW_DAYS, posture, governanceReady, prerequisitesReady };
+  return { approvedPolicyCount, requiredPolicyCount: requiredRecordClasses.length, approvedRetentionPlan, freshSafetyRehearsal, safetyScenarioCount: rehearsal?.scenarioCount ?? 0, overdueLegalHoldCount, activeDocumentIncidentCount, activationWindowVerified, stabilityAssuranceVerified, evidenceWindowDays: EVIDENCE_WINDOW_DAYS, posture, activationGovernanceReady, governanceReady, prerequisitesReady };
 }
 
 export async function getDataLifecycleAcceptanceCentre(userId: string) {
@@ -86,7 +90,7 @@ export async function getDataLifecycleAcceptanceCentre(userId: string) {
 
 export async function createDataLifecycleAcceptance(userId: string, body: Record<string, unknown>) {
   await requirePlatformRole(userId, ["platform_admin"]); const prerequisites = await getDataLifecycleAcceptancePrerequisites();
-  if (!prerequisites.prerequisitesReady) throw new DataLifecycleAcceptanceValidationError("All lifecycle policies, independent retention approval, fresh safety evidence, legal-hold reviews, protected storage, private scanning, runtime controls, and a current independently verified activation window must be ready in production");
+  if (!prerequisites.prerequisitesReady) throw new DataLifecycleAcceptanceValidationError("All lifecycle policies, independent retention approval, fresh safety evidence, legal-hold reviews, protected storage, private scanning, runtime controls, a current independently verified activation window, and fresh independently verified document stability assurance must be ready in production");
   if (body.scheduledMaintenanceObserved !== true || body.isolatedStorageRehearsalPassed !== true) throw new DataLifecycleAcceptanceValidationError("Scheduled maintenance and an isolated synthetic storage rehearsal must both be observed");
   const evidenceReference = safeEvidence(body.evidenceReference); const now = new Date(); const db = await getDb(); const id = crypto.randomUUID(); const reference = `DLC-${now.toISOString().slice(0, 10).replaceAll("-", "")}-${id.slice(0, 6).toUpperCase()}`; const posture = prerequisites.posture;
   await db.batch([
