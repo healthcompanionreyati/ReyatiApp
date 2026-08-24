@@ -98,6 +98,7 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/legal-holds"><span>§</span>{ar ? "الحجز القانوني" : "Legal holds"}</a>
         <a className="admin-verification-link" href="/admin/retention-automation"><span>◷</span>{ar ? "أتمتة الاحتفاظ" : "Retention automation"}</a>
         <a className="admin-verification-link" href="/admin/data-lifecycle-acceptance"><span>◎</span>{ar ? "قبول دورة الحياة" : "Lifecycle acceptance"}</a>
+        <a className="admin-verification-link" href="/admin/document-launch"><span>◎</span>{ar ? "قيادة إطلاق المستندات" : "Document launch command"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>
