@@ -48,6 +48,7 @@ const groups: NavGroup[] = [
     { href: "/admin/document-assurance", icon: "◉", en: "Document assurance", ar: "تأكيد المستندات" },
     { href: "/admin/document-incidents", icon: "!", en: "Document incidents", ar: "حوادث المستندات" },
     { href: "/admin/data-lifecycle-acceptance", icon: "✓", en: "Lifecycle acceptance", ar: "قبول دورة الحياة" },
+    { href: "/admin/document-release", icon: "◆", en: "Document release", ar: "إطلاق المستندات" },
     { href: "/admin/account-security", icon: "⌾", en: "Account security", ar: "أمان الحساب" },
     { href: "/admin/release-controls", icon: "⚑", en: "Release controls", ar: "ضوابط الإصدار" },
   ] },

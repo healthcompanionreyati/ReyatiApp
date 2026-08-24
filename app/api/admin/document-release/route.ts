@@ -1,0 +1,14 @@
+import { AuthorizationDeniedError } from "@/lib/authorization";
+import { DocumentReleaseConflictError, DocumentReleaseValidationError, getDocumentReleaseWorkspace, prepareDocumentRelease, reviewDocumentRelease, revokeDocumentRelease } from "@/lib/document-release";
+import { AuthenticationRequiredError, getOrCreateCurrentUser } from "@/lib/identity";
+import { reportOperationalError } from "@/lib/observability";
+import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
+
+export const dynamic = "force-dynamic";
+const responseHeaders = { "Cache-Control": "private, no-store" };
+
+async function activeUser() { const current = await getOrCreateCurrentUser(); if (current.status !== "active") throw new AuthorizationDeniedError(); return current; }
+export async function GET() { return handle(async () => getDocumentReleaseWorkspace((await activeUser()).id)); }
+export async function POST(request: Request) { return handle(async () => { const current = await activeUser(); await enforceWriteRateLimit(current.id, "document-release.write", { limit: 12 }); const input = await requestBody(request); if (input.action === "prepare") return prepareDocumentRelease(current.id, input); if (input.action === "review") return reviewDocumentRelease(current.id, input); if (input.action === "revoke") return revokeDocumentRelease(current.id, input); throw new DocumentReleaseValidationError("action is invalid"); }); }
+async function requestBody(request: Request) { const contentLength = Number(request.headers.get("content-length") ?? 0); if (contentLength > 8192) throw new DocumentReleaseValidationError("Request body is too large"); return request.json().catch(() => { throw new DocumentReleaseValidationError("A valid JSON body is required"); }) as Promise<Record<string, unknown>>; }
+async function handle(operation: () => Promise<unknown>) { try { return Response.json({ data: await operation() }, { headers: responseHeaders }); } catch (error) { const limited = rateLimitResponse(error, responseHeaders); if (limited) return limited; if (error instanceof AuthenticationRequiredError) return Response.json({ error: "authentication_required" }, { status: 401, headers: responseHeaders }); if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: responseHeaders }); if (error instanceof DocumentReleaseValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: responseHeaders }); if (error instanceof DocumentReleaseConflictError) return Response.json({ error: "conflict", message: error.message }, { status: 409, headers: responseHeaders }); reportOperationalError("document_release.failed", error); return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...responseHeaders, "Retry-After": "30" } }); } }

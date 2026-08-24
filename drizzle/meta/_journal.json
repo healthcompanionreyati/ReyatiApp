@@ -792,6 +792,13 @@
       "when": 1787608779093,
       "tag": "0112_omniscient_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 113,
+      "version": "6",
+      "when": 1787610793647,
+      "tag": "0113_spicy_black_panther",
+      "breakpoints": true
     }
   ]
 }
