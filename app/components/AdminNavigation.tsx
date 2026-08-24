@@ -45,6 +45,7 @@ const groups: NavGroup[] = [
     { href: "/admin/data-lifecycle", icon: "⌛", en: "Data lifecycle", ar: "دورة حياة البيانات" },
     { href: "/admin/retention-automation", icon: "◷", en: "Retention automation", ar: "أتمتة الاحتفاظ" },
     { href: "/admin/document-activation", icon: "⚑", en: "Document activation", ar: "تفعيل المستندات" },
+    { href: "/admin/document-incidents", icon: "!", en: "Document incidents", ar: "حوادث المستندات" },
     { href: "/admin/data-lifecycle-acceptance", icon: "✓", en: "Lifecycle acceptance", ar: "قبول دورة الحياة" },
     { href: "/admin/account-security", icon: "⌾", en: "Account security", ar: "أمان الحساب" },
     { href: "/admin/release-controls", icon: "⚑", en: "Release controls", ar: "ضوابط الإصدار" },

@@ -6,7 +6,7 @@ import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 import styles from "../payment-activation/payment-activation.module.css";
 
 type Posture = { productionEnvironment: boolean; protectedStorageConfigured: boolean; privateScannerConfigured: boolean; cleanupEnabled: boolean; scanRecoveryEnabled: boolean; scanDispatchEnabled: boolean; scanPollingEnabled: boolean; retentionExecutionEnabled: boolean; deletionProcessorEnabled: boolean; allRuntimeControlsEnabled: boolean };
-type Prerequisites = { approvedPolicyCount: number; requiredPolicyCount: number; approvedRetentionPlan: boolean; freshSafetyRehearsal: boolean; safetyScenarioCount: number; overdueLegalHoldCount: number; governanceReady: boolean; posture: Posture };
+type Prerequisites = { approvedPolicyCount: number; requiredPolicyCount: number; approvedRetentionPlan: boolean; freshSafetyRehearsal: boolean; safetyScenarioCount: number; overdueLegalHoldCount: number; activeDocumentIncidentCount: number; governanceReady: boolean; posture: Posture };
 type ActivationWindow = { id: string; reference: string; preparedByUserId: string; evidenceReference: string; windowStartsAt: string; windowEndsAt: string; changeOwner: string; monitoringOwner: string; rollbackOwner: string; status: string; reviewNote: string | null; openedByUserId: string | null; postureObservedAt: string | null; verificationNote: string | null; verifiedAt: string | null; rollbackVerifiedAt: string | null; version: number; createdAt: string };
 type ActivationEvent = { id: string; windowId: string; eventCode: string; previousStatus: string | null; nextStatus: string; createdAt: string };
 type Workspace = { currentUserId: string; role: string; workflowVersion: string; windows: ActivationWindow[]; events: ActivationEvent[]; readiness: { prerequisites: Prerequisites; ownershipReady: boolean; preActivationReady: boolean }; posture: Posture; boundaries: Record<string, boolean> };
@@ -50,6 +50,7 @@ export default function DocumentActivationPage() {
     { label: ar ? "خطة الاحتفاظ" : "Retention plan", value: p?.approvedRetentionPlan ? "approved" : "required", pass: p?.approvedRetentionPlan },
     { label: ar ? "بروفة السلامة" : "Safety rehearsal", value: `${p?.safetyScenarioCount ?? 0}/22`, pass: p?.freshSafetyRehearsal },
     { label: ar ? "مراجعة الحجز" : "Legal-hold review", value: `${p?.overdueLegalHoldCount ?? 0} overdue`, pass: p?.overdueLegalHoldCount === 0 },
+    { label: ar ? "الحوادث النشطة" : "Active incidents", value: `${p?.activeDocumentIncidentCount ?? 0} open`, pass: p?.activeDocumentIncidentCount === 0 },
     { label: ar ? "التخزين والماسح" : "Storage + scanner", value: p?.posture.protectedStorageConfigured && p?.posture.privateScannerConfigured ? "ready" : "blocked", pass: p?.posture.protectedStorageConfigured && p?.posture.privateScannerConfigured },
     { label: ar ? "ملكية التشغيل" : "Operating ownership", value: data?.readiness.ownershipReady ? "verified" : "required", pass: data?.readiness.ownershipReady },
   ];

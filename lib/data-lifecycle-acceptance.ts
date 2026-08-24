@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, gt, inArray, lt } from "drizzle-orm";
 import { getDb } from "@/db";
+import { documentIncidentCommands } from "@/db/document-incidents-schema";
 import { auditEvents, dataLifecycleAcceptanceEvents, dataLifecycleAcceptanceRuns, dataLifecyclePolicies, documentActivationWindows, legalHoldOrders, notifications, platformRoles, retentionAutomationPlans, retentionSafetyRehearsals, users } from "@/db/schema";
 import { requirePlatformRole } from "@/lib/authorization";
 import { requiredRecordClasses } from "@/lib/data-lifecycle-governance";
@@ -51,12 +52,13 @@ export async function getDataLifecycleRuntimePosture() {
 
 export async function getDataLifecycleAcceptancePrerequisites(now = new Date()) {
   const db = await getDb(); const boundary = new Date(now.valueOf() - EVIDENCE_WINDOW_DAYS * 86_400_000);
-  const [policies, plans, rehearsals, overdueHolds, activations, posture] = await Promise.all([
+  const [policies, plans, rehearsals, overdueHolds, activations, activeDocumentIncidents, posture] = await Promise.all([
     db.select({ recordClass: dataLifecyclePolicies.recordClass }).from(dataLifecyclePolicies).where(and(eq(dataLifecyclePolicies.status, "approved"), inArray(dataLifecyclePolicies.recordClass, [...requiredRecordClasses]))),
     db.select({ id: retentionAutomationPlans.id }).from(retentionAutomationPlans).innerJoin(dataLifecyclePolicies, eq(dataLifecyclePolicies.id, retentionAutomationPlans.policyId)).where(and(eq(retentionAutomationPlans.recordClass, "medical_documents"), eq(retentionAutomationPlans.status, "approved"), eq(dataLifecyclePolicies.recordClass, "medical_documents"), eq(dataLifecyclePolicies.status, "approved"))).limit(1),
     db.select().from(retentionSafetyRehearsals).where(and(gt(retentionSafetyRehearsals.executedAt, boundary), eq(retentionSafetyRehearsals.result, "passed"))).orderBy(desc(retentionSafetyRehearsals.executedAt)).limit(20),
     db.select({ id: legalHoldOrders.id }).from(legalHoldOrders).where(and(inArray(legalHoldOrders.status, ["active", "release_pending"]), lt(legalHoldOrders.reviewDueAt, now))).limit(500),
     db.select({ id: documentActivationWindows.id }).from(documentActivationWindows).where(and(eq(documentActivationWindows.status, "verified"), gt(documentActivationWindows.verifiedAt, boundary))).limit(1),
+    db.select({ id: documentIncidentCommands.id }).from(documentIncidentCommands).where(inArray(documentIncidentCommands.status, ["open", "acknowledged", "contained", "recovery_review"])).limit(500),
     getDataLifecycleRuntimePosture(),
   ]);
   const rehearsal = rehearsals.find((run) => run.scenarioCount >= REQUIRED_SAFETY_SCENARIOS && run.passedScenarios === run.scenarioCount && run.failedScenarios === 0 && run.dataMode === "synthetic_only" && run.documentsChanged === 0 && run.deletionJobsCreated === 0 && run.objectsDeleted === 0 && run.externalCalls === 0);
@@ -65,9 +67,10 @@ export async function getDataLifecycleAcceptancePrerequisites(now = new Date()) 
   const freshSafetyRehearsal = Boolean(rehearsal);
   const overdueLegalHoldCount = overdueHolds.length;
   const activationWindowVerified = Boolean(activations[0]);
-  const governanceReady = approvedPolicyCount === requiredRecordClasses.length && approvedRetentionPlan && freshSafetyRehearsal && overdueLegalHoldCount === 0 && posture.productionEnvironment && posture.protectedStorageConfigured && posture.privateScannerConfigured;
+  const activeDocumentIncidentCount = activeDocumentIncidents.length;
+  const governanceReady = approvedPolicyCount === requiredRecordClasses.length && approvedRetentionPlan && freshSafetyRehearsal && overdueLegalHoldCount === 0 && activeDocumentIncidentCount === 0 && posture.productionEnvironment && posture.protectedStorageConfigured && posture.privateScannerConfigured;
   const prerequisitesReady = governanceReady && posture.allRuntimeControlsEnabled && activationWindowVerified;
-  return { approvedPolicyCount, requiredPolicyCount: requiredRecordClasses.length, approvedRetentionPlan, freshSafetyRehearsal, safetyScenarioCount: rehearsal?.scenarioCount ?? 0, overdueLegalHoldCount, activationWindowVerified, evidenceWindowDays: EVIDENCE_WINDOW_DAYS, posture, governanceReady, prerequisitesReady };
+  return { approvedPolicyCount, requiredPolicyCount: requiredRecordClasses.length, approvedRetentionPlan, freshSafetyRehearsal, safetyScenarioCount: rehearsal?.scenarioCount ?? 0, overdueLegalHoldCount, activeDocumentIncidentCount, activationWindowVerified, evidenceWindowDays: EVIDENCE_WINDOW_DAYS, posture, governanceReady, prerequisitesReady };
 }
 
 export async function getDataLifecycleAcceptanceCentre(userId: string) {
