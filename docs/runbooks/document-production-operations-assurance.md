@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This fifty-module suite converts the authorized release window into a continuous, read-only operating picture. Every module is backed by current server-side release, lifecycle, runtime, and incident evidence and links operators to the dedicated controlled workspace for action.
+This sixty-module suite converts the authorized release window into a continuous, read-only operating picture. Every module is backed by current server-side release, lifecycle, runtime, and incident evidence and links operators to the dedicated controlled workspace for action.
 
 ## Modules
 
@@ -56,12 +56,22 @@ This fifty-module suite converts the authorized release window into a continuous
 48. `/admin/document-review-cadence-assurance` — acceptance, stability, and legal-hold review cadence.
 49. `/admin/document-governance-reporting-assurance` — aggregate posture and attention reporting with zero delivery.
 50. `/admin/document-governance-scorecard` — policy, ownership, evidence, and open governance items.
+51. `/admin/document-availability-assurance` — runtime controls, active authorization, and incident blockers.
+52. `/admin/document-processing-reliability-assurance` — scanner, retention, and deletion failure signals.
+53. `/admin/document-queue-reliability-assurance` — stale work, failed jobs, and quarantine pressure.
+54. `/admin/document-service-level-assurance` — coded stale threshold, processing failures, and incidents.
+55. `/admin/document-capacity-planning-assurance` — scanner, lifecycle, and quarantine pressure.
+56. `/admin/document-maintenance-governance-assurance` — maintenance, isolated storage, and change-window evidence.
+57. `/admin/document-change-risk-assurance` — readiness, window overlap, and open attention signals.
+58. `/admin/document-operational-readiness-assurance` — complete checks, operator coverage, and current evidence.
+59. `/admin/document-service-reporting-assurance` — health and reliability reporting with zero delivery.
+60. `/admin/document-service-management-scorecard` — availability, reliability, capacity, and service attention.
 
 ## Interface contract
 
-- All fifty modules use the dedicated production-operations workspace, not the legacy change-control layout.
+- All sixty modules use the dedicated production-operations workspace, not the legacy change-control layout.
 - Desktop uses a 304 px grouped navigation rail and a fluid 1240 px content ceiling.
-- Tablet and mobile convert the five navigation groups into horizontal, independently labelled module strips.
+- Tablet and mobile convert the six navigation groups into horizontal, independently labelled module strips.
 - Body and operational copy is 14–17 px; only non-actionable overlines and workflow identifiers may use 12 px.
 - Cards and panels use explicit grid contracts, overflow containment, balanced headings, and visible keyboard focus.
 - Light and dark themes preserve the same hierarchy and semantic state meaning.
@@ -75,7 +85,7 @@ All modules are read-only and aggregate-only. They read no patient record or R2 
 
 - Enter from `/admin/document-release-monitoring` after a certificate is authorized or scheduled.
 - Review modules 01–09 in order and resolve any attention state through its linked control workspace.
-- Finish the live sequence at module 10, then use modules 11–50 for continuous, control, resilience, and governance assurance.
+- Finish the live sequence at module 10, then use modules 11–60 for continuous, control, resilience, governance, and service-management assurance.
 - Use `/admin/document-release-stop` immediately when the named stop authority must revoke the certificate.
 - Use `/admin/document-incidents` for declaration, containment, recovery, and independent closure.
 

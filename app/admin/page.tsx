@@ -170,6 +170,16 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/document-review-cadence-assurance"><span>48</span>{ar ? "تأكيد وتيرة المراجعة" : "Review cadence assurance"}</a>
         <a className="admin-verification-link" href="/admin/document-governance-reporting-assurance"><span>49</span>{ar ? "تأكيد تقارير الحوكمة" : "Governance reporting assurance"}</a>
         <a className="admin-verification-link" href="/admin/document-governance-scorecard"><span>50</span>{ar ? "بطاقة الحوكمة" : "Governance scorecard"}</a>
+        <a className="admin-verification-link" href="/admin/document-availability-assurance"><span>51</span>{ar ? "تأكيد الإتاحة" : "Availability assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-processing-reliability-assurance"><span>52</span>{ar ? "تأكيد موثوقية المعالجة" : "Processing reliability assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-queue-reliability-assurance"><span>53</span>{ar ? "تأكيد موثوقية القوائم" : "Queue reliability assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-service-level-assurance"><span>54</span>{ar ? "تأكيد مستوى الخدمة" : "Service-level assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-capacity-planning-assurance"><span>55</span>{ar ? "تأكيد تخطيط السعة" : "Capacity planning assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-maintenance-governance-assurance"><span>56</span>{ar ? "تأكيد حوكمة الصيانة" : "Maintenance governance assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-change-risk-assurance"><span>57</span>{ar ? "تأكيد مخاطر التغيير" : "Change-risk assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-operational-readiness-assurance"><span>58</span>{ar ? "تأكيد الجاهزية التشغيلية" : "Operational readiness assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-service-reporting-assurance"><span>59</span>{ar ? "تأكيد تقارير الخدمة" : "Service reporting assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-service-management-scorecard"><span>60</span>{ar ? "بطاقة إدارة الخدمة" : "Service-management scorecard"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>

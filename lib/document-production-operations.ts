@@ -10,7 +10,9 @@ export type DocumentOperationsStage =
   | "continuity_assurance" | "recovery_runbook_assurance" | "storage_resilience_assurance" | "scanner_resilience_assurance" | "lifecycle_resilience_assurance"
   | "incident_response_assurance" | "evidence_continuity_assurance" | "ownership_continuity_assurance" | "dependency_resilience_assurance" | "resilience_scorecard"
   | "policy_alignment_assurance" | "control_ownership_assurance" | "release_governance_assurance" | "exception_governance_assurance" | "risk_signal_assurance"
-  | "audit_evidence_assurance" | "separation_of_duties_assurance" | "review_cadence_assurance" | "governance_reporting_assurance" | "governance_scorecard";
+  | "audit_evidence_assurance" | "separation_of_duties_assurance" | "review_cadence_assurance" | "governance_reporting_assurance" | "governance_scorecard"
+  | "availability_assurance" | "processing_reliability_assurance" | "queue_reliability_assurance" | "service_level_assurance" | "capacity_planning_assurance"
+  | "maintenance_governance_assurance" | "change_risk_assurance" | "operational_readiness_assurance" | "service_reporting_assurance" | "service_management_scorecard";
 type Metric = { id: string; label: string; labelAr: string; value: string; detail: string; detailAr: string; state: "ready" | "attention" | "info"; href: string };
 
 export const DOCUMENT_PRODUCTION_OPERATIONS_BOUNDARIES = {
@@ -293,9 +295,60 @@ export async function getDocumentProductionOperationsWorkspace(userId: string, s
       metric("governance-ownership", "Separated operator coverage", "تغطية المشغلين المنفصلة", p.roster.length, p.roster.length >= 3, "The active privileged roster supports accountable governance.", "تدعم قائمة الصلاحيات النشطة حوكمة خاضعة للمساءلة.", "/admin/document-separation-of-duties-assurance"),
       metric("governance-evidence", "Current evidence set", "مجموعة الدليل الحالية", `${[acceptanceAge, activationAge, assuranceAge].filter((age) => age != null && age < p.freshDays).length}/3`, [acceptanceAge, activationAge, assuranceAge].every((age) => age != null && age < p.freshDays), "Acceptance, activation, and assurance evidence must all remain current.", "يجب أن تبقى أدلة القبول والتفعيل والتأكيد حديثة جميعاً.", "/admin/document-audit-evidence-assurance"),
     ],
+    availability_assurance: [
+      metric("availability-controls", "Available runtime controls", "ضوابط التشغيل المتاحة", `${enabledControls}/6`, enabledControls === 6, "All six server-observed controls form the service availability boundary.", "تكوّن الضوابط الستة المرصودة من الخادم حدود إتاحة الخدمة.", "/admin/document-runtime-controls"),
+      metric("availability-window", "Active release coverage", "تغطية الإطلاق النشطة", activeCertificates, activeCertificates === 1, "One bounded certificate is expected while the service is operating live.", "تُتوقع شهادة محدودة واحدة أثناء تشغيل الخدمة مباشرة.", "/admin/document-release-monitoring"),
+      metric("availability-incidents", "Availability blockers", "عوائق الإتاحة", p.activeIncidentCount, p.activeIncidentCount === 0, "Any active document incident prevents a clear availability posture.", "تمنع أي حادثة مستند نشطة وضع إتاحة واضحاً.", "/admin/document-incidents"),
+    ],
+    processing_reliability_assurance: [
+      metric("reliability-scan", "Scanner failures", "إخفاقات الماسح", signals.failedScanJobs, signals.failedScanJobs === 0, "Failed processing jobs are shown as an aggregate count only.", "تُعرض مهام المعالجة الفاشلة كعدد مجمّع فقط.", "/admin/document-scanner-resilience-assurance"),
+      metric("reliability-retention", "Retention failures", "إخفاقات الاحتفاظ", signals.failedRetentionRuns, signals.failedRetentionRuns === 0, "Failed retention runs remain inside the governed lifecycle workflow.", "تبقى عمليات الاحتفاظ الفاشلة ضمن سير عمل دورة الحياة المحكوم.", "/admin/document-retention-control-assurance"),
+      metric("reliability-deletion", "Deletion failures", "إخفاقات الحذف", signals.failedDeletionJobs, signals.failedDeletionJobs === 0, "Failed deletion work remains fail-closed and count-only.", "يبقى عمل الحذف الفاشل مغلقاً افتراضياً وقائماً على العدد فقط.", "/admin/document-deletion-control-assurance"),
+    ],
+    queue_reliability_assurance: [
+      metric("queue-stale", "Stale scanner work", "عمل الماسح المتأخر", signals.stuckScanJobs, signals.stuckScanJobs === 0, "Work beyond the approved threshold is surfaced without payload access.", "يُظهر العمل المتجاوز للحد المعتمد دون الوصول للحمولة.", "/admin/document-queue-watch"),
+      metric("queue-failed", "Failed scanner work", "عمل الماسح الفاشل", signals.failedScanJobs, signals.failedScanJobs === 0, "Failed jobs remain aggregate-only and linked to incident command.", "تبقى المهام الفاشلة مجمعة فقط ومرتبطة بقيادة الحوادث.", "/admin/document-incidents"),
+      metric("queue-quarantine", "Quarantine queue", "قائمة العزل", signals.quarantinedDocuments, signals.quarantinedDocuments === 0, "Quarantine pressure is count-only; no object is listed or opened.", "ضغط العزل قائم على العدد فقط دون سرد أو فتح أي كائن.", "/admin/document-quarantine-assurance"),
+    ],
+    service_level_assurance: [
+      metric("service-stale", "Stale work signal", "إشارة العمل المتأخر", signals.stuckScanJobs, signals.stuckScanJobs === 0, "The coded thirty-minute threshold supplies the bounded service-level signal.", "يوفر حد الثلاثين دقيقة المرمّز إشارة مستوى الخدمة المحدودة.", "/admin/document-sla-watch"),
+      metric("service-failures", "Processing failure signal", "إشارة فشل المعالجة", signals.failedScanJobs + signals.failedRetentionRuns + signals.failedDeletionJobs, signals.failedScanJobs + signals.failedRetentionRuns + signals.failedDeletionJobs === 0, "Combined execution failures are assessed without reading protected content.", "تُقيّم إخفاقات التنفيذ المجمعة دون قراءة المحتوى المحمي.", "/admin/document-processing-reliability-assurance"),
+      metric("service-incidents", "Active incidents", "الحوادث النشطة", p.activeIncidentCount, p.activeIncidentCount === 0, "Active incidents pause a clear service-level posture.", "توقف الحوادث النشطة وضع مستوى خدمة واضحاً.", "/admin/document-incidents"),
+    ],
+    capacity_planning_assurance: [
+      metric("planning-scanner", "Scanner backlog pressure", "ضغط تراكم الماسح", signals.stuckScanJobs + signals.failedScanJobs, signals.stuckScanJobs + signals.failedScanJobs === 0, "Stale and failed scanner work is the bounded capacity-planning input.", "عمل الماسح المتأخر والفاشل هو مدخل تخطيط السعة المحدود.", "/admin/document-capacity-watch"),
+      metric("planning-lifecycle", "Lifecycle backlog pressure", "ضغط تراكم دورة الحياة", signals.failedRetentionRuns + signals.failedDeletionJobs, signals.failedRetentionRuns + signals.failedDeletionJobs === 0, "Failed lifecycle work indicates constrained processing capacity.", "يشير عمل دورة الحياة الفاشل إلى سعة معالجة مقيدة.", "/admin/document-lifecycle-resilience-assurance"),
+      metric("planning-quarantine", "Quarantine pressure", "ضغط العزل", signals.quarantinedDocuments, signals.quarantinedDocuments === 0, "Aggregate quarantine demand is included without forecasting patient volume.", "يُشمل طلب العزل المجمّع دون توقع حجم المرضى.", "/admin/document-storage-resilience-assurance"),
+    ],
+    maintenance_governance_assurance: [
+      metric("maintenance-scheduled", "Scheduled maintenance evidence", "دليل الصيانة المجدولة", p.acceptance?.scheduledMaintenanceObserved ? "Observed" : "Missing", Boolean(p.acceptance?.scheduledMaintenanceObserved), "The latest independent acceptance supplies the maintenance evidence flag.", "يوفر أحدث قبول مستقل مؤشر دليل الصيانة.", "/admin/document-maintenance-readiness"),
+      metric("maintenance-isolation", "Isolated storage evidence", "دليل التخزين المعزول", p.acceptance?.isolatedStorageRehearsalPassed ? "Passed" : "Missing", Boolean(p.acceptance?.isolatedStorageRehearsalPassed), "Synthetic isolation evidence must pass before a clear maintenance posture.", "يجب نجاح دليل العزل الاصطناعي قبل وضوح وضع الصيانة.", "/admin/retention-safety"),
+      metric("maintenance-window", "Scheduled release windows", "نوافذ الإطلاق المجدولة", scheduledCertificates, true, "Bounded certificate windows are visible without scheduling infrastructure work.", "تظهر نوافذ الشهادات المحدودة دون جدولة عمل البنية التحتية.", "/admin/document-change-calendar", true),
+    ],
+    change_risk_assurance: [
+      metric("change-readiness", "Current change readiness", "جاهزية التغيير الحالية", p.ready ? "Ready" : "Blocked", p.ready, "A planned window never overrides current fail-closed prerequisites.", "لا تتجاوز النافذة المخططة المتطلبات الحالية المغلقة افتراضياً.", "/admin/document-release-preparation"),
+      metric("change-overlap", "Active window overlap", "تداخل النوافذ النشطة", activeCertificates, activeCertificates <= 1, "More than one active authorization is not expected.", "لا يُتوقع أكثر من تفويض نشط واحد.", "/admin/document-release-governance-assurance"),
+      metric("change-attention", "Open change-risk signals", "إشارات مخاطر التغيير المفتوحة", attentionTotal, attentionTotal === 0, "Exceptions, incidents, and overdue hold reviews are combined.", "تُجمع الاستثناءات والحوادث ومراجعات الحجز المتأخرة.", "/admin/document-risk-signal-assurance"),
+    ],
+    operational_readiness_assurance: [
+      metric("readiness-checks", "Operating checks", "فحوص التشغيل", `${p.passedChecks}/${p.checks.length}`, p.ready, "The complete current prerequisite set is evaluated together.", "تُقيّم مجموعة المتطلبات الحالية الكاملة معاً.", "/admin/document-launch"),
+      metric("readiness-operators", "Privileged operators", "المشغلون ذوو الصلاحية", p.roster.length, p.roster.length >= 3, "Three distinct active operators support accountable operation.", "يدعم ثلاثة مشغلين نشطين مختلفين التشغيل الخاضع للمساءلة.", "/admin/document-separation-of-duties-assurance"),
+      metric("readiness-evidence", "Current evidence set", "مجموعة الدليل الحالية", `${[acceptanceAge, activationAge, assuranceAge].filter((age) => age != null && age < p.freshDays).length}/3`, [acceptanceAge, activationAge, assuranceAge].every((age) => age != null && age < p.freshDays), "Acceptance, activation, and assurance must remain current.", "يجب أن تبقى أدلة القبول والتفعيل والتأكيد حديثة.", "/admin/document-review-cadence-assurance"),
+    ],
+    service_reporting_assurance: [
+      metric("reporting-health", "Service health posture", "وضع صحة الخدمة", p.ready && attentionTotal === 0 ? "Clear" : "Attention", p.ready && attentionTotal === 0, "Current checks and attention signals form the service report baseline.", "تكوّن الفحوص الحالية وإشارات الانتباه أساس تقرير الخدمة.", "/admin/document-service-health"),
+      metric("reporting-reliability", "Processing failures", "إخفاقات المعالجة", signals.failedScanJobs + signals.failedRetentionRuns + signals.failedDeletionJobs, signals.failedScanJobs + signals.failedRetentionRuns + signals.failedDeletionJobs === 0, "Reliability is reported as aggregate failure counts only.", "تُبلغ الموثوقية كأعداد إخفاق مجمعة فقط.", "/admin/document-processing-reliability-assurance"),
+      metric("reporting-delivery", "External reports sent", "التقارير الخارجية المرسلة", 0, true, "This module sends no report, notification, or external payload.", "لا ترسل هذه الوحدة أي تقرير أو إشعار أو حمولة خارجية.", "/admin/document-governance-reporting-assurance", true),
+    ],
+    service_management_scorecard: [
+      metric("management-posture", "Overall service-management result", "نتيجة إدارة الخدمة العامة", p.ready && attentionTotal === 0 ? "Clear" : "Attention", p.ready && attentionTotal === 0, "Readiness and aggregate attention signals produce one bounded result.", "تنتج الجاهزية وإشارات الانتباه المجمعة نتيجة محدودة واحدة.", "/admin/document-service-reporting-assurance"),
+      metric("management-availability", "Availability controls", "ضوابط الإتاحة", `${enabledControls}/6`, enabledControls === 6, "All six runtime controls must remain enabled.", "يجب أن تبقى ضوابط التشغيل الستة مفعّلة.", "/admin/document-availability-assurance"),
+      metric("management-reliability", "Processing failures", "إخفاقات المعالجة", signals.failedScanJobs + signals.failedRetentionRuns + signals.failedDeletionJobs, signals.failedScanJobs + signals.failedRetentionRuns + signals.failedDeletionJobs === 0, "Scanner, retention, and deletion failures are consolidated.", "تُجمع إخفاقات الماسح والاحتفاظ والحذف.", "/admin/document-processing-reliability-assurance"),
+      metric("management-capacity", "Open capacity signals", "إشارات السعة المفتوحة", signals.quarantinedDocuments + signals.stuckScanJobs + signals.failedScanJobs, signals.quarantinedDocuments + signals.stuckScanJobs + signals.failedScanJobs === 0, "Quarantine and scanner pressure form the bounded capacity result.", "يُكوّن ضغط العزل والماسح نتيجة السعة المحدودة.", "/admin/document-capacity-planning-assurance"),
+    ],
   };
   return {
-    stage, role: workspace.role, generatedAt: now.toISOString(), workflowVersion: "medical-document-production-operations-v5",
+    stage, role: workspace.role, generatedAt: now.toISOString(), workflowVersion: "medical-document-production-operations-v6",
     focus: focuses[stage], boundaries: DOCUMENT_PRODUCTION_OPERATIONS_BOUNDARIES,
     summary: { ready: p.ready, passedChecks: p.passedChecks, totalChecks: p.checks.length, activeCertificates, scheduledCertificates, attentionTotal },
     recentCertificates: workspace.runs.slice(0, 12).map((run) => ({ id: run.id, reference: run.reference, effectiveStatus: run.effectiveStatus, releaseStartsAt: run.releaseStartsAt, releaseEndsAt: run.releaseEndsAt, releaseOwnerName: run.releaseOwnerName, monitoringOwnerName: run.monitoringOwnerName, stopAuthorityName: run.stopAuthorityName })),
