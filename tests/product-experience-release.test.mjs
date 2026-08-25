@@ -8,8 +8,24 @@ test("the product experience release is loaded after legacy presentation layers"
   const layout = await source("app/layout.tsx");
   const overhaul = layout.indexOf('import "./qivaya-overhaul.css"');
   const release = layout.indexOf('import "./product-experience-release.css"');
+  const stability = layout.indexOf('import "./ui-stability.css"');
   assert.ok(overhaul >= 0);
   assert.ok(release > overhaul);
+  assert.ok(stability > release);
+});
+
+test("final route contracts protect the reported patient provider and audit layouts", async () => {
+  const css = await source("app/ui-stability.css");
+  for (const selector of [
+    ".wallet-shell .wallet-hero",
+    ".providers-shell .provider-results",
+    ".provider-shell.provider-live-shell",
+    ".audit-shell .audit-main",
+    ".wallet-operations-experience",
+  ]) assert.match(css, new RegExp(selector.replaceAll(".", "\\.")));
+  assert.match(css, /grid-template-columns: 260px minmax\(0, 1fr\)/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /@media \(max-width: 900px\)/);
 });
 
 test("patient journeys use one shared responsive navigation contract", async () => {

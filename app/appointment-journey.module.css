@@ -34,9 +34,11 @@
 .panelHead h2{margin:6px 0 0;font:800 23px/1.15 var(--font-display,"Sora",sans-serif);letter-spacing:-.03em}
 .panelHead>span{background:linear-gradient(135deg,#e4f5f8,#f1fbfc);color:#08748e;border-radius:999px;padding:7px 11px;font-weight:900;box-shadow:inset 0 0 0 1px rgba(8,116,142,.08)}
 .panel label{display:grid;gap:7px;font-size:13px;font-weight:800;margin:14px 0;color:#234e63}
-.panel input,.panel textarea,.panel select{width:100%;box-sizing:border-box;border:1px solid #bdd4dc;border-radius:14px;padding:13px 14px;background:#fbfdfe;color:#082c44;font:600 14px/1.5 inherit;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+.panel input:not([type="checkbox"]),.panel textarea,.panel select{width:100%;box-sizing:border-box;border:1px solid #bdd4dc;border-radius:14px;padding:13px 14px;background:#fbfdfe;color:#082c44;font:600 14px/1.5 inherit;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
 .panel input:focus,.panel textarea:focus,.panel select:focus,.topActions a:focus-visible,.lang:focus-visible,.panel button:focus-visible,.heroChips span:focus-visible{outline:2px solid #14abc1;outline-offset:2px}
 .panel textarea{min-height:96px;resize:vertical}
+.checkLine{display:flex!important;align-items:flex-start;gap:11px!important;padding:13px 14px;border:1px solid #c8dde4;border-radius:14px;background:#f1f8fa;color:#244e62;line-height:1.5;cursor:pointer}
+.checkInput{appearance:auto!important;width:19px!important;height:19px!important;min-width:19px!important;flex:0 0 19px;margin:1px 0 0!important;padding:0!important;accent-color:#08748e;box-shadow:none!important}
 .panel button{border:0;background:linear-gradient(135deg,#0a5f74,#0d8ca4);color:#fff;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer;box-shadow:0 14px 24px rgba(10,95,116,.18)}
 .panel button:hover{transform:translateY(-1px)}
 .panel button:disabled{opacity:.55;cursor:not-allowed;transform:none}
@@ -52,5 +54,17 @@
 .empty{min-height:180px;display:grid;place-content:center;text-align:center;color:#6a8793;gap:7px;padding:16px}
 .empty b{color:#183d53}
 .lang{cursor:pointer}
+:global(:root[data-theme="dark"]) .shell{background:radial-gradient(circle at top left,rgba(20,171,193,.12),transparent 24%),linear-gradient(180deg,#071f2c 0%,#0a2733 100%);color:#eaf7f9}
+:global(:root[data-theme="dark"]) .top{background:rgba(7,31,44,.9);border-color:#234957}
+:global(:root[data-theme="dark"]) .topActions a,:global(:root[data-theme="dark"]) .lang{background:#102f3c;border-color:#315767;color:#d8f3f6}
+:global(:root[data-theme="dark"]) .hero h1{color:#f4fbfc}
+:global(:root[data-theme="dark"]) .heroCard,:global(:root[data-theme="dark"]) .panel{background:rgba(12,42,54,.92);border-color:#315767;color:#eaf7f9}
+:global(:root[data-theme="dark"]) .heroCard h2,:global(:root[data-theme="dark"]) .heroCard p,:global(:root[data-theme="dark"]) .heroStats dd,:global(:root[data-theme="dark"]) .panelHead h2,:global(:root[data-theme="dark"]) .empty b{color:#eaf7f9}
+:global(:root[data-theme="dark"]) .heroStats div,:global(:root[data-theme="dark"]) .boundary,:global(:root[data-theme="dark"]) .checkLine{background:#103442;border-color:#315767}
+:global(:root[data-theme="dark"]) .boundary span,:global(:root[data-theme="dark"]) .list p,:global(:root[data-theme="dark"]) .list small,:global(:root[data-theme="dark"]) .empty{color:#b5ced6}
+:global(:root[data-theme="dark"]) .panel label{color:#d4e9ee}
+:global(:root[data-theme="dark"]) .panel input:not([type="checkbox"]),:global(:root[data-theme="dark"]) .panel textarea,:global(:root[data-theme="dark"]) .panel select{background:#092b38;border-color:#3b6473;color:#f1fafb;color-scheme:dark}
+:global(:root[data-theme="dark"]) .list article{background:#0c303d;border-color:#315767}
+:global(:root[data-theme="dark"]) .cardTop b{color:#eaf7f9}
 @media(max-width:980px){.hero,.grid{grid-template-columns:1fr}.heroCopy{padding-right:0}.heroStats{grid-template-columns:repeat(3,minmax(0,1fr))}.heroCard{order:2}.heroCopy{order:1}}
 @media(max-width:760px){.top{padding:0 16px}.top img{width:96px}.topActions a{display:none}.hero{padding-top:36px;padding-bottom:24px}.hero h1{font-size:clamp(30px,9vw,48px)}.hero p{font-size:16px}.heroStats{grid-template-columns:1fr}.grid{padding:0 12px}.boundary,.error,.notice{margin-left:12px;margin-right:12px}.cardTop{align-items:flex-start;flex-direction:column}}

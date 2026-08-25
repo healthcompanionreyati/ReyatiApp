@@ -1,0 +1,184 @@
+/* Final route contracts. This file intentionally loads last so legacy prototype
+   presentation cannot collapse production workspaces or reduce text contrast. */
+
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *,
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::before,
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::after {
+  min-width: 0;
+}
+
+/* Patient health records */
+.wallet-shell .wallet-hero {
+  width: min(1280px, calc(100% - 40px)) !important;
+  min-height: 280px;
+  margin: 24px auto 0 !important;
+  padding: clamp(36px, 5vw, 64px) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end !important;
+  gap: 28px;
+  border-radius: 30px !important;
+  background: linear-gradient(118deg, #082f42 0%, #064b62 70%, #087f91 125%) !important;
+  color: #fff !important;
+}
+
+.wallet-shell .wallet-hero > div:first-child { max-width: 760px; }
+.wallet-shell .wallet-hero :is(h1, h2, b, strong) { color: #fff !important; }
+.wallet-shell .wallet-hero :is(p, span, small) { color: #d6e9ee !important; opacity: 1 !important; }
+.wallet-shell .wallet-hero > div:first-child > p { color: #64d5e2 !important; }
+.wallet-shell .wallet-hero-actions { position: relative; z-index: 2; align-self: end; }
+.wallet-shell :is(.wallet-notice, .wallet-delegated-note, .wallet-content) {
+  width: min(1180px, calc(100% - 40px)) !important;
+  margin-inline: auto !important;
+}
+.wallet-shell .wallet-notice { margin-block-start: 20px !important; }
+.wallet-shell .wallet-content { padding-block: 42px 110px !important; }
+.wallet-shell .wallet-live-heading { align-items: end; gap: 18px; }
+.wallet-shell .wallet-live-heading label { width: min(100%, 320px); }
+.wallet-shell .wallet-live-state { min-height: 240px; }
+
+/* Provider discovery */
+.providers-shell .provider-search-hero {
+  width: 100% !important;
+  min-height: 320px !important;
+  margin: 0 !important;
+  padding: clamp(42px, 6vw, 76px) clamp(20px, 7vw, 96px) !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  border-radius: 0 !important;
+  background: linear-gradient(118deg, #082f42 0%, #064b62 72%, #087f91 130%) !important;
+}
+.providers-shell .provider-search-hero > div { width: min(1220px, 100%) !important; margin-inline: auto !important; }
+.providers-shell .provider-search-hero :is(h1, h2, b, strong) { color: #fff !important; }
+.providers-shell .provider-search-hero > div > :is(p, span) { color: #d6e9ee !important; opacity: 1 !important; }
+.providers-shell .provider-search-hero > div > p { color: #64d5e2 !important; }
+.providers-shell .provider-search-hero label { color: #173b4d !important; }
+.providers-shell .provider-search-hero label :is(input, b) { color: #173b4d !important; }
+.providers-shell .provider-search-stats { position: relative; z-index: 2; }
+.providers-shell .providers-workspace { width: min(1220px, calc(100% - 40px)) !important; margin-inline: auto !important; }
+.providers-shell .provider-results { grid-template-columns: minmax(0, 1fr) minmax(270px, 310px) !important; gap: 20px !important; }
+.providers-shell .trust-panel {
+  position: sticky;
+  top: 92px;
+  background: #082f42 !important;
+  color: #fff !important;
+}
+.providers-shell .trust-panel :is(h2, h3, b, strong) { color: #fff !important; }
+.providers-shell .trust-panel :is(p, small) { color: #c8dde4 !important; opacity: 1 !important; }
+.providers-shell .trust-panel li { border-color: rgba(255,255,255,.14) !important; background: rgba(255,255,255,.06) !important; }
+
+/* Provider console */
+.provider-shell.provider-live-shell {
+  width: 100%;
+  display: grid !important;
+  grid-template-columns: 280px minmax(0, 1fr) !important;
+  align-items: stretch;
+}
+.provider-live-shell .provider-sidebar {
+  position: sticky !important;
+  inset-block-start: 0;
+  width: 280px !important;
+  height: 100dvh;
+  overflow-y: auto;
+}
+.provider-live-shell .provider-main { width: 100% !important; margin: 0 !important; }
+.provider-live-shell .provider-workspace { width: min(100%, 1440px) !important; margin-inline: auto !important; }
+.provider-live-shell .provider-topbar { width: 100%; }
+.provider-live-shell .provider-quick-launch { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.provider-live-shell .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* Audit ledger: the legacy fixed sidebar previously removed itself from layout
+   and allowed the main column to shrink to a sliver. Keep both columns in flow. */
+.audit-shell {
+  width: 100%;
+  min-height: 100dvh;
+  display: grid !important;
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+  align-items: stretch;
+}
+.audit-shell .audit-sidebar {
+  position: sticky !important;
+  inset: 0 auto auto 0 !important;
+  width: 260px !important;
+  height: 100dvh;
+  overflow-y: auto;
+}
+.audit-shell .audit-main {
+  grid-column: 2;
+  width: 100% !important;
+  margin-inline-start: 0 !important;
+}
+.audit-shell .audit-workspace { width: min(100%, 1440px) !important; margin-inline: auto !important; padding: clamp(24px, 3vw, 44px) !important; }
+.audit-shell .audit-heading { align-items: end; gap: 20px; }
+.audit-shell .audit-heading > div { flex: 1 1 auto; max-width: 780px; }
+.audit-shell .audit-heading h1 { max-width: 18ch; font-size: clamp(34px, 4vw, 56px) !important; line-height: 1.03 !important; }
+.audit-shell .audit-live-filters { grid-template-columns: minmax(220px, 1fr) minmax(180px, .7fr) minmax(160px, .5fr) auto; }
+.audit-shell .audit-layout { grid-template-columns: minmax(0, 1.5fr) minmax(320px, .72fr) !important; }
+.audit-shell .event-panel { overflow-x: auto; }
+.audit-shell .event-table { min-width: 760px; }
+
+/* Dark theme keeps readable hierarchy on surfaces that were originally hard-coded. */
+:root[data-theme="dark"] .wallet-shell :is(.wallet-notice, .wallet-live-state, .wallet-live-heading label),
+:root[data-theme="dark"] .providers-shell :is(.provider-result, .catalog-state),
+:root[data-theme="dark"] .audit-shell :is(.audit-metrics article, .audit-live-filters, .event-panel, .event-detail),
+:root[data-theme="dark"] .provider-live-shell :is(.schedule-card, .provider-quick-launch a, .metric-grid article) {
+  border-color: var(--qv-border) !important;
+  background: var(--qv-surface) !important;
+  color: var(--qv-text) !important;
+}
+
+@media (max-width: 1180px) {
+  .provider-shell.provider-live-shell { grid-template-columns: 244px minmax(0, 1fr) !important; }
+  .provider-live-shell .provider-sidebar { width: 244px !important; }
+  .provider-live-shell .provider-quick-launch { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .audit-shell { grid-template-columns: 230px minmax(0, 1fr) !important; }
+  .audit-shell .audit-sidebar { width: 230px !important; }
+  .audit-shell .audit-layout { grid-template-columns: 1fr !important; }
+  .audit-shell .event-detail { position: static; }
+}
+
+@media (max-width: 900px) {
+  .wallet-shell .wallet-hero { grid-template-columns: 1fr; align-items: start !important; }
+  .wallet-shell .wallet-hero-actions { justify-content: start; }
+  .providers-shell .provider-results { grid-template-columns: 1fr !important; }
+  .providers-shell .trust-panel { position: static; }
+  .provider-shell.provider-live-shell,
+  .audit-shell { display: block !important; }
+  .provider-live-shell .provider-sidebar,
+  .audit-shell .audit-sidebar { display: none !important; }
+  .provider-live-shell .provider-main,
+  .audit-shell .audit-main { width: 100% !important; margin: 0 !important; }
+  .audit-shell .audit-live-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .wallet-shell .wallet-hero,
+  .wallet-shell :is(.wallet-notice, .wallet-delegated-note, .wallet-content),
+  .providers-shell .providers-workspace { width: calc(100% - 24px) !important; }
+  .wallet-shell .wallet-hero { min-height: 0; margin-top: 12px !important; padding: 30px 20px !important; border-radius: 22px !important; }
+  .wallet-shell .wallet-hero-actions { width: 100%; }
+  .wallet-shell .wallet-hero-actions a { flex: 1 1 100%; }
+  .wallet-shell .wallet-live-heading { align-items: stretch; flex-direction: column; }
+  .wallet-shell .wallet-live-heading label { width: 100%; }
+  .provider-live-shell .provider-quick-launch,
+  .provider-live-shell .metric-grid,
+  .audit-shell .audit-live-filters { grid-template-columns: 1fr; }
+  .audit-shell .audit-heading { align-items: stretch; flex-direction: column; }
+  .audit-shell .audit-heading > button { width: 100%; }
+  .audit-shell .audit-workspace { padding: 20px 14px 96px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *,
+  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::before,
+  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}

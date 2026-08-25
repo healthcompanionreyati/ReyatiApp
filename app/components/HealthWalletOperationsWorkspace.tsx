@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 import styles from "@/app/appointment-journey.module.css";
 
@@ -130,12 +131,18 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      if (response.status === 401) {
+        location.assign(`/sign-in?redirect_url=/${c.path}`);
+        return false;
+      }
       const payload = await response.json().catch(() => ({})) as { message?: string };
       if (!response.ok) throw Error(payload.message ?? "Unable to save");
       setNotice(ar ? "تم حفظ السجل الخاص." : "Your private wallet record was saved.");
       await load();
+      return true;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to save");
+      return false;
     } finally {
       setSaving(false);
     }
@@ -148,16 +155,15 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
     body.action = "create";
     if (module === "document_capture") body.confirmed = body.confirmed === "on";
     if (module === "sharing_directives") body.durationDays = Number(body.durationDays);
-    await send(body);
-    form.reset();
+    if (await send(body)) form.reset();
   }
 
   const recordCount = data?.records.length ?? 0;
 
   return (
-    <main className={`${styles.shell} health-hub-shell wallet-operations-experience ${module.replaceAll("_", "-")}-experience`} dir={ar ? "rtl" : "ltr"}>
+    <main id="main-content" className={`${styles.shell} health-hub-shell wallet-operations-experience ${module.replaceAll("_", "-")}-experience`} dir={ar ? "rtl" : "ltr"}>
       <header className={styles.top}>
-        <a href="/"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya" /></a>
+        <a href="/" aria-label={ar ? "العودة إلى كيفايا" : "Back to Qivaya"}><Image src="/brand/qivaya-logo-primary.png" alt="Qivaya" width={112} height={38} priority /></a>
         <div className={styles.topActions}>
           <button className={styles.lang} onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "EN" : "العربية"}</button>
           <a href="/wallet">{ar ? "السجلات الصحية" : "Health records"}</a>
@@ -212,40 +218,40 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
 
             {module === "document_capture" && (
               <>
-                <label>Document category<select name="documentCategory">{opts(["lab_report", "imaging_report", "prescription", "discharge_summary", "referral", "other"])}</select></label>
-                <label>Document date<input name="documentDate" type="date" /></label>
-                <label>Source organization<input name="sourceOrganization" maxLength={120} /></label>
-                <label>Manually reviewed draft text<textarea name="draftText" maxLength={1000} required /></label>
-                <label><input name="confirmed" type="checkbox" /> I reviewed this draft myself</label>
+                <label>{ar ? "فئة المستند" : "Document category"}<select name="documentCategory">{opts(["lab_report", "imaging_report", "prescription", "discharge_summary", "referral", "other"])}</select></label>
+                <label>{ar ? "تاريخ المستند" : "Document date"}<input name="documentDate" type="date" /></label>
+                <label>{ar ? "المؤسسة المصدر" : "Source organization"}<input name="sourceOrganization" maxLength={120} /></label>
+                <label>{ar ? "نص المسودة المراجَع يدوياً" : "Manually reviewed draft text"}<textarea name="draftText" maxLength={1000} required /></label>
+                <label className={styles.checkLine}><input className={styles.checkInput} name="confirmed" type="checkbox" required /><span>{ar ? "راجعت هذه المسودة بنفسي" : "I reviewed this draft myself"}</span></label>
               </>
             )}
 
             {module === "record_index" && (
               <>
-                <label>Record type<select name="recordType">{opts(["visit", "laboratory", "imaging", "medicine", "referral", "other"])}</select></label>
-                <label>Record date<input name="recordDate" type="date" required /></label>
-                <label>Title<input name="title" maxLength={120} required /></label>
-                <label>Source type<select name="sourceType">{opts(["reyati", "patient_document", "external_reference", "other"])}</select></label>
-                <label>Source reference<input name="sourceReference" maxLength={120} /></label>
+                <label>{ar ? "نوع السجل" : "Record type"}<select name="recordType">{opts(["visit", "laboratory", "imaging", "medicine", "referral", "other"])}</select></label>
+                <label>{ar ? "تاريخ السجل" : "Record date"}<input name="recordDate" type="date" required /></label>
+                <label>{ar ? "العنوان" : "Title"}<input name="title" maxLength={120} required /></label>
+                <label>{ar ? "نوع المصدر" : "Source type"}<select name="sourceType">{opts(["reyati", "patient_document", "external_reference", "other"])}</select></label>
+                <label>{ar ? "مرجع المصدر" : "Source reference"}<input name="sourceReference" maxLength={120} /></label>
               </>
             )}
 
             {module === "sharing_directives" && (
               <>
-                <label>Purpose<select name="purposeCode">{opts(["continuity_of_care", "follow_up", "second_opinion", "personal_archive"])}</select></label>
-                <label>Scope<select name="scopeCode">{opts(["document_metadata", "visit_summary", "selected_records", "all_wallet_metadata"])}</select></label>
-                <label>Intended recipient<select name="recipientType">{opts(["verified_provider", "verified_facility", "patient_only"])}</select></label>
-                <label>Duration (1–30 days)<input name="durationDays" type="number" min={1} max={30} defaultValue={7} required /></label>
-                <p>This records a preference only. It does not grant access.</p>
+                <label>{ar ? "الغرض" : "Purpose"}<select name="purposeCode">{opts(["continuity_of_care", "follow_up", "second_opinion", "personal_archive"])}</select></label>
+                <label>{ar ? "النطاق" : "Scope"}<select name="scopeCode">{opts(["document_metadata", "visit_summary", "selected_records", "all_wallet_metadata"])}</select></label>
+                <label>{ar ? "المستلم المقصود" : "Intended recipient"}<select name="recipientType">{opts(["verified_provider", "verified_facility", "patient_only"])}</select></label>
+                <label>{ar ? "المدة (١–٣٠ يوماً)" : "Duration (1–30 days)"}<input name="durationDays" type="number" min={1} max={30} defaultValue={7} required /></label>
+                <p>{ar ? "يسجل هذا تفضيلاً فقط، ولا يمنح وصولاً." : "This records a preference only. It does not grant access."}</p>
               </>
             )}
 
             {module === "data_quality" && (
               <>
-                <label>Record reference<input name="recordReference" maxLength={120} required /></label>
-                <label>Issue type<select name="issueType">{opts(["wrong_date", "wrong_provider", "wrong_category", "duplicate", "missing_information", "other"])}</select></label>
-                <label>Description<textarea name="description" maxLength={600} required /></label>
-                <p>This concern does not edit or overwrite the source record.</p>
+                <label>{ar ? "مرجع السجل" : "Record reference"}<input name="recordReference" maxLength={120} required /></label>
+                <label>{ar ? "نوع المشكلة" : "Issue type"}<select name="issueType">{opts(["wrong_date", "wrong_provider", "wrong_category", "duplicate", "missing_information", "other"])}</select></label>
+                <label>{ar ? "الوصف" : "Description"}<textarea name="description" maxLength={600} required /></label>
+                <p>{ar ? "لا تعدّل هذه الملاحظة السجل الأصلي ولا تستبدله." : "This concern does not edit or overwrite the source record."}</p>
               </>
             )}
 
