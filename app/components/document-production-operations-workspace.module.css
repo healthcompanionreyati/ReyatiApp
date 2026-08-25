@@ -35,6 +35,8 @@
   border-inline-end: 1px solid #ffffff1f;
   scrollbar-width: thin;
   scrollbar-color: #75cada55 transparent;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .brand {
@@ -70,7 +72,7 @@
 .moduleNav,
 .navGroup,
 .navGroup > div { display: grid; }
-.moduleNav { gap: 24px; }
+.moduleNav { min-width: 0; max-width: 100%; gap: 24px; }
 .navGroup { gap: 10px; }
 .navGroup > p { margin: 0; color: #72cedc; }
 .navGroup > div { gap: 6px; }
@@ -134,7 +136,7 @@
 .boundary strong { color: #f2c46f; font-size: 14px; line-height: 1.4; }
 .boundary p { margin: 7px 0 0; color: #c4d8de; font-size: 14px; line-height: 1.55; }
 
-.workspace { min-width: 0; }
+.workspace { min-width: 0; max-width: 100%; }
 
 .topbar {
   min-height: 76px;
@@ -157,7 +159,7 @@
 .breadcrumbs b { color: var(--ops-ink); font-size: 14px; }
 
 .topActions { display: flex; align-items: center; gap: 9px; flex: 0 0 auto; }
-.topActions button {
+.shell .topActions button {
   min-height: 42px;
   padding: 9px 14px;
   border: 1px solid var(--ops-line);
@@ -339,12 +341,12 @@
 
 @media (max-width: 1080px) {
   .shell { grid-template-columns: 1fr; }
-  .sidebar { position: static; height: auto; overflow: visible; padding: 18px 22px; gap: 14px; }
+  .sidebar { position: static; width: 100%; max-width: 100vw; height: auto; overflow: hidden; padding: 18px 22px; gap: 14px; }
   .brand img { width: 112px; }
   .sidebarIntro,
   .boundary { display: none; }
-  .moduleNav { display: flex; gap: 18px; overflow-x: auto; padding-block-end: 5px; scrollbar-width: thin; }
-  .navGroup { min-width: max-content; }
+  .moduleNav { width: 100%; max-width: 100%; display: flex; gap: 18px; overflow-x: auto; overscroll-behavior-inline: contain; padding-block-end: 5px; scrollbar-width: thin; }
+  .navGroup { min-width: 0; flex: 0 0 auto; }
   .navGroup > div { display: flex; }
   .navGroup a { width: auto; grid-template-columns: 32px auto; }
   .topbar { position: sticky; }
