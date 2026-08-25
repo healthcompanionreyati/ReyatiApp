@@ -42,6 +42,7 @@ const groups: NavGroup[] = [
     { href: "/admin/consents", icon: "✓", en: "Consent governance", ar: "حوكمة الموافقات" },
     { href: "/admin/complaints", icon: "!", en: "Complaints", ar: "الشكاوى" },
     { href: "/admin/legal-holds", icon: "§", en: "Legal holds", ar: "الحجز القانوني" },
+    { href: "/admin/document-governance-setup", icon: "◇", en: "Governance setup pack", ar: "حزمة إعداد الحوكمة" },
     { href: "/admin/data-lifecycle", icon: "⌛", en: "Data lifecycle", ar: "دورة حياة البيانات" },
     { href: "/admin/retention-automation", icon: "◷", en: "Retention automation", ar: "أتمتة الاحتفاظ" },
     { href: "/admin/document-activation", icon: "⚑", en: "Document activation", ar: "تفعيل المستندات" },
