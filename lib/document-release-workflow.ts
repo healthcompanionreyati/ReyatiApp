@@ -49,7 +49,7 @@ export async function decideReleaseCertificate(userId: string, body: Record<stri
 
 export async function getReleaseMonitoringDesk(userId: string) {
   const workspace = await getDocumentReleaseWorkspace(userId);
-  return { ...workspace, stage: "release_monitoring", nextHref: "/admin/document-release-stop", runs: workspace.runs.filter((run) => ["authorized", "active", "scheduled", "expired", "revoked"].includes(run.effectiveStatus)).slice(0, 50), boundaries: DOCUMENT_RELEASE_WORKFLOW_BOUNDARIES };
+  return { ...workspace, stage: "release_monitoring", nextHref: "/admin/document-runtime-controls", runs: workspace.runs.filter((run) => ["authorized", "active", "scheduled", "expired", "revoked"].includes(run.effectiveStatus)).slice(0, 50), boundaries: DOCUMENT_RELEASE_WORKFLOW_BOUNDARIES };
 }
 
 export async function getReleaseStopDesk(userId: string) {
