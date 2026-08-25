@@ -1,0 +1,159 @@
+/* Shared geometry and theme contract for the end-to-end patient care journey. */
+body[data-dense-route-group="care-journey"] > main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body[data-dense-route-group="care-journey"] > main *,
+body[data-dense-route-group="care-journey"] > main *::before,
+body[data-dense-route-group="care-journey"] > main *::after {
+  min-width: 0;
+}
+
+body[data-dense-route-group="care-journey"] > main :where(
+  h1, h2, h3, h4, p, li, label, button, a, span, strong, b, small
+) {
+  overflow-wrap: anywhere;
+}
+
+body[data-dense-route-group="care-journey"] > main :where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="care-journey"] > main :where(
+  [class*="content"],
+  [class*="workspace"],
+  [class*="body"]
+) {
+  width: min(100%, 1280px);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+body[data-dense-route-group="care-journey"] > main :where(
+  [class*="stream"],
+  [class*="list"],
+  [class*="history"],
+  [class*="timeline"],
+  [class*="progress"],
+  [class*="ratings"],
+  [class*="candidates"]
+) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="care-journey"] > main :where(textarea) {
+  width: 100%;
+  min-height: 112px;
+  resize: vertical;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="care-journey"] > main {
+  color: var(--qv-text);
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="care-journey"] > main :where(
+  [class*="panel"],
+  [class*="card"],
+  [class*="form"],
+  [class*="state"],
+  [class*="empty"],
+  [class*="boundary"],
+  [class*="reason"],
+  [class*="waiting"],
+  [class*="compose"],
+  [class*="opportunities"]
+) {
+  background: var(--qv-surface) !important;
+  border-color: var(--qv-border) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="care-journey"] > main :where(
+  h1, h2, h3, h4, strong, b, label
+) {
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="care-journey"] > main :where(
+  p, li, small, em, [class*="muted"], [class*="meta"]
+) {
+  color: var(--qv-text-muted) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="care-journey"] > main :where(input, select, textarea) {
+  background: var(--qv-surface-soft) !important;
+  border-color: var(--qv-border-strong) !important;
+  color: var(--qv-text) !important;
+}
+
+@media (max-width: 1040px) {
+  body[data-dense-route-group="care-journey"] > main :where(
+    [class*="workspace"],
+    [class*="grid"],
+    [class*="split"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="care-journey"] > main :where(
+    header,
+    header nav,
+    [class*="hero"],
+    [class*="head"],
+    [class*="tabs"],
+    [class*="actions"],
+    [class*="progress"]
+  ) {
+    flex-wrap: wrap !important;
+  }
+
+  body[data-dense-route-group="care-journey"] > main > header nav {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-dense-route-group="care-journey"] > main :where(
+    [class*="metrics"],
+    [class*="ratings"],
+    [class*="form"],
+    [class*="row"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="care-journey"] > main :where(
+    [class*="content"],
+    [class*="workspace"],
+    [class*="body"]
+  ) {
+    padding-inline: 14px !important;
+    padding-block-end: 96px !important;
+  }
+
+  body[data-dense-route-group="care-journey"] > main :where(
+    [class*="stream"],
+    [class*="list"],
+    [class*="history"],
+    [class*="timeline"],
+    [class*="progress"],
+    [class*="ratings"],
+    [class*="candidates"]
+  ) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  body[data-dense-route-group="care-journey"] > main :where(
+    [class*="actions"],
+    [class*="tabs"]
+  ) > :where(button, a) {
+    flex: 1 1 140px;
+  }
+}

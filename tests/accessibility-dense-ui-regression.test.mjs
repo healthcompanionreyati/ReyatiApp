@@ -133,3 +133,35 @@ test("twelve records and document routes consume one resilient workspace contrac
   assert.match(css, /overflow-x: auto/);
   assert.match(css, /overflow-wrap: anywhere/);
 });
+
+test("twelve care-journey routes share responsive navigation, forms, and dark surfaces", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/dense-care-journey-release.css");
+  const routes = [
+    "/appointments",
+    "/pre-visit-intake",
+    "/appointment-preparation",
+    "/appointment-accommodations",
+    "/post-visit-actions",
+    "/care-timeline",
+    "/waitlist",
+    "/queue",
+    "/virtual-care",
+    "/messages",
+    "/referrals",
+    "/experience",
+  ];
+
+  assert.match(layout, /import "\.\/dense-care-journey-release\.css"/);
+  for (const route of routes) assert.match(sync, new RegExp(`"${route}"`));
+  assert.match(sync, /dataset\.denseRouteGroup = "care-journey"/);
+  assert.match(css, /body\[data-dense-route-group="care-journey"\]/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /header nav/);
+  assert.match(css, /textarea/);
+  assert.match(css, /@media \(max-width: 1040px\)/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});

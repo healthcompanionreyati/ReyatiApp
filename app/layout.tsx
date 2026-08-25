@@ -77,6 +77,7 @@ import "./ui-stability.css";
 import "./dense-route-release.css";
 import "./dense-finance-provider-release.css";
 import "./dense-records-document-release.css";
+import "./dense-care-journey-release.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";

@@ -130,6 +130,21 @@ const recordsDocumentDenseRoutes = new Set([
   "/admin/document-operations-handoff",
 ]);
 
+const careJourneyDenseRoutes = new Set([
+  "/appointments",
+  "/pre-visit-intake",
+  "/appointment-preparation",
+  "/appointment-accommodations",
+  "/post-visit-actions",
+  "/care-timeline",
+  "/waitlist",
+  "/queue",
+  "/virtual-care",
+  "/messages",
+  "/referrals",
+  "/experience",
+]);
+
 export default function AccessibilitySync() {
   useEffect(() => {
     let activeDialog: HTMLElement | null = null;
@@ -147,6 +162,7 @@ export default function AccessibilitySync() {
       document.body.dataset.route = pathname;
       if (financeProviderDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "finance-provider";
       else if (recordsDocumentDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "records-document";
+      else if (careJourneyDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "care-journey";
       else delete document.body.dataset.denseRouteGroup;
     };
 
