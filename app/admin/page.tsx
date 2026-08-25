@@ -95,6 +95,10 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/incidents"><span>!</span>{ar ? "الاستجابة للحوادث" : "Incident response"}</a>
         <a className="admin-verification-link" href="/admin/recovery"><span>↻</span>{ar ? "تجارب الاستعادة" : "Recovery rehearsals"}</a>
         <a className="admin-verification-link" href="/admin/document-governance-setup"><span>◇</span>{ar ? "حزمة إعداد الحوكمة" : "Governance setup pack"}</a>
+        <a className="admin-verification-link" href="/admin/ownership-setup"><span>♙</span>{ar ? "إعداد الملكية" : "Ownership setup"}</a>
+        <a className="admin-verification-link" href="/admin/lifecycle-submission"><span>↗</span>{ar ? "إرسال دورة الحياة" : "Lifecycle submission"}</a>
+        <a className="admin-verification-link" href="/admin/lifecycle-review"><span>✓</span>{ar ? "المراجعة المستقلة" : "Independent review"}</a>
+        <a className="admin-verification-link" href="/admin/governance-handoff"><span>◎</span>{ar ? "تسليم الحوكمة" : "Governance handoff"}</a>
         <a className="admin-verification-link" href="/admin/data-lifecycle"><span>⌛</span>{ar ? "دورة حياة البيانات" : "Data lifecycle"}</a>
         <a className="admin-verification-link" href="/admin/legal-holds"><span>§</span>{ar ? "الحجز القانوني" : "Legal holds"}</a>
         <a className="admin-verification-link" href="/admin/retention-automation"><span>◷</span>{ar ? "أتمتة الاحتفاظ" : "Retention automation"}</a>
