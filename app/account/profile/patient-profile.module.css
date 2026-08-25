@@ -259,6 +259,55 @@
   .boundary { align-items:flex-start; flex-direction:column; }
 }
 
+:global(:root[data-theme="dark"]) .shell {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(33, 190, 212, .10), transparent 20rem),
+    linear-gradient(180deg, #071f2a 0%, #092a35 100%);
+  color: #edf7f9;
+  color-scheme: dark;
+}
+
+:global(:root[data-theme="dark"]) .top,
+:global(:root[data-theme="dark"]) .identity,
+:global(:root[data-theme="dark"]) .card,
+:global(:root[data-theme="dark"]) .finish,
+:global(:root[data-theme="dark"]) .history {
+  border-color: #28515c;
+  background: #0d3340;
+  color: #edf7f9;
+}
+
+:global(:root[data-theme="dark"]) .top {
+  background: rgba(7, 31, 42, .92);
+}
+
+:global(:root[data-theme="dark"]) .top a,
+:global(:root[data-theme="dark"]) .top button,
+:global(:root[data-theme="dark"]) .card input:not([type=radio]),
+:global(:root[data-theme="dark"]) .card select,
+:global(:root[data-theme="dark"]) .card textarea,
+:global(:root[data-theme="dark"]) .finish select,
+:global(:root[data-theme="dark"]) .choices label {
+  border-color: #315963;
+  background: #0a2b36;
+  color: #edf7f9;
+}
+
+:global(:root[data-theme="dark"]) .boundary {
+  border-color: #315963;
+  background: #103b46;
+}
+
+:global(:root[data-theme="dark"]) .boundary span,
+:global(:root[data-theme="dark"]) .choices label.selected {
+  background: #164956;
+  color: #8de4ef;
+}
+
+:global(:root[data-theme="dark"]) :is(.boundary p, .identity p, .identity em, .cardHead p, .hint, .finish p, .history article small, .history time) {
+  color: #adc3ca;
+}
+
 @media(max-width:560px) {
   .top nav a { display:none; }
   .hero { padding-top:42px; }

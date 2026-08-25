@@ -1,14 +1,14 @@
 /* Final route contracts. This file intentionally loads last so legacy prototype
    presentation cannot collapse production workspaces or reduce text contrast. */
 
-:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) {
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience, .live-admin-shell, .ops-health-shell, .orgops-shell, .account-profile-experience) {
   max-width: 100%;
   overflow-x: clip;
 }
 
-:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *,
-:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::before,
-:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::after {
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience, .live-admin-shell, .ops-health-shell, .orgops-shell, .account-profile-experience) *,
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience, .live-admin-shell, .ops-health-shell, .orgops-shell, .account-profile-experience) *::before,
+:where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience, .live-admin-shell, .ops-health-shell, .orgops-shell, .account-profile-experience) *::after {
   min-width: 0;
 }
 
@@ -123,11 +123,92 @@
 .audit-shell .event-panel { overflow-x: auto; }
 .audit-shell .event-table { min-width: 760px; }
 
+/* Platform overview and operational health. The original fixed-position rules
+   are overridden here so every workspace keeps its navigation and content in
+   the same layout flow at desktop widths. */
+.admin-shell.live-admin-shell,
+.ops-health-shell,
+.orgops-shell {
+  width: 100%;
+  min-height: 100dvh;
+  display: grid !important;
+  grid-template-columns: 280px minmax(0, 1fr) !important;
+  align-items: stretch;
+}
+.live-admin-shell .live-admin-sidebar,
+.ops-health-shell .ops-health-side,
+.orgops-shell .orgops-sidebar {
+  position: sticky !important;
+  inset: 0 auto auto 0 !important;
+  width: 280px !important;
+  height: 100dvh;
+  overflow-y: auto;
+}
+.live-admin-shell .admin-main,
+.ops-health-shell .ops-health-main,
+.orgops-shell .orgops-main {
+  grid-column: 2;
+  width: 100% !important;
+  min-width: 0;
+  margin-inline-start: 0 !important;
+}
+.live-admin-shell .admin-workspace,
+.ops-health-shell .ops-health-workspace,
+.orgops-shell .orgops-content {
+  width: min(100%, 1480px) !important;
+  max-width: 1480px !important;
+  margin-inline: auto !important;
+  padding: clamp(24px, 3vw, 46px) !important;
+}
+.live-admin-shell :is(.admin-heading, .admin-security-note, .admin-panel, .admin-live-state),
+.ops-health-shell :is(.ops-health-heading, .ops-health-banner, .ops-health-panel, .ops-health-state),
+.orgops-shell :is(.orgops-title, .orgops-create, .orgops-policy, .orgops-list, .orgops-state, .orgops-bootstrap) {
+  min-width: 0;
+}
+.live-admin-shell :is(.admin-topbar b, .admin-role b, .admin-verification-link b, .admin-heading span, .admin-security-note p, .admin-panel p, .admin-panel small),
+.ops-health-shell :is(.ops-health-top b, .ops-health-role b, .ops-health-heading span, .ops-health-banner p, .ops-health-panel p, .ops-health-panel small),
+.orgops-shell :is(.orgops-main header b, .orgops-title span, .orgops-create label, .orgops-policy p, .orgops-list p) {
+  font-size: max(12px, .78rem) !important;
+  line-height: 1.55 !important;
+}
+.live-admin-shell .admin-heading h1,
+.ops-health-shell .ops-health-heading h1,
+.orgops-shell .orgops-title h1 {
+  font-size: clamp(34px, 4vw, 56px) !important;
+  line-height: 1.04 !important;
+  text-wrap: balance;
+}
+.live-admin-shell :is(.admin-metrics, .live-admin-metrics),
+.ops-health-shell .ops-health-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+.live-admin-shell :is(.admin-dashboard-grid, .live-admin-grid),
+.ops-health-shell .ops-health-grid,
+.orgops-shell .orgops-grid {
+  gap: 18px !important;
+}
+.orgops-shell .orgops-invite { grid-template-columns: minmax(180px, .8fr) minmax(240px, 1.2fr) auto auto; }
+.orgops-shell .orgops-list { overflow-x: auto; }
+
+/* Account profile remains readable and usable when navigation or translated
+   labels become wider than the original prototype expected. */
+.account-profile-experience > header,
+.account-profile-experience > section,
+.account-profile-experience > div { min-width: 0; }
+.account-profile-experience img { height: auto; object-fit: contain; }
+
 /* Dark theme keeps readable hierarchy on surfaces that were originally hard-coded. */
 :root[data-theme="dark"] .wallet-shell :is(.wallet-notice, .wallet-live-state, .wallet-live-heading label),
 :root[data-theme="dark"] .providers-shell :is(.provider-result, .catalog-state),
 :root[data-theme="dark"] .audit-shell :is(.audit-metrics article, .audit-live-filters, .event-panel, .event-detail),
 :root[data-theme="dark"] .provider-live-shell :is(.schedule-card, .provider-quick-launch a, .metric-grid article) {
+  border-color: var(--qv-border) !important;
+  background: var(--qv-surface) !important;
+  color: var(--qv-text) !important;
+}
+:root[data-theme="dark"] .live-admin-shell :is(.admin-heading, .admin-security-note, .admin-panel, .admin-live-state),
+:root[data-theme="dark"] .ops-health-shell :is(.ops-health-heading, .ops-health-banner, .ops-health-panel, .ops-health-state),
+:root[data-theme="dark"] .orgops-shell :is(.orgops-main > header, .orgops-title, .orgops-create, .orgops-policy, .orgops-list, .orgops-state, .orgops-bootstrap) {
   border-color: var(--qv-border) !important;
   background: var(--qv-surface) !important;
   color: var(--qv-text) !important;
@@ -141,6 +222,18 @@
   .audit-shell .audit-sidebar { width: 230px !important; }
   .audit-shell .audit-layout { grid-template-columns: 1fr !important; }
   .audit-shell .event-detail { position: static; }
+  .admin-shell.live-admin-shell,
+  .ops-health-shell,
+  .orgops-shell { grid-template-columns: 244px minmax(0, 1fr) !important; }
+  .live-admin-shell .live-admin-sidebar,
+  .ops-health-shell .ops-health-side,
+  .orgops-shell .orgops-sidebar { width: 244px !important; }
+  .live-admin-shell :is(.admin-metrics, .live-admin-metrics),
+  .ops-health-shell .ops-health-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .live-admin-shell :is(.admin-dashboard-grid, .live-admin-grid),
+  .ops-health-shell .ops-health-grid,
+  .orgops-shell .orgops-grid { grid-template-columns: 1fr !important; }
+  .orgops-shell .orgops-invite { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 900px) {
@@ -154,6 +247,27 @@
   .audit-shell .audit-sidebar { display: none !important; }
   .provider-live-shell .provider-main,
   .audit-shell .audit-main { width: 100% !important; margin: 0 !important; }
+  .admin-shell.live-admin-shell,
+  .ops-health-shell,
+  .orgops-shell { display: block !important; }
+  .live-admin-shell .live-admin-sidebar,
+  .ops-health-shell .ops-health-side,
+  .orgops-shell .orgops-sidebar {
+    position: relative !important;
+    width: 100% !important;
+    height: auto;
+    max-height: none;
+  }
+  .live-admin-shell .admin-main,
+  .ops-health-shell .ops-health-main,
+  .orgops-shell .orgops-main { width: 100% !important; margin: 0 !important; }
+  .live-admin-shell .live-admin-sidebar { padding: 18px !important; }
+  .live-admin-shell .admin-sidebar-foot,
+  .ops-health-shell .ops-health-privacy,
+  .orgops-shell .orgops-sidebar > div:last-child { display: none !important; }
+  .ops-health-shell .ops-health-side nav,
+  .orgops-shell .orgops-sidebar nav { display: flex; overflow-x: auto; }
+  .orgops-shell .orgops-invite { grid-template-columns: 1fr; }
   .audit-shell .audit-live-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -172,12 +286,23 @@
   .audit-shell .audit-heading { align-items: stretch; flex-direction: column; }
   .audit-shell .audit-heading > button { width: 100%; }
   .audit-shell .audit-workspace { padding: 20px 14px 96px !important; }
+  .live-admin-shell .admin-workspace,
+  .ops-health-shell .ops-health-workspace,
+  .orgops-shell .orgops-content { padding: 20px 14px 96px !important; }
+  .live-admin-shell :is(.admin-metrics, .live-admin-metrics),
+  .ops-health-shell .ops-health-metrics { grid-template-columns: 1fr !important; }
+  .live-admin-shell .admin-heading,
+  .ops-health-shell .ops-health-heading,
+  .orgops-shell .orgops-title { align-items: stretch !important; flex-direction: column; }
+  .live-admin-shell .admin-heading > button,
+  .ops-health-shell .ops-health-heading > button,
+  .orgops-shell .orgops-title > button { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *,
-  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::before,
-  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience) *::after {
+  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience, .live-admin-shell, .ops-health-shell, .orgops-shell, .account-profile-experience) *,
+  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience, .live-admin-shell, .ops-health-shell, .orgops-shell, .account-profile-experience) *::before,
+  :where(.wallet-shell, .providers-shell, .provider-live-shell, .audit-shell, .wallet-operations-experience, .live-admin-shell, .ops-health-shell, .orgops-shell, .account-profile-experience) *::after {
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
   }

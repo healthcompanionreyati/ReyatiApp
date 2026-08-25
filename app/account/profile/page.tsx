@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
 import styles from "./patient-profile.module.css";
 
@@ -30,8 +31,8 @@ export default function PatientProfilePage() {
     finally { setSaving(false); }
   }
   const patch = <K extends keyof Settings>(key: K, value: Settings[K]) => setForm((current) => current ? { ...current, [key]: value } : current);
-  return <main className={`${styles.shell} trust-center-shell account-profile-experience`} dir={ar ? "rtl" : "ltr"}>
-    <header className={styles.top}><a href="/"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya" /></a><nav aria-label={ar ? "التنقل الرئيسي" : "Primary navigation"}><a href="/account/security">{ar ? "أمان الحساب" : "Security"}</a><a href="/settings/accessibility">{ar ? "إمكانية الوصول" : "Accessibility"}</a><button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button></nav></header>
+  return <main id="main-content" className={`${styles.shell} trust-center-shell account-profile-experience`} dir={ar ? "rtl" : "ltr"}>
+    <header className={styles.top}><a href="/" aria-label={ar ? "العودة إلى Qivaya" : "Back to Qivaya"}><Image src="/brand/qivaya-logo-primary.png" alt="Qivaya" width={105} height={40} priority /></a><nav aria-label={ar ? "التنقل الرئيسي" : "Primary navigation"}><a href="/account/security">{ar ? "أمان الحساب" : "Security"}</a><a href="/settings/accessibility">{ar ? "إمكانية الوصول" : "Accessibility"}</a><button type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button></nav></header>
     <section className={styles.hero}><div><span>{ar ? "ملفك تحت سيطرتك" : "YOUR PROFILE, UNDER YOUR CONTROL"}</span><h1>{ar ? "الملف الشخصي وبيانات الاتصال" : "Profile & contact details"}</h1><p>{ar ? "اختر كيف تظهر داخل كيفايا وكيف يمكننا دعم تواصلك، دون تغيير هوية تسجيل الدخول الموثقة." : "Choose how you appear inside Qivaya and how we can support your communication—without changing your verified sign-in identity."}</p></div><aside><i aria-hidden="true">{form?.completionState === "complete" ? "✓" : "···"}</i><b>{form?.completionState === "complete" ? (ar ? "مكتمل" : "Complete") : (ar ? "قيد الإعداد" : "In progress")}</b><small>{ar ? "حالة الملف" : "Profile status"}</small></aside></section>
     <div className={styles.content}>
       <section className={styles.boundary}><div><b>{ar ? "هوية تسجيل الدخول للقراءة فقط" : "Sign-in identity is read-only"}</b><p>{ar ? "البريد والاسم أدناه واردان من جلسة تسجيل الدخول الموثقة. كيفايا لا يغيرهما ولا يدّعي التحقق من وسيلة اتصال." : "The email and identity name below come from your verified sign-in session. Qivaya does not change them or claim contact verification."}</p></div><span>{ar ? "لا تغيير للهوية" : "No identity mutation"}</span></section>
