@@ -99,7 +99,7 @@ export default function PersonalTrackingWorkspace({ module }: { module: Module }
     try {
       const response = await fetch(endpoint, { cache: "no-store" });
       if (response.status === 401) {
-        location.assign(`/signin-with-chatgpt?return_to=/${c.path}`);
+        location.assign(`/sign-in?redirect_url=/${c.path}`);
         return;
       }
       const payload = await response.json().catch(() => ({})) as { data?: Data; message?: string };

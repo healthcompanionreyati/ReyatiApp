@@ -16,7 +16,7 @@ type PendingAction = { action: string; item: ContinuityCase } | null;
 async function api(init?: RequestInit) {
   const response = await fetch("/api/admin/continuity", { credentials: "same-origin", ...init });
   const payload = await response.json().catch(() => ({})) as { data?: unknown; message?: string; error?: string };
-  if (response.status === 401) { window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent("/admin/continuity")}`); throw new Error("Authentication required"); }
+  if (response.status === 401) { window.location.assign(`/sign-in?redirect_url=${encodeURIComponent("/admin/continuity")}`); throw new Error("Authentication required"); }
   if (!response.ok || payload.data === undefined) { const error = new Error(payload.message || payload.error || "Continuity queue unavailable"); (error as Error & { status?: number }).status = response.status; throw error; }
   return payload.data;
 }

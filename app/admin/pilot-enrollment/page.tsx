@@ -10,7 +10,7 @@ type Data = { role: string; currentUserId: string; participantAcceptanceEnabled:
 async function api(init?: RequestInit) {
   const response = await fetch("/api/admin/pilot-enrollment", { credentials: "same-origin", ...init });
   const payload = await response.json().catch(() => ({})) as { data?: unknown; message?: string; error?: string };
-  if (response.status === 401) { window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent("/admin/pilot-enrollment")}`); throw new Error("Authentication required"); }
+  if (response.status === 401) { window.location.assign(`/sign-in?redirect_url=${encodeURIComponent("/admin/pilot-enrollment")}`); throw new Error("Authentication required"); }
   if (!response.ok || payload.data === undefined) throw new Error(payload.message || payload.error || "Enrollment evidence unavailable");
   return payload.data;
 }

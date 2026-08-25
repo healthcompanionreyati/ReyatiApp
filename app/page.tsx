@@ -103,7 +103,7 @@ export default function Home() {
         fetch("/api/appointments", { cache: "no-store", signal }),
       ]);
       if (identityResponse.status === 401 || appointmentResponse.status === 401) {
-        window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent("/")}`); return;
+        window.location.assign(`/sign-in?redirect_url=${encodeURIComponent("/")}`); return;
       }
       const identity = await identityResponse.json().catch(() => ({})) as { user?: User; error?: string };
       const schedule = await appointmentResponse.json().catch(() => ({})) as { appointments?: Appointment[]; error?: string };

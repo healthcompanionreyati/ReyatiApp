@@ -6,7 +6,7 @@ import styles from "./benefits.module.css";
 
 type Offer = { id: string; status: string; visibilityStatus: string; version: number; sponsorName: string; programme: { nameEn: string; nameAr: string; descriptionEn?: string; descriptionAr?: string; currency: string; memberLimitMinor?: number; startsAt?: string; endsAt?: string }; ledger: Array<{ id: string; entryType: string; direction: string; amountMinor: number; currency: string; createdAt: string }>; balanceMinor: number | null };
 type Data = { consentVersion: string; offers: Offer[]; boundaries: Record<string, boolean> };
-async function api(init?: RequestInit) { const response = await fetch("/api/benefits", { cache: "no-store", ...init }); const payload = await response.json(); if (response.status === 401) { location.assign("/signin-with-chatgpt?return_to=/benefits"); throw new Error("Sign in required"); } if (!response.ok) throw new Error(payload.message || payload.error || "Benefits are unavailable"); return payload.data as Data; }
+async function api(init?: RequestInit) { const response = await fetch("/api/benefits", { cache: "no-store", ...init }); const payload = await response.json(); if (response.status === 401) { location.assign("/sign-in?redirect_url=/benefits"); throw new Error("Sign in required"); } if (!response.ok) throw new Error(payload.message || payload.error || "Benefits are unavailable"); return payload.data as Data; }
 const money = (value: number | null, currency: string, ar: boolean) => value == null ? "—" : new Intl.NumberFormat(ar ? "ar-QA" : "en-QA", { style: "currency", currency }).format(value / 100);
 
 export default function EmployerBenefitsPage() {

@@ -12,7 +12,7 @@ async function api(url: string, init?: RequestInit) {
   const response = await fetch(url, init);
   const payload = await response.json().catch(() => ({})) as { data?: unknown; message?: string; error?: string };
   if (response.status === 401) {
-    window.location.assign("/signin-with-chatgpt?return_to=/notifications");
+    window.location.assign("/sign-in?redirect_url=/notifications");
     throw new Error("Authentication required");
   }
   if (!response.ok) throw new Error(payload.message || payload.error || "Request failed");

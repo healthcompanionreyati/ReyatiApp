@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import styles from "../../diagnostic-imaging/diagnostic-imaging.module.css";
 type Data={metrics:Record<string,number>;rehearsals:Array<{id:string;result:string;scenarioCount:number;executedAt:string}>;visibility:string;boundaries:Record<string,boolean>};
-async function api(init?:RequestInit){const response=await fetch("/api/admin/diagnostic-imaging",{cache:"no-store",...init});const payload=await response.json();if(response.status===401){location.assign("/signin-with-chatgpt?return_to=/admin/diagnostic-imaging");throw new Error("Sign in required")}if(!response.ok)throw new Error(payload.message||payload.error||"Imaging governance unavailable");return payload.data}
+async function api(init?:RequestInit){const response=await fetch("/api/admin/diagnostic-imaging",{cache:"no-store",...init});const payload=await response.json();if(response.status===401){location.assign("/sign-in?redirect_url=/admin/diagnostic-imaging");throw new Error("Sign in required")}if(!response.ok)throw new Error(payload.message||payload.error||"Imaging governance unavailable");return payload.data}
 export default function DiagnosticImagingGovernance(){
   const[data,setData]=useState<Data|null>(null),[error,setError]=useState(""),[busy,setBusy]=useState(false);const load=useCallback(()=>api().then(setData).catch(reason=>setError(reason.message)),[]);useEffect(()=>{queueMicrotask(()=>void load())},[load]);
   async function rehearse(){setBusy(true);setError("");try{await api({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"run_rehearsal"})});await load()}catch(reason){setError(reason instanceof Error?reason.message:"Unable to rehearse safeguards")}finally{setBusy(false)}}

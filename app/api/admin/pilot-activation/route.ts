@@ -6,6 +6,11 @@ import {
   PilotActivationValidationError,
   prepareSyntheticPilotFoundation,
 } from "@/lib/pilot-activation";
+import {
+  ControlledPilotConflictError,
+  ControlledPilotValidationError,
+  saveControlledPilotPlan,
+} from "@/lib/controlled-pilot";
 import { reportOperationalError } from "@/lib/observability";
 import { enforceWriteRateLimit, rateLimitResponse } from "@/lib/rate-limits";
 
@@ -22,10 +27,9 @@ export async function POST(request: Request) {
     let body: Record<string, unknown>;
     try { body = await request.json() as Record<string, unknown>; }
     catch { throw new PilotActivationValidationError("A valid JSON body is required"); }
-    if (body.operation !== "prepare_synthetic_foundation") {
-      throw new PilotActivationValidationError("operation is invalid");
-    }
-    return prepareSyntheticPilotFoundation(userId, body);
+    if (body.operation === "prepare_synthetic_foundation") return prepareSyntheticPilotFoundation(userId, body);
+    if (body.operation === "save_pilot_plan") return saveControlledPilotPlan(userId, body);
+    throw new PilotActivationValidationError("operation is invalid");
   }, "admin.pilot-activation");
 }
 
@@ -42,6 +46,8 @@ async function handle(operation: (userId: string) => Promise<unknown>, scope?: s
     if (error instanceof AuthorizationDeniedError) return Response.json({ error: "forbidden" }, { status: 403, headers: noStore });
     if (error instanceof PilotActivationValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
     if (error instanceof PilotActivationConflictError) return Response.json({ error: "conflict", message: error.message }, { status: 409, headers: noStore });
+    if (error instanceof ControlledPilotValidationError) return Response.json({ error: "invalid_request", message: error.message }, { status: 400, headers: noStore });
+    if (error instanceof ControlledPilotConflictError) return Response.json({ error: "conflict", message: error.message }, { status: 409, headers: noStore });
     reportOperationalError("admin.pilot_activation.failed", error);
     return Response.json({ error: "service_unavailable" }, { status: 503, headers: { ...noStore, "Retry-After": "30" } });
   }

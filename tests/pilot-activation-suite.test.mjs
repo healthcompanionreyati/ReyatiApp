@@ -42,7 +42,8 @@ test("activation API is authenticated, private, rate-limited, and operation-whit
   assert.match(route, /private, no-store/);
   assert.match(route, /enforceWriteRateLimit/);
   assert.match(route, /prepare_synthetic_foundation/);
-  assert.match(route, /body\.operation !== "prepare_synthetic_foundation"/);
+  assert.match(route, /save_pilot_plan/);
+  assert.match(route, /saveControlledPilotPlan/);
   assert.match(route, /AuthenticationRequiredError/);
   assert.match(route, /AuthorizationDeniedError/);
 });
@@ -60,6 +61,8 @@ test("activation UI provides one bilingual, accessible and responsive journey", 
   assert.match(page, /next\/image/);
   assert.match(page, /data\.stages\.map/);
   assert.match(page, /data\.readiness\.gates\.map/);
+  assert.match(page, /Create bounded draft/);
+  assert.match(page, /data\.organizations\.map/);
   assert.match(css, /html\[data-theme="dark"\]/);
   assert.match(css, /@media\(max-width:820px\)/);
   assert.match(css, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);

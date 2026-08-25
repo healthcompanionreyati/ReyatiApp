@@ -43,7 +43,7 @@ type Data = {
 async function request(init?: RequestInit) {
   const response = await fetch("/api/encounter-continuity", { cache: "no-store", credentials: "same-origin", ...init });
   if (response.status === 401) {
-    location.assign("/signin-with-chatgpt?return_to=/encounter-follow-up");
+    location.assign("/sign-in?redirect_url=/encounter-follow-up");
     throw Error("Authentication required");
   }
   const payload = await response.json().catch(() => ({}));

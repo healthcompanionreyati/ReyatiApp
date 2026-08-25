@@ -68,8 +68,9 @@ export async function getPilotActivationCentre(userId: string, requestedPlanId?:
   const db = await getDb();
   const now = new Date();
   const freshBoundary = new Date(now.valueOf() - 90 * 86400000);
-  const [health, plans, cohort, enrollment, invitations, participation, withdrawals, metrics, ownership, monitoring, recovery, reviews, packages, rollback, command] = await Promise.all([
+  const [health, eligibleOrganizations, plans, cohort, enrollment, invitations, participation, withdrawals, metrics, ownership, monitoring, recovery, reviews, packages, rollback, command] = await Promise.all([
     getOperationsHealth(userId, "Pilot activation centre"),
+    db.select({ id: organizations.id, name: organizations.name, type: organizations.type }).from(organizations).where(eq(organizations.status, "active")).orderBy(organizations.name),
     db.select({ id: controlledPilotPlans.id, organizationId: controlledPilotPlans.organizationId, organizationName: organizations.name, clinicLabel: controlledPilotPlans.clinicLabel, plannedStartAt: controlledPilotPlans.plannedStartAt, plannedEndAt: controlledPilotPlans.plannedEndAt, providerTarget: controlledPilotPlans.providerTarget, patientTarget: controlledPilotPlans.patientTarget, status: controlledPilotPlans.status }).from(controlledPilotPlans).innerJoin(organizations, eq(organizations.id, controlledPilotPlans.organizationId)).orderBy(desc(controlledPilotPlans.createdAt)),
     db.select().from(controlledPilotCohortMembers),
     db.select().from(pilotEnrollmentDocuments),
@@ -145,6 +146,7 @@ export async function getPilotActivationCentre(userId: string, requestedPlanId?:
     generatedAt: now,
     runtimeMode: "controlled_rehearsal" as const,
     realParticipantActivationEnabled: false,
+    organizations: eligibleOrganizations,
     plans,
     selectedPlan,
     stages,

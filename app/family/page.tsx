@@ -23,7 +23,7 @@ async function request(body?: Record<string, unknown>, signal?: AbortSignal) {
   const response = await fetch("/api/family", body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal } : { cache: "no-store", signal });
   const payload = await response.json().catch(() => ({})) as { data?: FamilyData | { acceptPath?: string | null; delivery?: "queued" | "manual" }; message?: string; error?: string };
   if (response.status === 401) {
-    window.location.assign("/signin-with-chatgpt?return_to=/family");
+    window.location.assign("/sign-in?redirect_url=/family");
     throw new Error("Authentication required");
   }
   if (!response.ok) throw new Error(payload.message || payload.error || "Request failed");

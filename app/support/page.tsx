@@ -17,7 +17,7 @@ function topics(ar:boolean):{id:Topic;icon:string;title:string;text:string}[]{re
 
 async function api(init?:RequestInit) {
   const response=await fetch("/api/support",init); const payload=await response.json().catch(()=>({})) as {data?:unknown;message?:string;error?:string};
-  if(response.status===401){window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent("/support")}`);throw new Error("Authentication required");}
+  if(response.status===401){window.location.assign(`/sign-in?redirect_url=${encodeURIComponent("/support")}`);throw new Error("Authentication required");}
   if(!response.ok) throw new Error(payload.message||payload.error||"Support is temporarily unavailable"); return payload.data;
 }
 function label(value:string,ar=false){const labels:Record<string,string>={open:"مفتوح",in_progress:"قيد المعالجة",waiting_requester:"بانتظار مقدم الطلب",resolved:"تم الحل",closed:"مغلق",booking:"الحجوزات",payment:"المدفوعات",complaint:"الشكاوى",privacy:"الخصوصية",safety:"السلامة"};return ar?labels[value]||value.replaceAll("_"," "):value.replaceAll("_"," ").replace(/^./,(letter)=>letter.toUpperCase());}

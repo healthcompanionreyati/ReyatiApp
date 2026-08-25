@@ -44,7 +44,7 @@ export default function Wallet() {
       const payload = await response.json().catch(() => ({})) as { records?: VisitRecord[]; delegated?: boolean; error?: string };
       if (response.status === 401) {
         const returnTo = `/wallet${window.location.search}`;
-        window.location.assign(`/signin-with-chatgpt?return_to=${encodeURIComponent(returnTo)}`);
+        window.location.assign(`/sign-in?redirect_url=${encodeURIComponent(returnTo)}`);
         return;
       }
       if (!response.ok) throw new Error(payload.error || "Health records are temporarily unavailable.");

@@ -6,7 +6,7 @@ import styles from "../../benefits/benefits.module.css";
 
 type Programme = { id: string; nameEn: string; nameAr: string; descriptionEn: string; descriptionAr: string; currency: string; memberLimitMinor: number; startsAt: string; endsAt: string; eligibilityMode: string; status: string; rosterSummary: Record<string, number>; fundingBalanceMinor: number; fundingEntries: Array<{ id: string; entryType: string; direction: string; amountMinor: number; sourceReference: string }> };
 type Data = { partner: { organizationName: string; role: string }; programmes: Programme[]; boundaries: Record<string, boolean> };
-async function api(init?: RequestInit) { const response = await fetch("/api/partner/benefits", { cache: "no-store", ...init }); const payload = await response.json(); if (response.status === 401) { location.assign("/signin-with-chatgpt?return_to=/partner/benefits"); throw new Error("Sign in required"); } if (!response.ok) throw new Error(payload.message || payload.error || "Benefits workspace unavailable"); return payload.data as Data; }
+async function api(init?: RequestInit) { const response = await fetch("/api/partner/benefits", { cache: "no-store", ...init }); const payload = await response.json(); if (response.status === 401) { location.assign("/sign-in?redirect_url=/partner/benefits"); throw new Error("Sign in required"); } if (!response.ok) throw new Error(payload.message || payload.error || "Benefits workspace unavailable"); return payload.data as Data; }
 const qar = (minor: number, ar: boolean) => new Intl.NumberFormat(ar ? "ar-QA" : "en-QA", { style: "currency", currency: "QAR" }).format(minor / 100);
 
 export default function PartnerBenefitsPage() {
