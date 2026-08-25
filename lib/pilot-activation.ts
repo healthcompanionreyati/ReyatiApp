@@ -156,9 +156,45 @@ export async function getPilotActivationCentre(userId: string, requestedPlanId?:
     readiness: { cleared: readiness.cleared, total: readiness.total, gates: readiness.gates },
     syntheticStarter: {
       available: access.role === "platform_admin" && scopeComplete,
+      missingSyntheticProviders: Math.max(0, (selectedPlan?.providerTarget ?? 0) - providerCount),
+      missingSyntheticPatients: Math.max(0, (selectedPlan?.patientTarget ?? 0) - patientCount),
       missingEnrollmentDrafts: enrollmentTypes.filter((item) => !planEnrollment.some((document) => document.documentType === item)).length,
       missingMetricDrafts: metricTemplates.filter((item) => !planMetrics.some((metric) => metric.metricKey === item.key)).length,
     },
+  };
+}
+
+export async function getPilotActivationEvidencePack(userId: string, requestedPlanId?: string | null) {
+  const centre = await getPilotActivationCentre(userId, requestedPlanId);
+  if (!centre.selectedPlan) throw new PilotActivationValidationError("A controlled-pilot plan is required");
+  return {
+    evidenceVersion: "QIVAYA-PILOT-ACTIVATION-1.0",
+    generatedAt: centre.generatedAt,
+    dataClassification: "aggregate_operational_evidence",
+    runtimeBoundaries: {
+      runtimeMode: centre.runtimeMode,
+      realParticipantActivationEnabled: centre.realParticipantActivationEnabled,
+      invitationDispatchIncluded: false,
+      participantIdentityIncluded: false,
+      clinicalDataIncluded: false,
+    },
+    plan: {
+      id: centre.selectedPlan.id,
+      organizationName: centre.selectedPlan.organizationName,
+      clinicLabel: centre.selectedPlan.clinicLabel,
+      plannedStartAt: centre.selectedPlan.plannedStartAt,
+      plannedEndAt: centre.selectedPlan.plannedEndAt,
+      providerTarget: centre.selectedPlan.providerTarget,
+      patientTarget: centre.selectedPlan.patientTarget,
+      status: centre.selectedPlan.status,
+    },
+    activationPath: {
+      completedStages: centre.completedStageCount,
+      totalStages: centre.totalStageCount,
+      nextStage: centre.nextStage ? { id: centre.nextStage.id, name: centre.nextStage.name, status: centre.nextStage.status, dependency: centre.nextStage.dependency ?? null } : null,
+      stages: centre.stages.map(({ id, order, name, status, progress, total, evidence, dependency }) => ({ id, order, name, status, progress, total, evidence, dependency: dependency ?? null })),
+    },
+    readiness: centre.readiness,
   };
 }
 

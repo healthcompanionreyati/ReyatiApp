@@ -42,6 +42,8 @@ test("activation API is authenticated, private, rate-limited, and operation-whit
   assert.match(route, /private, no-store/);
   assert.match(route, /enforceWriteRateLimit/);
   assert.match(route, /prepare_synthetic_foundation/);
+  assert.match(route, /prepare_synthetic_cohort/);
+  assert.match(route, /prepareSyntheticPilotCohort/);
   assert.match(route, /save_pilot_plan/);
   assert.match(route, /saveControlledPilotPlan/);
   assert.match(route, /AuthenticationRequiredError/);
@@ -63,10 +65,29 @@ test("activation UI provides one bilingual, accessible and responsive journey", 
   assert.match(page, /data\.readiness\.gates\.map/);
   assert.match(page, /Create bounded draft/);
   assert.match(page, /data\.organizations\.map/);
+  assert.match(page, /Prepare synthetic cohort/);
+  assert.match(page, /missingSyntheticProviders/);
+  assert.match(page, /missingSyntheticPatients/);
+  assert.match(page, /Download evidence pack/);
   assert.match(css, /html\[data-theme="dark"\]/);
   assert.match(css, /@media\(max-width:820px\)/);
   assert.match(css, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(css, /overflow-wrap:anywhere/);
+});
+
+test("activation evidence export is authenticated, aggregate-only, and download safe", async () => {
+  const [service, route] = await Promise.all([
+    read("lib/pilot-activation.ts"),
+    read("app/api/admin/pilot-activation/evidence/route.ts"),
+  ]);
+  assert.match(service, /getPilotActivationEvidencePack/);
+  assert.match(service, /aggregate_operational_evidence/);
+  assert.match(service, /participantIdentityIncluded: false/);
+  assert.match(service, /clinicalDataIncluded: false/);
+  assert.match(route, /getOrCreateCurrentUser/);
+  assert.match(route, /private, no-store/);
+  assert.match(route, /Content-Disposition/);
+  assert.match(route, /X-Content-Type-Options/);
 });
 
 test("activation journey is discoverable and its boundary is documented", async () => {
@@ -79,7 +100,8 @@ test("activation journey is discoverable and its boundary is documented", async 
   assert.match(nav, /\/admin\/pilot-activation/);
   assert.match(registry, /pilot_activation_orchestration/);
   assert.match(registry, /cannot invite or accept a participant/);
-  assert.match(adr, /No participant, patient, or provider account is created or changed/);
+  assert.match(registry, /pre-provisioned synthetic identities/);
+  assert.match(adr, /No user, patient, or provider profile is created or changed/);
   assert.match(adr, /fail-closed/);
   assert.match(accessibility, /"\/admin\/pilot-activation": "Pilot activation centre"/);
 });

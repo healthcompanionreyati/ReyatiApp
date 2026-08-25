@@ -25,7 +25,7 @@ type Centre = {
   totalStageCount: number;
   nextStage: Stage | null;
   readiness: { cleared: number; total: number; gates: Gate[] };
-  syntheticStarter: { available: boolean; missingEnrollmentDrafts: number; missingMetricDrafts: number };
+  syntheticStarter: { available: boolean; missingSyntheticProviders: number; missingSyntheticPatients: number; missingEnrollmentDrafts: number; missingMetricDrafts: number };
 };
 
 function isoDate(offsetDays: number) {
@@ -99,6 +99,24 @@ export default function PilotActivationPage() {
         : ar ? `تم إعداد ${payload.data.createdEnrollmentDrafts} مسودات تسجيل و${payload.data.createdMetricDrafts} مسودات قياس للمراجعة.` : `${payload.data.createdEnrollmentDrafts} enrollment drafts and ${payload.data.createdMetricDrafts} metric drafts are ready for review.`);
       await load(data.selectedPlan.id);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Synthetic foundation could not be prepared"); }
+    finally { setBusy(false); }
+  }
+
+  async function prepareCohort() {
+    if (!data?.selectedPlan) return;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/pilot-activation", {
+        method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ operation: "prepare_synthetic_cohort", planId: data.selectedPlan.id }),
+      });
+      const payload = await response.json().catch(() => ({})) as { data?: { createdProviders: number; createdPatients: number; alreadyPrepared: boolean }; message?: string; error?: string };
+      if (!response.ok || !payload.data) throw new Error(payload.message || payload.error || "Synthetic cohort could not be prepared");
+      setNotice(payload.data.alreadyPrepared
+        ? (ar ? "مجموعة البروفة الاصطناعية مكتملة بالفعل." : "The synthetic rehearsal cohort is already complete.")
+        : ar ? `تم ترشيح ${payload.data.createdProviders} من مقدمي الرعاية و${payload.data.createdPatients} من المرضى الاصطناعيين دون إرسال دعوات أو منح وصول.` : `${payload.data.createdProviders} provider and ${payload.data.createdPatients} synthetic patient nominations are ready. No invitations were sent and no access was granted.`);
+      await load(data.selectedPlan.id);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Synthetic cohort could not be prepared"); }
     finally { setBusy(false); }
   }
 
@@ -180,7 +198,7 @@ export default function PilotActivationPage() {
           </section> : <section className={styles.controlRow}>
             <label>{ar ? "خطة البرنامج" : "Pilot plan"}<select value={planId} onChange={(event) => { const value = event.target.value; setPlanId(value); void load(value); }}>{data.plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.clinicLabel} · {plan.organizationName} · {plan.status}</option>)}</select></label>
             <div className={styles.planMeta}>{data.selectedPlan ? <><span>{new Date(data.selectedPlan.plannedStartAt).toLocaleDateString(lang)} → {new Date(data.selectedPlan.plannedEndAt).toLocaleDateString(lang)}</span><span>{data.selectedPlan.patientTarget} {ar ? "مرضى" : "patients"} · {data.selectedPlan.providerTarget} {ar ? "مقدمو رعاية" : "providers"}</span></> : <span>{ar ? "أنشئ خطة محدودة للبدء." : "Create a bounded pilot plan to begin."}</span>}</div>
-            <button className={styles.refresh} type="button" onClick={() => void load(planId)}>↻ {ar ? "تحديث" : "Refresh"}</button>
+            <div className={styles.controlActions}><a href={`/api/admin/pilot-activation/evidence?planId=${encodeURIComponent(planId)}`}>{ar ? "تنزيل حزمة الأدلة" : "Download evidence pack"}</a><button className={styles.refresh} type="button" onClick={() => void load(planId)}>↻ {ar ? "تحديث" : "Refresh"}</button></div>
           </section>}
 
           {next ? <section className={styles.nextAction}>
@@ -189,9 +207,9 @@ export default function PilotActivationPage() {
             <a href={next.href}>{ar ? "فتح مساحة العمل" : "Open workspace"} <span aria-hidden="true">→</span></a>
           </section> : <section className={`${styles.nextAction} ${styles.allComplete}`}><div className={styles.nextNumber}>✓</div><div><span className={styles.eyebrow}>{ar ? "المسار مكتمل" : "PATH COMPLETE"}</span><h2>{ar ? "جميع المراحل العشر موثقة" : "All ten stages are evidenced"}</h2><p>{ar ? "راجع قرار الإطلاق ونافذة اليوم الأول قبل أي تغيير تشغيلي منفصل." : "Review the launch decision and day-zero window before any separate operational change."}</p></div><a href="/admin/pilot-review">{ar ? "مراجعة القرار" : "Review decision"} →</a></section>}
 
-          {(data.syntheticStarter.missingEnrollmentDrafts > 0 || data.syntheticStarter.missingMetricDrafts > 0) && <section className={styles.starter}>
-            <div><span className={styles.eyebrow}>{ar ? "بداية أسرع وآمنة" : "SAFE ACCELERATOR"}</span><h2>{ar ? "إعداد أساس البروفة الاصطناعية" : "Prepare the synthetic rehearsal foundation"}</h2><p>{ar ? "ينشئ مسودات قابلة للمراجعة للموافقة والقياس فقط، مع سجل تدقيق كامل وصفر آثار خارجية." : "Create reviewable consent and measurement drafts with an audit trail and zero external effects."}</p><small>{data.syntheticStarter.missingEnrollmentDrafts} {ar ? "مسودات تسجيل" : "enrollment drafts"} · {data.syntheticStarter.missingMetricDrafts} {ar ? "مسودات قياس" : "metric drafts"}</small></div>
-            {data.syntheticStarter.available ? <button type="button" disabled={busy} onClick={() => void prepareFoundation()}>{busy ? (ar ? "جارٍ الإعداد…" : "Preparing…") : (ar ? "إعداد المسودات الاصطناعية" : "Prepare synthetic drafts")}</button> : <span className={styles.roleTag}>{data.role.replaceAll("_", " ")}</span>}
+          {(data.syntheticStarter.missingSyntheticProviders > 0 || data.syntheticStarter.missingSyntheticPatients > 0 || data.syntheticStarter.missingEnrollmentDrafts > 0 || data.syntheticStarter.missingMetricDrafts > 0) && <section className={styles.starter}>
+            <div><span className={styles.eyebrow}>{ar ? "بداية أسرع وآمنة" : "SAFE ACCELERATOR"}</span><h2>{ar ? "إعداد أساس البروفة الاصطناعية" : "Prepare the synthetic rehearsal foundation"}</h2><p>{ar ? "املأ المجموعة من الحسابات الاصطناعية المؤهلة وأنشئ مسودات قابلة للمراجعة للموافقة والقياس مع سجل تدقيق كامل وصفر آثار خارجية." : "Fill the bounded cohort from eligible synthetic accounts and create reviewable consent and measurement drafts with a complete audit trail and zero external effects."}</p><small>{data.syntheticStarter.missingSyntheticProviders} {ar ? "مقدمي رعاية" : "providers"} · {data.syntheticStarter.missingSyntheticPatients} {ar ? "مرضى" : "patients"} · {data.syntheticStarter.missingEnrollmentDrafts} {ar ? "مسودات تسجيل" : "enrollment drafts"} · {data.syntheticStarter.missingMetricDrafts} {ar ? "مسودات قياس" : "metric drafts"}</small></div>
+            {data.syntheticStarter.available ? <div className={styles.starterActions}>{(data.syntheticStarter.missingSyntheticProviders > 0 || data.syntheticStarter.missingSyntheticPatients > 0) && <button type="button" disabled={busy} onClick={() => void prepareCohort()}>{busy ? (ar ? "جارٍ الإعداد…" : "Preparing…") : (ar ? "إعداد المجموعة الاصطناعية" : "Prepare synthetic cohort")}</button>}{(data.syntheticStarter.missingEnrollmentDrafts > 0 || data.syntheticStarter.missingMetricDrafts > 0) && <button type="button" disabled={busy} onClick={() => void prepareFoundation()}>{busy ? (ar ? "جارٍ الإعداد…" : "Preparing…") : (ar ? "إعداد مسودات الأدلة" : "Prepare evidence drafts")}</button>}</div> : <span className={styles.roleTag}>{data.role.replaceAll("_", " ")}</span>}
           </section>}
 
           <section className={styles.stageSection}>
