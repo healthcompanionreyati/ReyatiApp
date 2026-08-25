@@ -154,11 +154,12 @@ body::selection { background: color-mix(in srgb, var(--qv-primary) 25%, transpar
   border-radius: 999px !important;
   background: color-mix(in srgb, var(--qv-surface) 90%, transparent) !important;
   color: var(--qv-text) !important;
+  font-size: 14px !important;
   box-shadow: var(--qv-shadow-md);
   backdrop-filter: blur(18px) saturate(140%);
 }
 .qivaya-theme-toggle span { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--qv-primary-soft); color: var(--qv-primary); font-size: 15px; }
-.qivaya-theme-toggle b { font-size: 12px; }
+.qivaya-theme-toggle b { font-size: 14px; }
 .qivaya-theme-toggle:hover { border-color: var(--qv-primary) !important; transform: translateY(-2px); }
 
 /* Patient navigation */
