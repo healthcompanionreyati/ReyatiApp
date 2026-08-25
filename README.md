@@ -1,4 +1,6 @@
-# vinext-starter
+# Qivaya
+
+The persistent implementation queue and completion record is maintained in [docs/PROJECT_TASK_TRACKER.md](docs/PROJECT_TASK_TRACKER.md). Update it in the same commit as every implementation batch.
 
 ## Reyati operational foundations
 
