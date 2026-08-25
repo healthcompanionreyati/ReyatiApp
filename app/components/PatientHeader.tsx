@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 type PatientHeaderProps = {
   ar: boolean;
   displayName: string;
@@ -22,14 +24,14 @@ function initials(value: string) {
 export default function PatientHeader({ ar, displayName, onLocaleChange, active = "home" }: PatientHeaderProps) {
   return <header className="app-header patient-app-header">
     <a className="app-brand" href="/" aria-label={ar ? "كيفايا الرئيسية" : "Qivaya home"}>
-      <img src="/brand/qivaya-logo-primary.png" alt="Qivaya" />
+      <Image src="/brand/qivaya-logo-primary.png" alt="Qivaya" width={168} height={52} priority />
     </a>
     <nav className="app-primary-nav" aria-label={ar ? "التنقل الرئيسي" : "Primary navigation"}>
       {navigation.map((item) => <a key={item.key} className={active === item.key ? "active" : ""} aria-current={active === item.key ? "page" : undefined} href={item.href}>{ar ? item.ar : item.en}</a>)}
     </nav>
     <div className="app-header-actions">
       <button className="app-locale" type="button" onClick={onLocaleChange}>{ar ? "English" : "العربية"}</button>
-      <a className="app-account" href="/auth" aria-label={ar ? "فتح الحساب الآمن" : "Open secure account"}>
+      <a className={`app-account ${active === "account" ? "active" : ""}`} href="/auth" aria-current={active === "account" ? "page" : undefined} aria-label={ar ? "فتح الحساب الآمن" : "Open secure account"}>
         <span className="app-avatar" aria-hidden="true">{initials(displayName)}</span>
         <span>{ar ? "الحساب" : "Account"}</span>
       </a>

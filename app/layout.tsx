@@ -72,6 +72,7 @@ import "./core-experience.css";
 import "./admin-visual-overrides.css";
 import "./qivaya-brand.css";
 import "./qivaya-overhaul.css";
+import "./product-experience-release.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";

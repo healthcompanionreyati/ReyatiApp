@@ -2,6 +2,7 @@
 
 import { type ChangeEvent, type FormEvent, useCallback, useEffect, useState } from "react";
 import { useReyatiLocale } from "@/app/components/useReyatiLocale";
+import PatientHeader from "@/app/components/PatientHeader";
 import { reyatiDate, reyatiLabel, reyatiNumber } from "@/lib/reyati-i18n";
 
 type DocumentItem = {
@@ -193,11 +194,7 @@ export default function MedicalDocumentsPage() {
   const deliveryEnabled = workspace?.readiness.deliveryEnabled ?? false;
 
   return <main className={`documents-shell ${ar ? "arabic" : ""}`} dir={ar ? "rtl" : "ltr"} id="main-content">
-    <header className="documents-header">
-      <a href="/" className="brand"><img src="/brand/qivaya-logo-primary.png" alt="Qivaya"/></a>
-      <nav aria-label={ar ? "تنقل المريض" : "Patient navigation"}><a href="/providers">{ar ? "ابحث عن رعاية" : "Find care"}</a><a href="/appointments">{ar ? "المواعيد" : "Appointments"}</a><a href="/wallet">{ar ? "السجلات الصحية" : "Health records"}</a><a className="active" href="/documents">{ar ? "المستندات" : "Documents"}</a><a href="/support">{ar ? "الدعم" : "Support"}</a></nav>
-      <div className="documents-header-actions"><button className="lang" type="button" onClick={() => setLang(ar ? "en" : "ar")}>{ar ? "English" : "العربية"}</button><a href="/notifications" className="documents-account">{ar ? "الإشعارات" : "Notifications"}</a></div>
-    </header>
+    <PatientHeader ar={ar} displayName={ar ? "عضو كيفايا" : "Qivaya member"} onLocaleChange={() => setLang(ar ? "en" : "ar")} active="health" />
     <section className="documents-hero"><div><p>{ar ? "خزنة مستندات مملوكة للمريض" : "Patient-owned document vault"}</p><h1>{ar ? "مستنداتك الطبية، تحت سيطرتك" : "Your medical documents, under your control"}</h1><span>{ar ? "ارفع المستندات بأمان، تابع فحصها، وشاركها لفترة محددة مع مقدمي الرعاية الموثّقين." : "Upload securely, follow every scan, and share for a limited time with verified care providers."}</span></div><button type="button" disabled={!uploadEnabled} onClick={() => setUploadOpen(true)}>{uploadEnabled ? (ar ? "رفع مستند" : "Upload document") : (ar ? "الرفع غير متاح" : "Upload unavailable")}</button></section>
 
     <section className={`documents-boundary ${uploadEnabled ? "active" : ""}`}><span>{uploadEnabled ? "✓" : "i"}</span><div><b>{uploadEnabled ? (ar ? "مسار المستند المحمي نشط." : "Protected document path is active.") : (ar ? "مسار المستند يعمل بوضع القراءة فقط." : "Document vault is in read-only mode.")}</b><p>{uploadEnabled ? (ar ? "يتم تخزين الملفات بشكل خاص وفحصها قبل إتاحتها، ولا يتم نشر روابط تخزين عامة." : "Files are stored privately and scanned before access; public storage links are never exposed.") : (ar ? "تم إعداد التخزين الخاص، لكن الرفع سيظل مغلقاً حتى اكتمال تهيئة الفاحص التجاري وضوابط المعالجة." : "Private storage is prepared, but uploads remain closed until the commercial scanner and processing gates are fully configured.")}</p></div></section>

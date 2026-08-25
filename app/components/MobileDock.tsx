@@ -60,8 +60,9 @@ export default function MobileDock() {
 
   let items: DockItem[] | null = null;
   let label = ar ? "تنقل المريض" : "Patient navigation";
-  if (path && !path.startsWith("/provider") && !path.startsWith("/admin") && !path.startsWith("/partner") && !path.startsWith("/auth") && !path.startsWith("/signin") && !path.startsWith("/demo")) items = patientItems;
-  if (path.startsWith("/provider")) { items = providerItems; label = ar ? "تنقل مقدم الرعاية" : "Provider navigation"; }
+  const providerRoute = path === "/provider" || path.startsWith("/provider/");
+  if (path && !providerRoute && !path.startsWith("/admin") && !path.startsWith("/partner") && !path.startsWith("/auth") && !path.startsWith("/signin") && !path.startsWith("/demo")) items = patientItems;
+  if (providerRoute) { items = providerItems; label = ar ? "تنقل مقدم الرعاية" : "Provider navigation"; }
   if (path.startsWith("/admin")) { items = adminItems; label = ar ? "تنقل الإدارة" : "Administration navigation"; }
   if (path.startsWith("/partner")) { items = partnerItems; label = ar ? "تنقل الشريك" : "Partner navigation"; }
   if (!items || path === "/auth") return null;
