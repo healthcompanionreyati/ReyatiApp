@@ -16,6 +16,26 @@ This ten-module suite converts the authorized release window into a continuous, 
 8. `/admin/document-incident-watch` — active incidents, combined exceptions, and named stop-control handoff.
 9. `/admin/document-evidence-renewal` — age of acceptance, activation, and matching assurance evidence.
 10. `/admin/document-operations-handoff` — release checks, three-person coverage, bounded certificates, and the combined attention total.
+11. `/admin/document-service-health` — decision-ready service health from checks, attention signals, and live coverage.
+12. `/admin/document-sla-watch` — stale work, processing failures, and incident pressure.
+13. `/admin/document-capacity-watch` — quarantine, scanner, and lifecycle backlog pressure.
+14. `/admin/document-recovery-readiness` — recovery control, synthetic rehearsal, and blocker posture.
+15. `/admin/document-vendor-assurance` — private processing, bounded reliability, and evidence freshness.
+16. `/admin/document-access-certification` — operator coverage, current role, and named release authorities.
+17. `/admin/document-audit-reconciliation` — live checks, durable certificates, and aggregate exceptions.
+18. `/admin/document-change-calendar` — active and scheduled bounded release windows.
+19. `/admin/document-privacy-obligations` — retention approval, legal-hold review, and protected quarantine.
+20. `/admin/document-executive-assurance` — overall posture, evidence, ownership, and open decision items.
+
+## Interface contract
+
+- All twenty modules use the dedicated production-operations workspace, not the legacy change-control layout.
+- Desktop uses a 304 px grouped navigation rail and a fluid 1240 px content ceiling.
+- Tablet and mobile convert the two navigation groups into horizontal, independently labelled module strips.
+- Body and operational copy is 14–17 px; only non-actionable overlines and workflow identifiers may use 12 px.
+- Cards and panels use explicit grid contracts, overflow containment, balanced headings, and visible keyboard focus.
+- Light and dark themes preserve the same hierarchy and semantic state meaning.
+- Arabic uses logical properties, RTL direction, and equivalent hierarchy without truncation.
 
 ## Hard boundaries
 

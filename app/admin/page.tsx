@@ -130,6 +130,16 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/document-incident-watch"><span>08</span>{ar ? "مراقبة تصعيد الحوادث" : "Incident escalation watch"}</a>
         <a className="admin-verification-link" href="/admin/document-evidence-renewal"><span>09</span>{ar ? "تجديد الدليل" : "Evidence renewal"}</a>
         <a className="admin-verification-link" href="/admin/document-operations-handoff"><span>10</span>{ar ? "تسليم العمليات" : "Operations handoff"}</a>
+        <a className="admin-verification-link" href="/admin/document-service-health"><span>11</span>{ar ? "صحة خدمة المستندات" : "Document service health"}</a>
+        <a className="admin-verification-link" href="/admin/document-sla-watch"><span>12</span>{ar ? "مراقبة مستوى الخدمة" : "Service-level watch"}</a>
+        <a className="admin-verification-link" href="/admin/document-capacity-watch"><span>13</span>{ar ? "مراقبة السعة" : "Capacity watch"}</a>
+        <a className="admin-verification-link" href="/admin/document-recovery-readiness"><span>14</span>{ar ? "جاهزية التعافي" : "Recovery readiness"}</a>
+        <a className="admin-verification-link" href="/admin/document-vendor-assurance"><span>15</span>{ar ? "تأكيد المورد" : "Vendor assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-access-certification"><span>16</span>{ar ? "اعتماد الوصول" : "Access certification"}</a>
+        <a className="admin-verification-link" href="/admin/document-audit-reconciliation"><span>17</span>{ar ? "مطابقة التدقيق" : "Audit reconciliation"}</a>
+        <a className="admin-verification-link" href="/admin/document-change-calendar"><span>18</span>{ar ? "تقويم التغيير" : "Change calendar"}</a>
+        <a className="admin-verification-link" href="/admin/document-privacy-obligations"><span>19</span>{ar ? "التزامات الخصوصية" : "Privacy obligations"}</a>
+        <a className="admin-verification-link" href="/admin/document-executive-assurance"><span>20</span>{ar ? "التأكيد التنفيذي" : "Executive assurance"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>
