@@ -57,3 +57,9 @@ test("mobile role workspaces collapse navigation without narrowing their main co
   assert.match(dock, /providerRoute = path === "\/provider" \|\| path\.startsWith\("\/provider\/"\)/);
   assert.doesNotMatch(dock, /if \(path\.startsWith\("\/provider"\)\)/);
 });
+
+test("fixed admin navigation cannot collapse the production workspace column", async () => {
+  const css = await source("app/product-experience-release.css");
+  assert.match(css, /\.live-admin-shell \.admin-main \{[\s\S]*?grid-column: 2;[\s\S]*?margin-inline-start: 0 !important;[\s\S]*?width: 100% !important;/);
+  assert.match(css, /@media \(max-width: 1000px\) \{[\s\S]*?\.admin-shell\.live-admin-shell \{[\s\S]*?display: block !important;[\s\S]*?\.live-admin-shell \.admin-main \{[\s\S]*?grid-column: auto;/);
+});

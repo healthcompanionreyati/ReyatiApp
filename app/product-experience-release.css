@@ -663,8 +663,10 @@ body > main {
 }
 
 .live-admin-shell .admin-main {
+  grid-column: 2;
+  margin-inline-start: 0 !important;
   min-width: 0;
-  width: 100%;
+  width: 100% !important;
 }
 
 .live-admin-shell .admin-topbar {
@@ -966,6 +968,25 @@ body > main {
 
   .auth-shell {
     grid-template-columns: minmax(330px, .72fr) minmax(480px, 1.28fr) !important;
+  }
+}
+
+/* The legacy admin sidebar becomes fixed above this breakpoint. Explicit grid
+   placement keeps the workspace in the fluid column instead of allowing the
+   fixed sidebar to remove itself from grid flow and collapse the main area. */
+@media (max-width: 1000px) {
+  .admin-shell.live-admin-shell {
+    display: block !important;
+  }
+
+  .live-admin-shell .live-admin-sidebar {
+    display: none !important;
+  }
+
+  .live-admin-shell .admin-main {
+    grid-column: auto;
+    margin-inline-start: 0 !important;
+    width: 100% !important;
   }
 }
 
