@@ -170,6 +170,7 @@ const groups: NavGroup[] = [
     { href: "/admin/integration-assurance", icon: "✓", en: "Integration assurance", ar: "ضمان التكامل" },
     { href: "/admin/integration-lifecycle", icon: "◷", en: "Integration lifecycle", ar: "دورة حياة التكامل" },
     { href: "/admin/integration-observability", icon: "⌁", en: "Integration observability", ar: "مراقبة التكامل" },
+    { href: "/admin/pilot-activation", icon: "01", en: "Pilot activation", ar: "تفعيل البرنامج" },
     { href: "/admin/pilot-command", icon: "◆", en: "Pilot command", ar: "قيادة البرنامج" },
     { href: "/admin/pilot-review", icon: "◆", en: "Go / No-Go review", ar: "قرار الإطلاق" },
   ] },
