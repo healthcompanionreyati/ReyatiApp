@@ -66,7 +66,7 @@ export async function submitLifecycleAcceptance(userId: string, body: Record<str
 
 export async function getLifecycleAcceptanceReviewQueue(userId: string) {
   const centre = await getDataLifecycleAcceptanceCentre(userId);
-  return { ...centre, stage: "acceptance_review", nextHref: "/admin/document-launch", runs: centre.runs.map((run) => ({ ...run, canReview: run.status === "pending_review" && run.preparedByUserId !== userId })), boundaries: DOCUMENT_ACCEPTANCE_WORKFLOW_BOUNDARIES };
+  return { ...centre, stage: "acceptance_review", nextHref: "/admin/document-release-preparation", runs: centre.runs.map((run) => ({ ...run, canReview: run.status === "pending_review" && run.preparedByUserId !== userId })), boundaries: DOCUMENT_ACCEPTANCE_WORKFLOW_BOUNDARIES };
 }
 
 export async function decideLifecycleAcceptance(userId: string, body: Record<string, unknown>) {

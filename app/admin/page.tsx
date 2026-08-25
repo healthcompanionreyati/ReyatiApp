@@ -116,6 +116,10 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/lifecycle-acceptance-submission"><span>03</span>{ar ? "إرسال القبول" : "Acceptance submission"}</a>
         <a className="admin-verification-link" href="/admin/lifecycle-acceptance-review"><span>04</span>{ar ? "مراجعة القبول" : "Acceptance review"}</a>
         <a className="admin-verification-link" href="/admin/document-launch"><span>◎</span>{ar ? "قيادة إطلاق المستندات" : "Document launch command"}</a>
+        <a className="admin-verification-link" href="/admin/document-release-preparation"><span>01</span>{ar ? "إعداد شهادة الإطلاق" : "Release preparation"}</a>
+        <a className="admin-verification-link" href="/admin/document-release-review"><span>02</span>{ar ? "مراجعة شهادة الإطلاق" : "Release review"}</a>
+        <a className="admin-verification-link" href="/admin/document-release-monitoring"><span>03</span>{ar ? "مراقبة نافذة الإطلاق" : "Release monitoring"}</a>
+        <a className="admin-verification-link" href="/admin/document-release-stop"><span>04</span>{ar ? "التحكم بإيقاف الإطلاق" : "Release stop control"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>

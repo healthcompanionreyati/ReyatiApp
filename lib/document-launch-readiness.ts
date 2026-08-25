@@ -244,7 +244,7 @@ export async function getDocumentLaunchReadiness(userId: string, now = new Date(
       detailAr: "اربط القبول والتفعيل والضمان الحالي والمشغلين المسمين وسلطة الإيقاف بنافذة زمنية محدودة.",
       action: "Prepare release certificate",
       actionAr: "إعداد شهادة الإطلاق",
-      href: "/admin/document-release",
+      href: "/admin/document-release-preparation",
       passed: Boolean(activeCertificate),
       current: activeCertificate ? 1 : 0,
       target: 1,
