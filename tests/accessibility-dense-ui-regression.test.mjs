@@ -43,3 +43,30 @@ test("dense governance routes reflow locally and retain dark-theme contrast", ()
   assert.match(read(routes[1]), /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(read(routes[2]), /\.form :is\(input, select, textarea\) \{ width: 100%; min-width: 0; \}/);
 });
+
+test("ten high-use patient routes consume the shared dense-route release layer", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/dense-route-release.css");
+  const routes = [
+    "/health-profile",
+    "/facilities",
+    "/complaints",
+    "/settings/accessibility",
+    "/consents",
+    "/notification-preferences",
+    "/privacy-rights",
+    "/emergency-profile",
+    "/account/security",
+    "/health-library",
+  ];
+
+  assert.match(layout, /import "\.\/dense-route-release\.css"/);
+  assert.match(sync, /document\.body\.dataset\.route = window\.location\.pathname/);
+  assert.match(sync, /delete document\.body\.dataset\.route/);
+  for (const route of routes) assert.match(css, new RegExp(`data-route="${route}"`));
+  assert.match(css, /:root\[data-theme="dark"\] body:is/);
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});

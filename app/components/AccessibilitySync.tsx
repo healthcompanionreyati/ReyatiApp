@@ -158,6 +158,7 @@ export default function AccessibilitySync() {
     };
 
     const sync = () => {
+      document.body.dataset.route = window.location.pathname;
       const root = document.querySelector<HTMLElement>("main[dir]");
       const direction = root?.dir === "rtl" ? "rtl" : "ltr";
       const arabic = direction === "rtl";
@@ -329,6 +330,7 @@ export default function AccessibilitySync() {
     document.addEventListener("input", handleFieldInput);
     document.addEventListener("change", handleFieldInput);
     let observer: MutationObserver | null = null;
+    document.body.dataset.route = window.location.pathname;
     const initialSyncTimer = window.setTimeout(() => {
       if (disposed) return;
       sync();
@@ -345,6 +347,7 @@ export default function AccessibilitySync() {
       document.removeEventListener("input", handleFieldInput);
       document.removeEventListener("change", handleFieldInput);
       document.body.classList.remove("has-open-dialog");
+      delete document.body.dataset.route;
       activeDialog = null;
       dialogOpener = null;
     };

@@ -34,6 +34,7 @@ This file is the persistent source of truth for implementation work. Every batch
 
 - [ ] **IN PROGRESS — QV-UX-02: dense-route visual remediation**
   - Completed group: notification-preference governance, patient-profile governance, and provider team-access governance.
+  - Completed group: health profile, facilities, complaints, accessibility settings, consents, notification preferences, privacy rights, emergency profile, account security, and health library.
   - Continue grouped route batches for remaining legacy tables, cards, long text, mobile widths, and dark theme.
 
 ## Completed foundation
@@ -117,6 +118,7 @@ This file is the persistent source of truth for implementation work. Every batch
 | 2026-08-25 | Persistent tracker and release gate | Added the delivery source of truth, shared security headers, and six-journey fail-closed production verification | Current `main` |
 | 2026-08-25 | Authenticated journey and documentation batch | Added the three-role read-only verifier, captured patient/admin evidence, verified provider fail-closed behavior, repaired wallet failure UX, and reconciled project documentation | Current `main` |
 | 2026-08-25 | Accessibility, evidence, and dense-route batch | Expanded accessibility automation, added fail-closed release evidence collection, raised the shared readable type floor, repaired three responsive dark-theme governance routes, and restored the governance-setup launch step | Current `main` |
+| 2026-08-26 | Ten-route patient experience batch | Added one route-scoped reflow and dark-theme contract across health profile, facilities, complaints, accessibility, consents, notification preferences, privacy rights, emergency profile, account security, and health library | Current `main` |
 
 ## Required update sequence
 

@@ -1,0 +1,278 @@
+/* Qivaya dense-route release layer.
+   Route scoping lets legacy CSS modules share one durable reflow and theme contract. */
+
+body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) {
+  background: var(--qv-bg);
+  color: var(--qv-text);
+}
+
+body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where(*) {
+  min-width: 0;
+}
+
+body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where(h1, h2, h3, h4, p, li, dt, dd, label, small, span, a, button) {
+  overflow-wrap: anywhere;
+}
+
+body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where(input, select, textarea) {
+  width: 100%;
+  max-width: 100%;
+}
+
+body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where([class*="content"], [class*="workspace"], [class*="library"]) {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+}
+
+:root[data-theme="dark"] body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main {
+  background: var(--qv-bg) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where(
+  [class*="panel"],
+  [class*="card"],
+  [class*="boundary"],
+  [class*="history"],
+  [class*="preview"],
+  [class*="empty"],
+  [class*="matrix"],
+  [class*="saveBar"],
+  [class*="notice"],
+  [class*="trust"]
+) {
+  background: var(--qv-surface) !important;
+  border-color: var(--qv-border) !important;
+  color: var(--qv-text) !important;
+  box-shadow: var(--qv-shadow-sm) !important;
+}
+
+:root[data-theme="dark"] body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where(p, small, label, [class*="muted"], [class*="meta"], [class*="source"]) {
+  color: var(--qv-text-soft) !important;
+}
+
+:root[data-theme="dark"] body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where([class*="hero"]) :where(h1, h2, h3, p, small, span) {
+  color: #eef9fa !important;
+}
+
+:root[data-theme="dark"] body:is(
+  [data-route="/health-profile"],
+  [data-route="/facilities"],
+  [data-route="/complaints"],
+  [data-route="/settings/accessibility"],
+  [data-route="/consents"],
+  [data-route="/notification-preferences"],
+  [data-route="/privacy-rights"],
+  [data-route="/emergency-profile"],
+  [data-route="/account/security"],
+  [data-route="/health-library"]
+) > main :where(input, select, textarea) {
+  background: var(--qv-surface-soft) !important;
+  border-color: var(--qv-border-strong) !important;
+  color: var(--qv-text) !important;
+}
+
+@media (max-width: 900px) {
+  body:is(
+    [data-route="/health-profile"],
+    [data-route="/facilities"],
+    [data-route="/complaints"],
+    [data-route="/settings/accessibility"],
+    [data-route="/consents"],
+    [data-route="/notification-preferences"],
+    [data-route="/privacy-rights"],
+    [data-route="/emergency-profile"],
+    [data-route="/account/security"],
+    [data-route="/health-library"]
+  ) > main :where(
+    [class*="layout"],
+    [class*="grid"],
+    [class*="fields"],
+    [class*="settingsGrid"],
+    [class*="formGrid"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body:is(
+    [data-route="/health-profile"],
+    [data-route="/facilities"],
+    [data-route="/complaints"],
+    [data-route="/settings/accessibility"],
+    [data-route="/consents"],
+    [data-route="/notification-preferences"],
+    [data-route="/privacy-rights"],
+    [data-route="/emergency-profile"],
+    [data-route="/account/security"],
+    [data-route="/health-library"]
+  ) > main :where([class*="top"], [class*="panelHead"], [class*="cardTop"], [class*="actions"], [class*="saveBar"]) {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body:is(
+    [data-route="/health-profile"],
+    [data-route="/facilities"],
+    [data-route="/complaints"],
+    [data-route="/settings/accessibility"],
+    [data-route="/consents"],
+    [data-route="/notification-preferences"],
+    [data-route="/privacy-rights"],
+    [data-route="/emergency-profile"],
+    [data-route="/account/security"],
+    [data-route="/health-library"]
+  ) > main :where([class*="content"], [class*="workspace"], [class*="library"]) {
+    padding-inline: 14px !important;
+    padding-block-end: 96px !important;
+  }
+
+  body:is(
+    [data-route="/health-profile"],
+    [data-route="/facilities"],
+    [data-route="/complaints"],
+    [data-route="/settings/accessibility"],
+    [data-route="/consents"],
+    [data-route="/notification-preferences"],
+    [data-route="/privacy-rights"],
+    [data-route="/emergency-profile"],
+    [data-route="/account/security"],
+    [data-route="/health-library"]
+  ) > main :where([class*="matrix"], [class*="history"], [class*="timeline"], [class*="events"], [class*="list"]) {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  body:is(
+    [data-route="/health-profile"],
+    [data-route="/facilities"],
+    [data-route="/complaints"],
+    [data-route="/settings/accessibility"],
+    [data-route="/consents"],
+    [data-route="/notification-preferences"],
+    [data-route="/privacy-rights"],
+    [data-route="/emergency-profile"],
+    [data-route="/account/security"],
+    [data-route="/health-library"]
+  ) > main :where([class*="actions"], [class*="saveBar"]) > :where(button, a) {
+    flex: 1 1 150px;
+  }
+}
