@@ -4,21 +4,29 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-body small { font-size: 10px !important; }
-body :where(button, input, select, textarea, label) { font-size: 11px !important; }
+body small { font-size: 12px !important; }
+body :where(button, input, select, textarea, label) { font-size: 14px !important; }
 
 :where(.provider-shell, .wallet-shell, .payments-shell, .family-shell, .support-shell, .appointments-shell,
   .providers-shell, .partner-shell, .program-shell, .admin-shell, .verify-shell, .finance-shell, .cases-shell,
   .moderation-shell, .audit-shell, .services-shell, .insights-shell, .settings-shell, .patient-provider-shell,
   .auth-shell, .journey-shell, .notifications-shell) :where(p, small, a, em, i, code, time, dt, dd) {
-  font-size: 10px !important;
+  font-size: 12px !important;
 }
 
 :where(.provider-shell, .wallet-shell, .payments-shell, .family-shell, .support-shell, .appointments-shell,
   .providers-shell, .partner-shell, .program-shell, .admin-shell, .verify-shell, .finance-shell, .cases-shell,
   .moderation-shell, .audit-shell, .services-shell, .insights-shell, .settings-shell, .patient-provider-shell,
   .auth-shell, .journey-shell, .notifications-shell) :where(button, input, select, textarea, label) {
-  font-size: 11px !important;
+  font-size: 14px !important;
+}
+
+body :where(main, section, article, aside, header, footer, nav, form, fieldset) {
+  min-width: 0;
+}
+
+body :where(h1, h2, h3, h4, p, li, dt, dd, td, th, label, a, button, small) {
+  overflow-wrap: anywhere;
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
@@ -106,7 +114,8 @@ body :where(button, input, select, textarea, label) { font-size: 11px !important
   transform: translateY(-150%);
   transition: transform 160ms ease;
 }
-.skip-link:focus { transform: translateY(0); }
+.skip-link:focus,
+.skip-link:focus-visible { transform: translateY(0); }
 body.has-open-dialog { overflow: hidden; }
 
 .confirm-action-layer{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:18px;background:rgba(8,42,67,.66);backdrop-filter:blur(4px)}

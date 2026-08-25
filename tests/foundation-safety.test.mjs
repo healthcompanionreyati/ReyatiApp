@@ -155,6 +155,15 @@ test("all authenticated write APIs use durable privacy-safe rate limits", async 
       assert.match(enforcement, /MAX_BATCH_SIZE = 25/);
       continue;
     }
+    const sharedRoute = contents.match(/import\s+\{[^}]*handle\w+Route[^}]*\}\s+from\s+"@\/lib\/([^"]+)"/);
+    if (sharedRoute) {
+      assert.match(contents, /handle\w+Route\([\s\S]*true\)/, `${path.relative(root, file)} must declare its write boundary`);
+      const sharedRouteSource = await source(`lib/${sharedRoute[1]}.ts`);
+      assert.match(sharedRouteSource, /@\/lib\/rate-limits/, `${sharedRoute[1]} must consume the durable limiter`);
+      assert.match(sharedRouteSource, /enforceWriteRateLimit/);
+      assert.match(sharedRouteSource, /rateLimitResponse/);
+      continue;
+    }
     assert.match(contents, /@\/lib\/rate-limits/, `${path.relative(root, file)} lacks the shared limiter`);
     assert.match(contents, /rateLimitResponse/, `${path.relative(root, file)} lacks a 429 response path`);
   }

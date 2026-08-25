@@ -176,3 +176,28 @@
   .runs article { grid-template-columns:1fr auto; }
   .runs time { grid-column:1/-1; }
 }
+
+/* Dense-route release contract. */
+.shell :is(.top, .hero, .content, .boundary, .metrics, .panel, .panelHead, .distributions, .runs) { min-width: 0; }
+.shell :is(h1, h2, h3, p, span, small, a, button) { overflow-wrap: anywhere; }
+.metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.distributions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.panelHead > * { min-width: 0; }
+.row { gap: 12px; }
+.runs article { grid-template-columns: minmax(0, 1fr) auto auto; }
+:global(:root[data-theme="dark"]) .shell { background: #071f2b; color: #e9f5f7; }
+:global(:root[data-theme="dark"]) .top,
+:global(:root[data-theme="dark"]) .panel,
+:global(:root[data-theme="dark"]) .metrics article,
+:global(:root[data-theme="dark"]) .distributions > div { background: #0d2d3b; border-color: #244957; color: #e9f5f7; }
+:global(:root[data-theme="dark"]) .boundary { background: #123846; border-color: #2c5968; }
+:global(:root[data-theme="dark"]) .boundary p,
+:global(:root[data-theme="dark"]) .panelHead > p,
+:global(:root[data-theme="dark"]) .explain,
+:global(:root[data-theme="dark"]) .runs time,
+:global(:root[data-theme="dark"]) .metrics span,
+:global(:root[data-theme="dark"]) .metrics small,
+:global(:root[data-theme="dark"]) .distributions p { color: #b9d2d9; }
+:global(:root[data-theme="dark"]) .row,
+:global(:root[data-theme="dark"]) .runs article { border-color: #244957; }
+@media(max-width:700px){.panel{padding:18px}.metrics,.distributions{grid-template-columns:1fr}.runs article{grid-template-columns:minmax(0,1fr) auto}.primary{width:100%}}

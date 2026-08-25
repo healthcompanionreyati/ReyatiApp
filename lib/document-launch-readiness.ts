@@ -68,6 +68,20 @@ export async function getDocumentLaunchReadiness(userId: string, now = new Date(
 
   const inputs: StageInput[] = [
     {
+      id: "governance-setup",
+      group: "governance",
+      title: "Prepare missing governance drafts",
+      titleAr: "إعداد مسودات الحوكمة المفقودة",
+      detail: "Create only the missing proposal-stage lifecycle policies and retention plan before independent approval.",
+      detailAr: "أنشئ فقط سياسات دورة الحياة وخطة الاحتفاظ المفقودة في مرحلة الاقتراح قبل الاعتماد المستقل.",
+      action: "Open governance setup",
+      actionAr: "فتح إعداد الحوكمة",
+      href: "/admin/document-governance-setup",
+      passed: lifecycle.approvedPolicyCount > 0,
+      current: lifecycle.approvedPolicyCount > 0 ? 1 : 0,
+      target: 1,
+    },
+    {
       id: "ownership",
       group: "governance",
       title: "Name accountable owners",

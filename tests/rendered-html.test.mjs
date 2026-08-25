@@ -1201,5 +1201,5 @@ test("keeps notification and authentication text readable without compressing he
   const patientHeader = await readFile(new URL("../app/components/PatientHeader.tsx", import.meta.url), "utf8");
   assert.match(patientHeader, /aria-label=\{ar \? "التنقل الرئيسي" : "Primary navigation"\}/);
   assert.match(patientHeader, /className="app-locale"/);
-  assert.match(patientHeader, /className="app-account"/);
+  assert.match(patientHeader, /className=\{`app-account \$\{active === "account" \? "active" : ""\}`\}/);
 });
