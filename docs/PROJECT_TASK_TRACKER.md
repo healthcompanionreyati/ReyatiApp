@@ -21,7 +21,7 @@ This file is the persistent source of truth for implementation work. Every batch
 | Verified release | Current `main`; authoritative SHA is returned by `/api/health` |
 | Application pages | 334 |
 | API routes | 339 |
-| Automated test files | 150 |
+| Automated test files | 153 |
 | Expand-only migrations | 114 |
 | Hosting | Vercel production |
 | Database | Cloudflare D1 |
@@ -32,10 +32,9 @@ This file is the persistent source of truth for implementation work. Every batch
 
 ## Active batch
 
-- [ ] **IN PROGRESS — QV-QA-02: authenticated browser journey suite**
-  - Automate representative patient, provider, and administrator flows with synthetic accounts and safe fixtures.
-  - Keep credentials out of source control and make destructive actions opt-in.
-  - Acceptance: the three role journeys run against a controlled target and emit privacy-safe evidence.
+- [ ] **IN PROGRESS — QV-QA-03: accessibility regression expansion**
+  - Add automated zoom/reflow, focus-order, dialog, form-error, and mixed-direction content checks.
+  - Acceptance: representative patient, provider, and admin shells pass the focused accessibility gate.
 
 ## Completed foundation
 
@@ -82,17 +81,17 @@ This file is the persistent source of truth for implementation work. Every batch
 - [x] **DONE — QV-DOC-02: document activation, release, assurance, incident, change-control, preflight, and production-operations workspaces**
 - [x] **DONE — QV-UX-01: shared responsive application-shell release** — patient, provider, admin, audit, operations, organizations, documents, and profile shell contracts deployed.
 - [x] **DONE — QV-QA-01: production journey verification module** — six public/protected journeys, health release identity, security headers, branded-not-found detection, bounded retries, and machine-readable evidence are enforced.
+- [x] **DONE — QV-DOCS-01: documentation reconciliation** — README and readiness reporting now describe the current Qivaya/Vercel/Clerk/D1/R2/Resend architecture and point to this tracker.
 
 ## Next unblocked implementation queue
 
 - [ ] **NEXT — QV-UX-02: dense-route visual remediation** — continue route batches for remaining legacy tables, cards, long text, mobile widths, and dark theme; record each repaired route group here.
-- [ ] **NEXT — QV-DOCS-01: documentation reconciliation** — replace the stale prototype README and August 15 readiness counts with the current Qivaya/Vercel/Clerk/D1/R2/Resend architecture.
-- [ ] **NEXT — QV-QA-03: accessibility regression expansion** — automated zoom/reflow, focus-order, dialog, form-error, and mixed-direction content checks.
 - [ ] **NEXT — QV-OPS-01: release evidence automation** — retain build, health, migration, and runtime-error evidence for every production release.
 - [ ] **NEXT — QV-DEMO-01: validated investor-demo synchronization** — copy only a verified main release, then apply synthetic personas, guided tours, and persistent concept labels in the separate demo application.
 
 ## Blocked external activation work
 
+- [ ] **BLOCKED — QV-QA-02: complete authenticated journey evidence** — the privacy-safe read-only patient/provider/admin verifier and runbook are implemented; production completion requires a dedicated short-lived synthetic provider session. Patient/admin passed with the current account and provider access correctly failed closed.
 - [ ] **BLOCKED — QV-PILOT-01: real-patient controlled pilot** — requires named clinical, privacy, security, incident, verification, and pilot-operations owners plus agreements and approval evidence.
 - [ ] **BLOCKED — QV-PAY-01: live checkout, refunds, and settlement** — requires approved commercial model, Stripe mode/credentials, finance owners, and controlled acceptance evidence.
 - [ ] **BLOCKED — QV-DOC-03: production malware-scanner activation** — requires approved private-processing contract, credentials, PDF assurance, security review, and named quarantine ownership.
@@ -116,6 +115,7 @@ This file is the persistent source of truth for implementation work. Every batch
 | 2026-08-25 | Admin/account UI stability | Admin, operations, organizations, account profile, dark theme, and document-family regression contracts | `420dc55` |
 | 2026-08-25 | System-health title recovery | Restored the bilingual production document title after live verification | `ab1f3ad` |
 | 2026-08-25 | Persistent tracker and release gate | Added the delivery source of truth, shared security headers, and six-journey fail-closed production verification | Current `main` |
+| 2026-08-25 | Authenticated journey and documentation batch | Added the three-role read-only verifier, captured patient/admin evidence, verified provider fail-closed behavior, repaired wallet failure UX, and reconciled project documentation | Current `main` |
 
 ## Required update sequence
 

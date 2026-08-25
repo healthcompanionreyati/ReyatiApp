@@ -22,6 +22,7 @@
     "test:recovery-acceptance": "node --test tests/hosted-recovery-rehearsal.test.mjs tests/recovery-rehearsals.test.mjs",
     "pilot:seed:generate": "node scripts/generate-production-pilot-seed.mjs",
     "verify:production": "node scripts/verify-production-readiness.mjs",
+    "verify:authenticated": "node scripts/verify-authenticated-journeys.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:communications-worker": "tsc --noEmit -p workers/communications-dispatcher/tsconfig.json",
     "typecheck:document-maintenance-worker": "tsc --noEmit -p workers/document-maintenance/tsconfig.json",

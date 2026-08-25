@@ -108,15 +108,15 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
         location.assign(`/sign-in?redirect_url=/${c.path}`);
         return;
       }
-      const payload = await response.json().catch(() => ({})) as { data?: Data; message?: string };
-      if (!response.ok || !payload.data) throw Error(payload.message ?? "Unable to load wallet records");
+      const payload = await response.json().catch(() => ({})) as { data?: Data; error?: string; message?: string };
+      if (!response.ok || !payload.data) throw Error(walletErrorMessage(payload, response.status, ar));
       setData(payload.data);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to load wallet records");
     } finally {
       setLoading(false);
     }
-  }, [endpoint, c.path]);
+  }, [endpoint, c.path, ar]);
 
   useEffect(() => {
     queueMicrotask(() => void load());
@@ -135,8 +135,8 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
         location.assign(`/sign-in?redirect_url=/${c.path}`);
         return false;
       }
-      const payload = await response.json().catch(() => ({})) as { message?: string };
-      if (!response.ok) throw Error(payload.message ?? "Unable to save");
+      const payload = await response.json().catch(() => ({})) as { error?: string; message?: string };
+      if (!response.ok) throw Error(walletErrorMessage(payload, response.status, ar, true));
       setNotice(ar ? "تم حفظ السجل الخاص." : "Your private wallet record was saved.");
       await load();
       return true;
@@ -298,4 +298,12 @@ export default function HealthWalletOperationsWorkspace({ module }: { module: Mo
       </div>
     </main>
   );
+}
+
+function walletErrorMessage(payload: { error?: string; message?: string }, status: number, ar: boolean, saving = false) {
+  if (payload.message) return payload.message;
+  if (status === 403 || payload.error === "forbidden") return ar ? "هذا الحساب لا يملك صلاحية الوصول إلى هذه المساحة." : "This account does not have access to this workspace.";
+  if (status === 429) return ar ? "عدد كبير من المحاولات. انتظر قليلاً ثم حاول مجدداً." : "Too many attempts. Wait briefly and try again.";
+  if (status >= 500 || payload.error === "service_unavailable") return ar ? "الخدمة غير متاحة مؤقتاً. لم يتم تغيير أي سجل." : "The service is temporarily unavailable. No record was changed.";
+  return saving ? (ar ? "تعذر الحفظ. لم يتم تغيير أي سجل." : "Unable to save. No record was changed.") : (ar ? "تعذر تحميل سجلات المحفظة." : "Unable to load wallet records.");
 }

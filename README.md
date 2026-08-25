@@ -1,123 +1,76 @@
 # Qivaya
 
-The persistent implementation queue and completion record is maintained in [docs/PROJECT_TASK_TRACKER.md](docs/PROJECT_TASK_TRACKER.md). Update it in the same commit as every implementation batch.
+Qivaya is a bilingual connected-health application for patients, providers, partner organizations, and platform operations. The production application runs at [www.qivaya.com](https://www.qivaya.com).
 
-## Reyati operational foundations
+The persistent implementation queue, status definitions, blockers, and batch history live in [docs/PROJECT_TASK_TRACKER.md](docs/PROJECT_TASK_TRACKER.md). Update that tracker in the same commit as every implementation batch.
+
+## Production architecture
+
+| Concern | Current implementation |
+| --- | --- |
+| Application | Next.js App Router with TypeScript |
+| Hosting and delivery | Vercel, deployed from GitHub `main` |
+| Authentication | Clerk with server-side identity resolution |
+| Authorization | Account, organization, provider, and platform-role enforcement |
+| Relational data | Cloudflare D1 through Drizzle |
+| Protected documents | Cloudflare R2 adapter with guarded lifecycle controls |
+| Transactional email | Resend foundation and webhook processing |
+| Payments | Stripe integration foundation; live money movement remains acceptance-gated |
+| Observability | Health endpoint, privacy-safe operational events, Vercel Analytics and Speed Insights |
+| Languages and themes | English/Arabic, LTR/RTL, light/dark, accessibility preferences |
+
+## Safety boundaries
+
+- Authentication never grants provider, organization, or administrator permissions by itself.
+- Patient, provider, partner, and platform APIs enforce scope server-side.
+- External clinical automation, OCR interpretation, live video, SMS/WhatsApp, scanner activation, and unrestricted payment movement remain blocked until their owners and acceptance evidence exist.
+- Synthetic data is clearly separated from real-patient activation.
+- Migrations are expand-only; destructive lifecycle actions require explicit governed workflows.
+
+## Local development
+
+Prerequisite: Node.js `>=22.13.0`.
+
+```bash
+npm ci
+npm run dev:vercel
+```
+
+Create local secrets only in ignored environment files. Never commit Clerk, D1, R2, Resend, Stripe, or synthetic-session credentials.
+
+## Quality and release commands
+
+```bash
+npm run typecheck
+npm run lint
+npm test
+npm run build:vercel
+npm run verify:production
+npm run verify:authenticated
+```
+
+- `verify:production` checks health, release identity, branding, security headers, not-found leakage, and six public/protected journeys.
+- `verify:authenticated` is a read-only patient/provider/admin check using short-lived synthetic sessions. See [the authenticated journey runbook](docs/runbooks/authenticated-journey-verification.md).
+- Privileged workflow tests are limited to localhost and synthetic identities.
+
+## Operational documentation
 
 - [Authentication architecture](docs/adr/ADR-001-authentication-architecture.md)
 - [Transactional email](docs/adr/ADR-002-transactional-email.md)
 - [Data classification and retention](docs/data-classification-and-retention.md)
+- [Production pilot baseline](docs/runbooks/production-pilot-baseline.md)
 - [Incident response](docs/runbooks/incident-response.md)
 - [Backup and restore](docs/runbooks/backup-and-restore.md)
 - [Pilot operations](docs/runbooks/pilot-operations.md)
 - [Investor demo synchronization](docs/investor-demo-sync-policy.md)
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+## Repository layout
 
-## Prerequisites
-
-- Node.js `>=22.13.0`
-
-## Quick Start
-
-```bash
-npm install
-npm run dev
-npm run build
-```
-
-This starter does not use `wrangler.jsonc`.
-
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Isolated privileged workflow UAT
-
-The role-based integration harness is deliberately restricted to `localhost` and synthetic identities. It never runs against a hosted Site.
-
-1. Create an ignored `.dev.vars` file containing `PLATFORM_BOOTSTRAP_EMAIL=admin.test@reyati.local`.
-2. Initialize the project-local D1 database by applying the SQL files in `drizzle/`, in filename order, with `wrangler d1 execute DB --config wrangler.uat.jsonc --local --file <migration>`.
-3. Start the app with `npm run dev`.
-4. Set `REYATI_UAT_BASE_URL` to the printed local URL and run `npm run test:privileged`.
-
-The harness covers administrator bootstrap, organization and facility provisioning, owner/practitioner invitations, reviewer access, provider verification and publication, appointment booking and confirmation, idempotent retries, suspension enforcement, and audit retrieval.
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- `app/` — pages, route handlers, and shared interface components
+- `lib/` — authorization, workflows, integrations, and domain services
+- `db/` — Drizzle schema and domain schema modules
+- `drizzle/` — ordered expand-only SQL migrations
+- `tests/` — Node test suites and repository contracts
+- `scripts/` — release, smoke, seed, maintenance, and verification tools
+- `workers/` — isolated background dispatch and maintenance workers
+- `docs/` — decisions, runbooks, capability status, and the task tracker
