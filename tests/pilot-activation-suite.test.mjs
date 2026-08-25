@@ -67,14 +67,16 @@ test("activation UI provides one bilingual, accessible and responsive journey", 
 });
 
 test("activation journey is discoverable and its boundary is documented", async () => {
-  const [nav, registry, adr] = await Promise.all([
+  const [nav, registry, adr, accessibility] = await Promise.all([
     read("app/components/AdminNavigation.tsx"),
     read("lib/capability-registry.ts"),
     read("docs/adr/ADR-031-controlled-pilot-activation-orchestration.md"),
+    read("app/components/AccessibilitySync.tsx"),
   ]);
   assert.match(nav, /\/admin\/pilot-activation/);
   assert.match(registry, /pilot_activation_orchestration/);
   assert.match(registry, /cannot invite or accept a participant/);
   assert.match(adr, /No participant, patient, or provider account is created or changed/);
   assert.match(adr, /fail-closed/);
+  assert.match(accessibility, /"\/admin\/pilot-activation": "Pilot activation centre"/);
 });
