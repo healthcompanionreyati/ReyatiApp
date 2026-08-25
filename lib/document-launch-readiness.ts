@@ -174,7 +174,7 @@ export async function getDocumentLaunchReadiness(userId: string, now = new Date(
       detailAr: "إعداد نافذة تغيير إنتاج محدودة ومراجعتها وفتحها ومراقبتها والتحقق منها بشكل مستقل.",
       action: "Open activation governance",
       actionAr: "فتح حوكمة التفعيل",
-      href: "/admin/document-activation",
+      href: "/admin/document-change-window",
       passed: lifecycle.activationWindowVerified,
       current: lifecycle.activationWindowVerified ? 1 : 0,
       target: 1,

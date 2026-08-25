@@ -103,6 +103,10 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/retention-safety"><span>◈</span>{ar ? "أمان الاحتفاظ" : "Retention safety"}</a>
         <a className="admin-verification-link" href="/admin/document-runtime-posture"><span>◉</span>{ar ? "وضع التشغيل" : "Runtime posture"}</a>
         <a className="admin-verification-link" href="/admin/document-activation-preflight"><span>⚑</span>{ar ? "فحص ما قبل التفعيل" : "Activation preflight"}</a>
+        <a className="admin-verification-link" href="/admin/document-change-window"><span>01</span>{ar ? "نافذة التغيير" : "Change window"}</a>
+        <a className="admin-verification-link" href="/admin/document-change-review"><span>02</span>{ar ? "مراجعة التغيير" : "Change review"}</a>
+        <a className="admin-verification-link" href="/admin/document-change-observation"><span>03</span>{ar ? "التحقق من الوضع" : "Posture verification"}</a>
+        <a className="admin-verification-link" href="/admin/document-rollback-control"><span>04</span>{ar ? "التحكم بالتراجع" : "Rollback control"}</a>
         <a className="admin-verification-link" href="/admin/data-lifecycle"><span>⌛</span>{ar ? "دورة حياة البيانات" : "Data lifecycle"}</a>
         <a className="admin-verification-link" href="/admin/legal-holds"><span>§</span>{ar ? "الحجز القانوني" : "Legal holds"}</a>
         <a className="admin-verification-link" href="/admin/retention-automation"><span>◷</span>{ar ? "أتمتة الاحتفاظ" : "Retention automation"}</a>
