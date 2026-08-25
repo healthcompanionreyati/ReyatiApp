@@ -209,6 +209,16 @@ export default function AccessibilitySync() {
     const syncRouteScope = () => {
       const pathname = window.location.pathname;
       document.body.dataset.route = pathname;
+      document.body.dataset.uiRelease = "complete";
+      document.body.dataset.workspaceKind = pathname.startsWith("/admin")
+        ? "admin"
+        : pathname.startsWith("/provider")
+          ? "provider"
+          : pathname.startsWith("/partner")
+            ? "partner"
+            : pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up") || pathname === "/auth" || pathname === "/sign-out"
+              ? "auth"
+              : "patient";
       if (financeProviderDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "finance-provider";
       else if (recordsDocumentDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "records-document";
       else if (careJourneyDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "care-journey";

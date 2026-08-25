@@ -81,6 +81,7 @@ import "./dense-care-journey-release.css";
 import "./dense-clinical-services-release.css";
 import "./dense-provider-care-delivery-release.css";
 import "./dense-partner-admin-operations-release.css";
+import "./universal-ui-completion.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";

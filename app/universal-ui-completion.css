@@ -1,0 +1,314 @@
+/* Qivaya application-wide UI completion layer.
+   This loads last and gives every routed workspace the same containment,
+   readable-theme, responsive-navigation, and interaction contract. */
+
+body[data-ui-release="complete"] {
+  min-width: 320px;
+  background: var(--qv-bg);
+  color: var(--qv-text);
+  overflow-x: clip;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body[data-ui-release="complete"] > main {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body[data-ui-release="complete"] > main,
+body[data-ui-release="complete"] > main *,
+body[data-ui-release="complete"] > main *::before,
+body[data-ui-release="complete"] > main *::after {
+  box-sizing: border-box;
+}
+
+body[data-ui-release="complete"] > main :where(*) {
+  min-width: 0;
+}
+
+body[data-ui-release="complete"] > main :where(
+  h1, h2, h3, h4, h5, h6, p, li, dt, dd, label, legend, small,
+  span, strong, b, em, a, button, code, pre
+) {
+  overflow-wrap: anywhere;
+}
+
+body[data-ui-release="complete"] > main :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+body[data-ui-release="complete"] > main :where(p, li, dd) {
+  text-wrap: pretty;
+}
+
+body[data-ui-release="complete"] > main :where(img, video, canvas, svg) {
+  max-width: 100%;
+}
+
+body[data-ui-release="complete"] > main img {
+  height: auto;
+}
+
+body[data-ui-release="complete"] > main :where(input, select, textarea, button) {
+  max-width: 100%;
+  font: inherit;
+}
+
+body[data-ui-release="complete"] > main :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  width: 100%;
+  min-height: 42px;
+}
+
+body[data-ui-release="complete"] > main textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+body[data-ui-release="complete"] > main :where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--qv-primary) 68%, white);
+  outline-offset: 3px;
+}
+
+body[data-ui-release="complete"] > main :where(button, [role="button"], a[class*="button"], a[class*="primary"], a[class*="secondary"]) {
+  min-height: 40px;
+}
+
+body[data-ui-release="complete"] > main :where(
+  [class*="workspace"], [class*="content"], [class*="console"],
+  [class*="main"], [class*="body"], [class*="layout"]
+) {
+  max-width: 100%;
+}
+
+body[data-ui-release="complete"] > main :where(
+  [class*="table"], [class*="ledger"], [class*="register"],
+  [class*="history"], [class*="timeline"], [class*="queue"],
+  [class*="events"], [class*="cases"], [class*="matrix"]
+) {
+  max-width: 100%;
+}
+
+body[data-ui-release="complete"] > main table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+body[data-ui-release="complete"] > main :where(dialog, [role="dialog"], [aria-modal="true"]) {
+  max-width: min(680px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+
+body[data-ui-release="complete"] > main :where(
+  [class*="panelHead"], [class*="cardTop"], [class*="sectionHead"],
+  [class*="heading"], [class*="toolbar"], [class*="actions"],
+  [class*="topActions"]
+) {
+  gap: 12px;
+}
+
+/* Fail-safe and authentication recovery states stay centered instead of
+   inheriting a stale role-console column from a prior client-side route. */
+body[data-ui-release="complete"][data-workspace-kind="auth"] > main.recovery-shell {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  place-items: center !important;
+}
+
+body[data-ui-release="complete"][data-workspace-kind="auth"] > main.recovery-shell > .recovery-card {
+  grid-column: 1 !important;
+  width: min(560px, 100%) !important;
+}
+
+/* A reliable theme hierarchy for legacy surfaces with hard-coded colors. */
+:root[data-theme="dark"] body[data-ui-release="complete"] > main {
+  background: var(--qv-bg);
+  color: var(--qv-text);
+}
+
+:root[data-theme="dark"] body[data-ui-release="complete"] > main :where(
+  [class*="panel"], [class*="card"], [class*="form"], [class*="state"],
+  [class*="empty"], [class*="summary"], [class*="detail"], [class*="notice"],
+  [class*="metric"], [class*="boundary"], [class*="collector"],
+  [class*="rehearsal"], [class*="control"], [class*="editor"]
+) {
+  border-color: var(--qv-border) !important;
+  background-color: var(--qv-surface) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-ui-release="complete"] > main :where(
+  [class*="panel"], [class*="card"], [class*="form"], [class*="state"],
+  [class*="empty"], [class*="summary"], [class*="detail"], [class*="notice"],
+  [class*="metric"], [class*="boundary"], [class*="collector"],
+  [class*="rehearsal"], [class*="control"], [class*="editor"]
+) :where(h1, h2, h3, h4, h5, h6, b, strong, dt, label, legend) {
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-ui-release="complete"] > main :where(
+  [class*="panel"], [class*="card"], [class*="form"], [class*="state"],
+  [class*="empty"], [class*="summary"], [class*="detail"], [class*="notice"],
+  [class*="metric"], [class*="boundary"], [class*="collector"],
+  [class*="rehearsal"], [class*="control"], [class*="editor"]
+) :where(p, li, dd, small, em, [class*="muted"], [class*="meta"]) {
+  color: var(--qv-text-soft) !important;
+  opacity: 1 !important;
+}
+
+:root[data-theme="dark"] body[data-ui-release="complete"] > main :where(input, select, textarea) {
+  border-color: var(--qv-border-strong) !important;
+  background-color: var(--qv-surface-soft) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-ui-release="complete"] > main :where(input, textarea)::placeholder {
+  color: var(--qv-text-faint) !important;
+  opacity: 1;
+}
+
+:root[data-theme="dark"] body[data-ui-release="complete"] > main img[src*="qivaya-logo-primary"] {
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: #f7fbfc;
+}
+
+/* Workspace navigation remains in-flow and usable at intermediate widths. */
+@media (max-width: 1100px) {
+  body[data-ui-release="complete"] > main :where(
+    [class*="metrics"], [class*="stats"], [class*="summaryGrid"], [class*="checks"]
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body[data-ui-release="complete"] > main :where(
+    [class*="panelHead"], [class*="cardTop"], [class*="sectionHead"],
+    [class*="heading"], [class*="toolbar"], [class*="actions"],
+    [class*="topActions"], header
+  ) {
+    flex-wrap: wrap !important;
+  }
+
+  body[data-ui-release="complete"] > main :where(
+    [class*="split"], [class*="dashboardGrid"], [class*="adminGrid"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  body[data-ui-release="complete"][data-workspace-kind="admin"] > main,
+  body[data-ui-release="complete"][data-workspace-kind="provider"] > main,
+  body[data-ui-release="complete"][data-workspace-kind="partner"] > main {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-ui-release="complete"] > main > :where(aside, [class*="sidebar"], [class*="side"]),
+  body[data-ui-release="complete"] > main > section > :where(aside, [class*="sidebar"]) {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body[data-ui-release="complete"] > main > :where(aside, [class*="sidebar"], [class*="side"]) nav,
+  body[data-ui-release="complete"] > main > section > :where(aside, [class*="sidebar"]) nav {
+    display: flex !important;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  body[data-ui-release="complete"] > main > :where(aside, [class*="sidebar"], [class*="side"]) nav > a,
+  body[data-ui-release="complete"] > main > section > :where(aside, [class*="sidebar"]) nav > a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  body[data-ui-release="complete"] > main :where(
+    [class*="grid"], [class*="layout"], [class*="columns"], [class*="split"],
+    [class*="workspaceGrid"], [class*="resultsLayout"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-ui-release="complete"] > main :where(
+    [class*="table"], [class*="ledger"], [class*="register"],
+    [class*="history"], [class*="timeline"], [class*="queue"],
+    [class*="events"], [class*="cases"], [class*="matrix"]
+  ) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 640px) {
+  body[data-ui-release="complete"] > main :where(
+    [class*="content"], [class*="workspace"], [class*="console"],
+    [class*="main"], [class*="body"]
+  ) {
+    padding-inline: 14px !important;
+    padding-block-end: 96px !important;
+  }
+
+  body[data-ui-release="complete"] > main :where(
+    [class*="metrics"], [class*="stats"], [class*="summaryGrid"],
+    [class*="checks"], [class*="fields"], [class*="formGrid"], [class*="row"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-ui-release="complete"] > main :where(
+    [class*="panelHead"], [class*="cardTop"], [class*="sectionHead"],
+    [class*="heading"], [class*="toolbar"], [class*="actions"],
+    [class*="topActions"]
+  ) {
+    align-items: stretch !important;
+  }
+
+  body[data-ui-release="complete"] > main :where([class*="actions"], [class*="toolbar"], [class*="topActions"]) > :where(button, a) {
+    flex: 1 1 148px;
+  }
+
+  body[data-ui-release="complete"] > main :where(h1) {
+    font-size: clamp(32px, 10vw, 46px) !important;
+    line-height: 1.04 !important;
+  }
+
+  body[data-ui-release="complete"] > main :where(dialog, [role="dialog"], [aria-modal="true"]) {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    margin: 10px;
+    padding: 20px !important;
+  }
+}
+
+[dir="rtl"] body[data-ui-release="complete"] > main,
+body[data-ui-release="complete"] > main[dir="rtl"] {
+  text-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-ui-release="complete"] > main *,
+  body[data-ui-release="complete"] > main *::before,
+  body[data-ui-release="complete"] > main *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

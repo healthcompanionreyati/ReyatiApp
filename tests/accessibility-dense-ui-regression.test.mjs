@@ -262,3 +262,27 @@ test("twenty partner and admin operations routes share resilient console geometr
   assert.match(css, /overflow-x: auto/);
   assert.match(css, /overflow-wrap: anywhere/);
 });
+
+test("all routed workspaces share the final responsive and theme contract", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/universal-ui-completion.css");
+
+  assert.match(layout, /import "\.\/universal-ui-completion\.css"/);
+  assert.match(sync, /dataset\.uiRelease = "complete"/);
+  for (const kind of ["admin", "provider", "partner", "auth", "patient"]) {
+    assert.match(sync, new RegExp(`"${kind}"`));
+  }
+  assert.match(css, /body\[data-ui-release="complete"\]/);
+  assert.match(css, /data-workspace-kind="admin"/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /@media \(max-width: 1100px\)/);
+  assert.match(css, /@media \(max-width: 900px\)/);
+  assert.match(css, /@media \(max-width: 640px\)/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+  assert.match(css, /\[dir="rtl"\]/);
+  assert.match(css, /prefers-reduced-motion: reduce/);
+  assert.match(css, /main\.recovery-shell/);
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) !important/);
+});

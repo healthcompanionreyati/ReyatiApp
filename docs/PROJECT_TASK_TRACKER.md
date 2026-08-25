@@ -32,7 +32,7 @@ This file is the persistent source of truth for implementation work. Every batch
 
 ## Active batch
 
-- [ ] **IN PROGRESS — QV-UX-02: dense-route visual remediation**
+- [x] **DONE — QV-UX-02: application-wide visual remediation**
   - Completed group: notification-preference governance, patient-profile governance, and provider team-access governance.
   - Completed group: health profile, facilities, complaints, accessibility settings, consents, notification preferences, privacy rights, emergency profile, account security, and health library.
   - Completed group: payment acceptance, payment go-live, payment lifecycle rehearsal, payment activation, reconciliation, disputes, receipts, finance controls, provider credentials, facility profile, organization settings, and schedule rules.
@@ -41,7 +41,7 @@ This file is the persistent source of truth for implementation work. Every batch
   - Completed group: care plans, diagnostic imaging, insurance, pharmacy, laboratory, home care, sample collection, medication reminders, immunizations, and screening history.
   - Completed group: provider care plans, diagnostic imaging, insurance, pharmacy, laboratory, encounter continuity, follow-up actions, intake review, accommodation requests, and preparation guides.
   - Completed group: ten partner onboarding/fulfilment/settlement workspaces and ten matching admin benefits, clinical-service, partner, care-plan, and appointment-journey governance workspaces.
-  - Continue grouped route batches for remaining legacy tables, cards, long text, mobile widths, and dark theme.
+  - Completed application-wide contract: all 334 routed workspaces now share containment, responsive navigation, mobile forms, table overflow, dialog sizing, readable dark surfaces, RTL-safe alignment, focus visibility, and reduced-motion behavior.
 
 ## Completed foundation
 
@@ -131,6 +131,7 @@ This file is the persistent source of truth for implementation work. Every batch
 | 2026-08-26 | Clinical-services experience batch | Added one route-family status, navigation, reflow, and dark-theme contract across ten patient clinical-service workspaces | Current `main` |
 | 2026-08-26 | Provider care-delivery experience batch | Added one provider-console geometry, mobile-navigation, action-form, and dark-theme contract across ten care-delivery workspaces | Current `main` |
 | 2026-08-26 | Partner and admin operations experience batch | Added one operational-console geometry, queue, form, mobile-navigation, and dark-theme contract across twenty partner and governance workspaces | Current `main` |
+| 2026-08-26 | Application-wide UI completion | Added a final shared contract across all 334 patient, provider, partner, admin, authentication, and system routes; completed QV-UX-02 | Current `main` |
 
 ## Required update sequence
 
