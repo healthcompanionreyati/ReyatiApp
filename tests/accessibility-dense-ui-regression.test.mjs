@@ -194,3 +194,32 @@ test("ten clinical-service routes share responsive status and dark-theme surface
   assert.match(css, /overflow-x: auto/);
   assert.match(css, /overflow-wrap: anywhere/);
 });
+
+test("ten provider care-delivery routes protect console geometry and mobile navigation", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/dense-provider-care-delivery-release.css");
+  const routes = [
+    "/provider/care-plans",
+    "/provider/diagnostic-imaging",
+    "/provider/insurance",
+    "/provider/pharmacy",
+    "/provider/laboratory",
+    "/provider/encounter-continuity",
+    "/provider/follow-up-actions",
+    "/provider/pre-visit-intake",
+    "/provider/accommodation-requests",
+    "/provider/preparation-guides",
+  ];
+
+  assert.match(layout, /import "\.\/dense-provider-care-delivery-release\.css"/);
+  for (const route of routes) assert.match(sync, new RegExp(`"${route}"`));
+  assert.match(sync, /dataset\.denseRouteGroup = "provider-care-delivery"/);
+  assert.match(css, /body\[data-dense-route-group="provider-care-delivery"\]/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /\[class\*="sidebar"\]/);
+  assert.match(css, /@media \(max-width: 1080px\)/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});

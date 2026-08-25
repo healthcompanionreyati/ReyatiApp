@@ -158,6 +158,19 @@ const clinicalServicesDenseRoutes = new Set([
   "/screening-history",
 ]);
 
+const providerCareDeliveryDenseRoutes = new Set([
+  "/provider/care-plans",
+  "/provider/diagnostic-imaging",
+  "/provider/insurance",
+  "/provider/pharmacy",
+  "/provider/laboratory",
+  "/provider/encounter-continuity",
+  "/provider/follow-up-actions",
+  "/provider/pre-visit-intake",
+  "/provider/accommodation-requests",
+  "/provider/preparation-guides",
+]);
+
 export default function AccessibilitySync() {
   useEffect(() => {
     let activeDialog: HTMLElement | null = null;
@@ -177,6 +190,7 @@ export default function AccessibilitySync() {
       else if (recordsDocumentDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "records-document";
       else if (careJourneyDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "care-journey";
       else if (clinicalServicesDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "clinical-services";
+      else if (providerCareDeliveryDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "provider-care-delivery";
       else delete document.body.dataset.denseRouteGroup;
     };
 

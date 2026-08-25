@@ -1,0 +1,173 @@
+/* Provider care-delivery release contract: protects the console column,
+   action forms, clinical status cards, and mobile navigation. */
+body[data-dense-route-group="provider-care-delivery"] > main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body[data-dense-route-group="provider-care-delivery"] > main *,
+body[data-dense-route-group="provider-care-delivery"] > main *::before,
+body[data-dense-route-group="provider-care-delivery"] > main *::after {
+  min-width: 0;
+}
+
+body[data-dense-route-group="provider-care-delivery"] > main :where(
+  h1, h2, h3, h4, p, li, dd, dt, label, button, a, span, strong, b, small
+) {
+  overflow-wrap: anywhere;
+}
+
+body[data-dense-route-group="provider-care-delivery"] > main :where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="provider-care-delivery"] > main :where(
+  [class*="main"],
+  [class*="workspace"],
+  [class*="content"],
+  [class*="console"]
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body[data-dense-route-group="provider-care-delivery"] > main :where(
+  [class*="list"],
+  [class*="timeline"],
+  [class*="history"],
+  [class*="orders"],
+  [class*="events"],
+  [class*="records"]
+) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="provider-care-delivery"] > main textarea {
+  width: 100%;
+  min-height: 112px;
+  resize: vertical;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="provider-care-delivery"] > main {
+  color: var(--qv-text);
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="provider-care-delivery"] > main :where(
+  [class*="panel"],
+  [class*="card"],
+  [class*="form"],
+  [class*="state"],
+  [class*="empty"],
+  [class*="boundary"],
+  [class*="summary"],
+  [class*="detail"],
+  [class*="notice"]
+) {
+  background: var(--qv-surface) !important;
+  border-color: var(--qv-border) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="provider-care-delivery"] > main :where(
+  h1, h2, h3, h4, strong, b, label, dt
+) {
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="provider-care-delivery"] > main :where(
+  p, li, dd, small, em, [class*="muted"], [class*="meta"]
+) {
+  color: var(--qv-text-muted) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="provider-care-delivery"] > main :where(input, select, textarea) {
+  background: var(--qv-surface-soft) !important;
+  border-color: var(--qv-border-strong) !important;
+  color: var(--qv-text) !important;
+}
+
+@media (max-width: 1080px) {
+  body[data-dense-route-group="provider-care-delivery"] > main {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="provider-care-delivery"] > main > :where([class*="sidebar"], aside:first-child) {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body[data-dense-route-group="provider-care-delivery"] > main > :where([class*="sidebar"], aside:first-child) nav {
+    display: flex !important;
+    gap: 8px;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  body[data-dense-route-group="provider-care-delivery"] > main :where(
+    [class*="workspace"],
+    [class*="layout"],
+    [class*="split"],
+    [class*="grid"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="provider-care-delivery"] > main :where(
+    header,
+    [class*="hero"],
+    [class*="head"],
+    [class*="actions"],
+    [class*="toolbar"]
+  ) {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-dense-route-group="provider-care-delivery"] > main :where(
+    [class*="metrics"],
+    [class*="stats"],
+    [class*="form"],
+    [class*="row"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="provider-care-delivery"] > main :where(
+    [class*="main"],
+    [class*="workspace"],
+    [class*="content"],
+    [class*="console"]
+  ) {
+    padding-inline: 14px !important;
+    padding-block-end: 96px !important;
+  }
+
+  body[data-dense-route-group="provider-care-delivery"] > main :where(
+    [class*="list"],
+    [class*="timeline"],
+    [class*="history"],
+    [class*="orders"],
+    [class*="events"],
+    [class*="records"]
+  ) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  body[data-dense-route-group="provider-care-delivery"] > main :where(
+    [class*="actions"],
+    [class*="toolbar"]
+  ) > :where(button, a) {
+    flex: 1 1 140px;
+  }
+}
