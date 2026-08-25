@@ -167,7 +167,8 @@
   background: var(--ops-surface);
   color: var(--ops-ink);
   font: inherit;
-  font-size: 14px;
+  /* Override the legacy global compact-control rule for this rebuilt workspace. */
+  font-size: 14px !important;
   font-weight: 750;
   cursor: pointer;
 }
