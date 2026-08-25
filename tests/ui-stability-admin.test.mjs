@@ -11,6 +11,12 @@ test("shared operations shells keep navigation and content in one fluid grid", (
   assert.match(css, /@media \(max-width: 900px\)[\s\S]*?\.admin-shell\.live-admin-shell,[\s\S]*?\.orgops-shell \{ display: block !important/);
 });
 
+test("system health route keeps a real bilingual document title", () => {
+  const accessibility = read("app/components/AccessibilitySync.tsx");
+  assert.match(accessibility, /"\/admin\/operations": "System health centre"/);
+  assert.match(accessibility, /"\/admin\/operations": "مركز صحة النظام"/);
+});
+
 test("operations workspaces enforce readable headings and responsive metric grids", () => {
   const css = read("app/ui-stability.css");
   assert.match(css, /\.live-admin-shell \.admin-heading h1,[\s\S]*?font-size: clamp\(34px, 4vw, 56px\) !important/);
