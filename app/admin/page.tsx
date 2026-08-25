@@ -150,6 +150,16 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/document-legal-hold-enforcement"><span>28</span>{ar ? "إنفاذ الحجز القانوني" : "Legal-hold enforcement"}</a>
         <a className="admin-verification-link" href="/admin/document-maintenance-readiness"><span>29</span>{ar ? "جاهزية الصيانة" : "Maintenance readiness"}</a>
         <a className="admin-verification-link" href="/admin/document-safety-rehearsal-assurance"><span>30</span>{ar ? "تأكيد بروفة السلامة" : "Safety rehearsal assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-continuity-assurance"><span>31</span>{ar ? "تأكيد الاستمرارية" : "Continuity assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-recovery-runbook-assurance"><span>32</span>{ar ? "تأكيد دليل التعافي" : "Recovery runbook assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-storage-resilience-assurance"><span>33</span>{ar ? "تأكيد مرونة التخزين" : "Storage resilience assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-scanner-resilience-assurance"><span>34</span>{ar ? "تأكيد مرونة الماسح" : "Scanner resilience assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-lifecycle-resilience-assurance"><span>35</span>{ar ? "تأكيد مرونة دورة الحياة" : "Lifecycle resilience assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-incident-response-assurance"><span>36</span>{ar ? "تأكيد الاستجابة للحوادث" : "Incident response assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-evidence-continuity-assurance"><span>37</span>{ar ? "تأكيد استمرارية الدليل" : "Evidence continuity assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-ownership-continuity-assurance"><span>38</span>{ar ? "تأكيد استمرارية الملكية" : "Ownership continuity assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-dependency-resilience-assurance"><span>39</span>{ar ? "تأكيد مرونة التبعيات" : "Dependency resilience assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-resilience-scorecard"><span>40</span>{ar ? "بطاقة المرونة" : "Resilience scorecard"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>
