@@ -62,11 +62,43 @@ test("ten high-use patient routes consume the shared dense-route release layer",
   ];
 
   assert.match(layout, /import "\.\/dense-route-release\.css"/);
-  assert.match(sync, /document\.body\.dataset\.route = window\.location\.pathname/);
+  assert.match(sync, /const pathname = window\.location\.pathname/);
+  assert.match(sync, /document\.body\.dataset\.route = pathname/);
   assert.match(sync, /delete document\.body\.dataset\.route/);
   for (const route of routes) assert.match(css, new RegExp(`data-route="${route}"`));
   assert.match(css, /:root\[data-theme="dark"\] body:is/);
   assert.match(css, /grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});
+
+test("twelve finance and provider routes consume one responsive dark-theme contract", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/dense-finance-provider-release.css");
+  const routes = [
+    "/admin/payment-acceptance",
+    "/admin/payment-go-live",
+    "/admin/payment-lifecycle-rehearsal",
+    "/admin/payment-activation",
+    "/admin/payment-reconciliation",
+    "/admin/payment-disputes",
+    "/admin/payment-receipts",
+    "/admin/finance-controls",
+    "/provider/credentials",
+    "/provider/facility-profile",
+    "/provider/organization-settings",
+    "/provider/schedule-rules",
+  ];
+
+  assert.match(layout, /import "\.\/dense-finance-provider-release\.css"/);
+  for (const route of routes) assert.match(sync, new RegExp(`"${route}"`));
+  assert.match(sync, /dataset\.denseRouteGroup = "finance-provider"/);
+  assert.match(sync, /delete document\.body\.dataset\.denseRouteGroup/);
+  assert.match(css, /body\[data-dense-route-group="finance-provider"\]/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /@media \(max-width: 1020px\)/);
+  assert.match(css, /@media \(max-width: 680px\)/);
   assert.match(css, /overflow-x: auto/);
   assert.match(css, /overflow-wrap: anywhere/);
 });

@@ -75,6 +75,7 @@ import "./qivaya-overhaul.css";
 import "./product-experience-release.css";
 import "./ui-stability.css";
 import "./dense-route-release.css";
+import "./dense-finance-provider-release.css";
 import MobileDock from "./components/MobileDock";
 import AccessibilitySync from "./components/AccessibilitySync";
 import NetworkStatus from "./components/NetworkStatus";

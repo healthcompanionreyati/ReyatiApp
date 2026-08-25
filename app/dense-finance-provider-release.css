@@ -1,0 +1,151 @@
+/* Release contract for dense finance and provider workspaces.
+   Route scoping prevents legacy module overrides from leaking into other journeys. */
+body[data-dense-route-group="finance-provider"] > main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body[data-dense-route-group="finance-provider"] > main *,
+body[data-dense-route-group="finance-provider"] > main *::before,
+body[data-dense-route-group="finance-provider"] > main *::after {
+  min-width: 0;
+}
+
+body[data-dense-route-group="finance-provider"] > main :where(
+  h1, h2, h3, h4, p, li, dd, dt, label, button, a, span, strong
+) {
+  overflow-wrap: anywhere;
+}
+
+body[data-dense-route-group="finance-provider"] > main :where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="finance-provider"] > main :where(
+  [class*="workspace"],
+  [class*="content"],
+  [class*="console"]
+) {
+  width: min(100%, 1280px);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+body[data-dense-route-group="finance-provider"] > main :where(
+  [class*="table"],
+  [class*="register"],
+  [class*="timeline"],
+  [class*="history"],
+  [class*="runs"],
+  [class*="list"]
+) {
+  max-width: 100%;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="finance-provider"] > main {
+  color: var(--qv-text);
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="finance-provider"] > main :where(
+  [class*="panel"],
+  [class*="card"],
+  [class*="boundary"],
+  [class*="metric"],
+  [class*="empty"],
+  [class*="rehearsal"],
+  [class*="register"],
+  [class*="detail"],
+  [class*="notice"]
+) {
+  background: var(--qv-surface) !important;
+  border-color: var(--qv-border) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="finance-provider"] > main :where(
+  h1, h2, h3, h4, strong, label, dt
+) {
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="finance-provider"] > main :where(p, li, dd, small, [class*="meta"], [class*="muted"]) {
+  color: var(--qv-text-muted) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="finance-provider"] > main :where(input, select, textarea) {
+  background: var(--qv-surface-soft) !important;
+  border-color: var(--qv-border-strong) !important;
+  color: var(--qv-text) !important;
+}
+
+@media (max-width: 1020px) {
+  body[data-dense-route-group="finance-provider"] > main :where(
+    [class*="workspace"],
+    [class*="layout"],
+    [class*="split"],
+    [class*="adminGrid"],
+    [class*="caseWork"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="finance-provider"] > main :where(
+    [class*="grid"],
+    [class*="cards"],
+    [class*="metrics"],
+    [class*="week"]
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body[data-dense-route-group="finance-provider"] > main :where(
+    [class*="top"],
+    [class*="head"],
+    [class*="toolbar"],
+    [class*="actions"],
+    [class*="detailHead"],
+    [class*="caseHeader"]
+  ) {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 680px) {
+  body[data-dense-route-group="finance-provider"] > main :where(
+    [class*="grid"],
+    [class*="cards"],
+    [class*="metrics"],
+    [class*="week"],
+    [class*="form"],
+    [class*="row"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="finance-provider"] > main :where(
+    [class*="content"],
+    [class*="workspace"],
+    [class*="console"]
+  ) {
+    padding-inline: 14px !important;
+    padding-block-end: 96px !important;
+  }
+
+  body[data-dense-route-group="finance-provider"] > main :where(
+    [class*="table"],
+    [class*="register"],
+    [class*="timeline"],
+    [class*="history"],
+    [class*="runs"],
+    [class*="list"]
+  ) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  body[data-dense-route-group="finance-provider"] > main :where([class*="actions"], [class*="toolbar"]) > :where(button, a) {
+    flex: 1 1 150px;
+  }
+}

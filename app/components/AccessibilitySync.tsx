@@ -100,6 +100,21 @@ const routeTitleFor = (pathname: string, arabic: boolean) => {
   return arabic ? "الصفحة غير موجودة" : "Page not found";
 };
 
+const financeProviderDenseRoutes = new Set([
+  "/admin/payment-acceptance",
+  "/admin/payment-go-live",
+  "/admin/payment-lifecycle-rehearsal",
+  "/admin/payment-activation",
+  "/admin/payment-reconciliation",
+  "/admin/payment-disputes",
+  "/admin/payment-receipts",
+  "/admin/finance-controls",
+  "/provider/credentials",
+  "/provider/facility-profile",
+  "/provider/organization-settings",
+  "/provider/schedule-rules",
+]);
+
 export default function AccessibilitySync() {
   useEffect(() => {
     let activeDialog: HTMLElement | null = null;
@@ -111,6 +126,13 @@ export default function AccessibilitySync() {
     let disposed = false;
 
     type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+
+    const syncRouteScope = () => {
+      const pathname = window.location.pathname;
+      document.body.dataset.route = pathname;
+      if (financeProviderDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "finance-provider";
+      else delete document.body.dataset.denseRouteGroup;
+    };
 
     const validationMessage = (control: FormControl) => {
       const validity = control.validity;
@@ -158,7 +180,7 @@ export default function AccessibilitySync() {
     };
 
     const sync = () => {
-      document.body.dataset.route = window.location.pathname;
+      syncRouteScope();
       const root = document.querySelector<HTMLElement>("main[dir]");
       const direction = root?.dir === "rtl" ? "rtl" : "ltr";
       const arabic = direction === "rtl";
@@ -330,7 +352,7 @@ export default function AccessibilitySync() {
     document.addEventListener("input", handleFieldInput);
     document.addEventListener("change", handleFieldInput);
     let observer: MutationObserver | null = null;
-    document.body.dataset.route = window.location.pathname;
+    syncRouteScope();
     const initialSyncTimer = window.setTimeout(() => {
       if (disposed) return;
       sync();
@@ -348,6 +370,7 @@ export default function AccessibilitySync() {
       document.removeEventListener("change", handleFieldInput);
       document.body.classList.remove("has-open-dialog");
       delete document.body.dataset.route;
+      delete document.body.dataset.denseRouteGroup;
       activeDialog = null;
       dialogOpener = null;
     };
