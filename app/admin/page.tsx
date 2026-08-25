@@ -140,6 +140,16 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/document-change-calendar"><span>18</span>{ar ? "تقويم التغيير" : "Change calendar"}</a>
         <a className="admin-verification-link" href="/admin/document-privacy-obligations"><span>19</span>{ar ? "التزامات الخصوصية" : "Privacy obligations"}</a>
         <a className="admin-verification-link" href="/admin/document-executive-assurance"><span>20</span>{ar ? "التأكيد التنفيذي" : "Executive assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-cleanup-assurance"><span>21</span>{ar ? "تأكيد التنظيف" : "Cleanup assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-scan-dispatch-assurance"><span>22</span>{ar ? "تأكيد إرسال الفحص" : "Scan dispatch assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-scan-polling-assurance"><span>23</span>{ar ? "تأكيد استطلاع الفحص" : "Scan polling assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-scan-recovery-assurance"><span>24</span>{ar ? "تأكيد تعافي الفحص" : "Scan recovery assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-quarantine-assurance"><span>25</span>{ar ? "تأكيد العزل" : "Quarantine assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-retention-control-assurance"><span>26</span>{ar ? "تأكيد ضابط الاحتفاظ" : "Retention control assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-deletion-control-assurance"><span>27</span>{ar ? "تأكيد ضابط الحذف" : "Deletion control assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-legal-hold-enforcement"><span>28</span>{ar ? "إنفاذ الحجز القانوني" : "Legal-hold enforcement"}</a>
+        <a className="admin-verification-link" href="/admin/document-maintenance-readiness"><span>29</span>{ar ? "جاهزية الصيانة" : "Maintenance readiness"}</a>
+        <a className="admin-verification-link" href="/admin/document-safety-rehearsal-assurance"><span>30</span>{ar ? "تأكيد بروفة السلامة" : "Safety rehearsal assurance"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>

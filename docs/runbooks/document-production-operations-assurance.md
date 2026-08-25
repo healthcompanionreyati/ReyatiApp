@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This ten-module suite converts the authorized release window into a continuous, read-only operating picture. Every module is backed by current server-side release, lifecycle, runtime, and incident evidence and links operators to the dedicated controlled workspace for action.
+This thirty-module suite converts the authorized release window into a continuous, read-only operating picture. Every module is backed by current server-side release, lifecycle, runtime, and incident evidence and links operators to the dedicated controlled workspace for action.
 
 ## Modules
 
@@ -26,12 +26,22 @@ This ten-module suite converts the authorized release window into a continuous, 
 18. `/admin/document-change-calendar` — active and scheduled bounded release windows.
 19. `/admin/document-privacy-obligations` — retention approval, legal-hold review, and protected quarantine.
 20. `/admin/document-executive-assurance` — overall posture, evidence, ownership, and open decision items.
+21. `/admin/document-cleanup-assurance` — upload cleanup control, protected storage, and quarantine pressure.
+22. `/admin/document-scan-dispatch-assurance` — private processing, dispatch control, and failed scanner work.
+23. `/admin/document-scan-polling-assurance` — polling control, stale work, and failed processing signals.
+24. `/admin/document-scan-recovery-assurance` — recovery control, stale backlog, and incident blockers.
+25. `/admin/document-quarantine-assurance` — protected quarantine, aggregate pressure, and incident coverage.
+26. `/admin/document-retention-control-assurance` — approved plan, runtime control, and failed retention runs.
+27. `/admin/document-deletion-control-assurance` — deletion processor, failed jobs, and hold conflicts.
+28. `/admin/document-legal-hold-enforcement` — hold review dates, blocked conflicts, and zero mutation.
+29. `/admin/document-maintenance-readiness` — scheduled maintenance, isolated storage, and evidence age.
+30. `/admin/document-safety-rehearsal-assurance` — rehearsal freshness, twenty-two scenarios, and zero operative effects.
 
 ## Interface contract
 
-- All twenty modules use the dedicated production-operations workspace, not the legacy change-control layout.
+- All thirty modules use the dedicated production-operations workspace, not the legacy change-control layout.
 - Desktop uses a 304 px grouped navigation rail and a fluid 1240 px content ceiling.
-- Tablet and mobile convert the two navigation groups into horizontal, independently labelled module strips.
+- Tablet and mobile convert the three navigation groups into horizontal, independently labelled module strips.
 - Body and operational copy is 14–17 px; only non-actionable overlines and workflow identifiers may use 12 px.
 - Cards and panels use explicit grid contracts, overflow containment, balanced headings, and visible keyboard focus.
 - Light and dark themes preserve the same hierarchy and semantic state meaning.
@@ -45,7 +55,7 @@ All modules are read-only and aggregate-only. They read no patient record or R2 
 
 - Enter from `/admin/document-release-monitoring` after a certificate is authorized or scheduled.
 - Review modules 01–09 in order and resolve any attention state through its linked control workspace.
-- Finish at module 10 and hand the single current operating picture to the next named shift.
+- Finish the live sequence at module 10, then use modules 11–30 for continuous and control assurance.
 - Use `/admin/document-release-stop` immediately when the named stop authority must revoke the certificate.
 - Use `/admin/document-incidents` for declaration, containment, recovery, and independent closure.
 

@@ -4,7 +4,9 @@ export type DocumentOperationsStage =
   | "runtime_controls" | "storage_watch" | "scanner_watch" | "queue_watch" | "retention_watch"
   | "deletion_watch" | "legal_hold_watch" | "incident_watch" | "evidence_renewal" | "operations_handoff"
   | "service_health" | "sla_watch" | "capacity_watch" | "recovery_readiness" | "vendor_assurance"
-  | "access_certification" | "audit_reconciliation" | "change_calendar" | "privacy_obligations" | "executive_assurance";
+  | "access_certification" | "audit_reconciliation" | "change_calendar" | "privacy_obligations" | "executive_assurance"
+  | "cleanup_assurance" | "scan_dispatch_assurance" | "scan_polling_assurance" | "scan_recovery_assurance" | "quarantine_assurance"
+  | "retention_control_assurance" | "deletion_control_assurance" | "legal_hold_enforcement" | "maintenance_readiness" | "safety_rehearsal_assurance";
 type Metric = { id: string; label: string; labelAr: string; value: string; detail: string; detailAr: string; state: "ready" | "attention" | "info"; href: string };
 
 export const DOCUMENT_PRODUCTION_OPERATIONS_BOUNDARIES = {
@@ -135,9 +137,59 @@ export async function getDocumentProductionOperationsWorkspace(userId: string, s
       metric("executive-coverage", "Operating ownership", "ملكية التشغيل", `${p.roster.length} operators`, p.roster.length >= 3, "Named separation of duties supports accountable operation.", "يدعم فصل الواجبات المسمى التشغيل الخاضع للمساءلة.", "/admin/document-access-certification"),
       metric("executive-attention", "Decision items", "عناصر القرار", attentionTotal, attentionTotal === 0, "Exceptions, incidents and overdue legal reviews are consolidated.", "تُجمع الاستثناءات والحوادث والمراجعات القانونية المتأخرة.", "/admin/document-incidents"),
     ],
+    cleanup_assurance: [
+      metric("cleanup-control", "Upload cleanup control", "ضابط تنظيف الرفع", posture.cleanupEnabled ? "Enabled" : "Disabled", posture.cleanupEnabled, "The bounded cleanup switch is observed without removing an object.", "يُرصد مفتاح التنظيف المحدود دون إزالة أي كائن.", "/admin/document-runtime-posture"),
+      metric("cleanup-storage", "Protected storage", "التخزين المحمي", posture.protectedStorageConfigured ? "Configured" : "Blocked", posture.protectedStorageConfigured, "Cleanup remains tied to the approved private storage posture.", "يبقى التنظيف مرتبطاً بوضع التخزين الخاص المعتمد.", "/admin/document-storage-watch"),
+      metric("cleanup-pressure", "Quarantine pressure", "ضغط العزل", signals.quarantinedDocuments, signals.quarantinedDocuments === 0, "Aggregate quarantine pressure is shown without listing an upload.", "يُعرض ضغط العزل المجمّع دون سرد أي ملف مرفوع.", "/admin/document-quarantine-assurance"),
+    ],
+    scan_dispatch_assurance: [
+      metric("dispatch-private", "Private scanner", "الماسح الخاص", posture.privateScannerConfigured ? "Configured" : "Blocked", posture.privateScannerConfigured, "Dispatch requires the approved private-processing posture.", "يتطلب الإرسال وضع المعالجة الخاصة المعتمد.", "/admin/document-scanner-watch"),
+      metric("dispatch-control", "Dispatch control", "ضابط الإرسال", posture.scanDispatchEnabled ? "Enabled" : "Disabled", posture.scanDispatchEnabled, "The dispatcher switch is observed without sending a document.", "يُرصد مفتاح الإرسال دون إرسال مستند.", "/admin/document-runtime-posture"),
+      metric("dispatch-failures", "Failed scanner jobs", "مهام الماسح الفاشلة", signals.failedScanJobs, signals.failedScanJobs === 0, "Failed work is count-only and requires incident review when non-zero.", "يُعرض العمل الفاشل كعدد فقط ويتطلب مراجعة حادث عند عدم الصفر.", "/admin/document-incidents"),
+    ],
+    scan_polling_assurance: [
+      metric("polling-control", "Polling control", "ضابط الاستطلاع", posture.scanPollingEnabled ? "Enabled" : "Disabled", posture.scanPollingEnabled, "The polling switch is observed without querying a vendor payload.", "يُرصد مفتاح الاستطلاع دون طلب حمولة المورد.", "/admin/document-runtime-posture"),
+      metric("polling-stale", "Stale scanner jobs", "مهام الماسح المتأخرة", signals.stuckScanJobs, signals.stuckScanJobs === 0, "Jobs beyond the approved operating threshold require attention.", "تتطلب المهام المتجاوزة لحد التشغيل المعتمد الانتباه.", "/admin/document-sla-watch"),
+      metric("polling-failures", "Failed scanner jobs", "مهام الماسح الفاشلة", signals.failedScanJobs, signals.failedScanJobs === 0, "Aggregate failures indicate unresolved polling or processing work.", "تشير الإخفاقات المجمعة إلى أعمال استطلاع أو معالجة غير محلولة.", "/admin/document-incidents"),
+    ],
+    scan_recovery_assurance: [
+      metric("scan-recovery-control", "Recovery control", "ضابط التعافي", posture.scanRecoveryEnabled ? "Enabled" : "Disabled", posture.scanRecoveryEnabled, "The recovery switch is observed without leasing or retrying a job.", "يُرصد مفتاح التعافي دون حجز مهمة أو إعادة محاولتها.", "/admin/document-runtime-posture"),
+      metric("scan-recovery-backlog", "Recovery backlog", "تراكم التعافي", signals.stuckScanJobs, signals.stuckScanJobs === 0, "Stale work is the bounded signal for recovery demand.", "العمل المتأخر هو الإشارة المحدودة لطلب التعافي.", "/admin/document-queue-watch"),
+      metric("scan-recovery-incidents", "Active incidents", "الحوادث النشطة", p.activeIncidentCount, p.activeIncidentCount === 0, "An active document incident blocks a clear recovery posture.", "تمنع حادثة مستند نشطة وضع تعافٍ واضحاً.", "/admin/document-incidents"),
+    ],
+    quarantine_assurance: [
+      metric("quarantine-storage", "Protected quarantine", "العزل المحمي", posture.protectedStorageConfigured ? "Configured" : "Blocked", posture.protectedStorageConfigured, "Quarantine remains inside the approved private storage boundary.", "يبقى العزل ضمن حدود التخزين الخاص المعتمدة.", "/admin/document-storage-watch"),
+      metric("quarantine-count", "Quarantined documents", "المستندات المعزولة", signals.quarantinedDocuments, signals.quarantinedDocuments === 0, "Only an aggregate count is exposed; identifiers and content remain private.", "لا يُعرض سوى عدد مجمّع وتبقى المعرفات والمحتوى خاصين.", "/admin/document-incidents"),
+      metric("quarantine-incidents", "Incident coverage", "تغطية الحوادث", p.activeIncidentCount, p.activeIncidentCount === 0, "Any active incident requires the separate incident-command workflow.", "تتطلب أي حادثة نشطة سير عمل قيادة الحوادث المنفصل.", "/admin/document-incidents"),
+    ],
+    retention_control_assurance: [
+      metric("retention-policy", "Approved retention plan", "خطة الاحتفاظ المعتمدة", p.lifecycle.approvedRetentionPlan ? "Approved" : "Missing", p.lifecycle.approvedRetentionPlan, "Execution remains bound to an independently approved plan.", "يبقى التنفيذ مرتبطاً بخطة معتمدة بشكل مستقل.", "/admin/retention-automation"),
+      metric("retention-runtime", "Retention control", "ضابط الاحتفاظ", posture.retentionExecutionEnabled ? "Enabled" : "Disabled", posture.retentionExecutionEnabled, "The runtime switch is observed without starting a retention run.", "يُرصد مفتاح التشغيل دون بدء عملية احتفاظ.", "/admin/document-runtime-posture"),
+      metric("retention-errors", "Failed retention runs", "عمليات الاحتفاظ الفاشلة", signals.failedRetentionRuns, signals.failedRetentionRuns === 0, "Aggregate failures must clear through controlled investigation.", "يجب تصفية الإخفاقات المجمعة عبر تحقيق مضبوط.", "/admin/document-incidents"),
+    ],
+    deletion_control_assurance: [
+      metric("deletion-runtime", "Deletion processor", "معالج الحذف", posture.deletionProcessorEnabled ? "Enabled" : "Disabled", posture.deletionProcessorEnabled, "The processor switch is observed without creating deletion work.", "يُرصد مفتاح المعالج دون إنشاء عمل حذف.", "/admin/document-runtime-posture"),
+      metric("deletion-errors", "Failed deletion jobs", "مهام الحذف الفاشلة", signals.failedDeletionJobs, signals.failedDeletionJobs === 0, "Failed work remains aggregate-only and fail-closed.", "يبقى العمل الفاشل مجمعاً ومغلقاً افتراضياً.", "/admin/document-incidents"),
+      metric("deletion-holds", "Legal-hold conflicts", "تعارضات الحجز القانوني", signals.legalHoldConflicts, signals.legalHoldConflicts === 0, "Deletion remains blocked wherever a hold conflict exists.", "يبقى الحذف محظوراً حيث يوجد تعارض حجز.", "/admin/document-legal-hold-enforcement"),
+    ],
+    legal_hold_enforcement: [
+      metric("hold-review", "Overdue hold reviews", "مراجعات الحجز المتأخرة", p.lifecycle.overdueLegalHoldCount, p.lifecycle.overdueLegalHoldCount === 0, "Every active or release-pending hold must remain inside review dates.", "يجب أن يبقى كل حجز نشط أو قيد الإفراج ضمن مواعيد المراجعة.", "/admin/legal-hold-review"),
+      metric("hold-conflicts", "Blocked deletion conflicts", "تعارضات الحذف المحظورة", signals.legalHoldConflicts, signals.legalHoldConflicts === 0, "Conflicts remain fail-closed until the governed hold workflow resolves them.", "تبقى التعارضات مغلقة افتراضياً حتى يحلها سير عمل الحجز المحكوم.", "/admin/legal-holds"),
+      metric("hold-mutations", "Hold mutations here", "تغييرات الحجز هنا", 0, true, "This assurance module never creates, renews, approves or releases a hold.", "لا تنشئ وحدة التأكيد هذه حجزاً ولا تجدده أو تعتمده أو تفرج عنه.", "/admin/legal-holds", true),
+    ],
+    maintenance_readiness: [
+      metric("maintenance-observed", "Scheduled maintenance evidence", "دليل الصيانة المجدولة", p.acceptance?.scheduledMaintenanceObserved ? "Observed" : "Missing", Boolean(p.acceptance?.scheduledMaintenanceObserved), "The latest independently verified acceptance must include maintenance evidence.", "يجب أن يتضمن أحدث قبول متحقق بشكل مستقل دليل الصيانة.", "/admin/lifecycle-acceptance-submission"),
+      metric("maintenance-isolation", "Isolated storage rehearsal", "بروفة التخزين المعزول", p.acceptance?.isolatedStorageRehearsalPassed ? "Passed" : "Missing", Boolean(p.acceptance?.isolatedStorageRehearsalPassed), "Synthetic isolated-storage evidence must pass before maintenance readiness is clear.", "يجب نجاح دليل التخزين المعزول الاصطناعي قبل وضوح جاهزية الصيانة.", "/admin/retention-safety"),
+      metric("maintenance-evidence-age", "Acceptance evidence age", "عمر دليل القبول", acceptanceAge == null ? "Missing" : `${acceptanceAge}d`, acceptanceAge != null && acceptanceAge < p.freshDays, "Maintenance evidence inherits the thirty-day acceptance window.", "يرث دليل الصيانة نافذة القبول ذات الثلاثين يوماً.", "/admin/document-evidence-renewal"),
+    ],
+    safety_rehearsal_assurance: [
+      metric("rehearsal-fresh", "Fresh safety rehearsal", "بروفة سلامة حديثة", p.lifecycle.freshSafetyRehearsal ? "Current" : "Stale", p.lifecycle.freshSafetyRehearsal, "Synthetic safety evidence must remain inside its approved window.", "يجب أن يبقى دليل السلامة الاصطناعي ضمن نافذته المعتمدة.", "/admin/retention-safety"),
+      metric("rehearsal-scenarios", "Safety scenarios", "سيناريوهات السلامة", `${p.lifecycle.safetyScenarioCount}/22`, p.lifecycle.safetyScenarioCount >= 22, "All twenty-two zero-effect lifecycle scenarios are required.", "يلزم جميع سيناريوهات دورة الحياة الاثنين والعشرين دون أثر.", "/admin/retention-safety"),
+      metric("rehearsal-effects", "Operative effects", "الآثار التنفيذية", 0, true, "This module reads aggregate evidence and causes no storage, scanner or lifecycle effect.", "تقرأ هذه الوحدة دليلاً مجمعاً ولا تسبب أثراً على التخزين أو الماسح أو دورة الحياة.", "/admin/document-executive-assurance", true),
+    ],
   };
   return {
-    stage, role: workspace.role, generatedAt: now.toISOString(), workflowVersion: "medical-document-production-operations-v2",
+    stage, role: workspace.role, generatedAt: now.toISOString(), workflowVersion: "medical-document-production-operations-v3",
     focus: focuses[stage], boundaries: DOCUMENT_PRODUCTION_OPERATIONS_BOUNDARIES,
     summary: { ready: p.ready, passedChecks: p.passedChecks, totalChecks: p.checks.length, activeCertificates, scheduledCertificates, attentionTotal },
     recentCertificates: workspace.runs.slice(0, 12).map((run) => ({ id: run.id, reference: run.reference, effectiveStatus: run.effectiveStatus, releaseStartsAt: run.releaseStartsAt, releaseEndsAt: run.releaseEndsAt, releaseOwnerName: run.releaseOwnerName, monitoringOwnerName: run.monitoringOwnerName, stopAuthorityName: run.stopAuthorityName })),
