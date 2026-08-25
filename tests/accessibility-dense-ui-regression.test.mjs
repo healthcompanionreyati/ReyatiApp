@@ -223,3 +223,42 @@ test("ten provider care-delivery routes protect console geometry and mobile navi
   assert.match(css, /overflow-x: auto/);
   assert.match(css, /overflow-wrap: anywhere/);
 });
+
+test("twenty partner and admin operations routes share resilient console geometry", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/dense-partner-admin-operations-release.css");
+  const routes = [
+    "/partner/onboarding",
+    "/partner/program",
+    "/partner/benefits",
+    "/partner/diagnostic-imaging",
+    "/partner/insurance",
+    "/partner/pharmacy",
+    "/partner/laboratory",
+    "/partner/home-care",
+    "/partner/sample-collection",
+    "/partner/settlements",
+    "/admin/benefits",
+    "/admin/diagnostic-imaging",
+    "/admin/insurance",
+    "/admin/pharmacy",
+    "/admin/laboratory",
+    "/admin/home-care",
+    "/admin/sample-collection",
+    "/admin/partner-governance",
+    "/admin/care-plans",
+    "/admin/appointment-journeys",
+  ];
+
+  assert.match(layout, /import "\.\/dense-partner-admin-operations-release\.css"/);
+  for (const route of routes) assert.match(sync, new RegExp(`"${route}"`));
+  assert.match(sync, /dataset\.denseRouteGroup = "partner-admin-operations"/);
+  assert.match(css, /body\[data-dense-route-group="partner-admin-operations"\]/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /\[class\*="sidebar"\]/);
+  assert.match(css, /@media \(max-width: 1100px\)/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});

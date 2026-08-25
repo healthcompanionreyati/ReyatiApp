@@ -1,0 +1,188 @@
+/* Shared operational release contract for partner fulfilment and matching
+   platform-governance workspaces. */
+body[data-dense-route-group="partner-admin-operations"] > main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body[data-dense-route-group="partner-admin-operations"] > main *,
+body[data-dense-route-group="partner-admin-operations"] > main *::before,
+body[data-dense-route-group="partner-admin-operations"] > main *::after {
+  min-width: 0;
+}
+
+body[data-dense-route-group="partner-admin-operations"] > main :where(
+  h1, h2, h3, h4, p, li, dd, dt, label, button, a, span, strong, b, small
+) {
+  overflow-wrap: anywhere;
+}
+
+body[data-dense-route-group="partner-admin-operations"] > main :where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="partner-admin-operations"] > main :where(
+  [class*="main"],
+  [class*="workspace"],
+  [class*="content"],
+  [class*="console"]
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body[data-dense-route-group="partner-admin-operations"] > main :where(
+  [class*="list"],
+  [class*="queue"],
+  [class*="table"],
+  [class*="timeline"],
+  [class*="history"],
+  [class*="register"],
+  [class*="events"],
+  [class*="cases"]
+) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="partner-admin-operations"] > main textarea {
+  width: 100%;
+  min-height: 108px;
+  resize: vertical;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="partner-admin-operations"] > main {
+  color: var(--qv-text);
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="partner-admin-operations"] > main :where(
+  [class*="panel"],
+  [class*="card"],
+  [class*="form"],
+  [class*="state"],
+  [class*="empty"],
+  [class*="boundary"],
+  [class*="summary"],
+  [class*="detail"],
+  [class*="notice"],
+  [class*="metric"]
+) {
+  background: var(--qv-surface) !important;
+  border-color: var(--qv-border) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="partner-admin-operations"] > main :where(
+  h1, h2, h3, h4, strong, b, label, dt
+) {
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="partner-admin-operations"] > main :where(
+  p, li, dd, small, em, [class*="muted"], [class*="meta"]
+) {
+  color: var(--qv-text-muted) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="partner-admin-operations"] > main :where(input, select, textarea) {
+  background: var(--qv-surface-soft) !important;
+  border-color: var(--qv-border-strong) !important;
+  color: var(--qv-text) !important;
+}
+
+@media (max-width: 1100px) {
+  body[data-dense-route-group="partner-admin-operations"] > main {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main > :where([class*="sidebar"], aside:first-child) {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main > :where([class*="sidebar"], aside:first-child) nav {
+    display: flex !important;
+    gap: 8px;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main :where(
+    [class*="workspace"],
+    [class*="layout"],
+    [class*="split"],
+    [class*="adminGrid"],
+    [class*="grid"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main :where(
+    [class*="metrics"],
+    [class*="stats"],
+    [class*="summaryGrid"]
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main :where(
+    header,
+    [class*="hero"],
+    [class*="head"],
+    [class*="actions"],
+    [class*="toolbar"]
+  ) {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-dense-route-group="partner-admin-operations"] > main :where(
+    [class*="metrics"],
+    [class*="stats"],
+    [class*="summaryGrid"],
+    [class*="form"],
+    [class*="row"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main :where(
+    [class*="main"],
+    [class*="workspace"],
+    [class*="content"],
+    [class*="console"]
+  ) {
+    padding-inline: 14px !important;
+    padding-block-end: 96px !important;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main :where(
+    [class*="list"],
+    [class*="queue"],
+    [class*="table"],
+    [class*="timeline"],
+    [class*="history"],
+    [class*="register"],
+    [class*="events"],
+    [class*="cases"]
+  ) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  body[data-dense-route-group="partner-admin-operations"] > main :where(
+    [class*="actions"],
+    [class*="toolbar"]
+  ) > :where(button, a) {
+    flex: 1 1 140px;
+  }
+}

@@ -40,6 +40,7 @@ This file is the persistent source of truth for implementation work. Every batch
   - Completed group: appointments, pre-visit intake, appointment preparation, accommodations, post-visit actions, care timeline, waitlist, digital queue, virtual care, messages, referrals, and patient experience.
   - Completed group: care plans, diagnostic imaging, insurance, pharmacy, laboratory, home care, sample collection, medication reminders, immunizations, and screening history.
   - Completed group: provider care plans, diagnostic imaging, insurance, pharmacy, laboratory, encounter continuity, follow-up actions, intake review, accommodation requests, and preparation guides.
+  - Completed group: ten partner onboarding/fulfilment/settlement workspaces and ten matching admin benefits, clinical-service, partner, care-plan, and appointment-journey governance workspaces.
   - Continue grouped route batches for remaining legacy tables, cards, long text, mobile widths, and dark theme.
 
 ## Completed foundation
@@ -129,6 +130,7 @@ This file is the persistent source of truth for implementation work. Every batch
 | 2026-08-26 | Care-journey experience batch | Added one route-family navigation, form, reflow, and dark-theme contract across twelve appointment and continuity workspaces | Current `main` |
 | 2026-08-26 | Clinical-services experience batch | Added one route-family status, navigation, reflow, and dark-theme contract across ten patient clinical-service workspaces | Current `main` |
 | 2026-08-26 | Provider care-delivery experience batch | Added one provider-console geometry, mobile-navigation, action-form, and dark-theme contract across ten care-delivery workspaces | Current `main` |
+| 2026-08-26 | Partner and admin operations experience batch | Added one operational-console geometry, queue, form, mobile-navigation, and dark-theme contract across twenty partner and governance workspaces | Current `main` |
 
 ## Required update sequence
 
