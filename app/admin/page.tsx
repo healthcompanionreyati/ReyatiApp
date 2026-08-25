@@ -160,6 +160,16 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/document-ownership-continuity-assurance"><span>38</span>{ar ? "تأكيد استمرارية الملكية" : "Ownership continuity assurance"}</a>
         <a className="admin-verification-link" href="/admin/document-dependency-resilience-assurance"><span>39</span>{ar ? "تأكيد مرونة التبعيات" : "Dependency resilience assurance"}</a>
         <a className="admin-verification-link" href="/admin/document-resilience-scorecard"><span>40</span>{ar ? "بطاقة المرونة" : "Resilience scorecard"}</a>
+        <a className="admin-verification-link" href="/admin/document-policy-alignment-assurance"><span>41</span>{ar ? "تأكيد مواءمة السياسة" : "Policy alignment assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-control-ownership-assurance"><span>42</span>{ar ? "تأكيد ملكية الضوابط" : "Control ownership assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-release-governance-assurance"><span>43</span>{ar ? "تأكيد حوكمة الإطلاق" : "Release governance assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-exception-governance-assurance"><span>44</span>{ar ? "تأكيد حوكمة الاستثناءات" : "Exception governance assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-risk-signal-assurance"><span>45</span>{ar ? "تأكيد إشارات المخاطر" : "Risk signal assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-audit-evidence-assurance"><span>46</span>{ar ? "تأكيد دليل التدقيق" : "Audit evidence assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-separation-of-duties-assurance"><span>47</span>{ar ? "تأكيد فصل الواجبات" : "Separation of duties assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-review-cadence-assurance"><span>48</span>{ar ? "تأكيد وتيرة المراجعة" : "Review cadence assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-governance-reporting-assurance"><span>49</span>{ar ? "تأكيد تقارير الحوكمة" : "Governance reporting assurance"}</a>
+        <a className="admin-verification-link" href="/admin/document-governance-scorecard"><span>50</span>{ar ? "بطاقة الحوكمة" : "Governance scorecard"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
         <a className="admin-verification-link" href="/admin/observability"><span>⌁</span>{ar ? "قابلية المراقبة" : "Observability"}</a>

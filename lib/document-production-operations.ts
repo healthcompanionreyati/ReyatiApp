@@ -8,7 +8,9 @@ export type DocumentOperationsStage =
   | "cleanup_assurance" | "scan_dispatch_assurance" | "scan_polling_assurance" | "scan_recovery_assurance" | "quarantine_assurance"
   | "retention_control_assurance" | "deletion_control_assurance" | "legal_hold_enforcement" | "maintenance_readiness" | "safety_rehearsal_assurance"
   | "continuity_assurance" | "recovery_runbook_assurance" | "storage_resilience_assurance" | "scanner_resilience_assurance" | "lifecycle_resilience_assurance"
-  | "incident_response_assurance" | "evidence_continuity_assurance" | "ownership_continuity_assurance" | "dependency_resilience_assurance" | "resilience_scorecard";
+  | "incident_response_assurance" | "evidence_continuity_assurance" | "ownership_continuity_assurance" | "dependency_resilience_assurance" | "resilience_scorecard"
+  | "policy_alignment_assurance" | "control_ownership_assurance" | "release_governance_assurance" | "exception_governance_assurance" | "risk_signal_assurance"
+  | "audit_evidence_assurance" | "separation_of_duties_assurance" | "review_cadence_assurance" | "governance_reporting_assurance" | "governance_scorecard";
 type Metric = { id: string; label: string; labelAr: string; value: string; detail: string; detailAr: string; state: "ready" | "attention" | "info"; href: string };
 
 export const DOCUMENT_PRODUCTION_OPERATIONS_BOUNDARIES = {
@@ -240,9 +242,60 @@ export async function getDocumentProductionOperationsWorkspace(userId: string, s
       metric("scorecard-evidence", "Current evidence set", "مجموعة الدليل الحالية", `${[acceptanceAge, activationAge, assuranceAge].filter((age) => age != null && age < p.freshDays).length}/3`, [acceptanceAge, activationAge, assuranceAge].every((age) => age != null && age < p.freshDays), "Acceptance, activation, and assurance evidence must all remain current.", "يجب أن تبقى أدلة القبول والتفعيل والتأكيد حديثة جميعاً.", "/admin/document-evidence-continuity-assurance"),
       metric("scorecard-attention", "Open resilience items", "عناصر المرونة المفتوحة", attentionTotal, attentionTotal === 0, "Exceptions, incidents, and overdue hold reviews are consolidated.", "تُجمع الاستثناءات والحوادث ومراجعات الحجز المتأخرة.", "/admin/document-incidents"),
     ],
+    policy_alignment_assurance: [
+      metric("policy-retention", "Approved retention plan", "خطة الاحتفاظ المعتمدة", p.lifecycle.approvedRetentionPlan ? "Approved" : "Missing", p.lifecycle.approvedRetentionPlan, "The execution posture remains anchored to the independently approved plan.", "يبقى وضع التنفيذ مرتبطاً بالخطة المعتمدة بشكل مستقل.", "/admin/retention-automation"),
+      metric("policy-holds", "Legal-hold review posture", "وضع مراجعة الحجز القانوني", p.lifecycle.overdueLegalHoldCount, p.lifecycle.overdueLegalHoldCount === 0, "Every active or release-pending hold must remain inside its review window.", "يجب أن يبقى كل حجز نشط أو قيد الإفراج ضمن نافذة مراجعته.", "/admin/legal-hold-review"),
+      metric("policy-safety", "Safety policy evidence", "دليل سياسة السلامة", p.lifecycle.freshSafetyRehearsal ? `${p.lifecycle.safetyScenarioCount}/22` : "Stale", p.lifecycle.freshSafetyRehearsal && p.lifecycle.safetyScenarioCount >= 22, "All coded zero-effect scenarios support the current policy posture.", "تدعم جميع السيناريوهات المرمّزة دون أثر وضع السياسة الحالي.", "/admin/retention-safety"),
+    ],
+    control_ownership_assurance: [
+      metric("control-coverage", "Enabled controls", "الضوابط المفعّلة", `${enabledControls}/6`, enabledControls === 6, "All six server-observed controls remain inside the governed operating boundary.", "تبقى الضوابط الستة المرصودة من الخادم ضمن حدود التشغيل المحكومة.", "/admin/document-runtime-controls"),
+      metric("control-roster", "Privileged owner coverage", "تغطية المالكين ذوي الصلاحية", p.roster.length, p.roster.length >= 3, "The active roster supports separated control ownership.", "تدعم القائمة النشطة ملكية الضوابط المنفصلة.", "/admin/access"),
+      metric("control-changes", "Control changes here", "تغييرات الضوابط هنا", 0, true, "This assurance module never changes an environment or runtime control.", "لا تغيّر وحدة التأكيد هذه أي بيئة أو ضابط تشغيل.", "/admin/document-runtime-posture", true),
+    ],
+    release_governance_assurance: [
+      metric("release-active", "Active certificates", "الشهادات النشطة", activeCertificates, activeCertificates <= 1, "Overlapping live release authorization is not expected.", "لا يُتوقع تداخل تفويضات الإطلاق المباشرة.", "/admin/document-release-monitoring"),
+      metric("release-scheduled", "Scheduled certificates", "الشهادات المجدولة", scheduledCertificates, true, "Future release windows remain bounded by durable certificate records.", "تبقى نوافذ الإطلاق المستقبلية محدودة بسجلات الشهادات الدائمة.", "/admin/document-change-calendar", true),
+      metric("release-readiness", "Current release checks", "فحوص الإطلاق الحالية", `${p.passedChecks}/${p.checks.length}`, p.ready, "Current prerequisites are re-evaluated independently from any scheduled window.", "تُعاد معاينة المتطلبات الحالية بشكل مستقل عن أي نافذة مجدولة.", "/admin/document-release-preparation"),
+    ],
+    exception_governance_assurance: [
+      metric("exception-signals", "Aggregate exception signals", "إشارات الاستثناء المجمعة", p.exceptionSignalCount, p.exceptionSignalCount === 0, "Scanner, quarantine, retention, deletion, and hold exceptions are count-only.", "استثناءات الماسح والعزل والاحتفاظ والحذف والحجز قائمة على الأعداد فقط.", "/admin/document-incidents"),
+      metric("exception-incidents", "Active incident coverage", "تغطية الحوادث النشطة", p.activeIncidentCount, p.activeIncidentCount === 0, "Exceptions requiring action remain in the separate incident-command workflow.", "تبقى الاستثناءات التي تتطلب إجراءً في سير عمل قيادة الحوادث المنفصل.", "/admin/document-incidents"),
+      metric("exception-audit", "Audit reconciliation", "مطابقة التدقيق", p.exceptionSignalCount, p.exceptionSignalCount === 0, "Every unresolved aggregate exception must retain a controlled trail.", "يجب أن يحتفظ كل استثناء مجمّع غير محلول بمسار مضبوط.", "/admin/document-audit-reconciliation"),
+    ],
+    risk_signal_assurance: [
+      metric("risk-operational", "Operational risk signals", "إشارات المخاطر التشغيلية", attentionTotal, attentionTotal === 0, "Exceptions, incidents, and overdue legal reviews form the bounded operating signal.", "تكوّن الاستثناءات والحوادث والمراجعات القانونية المتأخرة الإشارة التشغيلية المحدودة.", "/admin/document-service-health"),
+      metric("risk-lifecycle", "Lifecycle failure signals", "إشارات فشل دورة الحياة", signals.failedRetentionRuns + signals.failedDeletionJobs, signals.failedRetentionRuns + signals.failedDeletionJobs === 0, "Retention and deletion failures are summarized without record access.", "تُلخص إخفاقات الاحتفاظ والحذف دون الوصول للسجلات.", "/admin/document-lifecycle-resilience-assurance"),
+      metric("risk-scanner", "Scanner risk signals", "إشارات مخاطر الماسح", signals.stuckScanJobs + signals.failedScanJobs, signals.stuckScanJobs + signals.failedScanJobs === 0, "Stale and failed scanner work remains aggregate-only.", "تبقى أعمال الماسح المتأخرة والفاشلة مجمعة فقط.", "/admin/document-scanner-resilience-assurance"),
+    ],
+    audit_evidence_assurance: [
+      metric("audit-checks", "Current evidence checks", "فحوص الدليل الحالية", `${p.passedChecks}/${p.checks.length}`, p.ready, "The current production prerequisite set is evaluated together.", "تُقيّم مجموعة متطلبات الإنتاج الحالية معاً.", "/admin/document-launch"),
+      metric("audit-register", "Durable certificate register", "سجل الشهادات الدائم", workspace.runs.length, true, "Certificate summaries preserve bounded authorization provenance.", "تحفظ ملخصات الشهادات مصدر التفويض المحدود.", "/admin/document-release-monitoring", true),
+      metric("audit-freshness", "Current evidence set", "مجموعة الدليل الحالية", `${[acceptanceAge, activationAge, assuranceAge].filter((age) => age != null && age < p.freshDays).length}/3`, [acceptanceAge, activationAge, assuranceAge].every((age) => age != null && age < p.freshDays), "Acceptance, activation, and assurance timestamps must remain current.", "يجب أن تبقى أوقات القبول والتفعيل والتأكيد حديثة.", "/admin/document-evidence-continuity-assurance"),
+    ],
+    separation_of_duties_assurance: [
+      metric("duties-roster", "Distinct privileged operators", "المشغلون ذوو الصلاحية المختلفون", p.roster.length, p.roster.length >= 3, "Three active operators provide the minimum separation baseline.", "يوفر ثلاثة مشغلين نشطين الحد الأدنى لفصل الواجبات.", "/admin/access"),
+      metric("duties-certificates", "Named certificate authorities", "سلطات الشهادات المسماة", workspace.runs.length, workspace.runs.length > 0, "Release, monitoring, and stop ownership is retained in durable certificates.", "تُحفظ ملكية الإطلاق والمراقبة والإيقاف في الشهادات الدائمة.", "/admin/document-ownership-continuity-assurance"),
+      metric("duties-grants", "Role grants here", "منح الأدوار هنا", 0, true, "This workspace cannot grant, revoke, or reassign a platform role.", "لا يمكن لمساحة العمل هذه منح دور منصة أو إلغاؤه أو إعادة تعيينه.", "/admin/access", true),
+    ],
+    review_cadence_assurance: [
+      metric("cadence-acceptance", "Acceptance review age", "عمر مراجعة القبول", acceptanceAge == null ? "Missing" : `${acceptanceAge}d`, acceptanceAge != null && acceptanceAge < p.freshDays, "Lifecycle acceptance remains inside the thirty-day review cadence.", "يبقى قبول دورة الحياة ضمن وتيرة المراجعة ذات الثلاثين يوماً.", "/admin/lifecycle-acceptance-review"),
+      metric("cadence-assurance", "Stability review age", "عمر مراجعة الاستقرار", assuranceAge == null ? "Missing" : `${assuranceAge}d`, assuranceAge != null && assuranceAge < p.freshDays, "Stability assurance remains matched to the latest verified activation.", "يبقى تأكيد الاستقرار مطابقاً لأحدث تفعيل متحقق.", "/admin/document-assurance-review"),
+      metric("cadence-holds", "Overdue hold reviews", "مراجعات الحجز المتأخرة", p.lifecycle.overdueLegalHoldCount, p.lifecycle.overdueLegalHoldCount === 0, "Legal-hold reviews remain part of the operating cadence.", "تبقى مراجعات الحجز القانوني جزءاً من وتيرة التشغيل.", "/admin/legal-hold-review"),
+    ],
+    governance_reporting_assurance: [
+      metric("reporting-posture", "Governance posture", "وضع الحوكمة", p.ready ? "Ready" : "Attention", p.ready, "The complete production prerequisite set supplies the reporting baseline.", "توفر مجموعة متطلبات الإنتاج الكاملة أساس التقارير.", "/admin/document-executive-assurance"),
+      metric("reporting-attention", "Open governance items", "عناصر الحوكمة المفتوحة", attentionTotal, attentionTotal === 0, "Only aggregate exception, incident, and overdue-review counts are included.", "تُشمل أعداد الاستثناءات والحوادث والمراجعات المتأخرة المجمعة فقط.", "/admin/document-risk-signal-assurance"),
+      metric("reporting-effects", "Reporting effects", "آثار التقارير", 0, true, "This module sends no report, message, or external payload.", "لا ترسل هذه الوحدة أي تقرير أو رسالة أو حمولة خارجية.", "/admin/document-executive-assurance", true),
+    ],
+    governance_scorecard: [
+      metric("governance-score", "Overall governance result", "نتيجة الحوكمة العامة", p.ready && attentionTotal === 0 ? "Clear" : "Attention", p.ready && attentionTotal === 0, "Current prerequisites and governance attention signals produce one result.", "تنتج المتطلبات الحالية وإشارات انتباه الحوكمة نتيجة واحدة.", "/admin/document-governance-reporting-assurance"),
+      metric("governance-policy", "Policy alignment", "مواءمة السياسة", `${Number(p.lifecycle.approvedRetentionPlan) + Number(p.lifecycle.overdueLegalHoldCount === 0) + Number(p.lifecycle.freshSafetyRehearsal)}/3`, p.lifecycle.approvedRetentionPlan && p.lifecycle.overdueLegalHoldCount === 0 && p.lifecycle.freshSafetyRehearsal, "Retention, legal-hold review, and safety evidence are evaluated together.", "تُقيّم أدلة الاحتفاظ ومراجعة الحجز والسلامة معاً.", "/admin/document-policy-alignment-assurance"),
+      metric("governance-ownership", "Separated operator coverage", "تغطية المشغلين المنفصلة", p.roster.length, p.roster.length >= 3, "The active privileged roster supports accountable governance.", "تدعم قائمة الصلاحيات النشطة حوكمة خاضعة للمساءلة.", "/admin/document-separation-of-duties-assurance"),
+      metric("governance-evidence", "Current evidence set", "مجموعة الدليل الحالية", `${[acceptanceAge, activationAge, assuranceAge].filter((age) => age != null && age < p.freshDays).length}/3`, [acceptanceAge, activationAge, assuranceAge].every((age) => age != null && age < p.freshDays), "Acceptance, activation, and assurance evidence must all remain current.", "يجب أن تبقى أدلة القبول والتفعيل والتأكيد حديثة جميعاً.", "/admin/document-audit-evidence-assurance"),
+    ],
   };
   return {
-    stage, role: workspace.role, generatedAt: now.toISOString(), workflowVersion: "medical-document-production-operations-v4",
+    stage, role: workspace.role, generatedAt: now.toISOString(), workflowVersion: "medical-document-production-operations-v5",
     focus: focuses[stage], boundaries: DOCUMENT_PRODUCTION_OPERATIONS_BOUNDARIES,
     summary: { ready: p.ready, passedChecks: p.passedChecks, totalChecks: p.checks.length, activeCertificates, scheduledCertificates, attentionTotal },
     recentCertificates: workspace.runs.slice(0, 12).map((run) => ({ id: run.id, reference: run.reference, effectiveStatus: run.effectiveStatus, releaseStartsAt: run.releaseStartsAt, releaseEndsAt: run.releaseEndsAt, releaseOwnerName: run.releaseOwnerName, monitoringOwnerName: run.monitoringOwnerName, stopAuthorityName: run.stopAuthorityName })),

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This forty-module suite converts the authorized release window into a continuous, read-only operating picture. Every module is backed by current server-side release, lifecycle, runtime, and incident evidence and links operators to the dedicated controlled workspace for action.
+This fifty-module suite converts the authorized release window into a continuous, read-only operating picture. Every module is backed by current server-side release, lifecycle, runtime, and incident evidence and links operators to the dedicated controlled workspace for action.
 
 ## Modules
 
@@ -46,12 +46,22 @@ This forty-module suite converts the authorized release window into a continuous
 38. `/admin/document-ownership-continuity-assurance` — privileged roster coverage and named certificate ownership.
 39. `/admin/document-dependency-resilience-assurance` — protected storage, private scanner, and all six runtime controls.
 40. `/admin/document-resilience-scorecard` — overall posture, control coverage, evidence continuity, and open resilience items.
+41. `/admin/document-policy-alignment-assurance` — retention policy, legal-hold reviews, and safety evidence.
+42. `/admin/document-control-ownership-assurance` — six runtime controls, separated ownership, and zero mutation.
+43. `/admin/document-release-governance-assurance` — active and scheduled certificates under current readiness gates.
+44. `/admin/document-exception-governance-assurance` — aggregate exceptions, incident coverage, and traceability.
+45. `/admin/document-risk-signal-assurance` — operational, lifecycle, and scanner risk signals.
+46. `/admin/document-audit-evidence-assurance` — current checks, durable provenance, and evidence freshness.
+47. `/admin/document-separation-of-duties-assurance` — privileged roster and named certificate authorities.
+48. `/admin/document-review-cadence-assurance` — acceptance, stability, and legal-hold review cadence.
+49. `/admin/document-governance-reporting-assurance` — aggregate posture and attention reporting with zero delivery.
+50. `/admin/document-governance-scorecard` — policy, ownership, evidence, and open governance items.
 
 ## Interface contract
 
-- All forty modules use the dedicated production-operations workspace, not the legacy change-control layout.
+- All fifty modules use the dedicated production-operations workspace, not the legacy change-control layout.
 - Desktop uses a 304 px grouped navigation rail and a fluid 1240 px content ceiling.
-- Tablet and mobile convert the four navigation groups into horizontal, independently labelled module strips.
+- Tablet and mobile convert the five navigation groups into horizontal, independently labelled module strips.
 - Body and operational copy is 14–17 px; only non-actionable overlines and workflow identifiers may use 12 px.
 - Cards and panels use explicit grid contracts, overflow containment, balanced headings, and visible keyboard focus.
 - Light and dark themes preserve the same hierarchy and semantic state meaning.
@@ -65,7 +75,7 @@ All modules are read-only and aggregate-only. They read no patient record or R2 
 
 - Enter from `/admin/document-release-monitoring` after a certificate is authorized or scheduled.
 - Review modules 01–09 in order and resolve any attention state through its linked control workspace.
-- Finish the live sequence at module 10, then use modules 11–40 for continuous, control, and resilience assurance.
+- Finish the live sequence at module 10, then use modules 11–50 for continuous, control, resilience, and governance assurance.
 - Use `/admin/document-release-stop` immediately when the named stop authority must revoke the certificate.
 - Use `/admin/document-incidents` for declaration, containment, recovery, and independent closure.
 
