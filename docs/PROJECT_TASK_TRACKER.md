@@ -38,6 +38,7 @@ This file is the persistent source of truth for implementation work. Every batch
   - Completed group: payment acceptance, payment go-live, payment lifecycle rehearsal, payment activation, reconciliation, disputes, receipts, finance controls, provider credentials, facility profile, organization settings, and schedule rules.
   - Completed group: document capture, record index, sharing directives, access history, data quality, patient documents, provider documents, prescription review, report review, health-wallet operations, data-quality operations, and document-operations handoff.
   - Completed group: appointments, pre-visit intake, appointment preparation, accommodations, post-visit actions, care timeline, waitlist, digital queue, virtual care, messages, referrals, and patient experience.
+  - Completed group: care plans, diagnostic imaging, insurance, pharmacy, laboratory, home care, sample collection, medication reminders, immunizations, and screening history.
   - Continue grouped route batches for remaining legacy tables, cards, long text, mobile widths, and dark theme.
 
 ## Completed foundation
@@ -125,6 +126,7 @@ This file is the persistent source of truth for implementation work. Every batch
 | 2026-08-26 | Finance and provider experience batch | Added one route-family reflow and dark-theme contract across eight payment/finance workspaces and four provider governance workspaces | Current `main` |
 | 2026-08-26 | Records and document experience batch | Added one route-family reflow, dialog containment, and dark-theme contract across twelve patient, provider, and operations workspaces | Current `main` |
 | 2026-08-26 | Care-journey experience batch | Added one route-family navigation, form, reflow, and dark-theme contract across twelve appointment and continuity workspaces | Current `main` |
+| 2026-08-26 | Clinical-services experience batch | Added one route-family status, navigation, reflow, and dark-theme contract across ten patient clinical-service workspaces | Current `main` |
 
 ## Required update sequence
 

@@ -165,3 +165,32 @@ test("twelve care-journey routes share responsive navigation, forms, and dark su
   assert.match(css, /overflow-x: auto/);
   assert.match(css, /overflow-wrap: anywhere/);
 });
+
+test("ten clinical-service routes share responsive status and dark-theme surfaces", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/dense-clinical-services-release.css");
+  const routes = [
+    "/care-plan",
+    "/diagnostic-imaging",
+    "/insurance",
+    "/pharmacy",
+    "/laboratory",
+    "/home-care",
+    "/sample-collection",
+    "/medication-reminders",
+    "/immunizations",
+    "/screening-history",
+  ];
+
+  assert.match(layout, /import "\.\/dense-clinical-services-release\.css"/);
+  for (const route of routes) assert.match(sync, new RegExp(`"${route}"`));
+  assert.match(sync, /dataset\.denseRouteGroup = "clinical-services"/);
+  assert.match(css, /body\[data-dense-route-group="clinical-services"\]/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /header nav/);
+  assert.match(css, /@media \(max-width: 1040px\)/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});
