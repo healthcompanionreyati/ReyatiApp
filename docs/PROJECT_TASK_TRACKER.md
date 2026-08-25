@@ -36,6 +36,7 @@ This file is the persistent source of truth for implementation work. Every batch
   - Completed group: notification-preference governance, patient-profile governance, and provider team-access governance.
   - Completed group: health profile, facilities, complaints, accessibility settings, consents, notification preferences, privacy rights, emergency profile, account security, and health library.
   - Completed group: payment acceptance, payment go-live, payment lifecycle rehearsal, payment activation, reconciliation, disputes, receipts, finance controls, provider credentials, facility profile, organization settings, and schedule rules.
+  - Completed group: document capture, record index, sharing directives, access history, data quality, patient documents, provider documents, prescription review, report review, health-wallet operations, data-quality operations, and document-operations handoff.
   - Continue grouped route batches for remaining legacy tables, cards, long text, mobile widths, and dark theme.
 
 ## Completed foundation
@@ -121,6 +122,7 @@ This file is the persistent source of truth for implementation work. Every batch
 | 2026-08-25 | Accessibility, evidence, and dense-route batch | Expanded accessibility automation, added fail-closed release evidence collection, raised the shared readable type floor, repaired three responsive dark-theme governance routes, and restored the governance-setup launch step | Current `main` |
 | 2026-08-26 | Ten-route patient experience batch | Added one route-scoped reflow and dark-theme contract across health profile, facilities, complaints, accessibility, consents, notification preferences, privacy rights, emergency profile, account security, and health library | Current `main` |
 | 2026-08-26 | Finance and provider experience batch | Added one route-family reflow and dark-theme contract across eight payment/finance workspaces and four provider governance workspaces | Current `main` |
+| 2026-08-26 | Records and document experience batch | Added one route-family reflow, dialog containment, and dark-theme contract across twelve patient, provider, and operations workspaces | Current `main` |
 
 ## Required update sequence
 

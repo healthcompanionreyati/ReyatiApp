@@ -115,6 +115,21 @@ const financeProviderDenseRoutes = new Set([
   "/provider/schedule-rules",
 ]);
 
+const recordsDocumentDenseRoutes = new Set([
+  "/document-capture",
+  "/record-index",
+  "/sharing-directives",
+  "/access-history",
+  "/data-quality",
+  "/documents",
+  "/provider/documents",
+  "/provider/prescription-review",
+  "/provider/report-review",
+  "/admin/health-wallet-operations",
+  "/admin/data-quality-operations",
+  "/admin/document-operations-handoff",
+]);
+
 export default function AccessibilitySync() {
   useEffect(() => {
     let activeDialog: HTMLElement | null = null;
@@ -131,6 +146,7 @@ export default function AccessibilitySync() {
       const pathname = window.location.pathname;
       document.body.dataset.route = pathname;
       if (financeProviderDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "finance-provider";
+      else if (recordsDocumentDenseRoutes.has(pathname)) document.body.dataset.denseRouteGroup = "records-document";
       else delete document.body.dataset.denseRouteGroup;
     };
 

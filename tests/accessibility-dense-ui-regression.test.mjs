@@ -102,3 +102,34 @@ test("twelve finance and provider routes consume one responsive dark-theme contr
   assert.match(css, /overflow-x: auto/);
   assert.match(css, /overflow-wrap: anywhere/);
 });
+
+test("twelve records and document routes consume one resilient workspace contract", () => {
+  const layout = read("app/layout.tsx");
+  const sync = read("app/components/AccessibilitySync.tsx");
+  const css = read("app/dense-records-document-release.css");
+  const routes = [
+    "/document-capture",
+    "/record-index",
+    "/sharing-directives",
+    "/access-history",
+    "/data-quality",
+    "/documents",
+    "/provider/documents",
+    "/provider/prescription-review",
+    "/provider/report-review",
+    "/admin/health-wallet-operations",
+    "/admin/data-quality-operations",
+    "/admin/document-operations-handoff",
+  ];
+
+  assert.match(layout, /import "\.\/dense-records-document-release\.css"/);
+  for (const route of routes) assert.match(sync, new RegExp(`"${route}"`));
+  assert.match(sync, /dataset\.denseRouteGroup = "records-document"/);
+  assert.match(css, /body\[data-dense-route-group="records-document"\]/);
+  assert.match(css, /:root\[data-theme="dark"\]/);
+  assert.match(css, /\[role="dialog"\]/);
+  assert.match(css, /@media \(max-width: 1040px\)/);
+  assert.match(css, /@media \(max-width: 700px\)/);
+  assert.match(css, /overflow-x: auto/);
+  assert.match(css, /overflow-wrap: anywhere/);
+});

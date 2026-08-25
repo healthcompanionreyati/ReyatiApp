@@ -1,0 +1,166 @@
+/* Route-family release layer for patient records, documents, provider review,
+   and their operational governance surfaces. */
+body[data-dense-route-group="records-document"] > main {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+body[data-dense-route-group="records-document"] > main *,
+body[data-dense-route-group="records-document"] > main *::before,
+body[data-dense-route-group="records-document"] > main *::after {
+  min-width: 0;
+}
+
+body[data-dense-route-group="records-document"] > main :where(
+  h1, h2, h3, h4, p, li, dd, dt, label, button, a, span, strong, small
+) {
+  overflow-wrap: anywhere;
+}
+
+body[data-dense-route-group="records-document"] > main :where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="records-document"] > main :where(
+  [class*="content"],
+  [class*="workspace"],
+  [class*="documents-grid"],
+  [class*="provider-workspace"]
+) {
+  width: min(100%, 1280px);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+body[data-dense-route-group="records-document"] > main :where(
+  [class*="list"],
+  [class*="record"],
+  [class*="table"],
+  [class*="register"],
+  [class*="timeline"],
+  [class*="signalGrid"],
+  [class*="certificateList"]
+) {
+  max-width: 100%;
+}
+
+body[data-dense-route-group="records-document"] > main :where(
+  [class*="dialog"],
+  [role="dialog"]
+) {
+  max-width: min(92vw, 720px);
+  max-height: min(88dvh, 820px);
+  overflow: auto;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="records-document"] > main {
+  color: var(--qv-text);
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="records-document"] > main :where(
+  [class*="panel"],
+  [class*="card"],
+  [class*="boundary"],
+  [class*="state"],
+  [class*="empty"],
+  [class*="dialog"],
+  [class*="record"],
+  [class*="signal"],
+  [class*="certificate"]
+) {
+  background: var(--qv-surface) !important;
+  border-color: var(--qv-border) !important;
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="records-document"] > main :where(
+  h1, h2, h3, h4, strong, b, label, dt
+) {
+  color: var(--qv-text) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="records-document"] > main :where(
+  p, li, dd, small, em, [class*="meta"], [class*="muted"]
+) {
+  color: var(--qv-text-muted) !important;
+}
+
+:root[data-theme="dark"] body[data-dense-route-group="records-document"] > main :where(input, select, textarea) {
+  background: var(--qv-surface-soft) !important;
+  border-color: var(--qv-border-strong) !important;
+  color: var(--qv-text) !important;
+}
+
+@media (max-width: 1040px) {
+  body[data-dense-route-group="records-document"] > main :where(
+    [class*="documents-grid"],
+    [class*="provider-grid"],
+    [class*="mainGrid"],
+    [class*="grid"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="records-document"] > main :where(
+    [class*="summaryGrid"],
+    [class*="signalGrid"],
+    [class*="heroStats"]
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body[data-dense-route-group="records-document"] > main :where(
+    [class*="top"],
+    [class*="hero"],
+    [class*="head"],
+    [class*="actions"],
+    [class*="card-head"],
+    [class*="panelHead"]
+  ) {
+    flex-wrap: wrap !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body[data-dense-route-group="records-document"] > main :where(
+    [class*="summaryGrid"],
+    [class*="signalGrid"],
+    [class*="heroStats"],
+    [class*="grid"],
+    [class*="form"]
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body[data-dense-route-group="records-document"] > main :where(
+    [class*="content"],
+    [class*="workspace"],
+    [class*="documents-grid"],
+    [class*="provider-workspace"]
+  ) {
+    padding-inline: 14px !important;
+    padding-block-end: 96px !important;
+  }
+
+  body[data-dense-route-group="records-document"] > main :where(
+    [class*="list"],
+    [class*="record"],
+    [class*="table"],
+    [class*="register"],
+    [class*="timeline"],
+    [class*="signalGrid"],
+    [class*="certificateList"]
+  ) {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+
+  body[data-dense-route-group="records-document"] > main :where(
+    [class*="actions"],
+    [class*="dialog-actions"]
+  ) > :where(button, a) {
+    flex: 1 1 150px;
+  }
+}
