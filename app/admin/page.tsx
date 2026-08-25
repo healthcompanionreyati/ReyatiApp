@@ -99,6 +99,10 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/lifecycle-submission"><span>↗</span>{ar ? "إرسال دورة الحياة" : "Lifecycle submission"}</a>
         <a className="admin-verification-link" href="/admin/lifecycle-review"><span>✓</span>{ar ? "المراجعة المستقلة" : "Independent review"}</a>
         <a className="admin-verification-link" href="/admin/governance-handoff"><span>◎</span>{ar ? "تسليم الحوكمة" : "Governance handoff"}</a>
+        <a className="admin-verification-link" href="/admin/legal-hold-review"><span>§</span>{ar ? "مراجعة الحجوزات" : "Hold review desk"}</a>
+        <a className="admin-verification-link" href="/admin/retention-safety"><span>◈</span>{ar ? "أمان الاحتفاظ" : "Retention safety"}</a>
+        <a className="admin-verification-link" href="/admin/document-runtime-posture"><span>◉</span>{ar ? "وضع التشغيل" : "Runtime posture"}</a>
+        <a className="admin-verification-link" href="/admin/document-activation-preflight"><span>⚑</span>{ar ? "فحص ما قبل التفعيل" : "Activation preflight"}</a>
         <a className="admin-verification-link" href="/admin/data-lifecycle"><span>⌛</span>{ar ? "دورة حياة البيانات" : "Data lifecycle"}</a>
         <a className="admin-verification-link" href="/admin/legal-holds"><span>§</span>{ar ? "الحجز القانوني" : "Legal holds"}</a>
         <a className="admin-verification-link" href="/admin/retention-automation"><span>◷</span>{ar ? "أتمتة الاحتفاظ" : "Retention automation"}</a>

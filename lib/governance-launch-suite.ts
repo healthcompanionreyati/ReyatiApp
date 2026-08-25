@@ -114,7 +114,7 @@ export async function getGovernanceHandoffBoard(userId: string) {
     { id: "policy-submission", title: "Submit lifecycle proposals", titleAr: "إرسال مقترحات دورة الحياة", current: pendingPolicies + approvedPolicies, target: 5, href: "/admin/lifecycle-submission" },
     { id: "policy-review", title: "Approve lifecycle policies", titleAr: "اعتماد سياسات دورة الحياة", current: approvedPolicies, target: 5, href: "/admin/lifecycle-review" },
     { id: "retention-plan", title: "Approve retention plan", titleAr: "اعتماد خطة الاحتفاظ", current: plan?.status === "approved" ? 1 : 0, target: 1, href: plan?.status === "pending_review" ? "/admin/lifecycle-review" : "/admin/lifecycle-submission" },
-    { id: "safety-rehearsal", title: "Record passing safety rehearsal", titleAr: "تسجيل بروفة أمان ناجحة", current: rehearsal ? 1 : 0, target: 1, href: "/admin/retention-automation" },
+    { id: "safety-rehearsal", title: "Record passing safety rehearsal", titleAr: "تسجيل بروفة أمان ناجحة", current: rehearsal ? 1 : 0, target: 1, href: "/admin/retention-safety" },
   ].map((stage) => ({ ...stage, passed: stage.current >= stage.target }));
   const nextStage = stages.find((stage) => !stage.passed) ?? null;
   return { role: lifecycle.role, generatedAt: new Date().toISOString(), stages, nextStage, completion: Math.round(stages.filter((stage) => stage.passed).length / stages.length * 100), boundaries: { approvalsAutomated: 0, runtimeFlagsChanged: 0, patientRecordsRead: 0, externalCalls: 0 } };

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 const routeTitles: Record<string, string> = {
+  "/admin/legal-hold-review": "Legal-hold review desk", "/admin/retention-safety": "Retention safety rehearsal", "/admin/document-runtime-posture": "Document runtime posture", "/admin/document-activation-preflight": "Document activation preflight",
   "/admin/integration-access-reviews": "Integration access recertification", "/admin/integration-access-review-governance": "Integration access-review posture",
   "/admin/integration-residency": "Integration data residency", "/admin/integration-residency-governance": "Integration residency posture",
   "/admin/integration-observability": "Integration observability governance", "/admin/integration-observability-governance": "Integration observability posture",
@@ -40,6 +41,7 @@ const routeTitles: Record<string, string> = {
 };
 
 const arabicRouteTitles: Record<string, string> = {
+  "/admin/legal-hold-review": "مكتب مراجعة الحجز القانوني", "/admin/retention-safety": "بروفة أمان الاحتفاظ", "/admin/document-runtime-posture": "وضع تشغيل المستندات", "/admin/document-activation-preflight": "فحص تفعيل المستندات المسبق",
   "/admin/integration-access-reviews": "إعادة اعتماد وصول التكامل", "/admin/integration-access-review-governance": "حالة مراجعة وصول التكامل",
   "/admin/integration-residency": "حوكمة إقامة بيانات التكامل ونقلها", "/admin/integration-residency-governance": "حالة إقامة بيانات التكامل",
   "/admin/integration-observability": "حوكمة مراقبة التكامل والتتبع", "/admin/integration-observability-governance": "حالة مراقبة التكامل",
