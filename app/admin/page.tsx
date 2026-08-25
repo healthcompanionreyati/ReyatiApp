@@ -111,6 +111,10 @@ export default function Admin() {
         <a className="admin-verification-link" href="/admin/legal-holds"><span>§</span>{ar ? "الحجز القانوني" : "Legal holds"}</a>
         <a className="admin-verification-link" href="/admin/retention-automation"><span>◷</span>{ar ? "أتمتة الاحتفاظ" : "Retention automation"}</a>
         <a className="admin-verification-link" href="/admin/data-lifecycle-acceptance"><span>◎</span>{ar ? "قبول دورة الحياة" : "Lifecycle acceptance"}</a>
+        <a className="admin-verification-link" href="/admin/document-assurance-collection"><span>01</span>{ar ? "جمع التأكيد" : "Assurance collection"}</a>
+        <a className="admin-verification-link" href="/admin/document-assurance-review"><span>02</span>{ar ? "مراجعة التأكيد" : "Assurance review"}</a>
+        <a className="admin-verification-link" href="/admin/lifecycle-acceptance-submission"><span>03</span>{ar ? "إرسال القبول" : "Acceptance submission"}</a>
+        <a className="admin-verification-link" href="/admin/lifecycle-acceptance-review"><span>04</span>{ar ? "مراجعة القبول" : "Acceptance review"}</a>
         <a className="admin-verification-link" href="/admin/document-launch"><span>◎</span>{ar ? "قيادة إطلاق المستندات" : "Document launch command"}</a>
         <a className="admin-verification-link" href="/admin/document-release"><span>◆</span>{ar ? "تفويض إطلاق المستندات" : "Document release authorization"}</a>
         <a className="admin-verification-link" href="/admin/security-alerts"><span>⚠</span>{ar ? "تنبيهات الأمن" : "Security alerts"}</a>
